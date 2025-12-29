@@ -82,22 +82,8 @@ class OnyxPokerGUI:
     
     def auto_hide_window(self):
         """Auto-hide main window after launch (only if calibrated)"""
-        try:
-            # Only auto-hide if already calibrated
-            import os
-            if os.path.exists('config.py'):
-                import config
-                if hasattr(config, 'TABLE_REGION') and config.TABLE_REGION != (0, 0, 0, 0):
-                    # Already calibrated - safe to hide
-                    self.root.withdraw()
-                    self.log("Main window auto-hidden. Press F12 to show.")
-                    self.log("💡 Hotkeys: F7=Calibrate, F8=Capture, F9=Analyze")
-                else:
-                    # Not calibrated - keep window visible
-                    self.log("⚠️ First time setup - window staying visible")
-                    self.log("💡 Follow the Calibration tab to get started")
-            else:
-                # No config - keep window visible
+        # Disabled - user will hide manually with F12 when needed
+        pass
                 self.log("⚠️ First time setup - window staying visible")
                 self.log("💡 Follow the Calibration tab to get started")
         except:
@@ -643,19 +629,27 @@ class OnyxPokerGUI:
     def scan_windows(self):
         self.window_list.delete(0, tk.END)
         self.calib_status.config(text="Scanning...", foreground="blue")
+        self.log("🔍 Scanning for poker windows...")
         self.root.update()
         
         self.windows = self.detector.find_poker_windows()
         
+        self.log(f"Found {len(self.windows)} window(s)")
+        
         if not self.windows:
             self.calib_status.config(text="❌ No windows found", foreground="red")
+            self.log("❌ No poker windows detected")
+            self.log("💡 Make sure PokerStars is open and a table is visible")
             messagebox.showwarning("No Windows", "No poker windows detected.\nOpen PokerStars and try again.")
             return
         
         for i, win in enumerate(self.windows):
-            self.window_list.insert(tk.END, f"{i+1}. {win['title']} ({win['width']}x{win['height']})")
+            display_text = f"{i+1}. {win['title']} ({win['width']}x{win['height']})"
+            self.window_list.insert(tk.END, display_text)
+            self.log(f"  {display_text}")
         
         self.calib_status.config(text=f"✓ Found {len(self.windows)} window(s)", foreground="green")
+        self.log(f"✓ Found {len(self.windows)} window(s) - select one from the list")
     
     def select_window(self):
         sel = self.window_list.curselection()
