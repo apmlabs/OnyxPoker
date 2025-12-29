@@ -174,6 +174,66 @@ def analyze_poker():
         logger.error(f"Poker analysis error: {str(e)}")
         return jsonify({"error": str(e)}), 500
 
+@app.route('/validate-state', methods=['POST'])
+def validate_state():
+    """Validate poker state with Kiro CLI"""
+    if not authenticate_request():
+        return jsonify({"error": "Unauthorized"}), 401
+    
+    try:
+        data = request.get_json()
+        state = data.get('state', {})
+        
+        # Build validation prompt
+        prompt = f"""Analyze this poker game state and determine if it's valid and makes sense:
+
+Cards: {state.get('hero_cards', [])}
+Board: {state.get('community_cards', [])}
+Pot: ${state.get('pot', 0)}
+Stacks: {state.get('stacks', [])}
+Actions: {state.get('actions', {})}
+
+Is this a valid poker state? Are the values reasonable?
+Respond with: VALID or INVALID, followed by your reasoning."""
+        
+        # Call Kiro CLI
+        result = subprocess.run(
+            ['kiro-cli', 'chat', prompt],
+            capture_output=True,
+            text=True,
+            timeout=180
+        )
+        
+        response = result.stdout.strip()
+        
+        # Parse response
+        understood = 'VALID' in response.upper() and 'INVALID' not in response.upper()
+        confidence = 0.8 if understood else 0.3
+        concerns = [] if understood else ['State appears invalid or unreasonable']
+        
+        return jsonify({
+            'understood': understood,
+            'confidence': confidence,
+            'interpretation': response,
+            'concerns': concerns
+        })
+        
+    except subprocess.TimeoutExpired:
+        return jsonify({
+            'understood': False,
+            'confidence': 0.0,
+            'interpretation': 'Kiro CLI timeout',
+            'concerns': ['Validation timed out after 180 seconds']
+        }), 500
+    except Exception as e:
+        logger.error(f"Validation error: {str(e)}")
+        return jsonify({
+            'understood': False,
+            'confidence': 0.0,
+            'interpretation': str(e),
+            'concerns': [str(e)]
+        }), 500
+
 if __name__ == '__main__':
     port = int(os.getenv('FLASK_PORT', 5000))
     host = os.getenv('FLASK_HOST', '0.0.0.0')
