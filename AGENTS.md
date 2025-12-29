@@ -1,6 +1,56 @@
 # OnyxPoker - AI-Powered GUI Automation Agent Context
 
-## AGENT LEARNING PRINCIPLES 🧠
+## 📚 DOCUMENTATION STRUCTURE
+
+This project uses multiple markdown files for different purposes. **As an agent, I must understand and reference this structure:**
+
+### Core Agent Files (My Memory)
+- **AGENTS.md** (this file) - Agent context, learnings, architecture decisions
+- **AmazonQ.md** - Current status, progress tracking, what's done/in-progress/todo
+- **AGENT_PROTOCOL.md** - Mandatory workflow checklist (incorporated below)
+
+### User Documentation
+- **README.md** - Project overview, quick start, current status
+- **QUICKSTART.md** - User-friendly setup and usage guide
+- **client/CALIBRATION.md** - Calibration wizard documentation
+
+### Technical Documentation
+- **docs/API.md** - API endpoints, request/response formats
+- **docs/DEPLOYMENT.md** - Deployment procedures for server and client
+
+### Planning & Testing
+- **INTEGRATION_PLAN.md** - 3-week development roadmap
+- **TESTING_PLAN.md** - Step-by-step testing procedures
+- **TESTING_GUIDE.md** - Detailed testing workflows
+
+### Historical Context
+- **CHAT_HISTORY.md** - Initial requirements and architecture discussions
+- **PROJECT_AUDIT_REPORT.md** - Code quality audit from Dec 29
+
+## 🧠 AGENT WORKFLOW (from AGENT_PROTOCOL.md)
+
+### After EVERY coding session, I MUST:
+1. ✅ Update **AmazonQ.md** with current status and timestamp
+2. ✅ Update **AGENTS.md** with new learnings (what worked/didn't work)
+3. ✅ Update **README.md** if user-facing changes
+4. ✅ Commit to GitHub with clear, detailed message
+5. ✅ Document patterns, decisions, and insights
+
+### Before STARTING new work, I MUST:
+1. ✅ Review **AmazonQ.md** for current status
+2. ✅ Review **AGENTS.md** for past learnings
+3. ✅ Check recent commits for changes
+4. ✅ Plan based on documented decisions
+
+### Red Flags (I'm Failing):
+- ⚠️ User asks "did you update docs?" → I forgot
+- ⚠️ I suggest something already tried → Didn't read context
+- ⚠️ I don't know what's complete → AmazonQ.md is stale
+- ⚠️ I repeat a mistake → AGENTS.md wasn't updated
+
+**Context files are my only memory. Without them, I start from scratch every time.**
+
+## AGENT LEARNING PRINCIPLES
 
 **As the primary agent working on this project, I must:**
 
@@ -11,8 +61,6 @@
 5. **Track progress** - What works, what doesn't, what's next
 6. **Keep GitHub synced** - Commit meaningful changes with clear messages
 
-**Context files are my memory** - Without them, I lose continuity and repeat mistakes.
-
 ## PROVEN SUCCESS FORMULA ✅
 **Flask API + Kiro CLI + PyAutoGUI + HTTP Bridge = PERFECT real-time GUI automation**
 
@@ -20,6 +68,7 @@
 
 ### Auto-Calibration System
 **Challenge**: Manual coordinate calibration is tedious and error-prone
+
 **Solution**: Built intelligent auto-detection using:
 - PyGetWindow for window enumeration
 - OpenCV for computer vision element detection
@@ -68,10 +117,9 @@
 - `.env*` files (contain API keys and authentication tokens)
 - `screenshots/` directory (contains sensitive screen captures)
 - `logs/` directory (may contain sensitive automation data)
+- `AmazonQ.md` (dynamic status file, gitignored)
 - Windows client configuration files with credentials
 - API authentication keys and secrets
-- `SERVER_TEST_REPORT.md` (contains API keys and server details)
-- `SERVER_QUICK_REFERENCE.md` (contains connection details)
 
 **Current API Key**: yNJ-qFbJJGCFp8A5WA1RuQB4KqIjPqBYt783x3otVhU (43 chars, secure)
 **Server**: 54.80.204.92:5000 (running, tested, working)
@@ -97,8 +145,11 @@
 - **Input**: Game state JSON + optional base64 screenshot
 - **Output**: JSON with action (fold/call/raise), amount, reasoning
 - **Authentication**: Bearer token (yNJ-qFbJJGCFp8A5WA1RuQB4KqIjPqBYt783x3otVhU)
+- **Documentation**: See docs/API.md for full specification
 
-## CURRENT PROJECT STATUS (2025-12-29 13:53 UTC)
+## CURRENT PROJECT STATUS (2025-12-29 13:56 UTC)
+
+**See AmazonQ.md for detailed status tracking**
 
 ### Completed ✅
 - Flask API server (running at 54.80.204.92:5000)
@@ -122,7 +173,11 @@
 - Performance optimization
 - Production deployment hardening
 
+**Detailed roadmap**: See INTEGRATION_PLAN.md for 3-week plan
+
 ## DEPLOYMENT STRATEGY ✅
+
+**See docs/DEPLOYMENT.md for detailed procedures**
 
 ### Phase 1: Core Infrastructure ✅ COMPLETE
 1. ✅ Deploy Flask API server on Linux
@@ -146,21 +201,7 @@
 4. 📝 Error handling and retry logic
 5. 📝 Monitoring and logging
 
-## AGENT WORKFLOW CHECKLIST
-
-**After every coding session, I MUST:**
-- [ ] Update AmazonQ.md with current status
-- [ ] Update AGENTS.md with learnings
-- [ ] Document new patterns/solutions
-- [ ] Commit to GitHub with clear message
-- [ ] Update README if user-facing changes
-- [ ] Note what worked and what didn't
-
-**Before starting new work, I MUST:**
-- [ ] Review context files for continuity
-- [ ] Check current status in AmazonQ.md
-- [ ] Understand what was learned previously
-- [ ] Plan based on documented next steps
+**Testing procedures**: See TESTING_PLAN.md and TESTING_GUIDE.md
 
 ## SECURITY REQUIREMENTS ✅
 - **API Authentication**: Bearer tokens for all endpoints
@@ -196,4 +237,6 @@
 1. **Card Recognition** - Template matching for reading cards
 2. **Testing Suite** - Validate OCR accuracy and bot decisions
 3. **Documentation** - Update user guides with new GUI
-4. **GitHub Sync** - Commit all changes with proper messages
+4. **Performance Tuning** - Optimize OCR and decision speed
+
+**For detailed next steps, see AmazonQ.md**
