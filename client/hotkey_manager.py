@@ -31,6 +31,12 @@ class HotkeyManager:
             # Ctrl+H - Toggle mini overlay
             keyboard.add_hotkey('ctrl+h', self.on_ctrl_h_toggle_overlay)
             
+            # Ctrl+C - Open calibration
+            keyboard.add_hotkey('ctrl+c', self.on_ctrl_c_calibrate)
+            
+            # Ctrl+T - Test OCR
+            keyboard.add_hotkey('ctrl+t', self.on_ctrl_t_test_ocr)
+            
             self.registered = True
             self.parent.log("✅ Hotkeys registered:")
             self.parent.log("   F9 = Capture & Analyze")
@@ -38,6 +44,8 @@ class HotkeyManager:
             self.parent.log("   F11 = Emergency Stop")
             self.parent.log("   F12 = Toggle Main Window")
             self.parent.log("   Ctrl+H = Toggle Mini Overlay")
+            self.parent.log("   Ctrl+C = Open Calibration")
+            self.parent.log("   Ctrl+T = Test OCR")
             
         except Exception as e:
             self.parent.log(f"⚠️ Could not register hotkeys: {e}", "WARNING")
@@ -54,6 +62,8 @@ class HotkeyManager:
             keyboard.remove_hotkey('f11')
             keyboard.remove_hotkey('f12')
             keyboard.remove_hotkey('ctrl+h')
+            keyboard.remove_hotkey('ctrl+c')
+            keyboard.remove_hotkey('ctrl+t')
             self.registered = False
             self.parent.log("Hotkeys unregistered")
         except:
@@ -120,3 +130,28 @@ class HotkeyManager:
                 self.parent.root.after(0, self.parent.mini_overlay.toggle_visibility)
         except Exception as e:
             self.parent.log(f"❌ Ctrl+H error: {e}", "ERROR")
+    
+    def on_ctrl_c_calibrate(self):
+        """Ctrl+C - Open calibration tab"""
+        try:
+            self.parent.log("🔥 Ctrl+C pressed - Opening calibration...")
+            # Show main window
+            self.parent.root.after(0, self.parent.root.deiconify)
+            self.parent.root.after(0, self.parent.root.lift)
+            # Switch to calibration tab
+            self.parent.root.after(100, lambda: self.parent.notebook.select(1))
+        except Exception as e:
+            self.parent.log(f"❌ Ctrl+C error: {e}", "ERROR")
+    
+    def on_ctrl_t_test_ocr(self):
+        """Ctrl+T - Test OCR"""
+        try:
+            self.parent.log("🔥 Ctrl+T pressed - Testing OCR...")
+            # Capture and show results
+            self.parent.root.after(0, self.parent.capture_debug)
+            # Show main window and switch to debug tab
+            self.parent.root.after(100, self.parent.root.deiconify)
+            self.parent.root.after(100, self.parent.root.lift)
+            self.parent.root.after(200, lambda: self.parent.notebook.select(2))
+        except Exception as e:
+            self.parent.log(f"❌ Ctrl+T error: {e}", "ERROR")

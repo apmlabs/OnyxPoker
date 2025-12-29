@@ -70,8 +70,50 @@ class OnyxPokerGUI:
         # Initialize mini overlay, hotkeys, system tray
         self.init_advanced_features()
         
+        # Check setup status and update overlay
+        self.check_setup_status()
+        
+        # Auto-hide main window after 2 seconds
+        self.root.after(2000, self.auto_hide_window)
+        
         # Start log updater
         self.update_log()
+    
+    def auto_hide_window(self):
+        """Auto-hide main window after launch"""
+        try:
+            self.root.withdraw()
+            self.log("Main window auto-hidden. Press F12 to show, or use hotkeys:")
+            self.log("  Ctrl+C = Calibrate")
+            self.log("  Ctrl+T = Test OCR")
+            self.log("  F9 = Analyze hand")
+        except:
+            pass
+    
+    def check_setup_status(self):
+        """Check setup status and update overlay guidance"""
+        try:
+            import os
+            # Check if config exists
+            if os.path.exists('config.py'):
+                # Check if calibrated (has saved regions)
+                try:
+                    import config
+                    if hasattr(config, 'TABLE_REGION') and config.TABLE_REGION != (0, 0, 0, 0):
+                        # Calibrated - show ready or test
+                        if hasattr(self, 'last_state') and self.last_state:
+                            self.mini_overlay.set_next_step("ready")
+                        else:
+                            self.mini_overlay.set_next_step("test")
+                    else:
+                        # Not calibrated
+                        self.mini_overlay.set_next_step("calibrate")
+                except:
+                    self.mini_overlay.set_next_step("calibrate")
+            else:
+                self.mini_overlay.set_next_step("calibrate")
+        except:
+            self.mini_overlay.set_next_step("calibrate")
         
     def init_advanced_features(self):
         """Initialize mini overlay, hotkeys, and system tray"""
@@ -696,16 +738,13 @@ ACTION_DELAY = 2.0
             self.state_text.delete("1.0", "end")
             self.state_text.insert("1.0", json.dumps(state, indent=2))
             
+            # Update overlay status
+            if hasattr(self, 'mini_overlay') and self.mini_overlay:
+                self.mini_overlay.set_next_step("ready")
+            
             self.log("📸 Debug capture complete")
         except Exception as e:
             self.log(f"❌ Capture error: {e}", "ERROR")
-            img_data = base64.b64decode(img)
-            pil_img = Image.open(io.BytesIO(img_data))
-            
-            self.last_screenshot = pil_img
-            self.show_preview(pil_img, self.debug_canvas)
-            
-            # Run OCR
             state = reader.parse_game_state()
             self.last_state = state
             self.ocr_text.delete("1.0", "end")

@@ -82,15 +82,15 @@ class MiniOverlay:
         hints_frame = tk.Frame(main_frame, bg='#2b2b2b')
         hints_frame.pack(fill='x')
         
-        hints1 = tk.Label(hints_frame, text="F9:Analyze  F10:Start/Stop  F11:Emergency", 
+        self.hints1 = tk.Label(hints_frame, text="F9:Analyze  F12:Main  Ctrl+C:Calibrate", 
                         font=('Arial', 7), 
                         bg='#2b2b2b', fg='#888888')
-        hints1.pack()
+        self.hints1.pack()
         
-        hints2 = tk.Label(hints_frame, text="F12:Main Window  Ctrl+H:Toggle Overlay", 
+        self.hints2 = tk.Label(hints_frame, text="Ctrl+T:Test OCR  Ctrl+H:Toggle", 
                         font=('Arial', 7), 
                         bg='#2b2b2b', fg='#888888')
-        hints2.pack()
+        self.hints2.pack()
         
     def update_info(self, state, decision=None):
         """Update overlay with current game state"""
@@ -143,6 +143,21 @@ class MiniOverlay:
         x = self.window.winfo_x() + deltax
         y = self.window.winfo_y() + deltay
         self.window.geometry(f"+{x}+{y}")
+    
+    def set_next_step(self, step):
+        """Update overlay with next step guidance"""
+        if step == "calibrate":
+            self.decision_label.config(text="📋 Setup Needed", fg='#ffaa00')
+            self.reasoning_label.config(text="Press Ctrl+C to calibrate\nOr F12 to open main window")
+        elif step == "test":
+            self.decision_label.config(text="📸 Test OCR", fg='#00aaff')
+            self.reasoning_label.config(text="Press Ctrl+T to test OCR\nOr F9 to capture & analyze")
+        elif step == "ready":
+            self.decision_label.config(text="✅ Ready!", fg='#00ff00')
+            self.reasoning_label.config(text="Press F9 to get AI advice\nBot is ready to help!")
+        elif step == "playing":
+            self.decision_label.config(text="🎮 Playing", fg='#00ffff')
+            self.reasoning_label.config(text="Waiting for your turn...\nPress F9 for advice anytime")
     
     def show(self):
         """Show the overlay"""
