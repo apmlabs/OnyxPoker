@@ -84,10 +84,6 @@ class OnyxPokerGUI:
         """Auto-hide main window after launch (only if calibrated)"""
         # Disabled - user will hide manually with F12 when needed
         pass
-                self.log("⚠️ First time setup - window staying visible")
-                self.log("💡 Follow the Calibration tab to get started")
-        except:
-            pass
     
     def check_setup_status(self):
         """Check setup status and update overlay guidance"""
