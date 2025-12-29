@@ -148,25 +148,28 @@ class HotkeyManager:
         try:
             self.parent.log("🔥 F8 pressed...")
             
-            # Check if we're in calibration mode (window selected but not calibrated)
-            if hasattr(self.parent, 'selected_window') and self.parent.selected_window:
-                # Check if already calibrated (not placeholder values)
-                try:
-                    import config
-                    if (not hasattr(config, 'TABLE_REGION') or 
-                        config.TABLE_REGION == (0, 0, 0, 0) or
-                        config.TABLE_REGION == (100, 100, 800, 600)):  # Placeholder
-                        # Not calibrated yet - do auto-detect
-                        self.parent.log("📸 Capturing poker table for calibration...")
-                        self.parent.log("💡 Make sure poker table is visible!")
-                        self.parent.root.after(0, self.parent.auto_detect)
-                        return
-                except:
-                    # No config yet - do auto-detect
+            # Check if we have a selected window
+            if not hasattr(self.parent, 'selected_window') or not self.parent.selected_window:
+                self.parent.log("❌ No window selected - click 'Capture Active Window' first", "ERROR")
+                return
+            
+            # Check if already calibrated (not placeholder values)
+            try:
+                import config
+                if (not hasattr(config, 'TABLE_REGION') or 
+                    config.TABLE_REGION == (0, 0, 0, 0) or
+                    config.TABLE_REGION == (100, 100, 800, 600)):  # Placeholder
+                    # Not calibrated yet - do auto-detect
                     self.parent.log("📸 Capturing poker table for calibration...")
                     self.parent.log("💡 Make sure poker table is visible!")
                     self.parent.root.after(0, self.parent.auto_detect)
                     return
+            except:
+                # No config yet - do auto-detect
+                self.parent.log("📸 Capturing poker table for calibration...")
+                self.parent.log("💡 Make sure poker table is visible!")
+                self.parent.root.after(0, self.parent.auto_detect)
+                return
             
             # Already calibrated - do OCR test
             self.parent.log("🧪 Testing OCR on current table...")

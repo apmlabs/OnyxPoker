@@ -699,7 +699,8 @@ class OnyxPokerGUI:
     def auto_detect(self):
         """Auto-detect poker elements from selected window"""
         if not self.selected_window:
-            messagebox.showwarning("No Window", "Select window first")
+            self.log("❌ No window selected", "ERROR")
+            messagebox.showwarning("No Window", "Click 'Capture Active Window' first")
             return
         
         self.calib_status.config(text="🔎 Detecting...", foreground="blue")
@@ -709,6 +710,11 @@ class OnyxPokerGUI:
         try:
             # Capture the poker window
             img = self.detector.capture_window(self.selected_window)
+            if img is None:
+                self.log("❌ Failed to capture screenshot", "ERROR")
+                self.calib_status.config(text="❌ Capture failed", foreground="red")
+                return
+                
             self.log("✓ Screenshot captured")
             
             # Detect elements
@@ -722,12 +728,21 @@ class OnyxPokerGUI:
                 self.calib_status.config(text=f"✓ {msg}", foreground="green")
                 self.log(f"✓ {msg}")
                 
-                # Show preview
+                # Create preview with detected areas marked
                 preview = self.detector.create_preview(img, self.detected_elements)
                 self.show_preview(preview, self.preview_canvas)
                 self.log("✓ Preview updated - check Calibration tab")
                 
                 # Show main window and switch to calibration tab
+                self.root.deiconify()
+                self.root.lift()
+                self.notebook.select(1)  # Switch to Calibration tab
+                
+                # Update overlay ONLY after successful capture
+                if hasattr(self, 'mini_overlay') and self.mini_overlay:
+                    self.mini_overlay.set_next_step("test")
+                
+                conf = self.detected_elements.get('confidence', 0)
                 self.root.deiconify()
                 self.root.lift()
                 self.notebook.select(1)
