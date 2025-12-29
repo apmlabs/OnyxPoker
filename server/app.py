@@ -206,6 +206,10 @@ Respond with: VALID or INVALID, followed by your reasoning."""
         
         response = result.stdout.strip()
         
+        # Strip ANSI color codes
+        import re
+        response = re.sub(r'\x1b\[[0-9;]*m', '', response)
+        
         # Parse response
         understood = 'VALID' in response.upper() and 'INVALID' not in response.upper()
         confidence = 0.8 if understood else 0.3
