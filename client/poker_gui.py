@@ -1,5 +1,5 @@
 """
-OnyxPoker GUI - Control panel and monitoring interface
+OnyxPoker GUI - Unified control panel with calibration and debug
 """
 
 import tkinter as tk
@@ -8,17 +8,21 @@ import threading
 import queue
 import json
 from datetime import datetime
+from PIL import Image, ImageTk
 from poker_bot import OnyxPokerBot
 from poker_reader import PokerScreenReader
 from automation_client import OnyxPokerClient
+from window_detector import WindowDetector
 import config
+import logging
+
+logger = logging.getLogger(__name__)
 
 class OnyxPokerGUI:
     def __init__(self, root):
         self.root = root
-        self.root.title("OnyxPoker Bot Control Panel")
-        self.root.geometry("900x700")
-        self.root.resizable(False, False)
+        self.root.title("OnyxPoker - AI Poker Bot")
+        self.root.geometry("1200x800")
         
         # Bot state
         self.bot = None
@@ -26,111 +30,205 @@ class OnyxPokerGUI:
         self.running = False
         self.log_queue = queue.Queue()
         
-        # Create UI
-        self.create_widgets()
+        # Calibration state
+        self.detector = WindowDetector()
+        self.selected_window = None
+        self.detected_elements = None
+        self.windows = []
+        
+        # Debug state
+        self.last_state = {}
+        self.last_decision = {}
+        self.last_screenshot = None
+        
+        # Create notebook (tabs)
+        self.notebook = ttk.Notebook(self.root)
+        self.notebook.pack(fill="both", expand=True, padx=5, pady=5)
+        
+        # Create tabs
+        self.create_control_tab()
+        self.create_calibration_tab()
+        self.create_debug_tab()
+        
+        # Start log updater
         self.update_log()
         
-    def create_widgets(self):
-        # Top: Settings Panel
-        settings_frame = ttk.LabelFrame(self.root, text="Settings", padding=10)
-        settings_frame.pack(fill="x", padx=10, pady=5)
+    def create_control_tab(self):
+        """Main control panel"""
+        tab = ttk.Frame(self.notebook)
+        self.notebook.add(tab, text="🎮 Control Panel")
         
-        # Mode selection
-        ttk.Label(settings_frame, text="Mode:").grid(row=0, column=0, sticky="w", padx=5)
+        # Settings
+        settings = ttk.LabelFrame(tab, text="Bot Settings", padding=10)
+        settings.pack(fill="x", padx=10, pady=5)
+        
+        # Mode
+        ttk.Label(settings, text="Mode:").grid(row=0, column=0, sticky="w", padx=5)
         self.mode_var = tk.StringVar(value="remote")
-        ttk.Radiobutton(settings_frame, text="Remote (Server)", variable=self.mode_var, value="remote").grid(row=0, column=1, sticky="w")
-        ttk.Radiobutton(settings_frame, text="Local (Kiro CLI)", variable=self.mode_var, value="local").grid(row=0, column=2, sticky="w")
+        ttk.Radiobutton(settings, text="Remote (Server)", variable=self.mode_var, value="remote").grid(row=0, column=1, sticky="w")
+        ttk.Radiobutton(settings, text="Local (Kiro CLI)", variable=self.mode_var, value="local").grid(row=0, column=2, sticky="w")
         
-        # Execution mode
-        ttk.Label(settings_frame, text="Execution:").grid(row=1, column=0, sticky="w", padx=5)
+        # Execution
+        ttk.Label(settings, text="Execution:").grid(row=1, column=0, sticky="w", padx=5)
         self.exec_var = tk.StringVar(value="analysis")
-        ttk.Radiobutton(settings_frame, text="Analysis Only", variable=self.exec_var, value="analysis").grid(row=1, column=1, sticky="w")
-        ttk.Radiobutton(settings_frame, text="Auto (Clicks)", variable=self.exec_var, value="auto").grid(row=1, column=2, sticky="w")
+        ttk.Radiobutton(settings, text="Analysis Only", variable=self.exec_var, value="analysis").grid(row=1, column=1, sticky="w")
+        ttk.Radiobutton(settings, text="Auto (Clicks)", variable=self.exec_var, value="auto").grid(row=1, column=2, sticky="w")
         
         # Max hands
-        ttk.Label(settings_frame, text="Max Hands:").grid(row=2, column=0, sticky="w", padx=5)
+        ttk.Label(settings, text="Max Hands:").grid(row=2, column=0, sticky="w", padx=5)
         self.hands_var = tk.StringVar(value="")
-        ttk.Entry(settings_frame, textvariable=self.hands_var, width=10).grid(row=2, column=1, sticky="w")
-        ttk.Label(settings_frame, text="(empty = unlimited)").grid(row=2, column=2, sticky="w")
+        ttk.Entry(settings, textvariable=self.hands_var, width=10).grid(row=2, column=1, sticky="w")
         
-        # Control buttons
-        control_frame = ttk.Frame(self.root)
-        control_frame.pack(fill="x", padx=10, pady=5)
+        # Controls
+        controls = ttk.Frame(tab)
+        controls.pack(fill="x", padx=10, pady=5)
         
-        self.start_btn = ttk.Button(control_frame, text="▶ Start Bot", command=self.start_bot, width=15)
+        self.start_btn = ttk.Button(controls, text="▶ Start Bot", command=self.start_bot, width=15)
         self.start_btn.pack(side="left", padx=5)
         
-        self.stop_btn = ttk.Button(control_frame, text="⏹ Stop Bot", command=self.stop_bot, width=15, state="disabled")
+        self.stop_btn = ttk.Button(controls, text="⏹ Stop Bot", command=self.stop_bot, width=15, state="disabled")
         self.stop_btn.pack(side="left", padx=5)
         
-        ttk.Button(control_frame, text="🔧 Test Connection", command=self.test_connection, width=15).pack(side="left", padx=5)
-        ttk.Button(control_frame, text="📸 Test OCR", command=self.test_ocr, width=15).pack(side="left", padx=5)
+        ttk.Button(controls, text="🔧 Test Connection", command=self.test_connection, width=15).pack(side="left", padx=5)
+        ttk.Button(controls, text="📸 Test OCR", command=self.test_ocr, width=15).pack(side="left", padx=5)
         
-        # Status Panel
-        status_frame = ttk.LabelFrame(self.root, text="Current Status", padding=10)
-        status_frame.pack(fill="x", padx=10, pady=5)
+        # Status
+        status = ttk.LabelFrame(tab, text="Status", padding=10)
+        status.pack(fill="x", padx=10, pady=5)
         
-        # Status labels
-        self.status_label = ttk.Label(status_frame, text="Status: Idle", font=("Arial", 10, "bold"))
+        self.status_label = ttk.Label(status, text="Status: Idle", font=("Arial", 10, "bold"))
         self.status_label.pack(anchor="w")
         
-        self.hands_label = ttk.Label(status_frame, text="Hands Played: 0")
+        self.hands_label = ttk.Label(status, text="Hands: 0")
         self.hands_label.pack(anchor="w")
         
-        # Game State Panel
-        state_frame = ttk.LabelFrame(self.root, text="Last Game State", padding=10)
+        # Game State
+        state_frame = ttk.LabelFrame(tab, text="Current Hand", padding=10)
         state_frame.pack(fill="both", expand=True, padx=10, pady=5)
         
-        # Create two columns
-        left_col = ttk.Frame(state_frame)
-        left_col.pack(side="left", fill="both", expand=True)
+        # Two columns
+        left = ttk.Frame(state_frame)
+        left.pack(side="left", fill="both", expand=True, padx=10)
         
-        right_col = ttk.Frame(state_frame)
-        right_col.pack(side="left", fill="both", expand=True)
+        right = ttk.Frame(state_frame)
+        right.pack(side="left", fill="both", expand=True, padx=10)
         
-        # Left column - Game info
-        ttk.Label(left_col, text="Cards:", font=("Arial", 9, "bold")).pack(anchor="w")
-        self.cards_label = ttk.Label(left_col, text="--", font=("Courier", 12))
+        # Left - Game info
+        ttk.Label(left, text="Your Cards:", font=("Arial", 9, "bold")).pack(anchor="w")
+        self.cards_label = ttk.Label(left, text="--", font=("Courier", 14, "bold"))
         self.cards_label.pack(anchor="w", pady=2)
         
-        ttk.Label(left_col, text="Board:", font=("Arial", 9, "bold")).pack(anchor="w")
-        self.board_label = ttk.Label(left_col, text="--", font=("Courier", 12))
+        ttk.Label(left, text="Board:", font=("Arial", 9, "bold")).pack(anchor="w")
+        self.board_label = ttk.Label(left, text="--", font=("Courier", 12))
         self.board_label.pack(anchor="w", pady=2)
         
-        ttk.Label(left_col, text="Pot:", font=("Arial", 9, "bold")).pack(anchor="w")
-        self.pot_label = ttk.Label(left_col, text="$0", font=("Courier", 12))
+        ttk.Label(left, text="Pot:", font=("Arial", 9, "bold")).pack(anchor="w")
+        self.pot_label = ttk.Label(left, text="$0", font=("Courier", 12))
         self.pot_label.pack(anchor="w", pady=2)
         
-        ttk.Label(left_col, text="Stack:", font=("Arial", 9, "bold")).pack(anchor="w")
-        self.stack_label = ttk.Label(left_col, text="$0", font=("Courier", 12))
+        ttk.Label(left, text="Your Stack:", font=("Arial", 9, "bold")).pack(anchor="w")
+        self.stack_label = ttk.Label(left, text="$0", font=("Courier", 12))
         self.stack_label.pack(anchor="w", pady=2)
         
-        # Right column - Decision
-        ttk.Label(right_col, text="Decision:", font=("Arial", 9, "bold")).pack(anchor="w")
-        self.decision_label = ttk.Label(right_col, text="--", font=("Courier", 14, "bold"), foreground="blue")
+        # Right - Decision
+        ttk.Label(right, text="AI Decision:", font=("Arial", 9, "bold")).pack(anchor="w")
+        self.decision_label = ttk.Label(right, text="--", font=("Courier", 16, "bold"), foreground="blue")
         self.decision_label.pack(anchor="w", pady=2)
         
-        ttk.Label(right_col, text="Reasoning:", font=("Arial", 9, "bold")).pack(anchor="w")
-        self.reasoning_text = tk.Text(right_col, height=6, width=40, wrap="word", font=("Arial", 9))
-        self.reasoning_text.pack(anchor="w", pady=2)
+        ttk.Label(right, text="Reasoning:", font=("Arial", 9, "bold")).pack(anchor="w")
+        self.reasoning_text = tk.Text(right, height=8, width=45, wrap="word", font=("Arial", 9))
+        self.reasoning_text.pack(fill="both", expand=True, pady=2)
         
-        # Log Panel
-        log_frame = ttk.LabelFrame(self.root, text="Activity Log", padding=10)
+        # Log
+        log_frame = ttk.LabelFrame(tab, text="Activity Log", padding=10)
         log_frame.pack(fill="both", expand=True, padx=10, pady=5)
         
-        self.log_text = scrolledtext.ScrolledText(log_frame, height=10, wrap="word", font=("Courier", 9))
+        self.log_text = scrolledtext.ScrolledText(log_frame, height=8, wrap="word", font=("Courier", 9))
         self.log_text.pack(fill="both", expand=True)
         
-        # Clear log button
         ttk.Button(log_frame, text="Clear Log", command=self.clear_log).pack(anchor="e", pady=5)
         
+    def create_calibration_tab(self):
+        """Calibration wizard tab"""
+        tab = ttk.Frame(self.notebook)
+        self.notebook.add(tab, text="🔧 Calibration")
+        
+        # Step 1: Window Selection
+        step1 = ttk.LabelFrame(tab, text="Step 1: Find Poker Window", padding=10)
+        step1.pack(fill="x", padx=10, pady=5)
+        
+        self.window_list = tk.Listbox(step1, height=4, font=("Arial", 10))
+        self.window_list.pack(fill="x", pady=5)
+        
+        btn_frame1 = ttk.Frame(step1)
+        btn_frame1.pack(fill="x")
+        
+        ttk.Button(btn_frame1, text="🔍 Scan Windows", command=self.scan_windows).pack(side="left", padx=5)
+        ttk.Button(btn_frame1, text="✓ Select", command=self.select_window).pack(side="left", padx=5)
+        
+        if not self.detector.can_capture_background:
+            ttk.Label(step1, text="⚠️ Window must be visible (not minimized)", 
+                     foreground="orange", font=("Arial", 9, "italic")).pack(pady=5)
+        
+        # Step 2: Auto-Detect
+        step2 = ttk.LabelFrame(tab, text="Step 2: Auto-Detect Elements", padding=10)
+        step2.pack(fill="x", padx=10, pady=5)
+        
+        self.calib_status = ttk.Label(step2, text="Select window first", foreground="gray")
+        self.calib_status.pack(pady=5)
+        
+        ttk.Button(step2, text="🔎 Auto-Detect", command=self.auto_detect).pack(pady=5)
+        
+        # Step 3: Preview
+        step3 = ttk.LabelFrame(tab, text="Step 3: Verify Detection", padding=10)
+        step3.pack(fill="both", expand=True, padx=10, pady=5)
+        
+        self.preview_canvas = tk.Canvas(step3, bg="black", height=300)
+        self.preview_canvas.pack(fill="both", expand=True, pady=5)
+        
+        self.confidence_label = ttk.Label(step3, text="Confidence: --", font=("Arial", 10, "bold"))
+        self.confidence_label.pack(pady=5)
+        
+        # Step 4: Save
+        step4 = ttk.Frame(tab)
+        step4.pack(fill="x", padx=10, pady=10)
+        
+        ttk.Button(step4, text="💾 Save Configuration", command=self.save_calibration).pack(fill="x", pady=5)
+        
+    def create_debug_tab(self):
+        """Debug and analysis tab"""
+        tab = ttk.Frame(self.notebook)
+        self.notebook.add(tab, text="🐛 Debug")
+        
+        # Screenshot preview
+        preview_frame = ttk.LabelFrame(tab, text="Table Screenshot", padding=10)
+        preview_frame.pack(fill="both", expand=True, padx=10, pady=5)
+        
+        self.debug_canvas = tk.Canvas(preview_frame, bg="black", height=300)
+        self.debug_canvas.pack(fill="both", expand=True)
+        
+        ttk.Button(preview_frame, text="📸 Capture Now", command=self.capture_debug).pack(pady=5)
+        
+        # OCR Results
+        ocr_frame = ttk.LabelFrame(tab, text="OCR Analysis", padding=10)
+        ocr_frame.pack(fill="both", expand=True, padx=10, pady=5)
+        
+        self.ocr_text = scrolledtext.ScrolledText(ocr_frame, height=10, wrap="word", font=("Courier", 9))
+        self.ocr_text.pack(fill="both", expand=True)
+        
+        # Raw State
+        state_frame = ttk.LabelFrame(tab, text="Raw Game State (JSON)", padding=10)
+        state_frame.pack(fill="both", expand=True, padx=10, pady=5)
+        
+        self.state_text = scrolledtext.ScrolledText(state_frame, height=8, wrap="word", font=("Courier", 9))
+        self.state_text.pack(fill="both", expand=True)
+        
+    # Logging
     def log(self, message, level="INFO"):
-        """Add message to log queue"""
         timestamp = datetime.now().strftime("%H:%M:%S")
         self.log_queue.put(f"[{timestamp}] {level}: {message}")
         
     def update_log(self):
-        """Update log display from queue"""
         try:
             while True:
                 message = self.log_queue.get_nowait()
@@ -143,32 +241,32 @@ class OnyxPokerGUI:
     def clear_log(self):
         self.log_text.delete("1.0", "end")
         
+    # Status updates
     def update_status(self, status, hands=None):
-        """Update status display"""
         self.status_label.config(text=f"Status: {status}")
         if hands is not None:
-            self.hands_label.config(text=f"Hands Played: {hands}")
+            self.hands_label.config(text=f"Hands: {hands}")
             
     def update_game_state(self, state, decision=None):
-        """Update game state display"""
-        # Cards
+        # Store for debug
+        self.last_state = state
+        if decision:
+            self.last_decision = decision
+        
+        # Update display
         cards = ', '.join(state.get('hero_cards', ['??', '??']))
         self.cards_label.config(text=cards)
         
-        # Board
         board = ', '.join(state.get('community_cards', [])) or "None"
         self.board_label.config(text=board)
         
-        # Pot
         pot = state.get('pot', 0)
         self.pot_label.config(text=f"${pot}")
         
-        # Stack
         stacks = state.get('stacks', [])
         stack = stacks[2] if len(stacks) > 2 else 0
         self.stack_label.config(text=f"${stack}")
         
-        # Decision
         if decision:
             action = decision.get('action', '--').upper()
             amount = decision.get('amount', 0)
@@ -176,41 +274,50 @@ class OnyxPokerGUI:
                 action += f" ${amount}"
             self.decision_label.config(text=action)
             
-            # Reasoning
-            reasoning = decision.get('reasoning', 'No reasoning provided')
+            reasoning = decision.get('reasoning', 'No reasoning')
             self.reasoning_text.delete("1.0", "end")
             self.reasoning_text.insert("1.0", reasoning)
-            
+        
+        # Update debug tab
+        self.state_text.delete("1.0", "end")
+        self.state_text.insert("1.0", json.dumps(state, indent=2))
+        
+    # Control actions
     def test_connection(self):
-        """Test server connection"""
         self.log("Testing server connection...")
         try:
             client = OnyxPokerClient()
             if client.test_connection():
-                self.log("✅ Server connection successful!", "SUCCESS")
-                messagebox.showinfo("Success", "Connected to server!")
+                self.log("✅ Connected!", "SUCCESS")
+                messagebox.showinfo("Success", "Server connected!")
             else:
-                self.log("❌ Server connection failed", "ERROR")
-                messagebox.showerror("Error", "Cannot connect to server")
+                self.log("❌ Failed", "ERROR")
+                messagebox.showerror("Error", "Cannot connect")
         except Exception as e:
-            self.log(f"❌ Connection error: {str(e)}", "ERROR")
+            self.log(f"❌ Error: {e}", "ERROR")
             messagebox.showerror("Error", str(e))
             
     def test_ocr(self):
-        """Test OCR reading"""
         self.log("Testing OCR...")
         try:
             reader = PokerScreenReader()
             state = reader.parse_game_state()
-            self.log(f"OCR Result: {json.dumps(state, indent=2)}", "INFO")
+            self.log(f"OCR: Pot=${state['pot']}, Stacks={state['stacks']}")
             self.update_game_state(state)
-            messagebox.showinfo("OCR Test", f"Pot: ${state['pot']}\nStacks: {state['stacks']}")
+            
+            # Update OCR debug
+            self.ocr_text.delete("1.0", "end")
+            self.ocr_text.insert("1.0", f"Pot: ${state['pot']}\n")
+            self.ocr_text.insert("end", f"Stacks: {state['stacks']}\n")
+            self.ocr_text.insert("end", f"Actions: {state['actions']}\n")
+            self.ocr_text.insert("end", f"Cards: {state['hero_cards']}\n")
+            
+            messagebox.showinfo("OCR Test", f"Pot: ${state['pot']}\nCheck Debug tab for details")
         except Exception as e:
-            self.log(f"❌ OCR error: {str(e)}", "ERROR")
+            self.log(f"❌ OCR error: {e}", "ERROR")
             messagebox.showerror("Error", str(e))
             
     def start_bot(self):
-        """Start the bot in a separate thread"""
         if self.running:
             return
             
@@ -219,76 +326,213 @@ class OnyxPokerGUI:
         max_hands = self.hands_var.get()
         max_hands = int(max_hands) if max_hands else None
         
-        self.log(f"Starting bot: mode={mode}, execution={execution}, max_hands={max_hands}")
+        self.log(f"Starting: mode={mode}, exec={execution}, hands={max_hands}")
         self.running = True
         self.start_btn.config(state="disabled")
         self.stop_btn.config(state="normal")
         self.update_status("Running", 0)
         
-        # Start bot in thread
         self.bot_thread = threading.Thread(target=self.run_bot, args=(mode, execution, max_hands), daemon=True)
         self.bot_thread.start()
         
     def stop_bot(self):
-        """Stop the bot"""
-        self.log("Stopping bot...")
+        self.log("Stopping...")
         self.running = False
         self.start_btn.config(state="normal")
         self.stop_btn.config(state="disabled")
         self.update_status("Stopped")
         
     def run_bot(self, mode, execution, max_hands):
-        """Bot main loop (runs in thread)"""
         try:
             bot = OnyxPokerBot(mode=mode, execution=execution)
             reader = bot.reader
-            hands_played = 0
+            hands = 0
             
-            self.log("Bot started, waiting for your turn...")
-            
-            while self.running and (max_hands is None or hands_played < max_hands):
-                # Check turn
+            while self.running and (max_hands is None or hands < max_hands):
                 if not reader.is_hero_turn():
-                    self.root.after(0, self.update_status, "Waiting for turn", hands_played)
+                    self.root.after(0, self.update_status, "Waiting", hands)
                     import time
                     time.sleep(config.POLL_INTERVAL)
                     continue
                 
-                # Parse state
                 state = reader.parse_game_state()
-                self.log(f"Hand {hands_played + 1}: Pot=${state['pot']}, Actions={list(state['actions'].keys())}")
+                self.log(f"Hand {hands+1}: Pot=${state['pot']}")
                 
-                # Get decision
                 decision = bot.get_decision(state)
-                self.log(f"Decision: {decision['action'].upper()} - {decision.get('reasoning', '')[:50]}...")
+                self.log(f"Decision: {decision['action'].upper()}")
                 
-                # Update UI
                 self.root.after(0, self.update_game_state, state, decision)
-                self.root.after(0, self.update_status, "Playing", hands_played + 1)
+                self.root.after(0, self.update_status, "Playing", hands+1)
                 
-                # Execute
                 if execution == 'auto':
                     bot.execute_action(decision)
                     self.log(f"✅ Executed: {decision['action']}")
-                else:
-                    self.log(f"ℹ️  Analysis only: {decision['action']}")
                 
-                hands_played += 1
+                hands += 1
                 import time
                 time.sleep(config.ACTION_DELAY)
                 
-            self.log(f"Bot finished. Hands played: {hands_played}")
-            self.root.after(0, self.update_status, "Finished", hands_played)
+            self.log(f"Finished: {hands} hands")
+            self.root.after(0, self.update_status, "Finished", hands)
             
         except Exception as e:
-            self.log(f"❌ Bot error: {str(e)}", "ERROR")
-            self.root.after(0, messagebox.showerror, "Bot Error", str(e))
+            self.log(f"❌ Error: {e}", "ERROR")
+            self.root.after(0, messagebox.showerror, "Error", str(e))
         finally:
             self.running = False
             self.root.after(0, self.start_btn.config, {"state": "normal"})
             self.root.after(0, self.stop_btn.config, {"state": "disabled"})
+    
+    # Calibration actions
+    def scan_windows(self):
+        self.window_list.delete(0, tk.END)
+        self.calib_status.config(text="Scanning...", foreground="blue")
+        self.root.update()
+        
+        self.windows = self.detector.find_poker_windows()
+        
+        if not self.windows:
+            self.calib_status.config(text="❌ No windows found", foreground="red")
+            messagebox.showwarning("No Windows", "No poker windows detected.\nOpen PokerStars and try again.")
+            return
+        
+        for i, win in enumerate(self.windows):
+            self.window_list.insert(tk.END, f"{i+1}. {win['title']} ({win['width']}x{win['height']})")
+        
+        self.calib_status.config(text=f"✓ Found {len(self.windows)} window(s)", foreground="green")
+    
+    def select_window(self):
+        sel = self.window_list.curselection()
+        if not sel:
+            messagebox.showwarning("No Selection", "Select a window first")
+            return
+        
+        self.selected_window = self.windows[sel[0]]
+        
+        if self.detector.activate_window(self.selected_window):
+            self.calib_status.config(text=f"✓ Selected: {self.selected_window['title']}", foreground="green")
+        else:
+            self.calib_status.config(text="❌ Failed to activate", foreground="red")
+    
+    def auto_detect(self):
+        if not self.selected_window:
+            messagebox.showwarning("No Window", "Select window first")
+            return
+        
+        self.calib_status.config(text="🔎 Detecting...", foreground="blue")
+        self.root.update()
+        
+        try:
+            img = self.detector.capture_window(self.selected_window)
+            self.detected_elements = self.detector.detect_poker_elements(img)
+            
+            valid, msg = self.detector.validate_elements(self.detected_elements)
+            
+            if valid:
+                self.calib_status.config(text=f"✓ {msg}", foreground="green")
+                preview = self.detector.create_preview(img, self.detected_elements)
+                self.show_preview(preview, self.preview_canvas)
+                
+                conf = self.detected_elements.get('confidence', 0)
+                self.confidence_label.config(text=f"Confidence: {conf:.1%}", 
+                                            foreground="green" if conf > 0.7 else "orange")
+            else:
+                self.calib_status.config(text=f"❌ {msg}", foreground="red")
+                messagebox.showerror("Detection Failed", msg)
+        
+        except Exception as e:
+            self.calib_status.config(text=f"❌ Error: {e}", foreground="red")
+    
+    def save_calibration(self):
+        if not self.detected_elements:
+            messagebox.showwarning("No Detection", "Run auto-detect first")
+            return
+        
+        valid, msg = self.detector.validate_elements(self.detected_elements)
+        if not valid:
+            messagebox.showerror("Invalid", msg)
+            return
+        
+        try:
+            content = f'''"""Auto-generated configuration"""
+
+TABLE_REGION = ({self.selected_window['left']}, {self.selected_window['top']}, 
+                {self.selected_window['width']}, {self.selected_window['height']})
+
+BUTTON_REGIONS = {{
+'''
+            for name, region in self.detected_elements['button_regions'].items():
+                x, y, w, h = region
+                content += f'    "{name}": ({x}, {y}, {w}, {h}),\n'
+            
+            content += '}\n\n'
+            
+            if self.detected_elements.get('pot_region'):
+                x, y, w, h = self.detected_elements['pot_region']
+                content += f'POT_REGION = ({x}, {y}, {w}, {h})\n\n'
+            
+            content += '''HOLE_CARD_REGIONS = [(350, 500, 50, 70), (420, 500, 50, 70)]
+STACK_REGIONS = [(200, 150, 80, 30), (600, 150, 80, 30), (700, 350, 80, 30), 
+                 (600, 550, 80, 30), (200, 550, 80, 30), (100, 350, 80, 30)]
+POLL_INTERVAL = 0.5
+ACTION_DELAY = 2.0
+'''
+            
+            with open('config.py', 'w') as f:
+                f.write(content)
+            
+            messagebox.showinfo("Success", "Configuration saved!")
+            self.log("✅ Calibration saved to config.py", "SUCCESS")
+        
+        except Exception as e:
+            messagebox.showerror("Save Failed", str(e))
+    
+    # Debug actions
+    def capture_debug(self):
+        try:
+            reader = PokerScreenReader()
+            img = reader.capture_screenshot()
+            
+            # Decode base64 to image
+            import base64
+            import io
+            img_data = base64.b64decode(img)
+            pil_img = Image.open(io.BytesIO(img_data))
+            
+            self.last_screenshot = pil_img
+            self.show_preview(pil_img, self.debug_canvas)
+            
+            # Run OCR
+            state = reader.parse_game_state()
+            self.ocr_text.delete("1.0", "end")
+            self.ocr_text.insert("1.0", f"Pot: ${state['pot']}\n")
+            self.ocr_text.insert("end", f"Stacks: {state['stacks']}\n")
+            self.ocr_text.insert("end", f"Actions: {state['actions']}\n")
+            self.ocr_text.insert("end", f"Cards: {state['hero_cards']}\n")
+            self.ocr_text.insert("end", f"Board: {state['community_cards']}\n")
+            
+            self.log("📸 Debug capture complete")
+        except Exception as e:
+            self.log(f"❌ Capture error: {e}", "ERROR")
+    
+    def show_preview(self, img, canvas):
+        """Display image on canvas"""
+        canvas_w = canvas.winfo_width()
+        canvas_h = canvas.winfo_height()
+        
+        if canvas_w < 100:
+            canvas_w, canvas_h = 800, 300
+        
+        img_copy = img.copy()
+        img_copy.thumbnail((canvas_w, canvas_h), Image.Resampling.LANCZOS)
+        
+        photo = ImageTk.PhotoImage(img_copy)
+        canvas.delete('all')
+        canvas.create_image(canvas_w//2, canvas_h//2, image=photo, anchor=tk.CENTER)
+        canvas.image = photo
 
 def main():
+    logging.basicConfig(level=logging.INFO)
     root = tk.Tk()
     app = OnyxPokerGUI(root)
     root.mainloop()
