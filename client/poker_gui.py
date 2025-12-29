@@ -58,6 +58,23 @@ class OnyxPokerGUI:
         tab = ttk.Frame(self.notebook)
         self.notebook.add(tab, text="🎮 Control Panel")
         
+        # Setup Guide
+        guide = ttk.LabelFrame(tab, text="📋 Setup Guide", padding=10)
+        guide.pack(fill="x", padx=10, pady=5)
+        
+        guide_text = tk.Text(guide, height=6, wrap="word", font=("Arial", 9), bg="#f0f0f0")
+        guide_text.pack(fill="x")
+        guide_text.insert("1.0", 
+            "🎯 First Time Setup:\n"
+            "1. Run 'python setup_cards.py' in client folder (one-time)\n"
+            "2. Go to Calibration tab → Scan Windows → Select poker window\n"
+            "3. Click 'Auto-Detect Elements' → Save Config\n"
+            "4. Go to Debug tab → Capture Now → Validate State (wait 3 min)\n"
+            "5. If validation passes, come back here and Start Bot!\n\n"
+            "⚠️ Note: Kiro CLI takes ~15-180 seconds to respond during validation"
+        )
+        guide_text.config(state="disabled")
+        
         # Settings
         settings = ttk.LabelFrame(tab, text="Bot Settings", padding=10)
         settings.pack(fill="x", padx=10, pady=5)
@@ -152,6 +169,22 @@ class OnyxPokerGUI:
         """Calibration wizard tab"""
         tab = ttk.Frame(self.notebook)
         self.notebook.add(tab, text="🔧 Calibration")
+        
+        # Instructions
+        instructions = ttk.LabelFrame(tab, text="📖 Calibration Instructions", padding=10)
+        instructions.pack(fill="x", padx=10, pady=5)
+        
+        inst_text = tk.Text(instructions, height=4, wrap="word", font=("Arial", 9), bg="#fffacd")
+        inst_text.pack(fill="x")
+        inst_text.insert("1.0",
+            "1. Open PokerStars and sit at a table\n"
+            "2. Click 'Scan Windows' to find poker window\n"
+            "3. Select your poker window from the list\n"
+            "4. Click 'Auto-Detect Elements' to find buttons/pot (uses computer vision)\n"
+            "5. Review the preview and click 'Save Config' if it looks good\n"
+            "6. Go to Debug tab to validate with Kiro CLI"
+        )
+        inst_text.config(state="disabled")
         
         # Step 1: Window Selection
         step1 = ttk.LabelFrame(tab, text="Step 1: Find Poker Window", padding=10)
@@ -529,39 +562,82 @@ ACTION_DELAY = 2.0
     def validate_with_kiro(self):
         """Validate current table state with Kiro CLI"""
         if not self.last_state:
-            messagebox.showwarning("No State", "Capture a screenshot first")
+            messagebox.showwarning("No State", "Please capture a screenshot first using '📸 Capture Now' button")
             return
         
-        self.log("🤖 Validating state with Kiro CLI...")
-        try:
-            from kiro_validator import KiroValidator
-            validator = KiroValidator()
-            result = validator.validate_table_state(self.last_state)
-            
-            if result['understood']:
-                self.kiro_status.config(text=f"✓ Valid (conf: {result['confidence']:.2f})", foreground="green")
-                self.log(f"✅ Kiro validated: {result['interpretation'][:100]}", "SUCCESS")
-            else:
-                self.kiro_status.config(text="✗ Invalid", foreground="red")
-                self.log(f"⚠️ Kiro concerns: {result['concerns']}", "WARNING")
-            
-            # Show full response
-            messagebox.showinfo("Kiro Validation", 
-                f"Valid: {result['understood']}\n"
-                f"Confidence: {result['confidence']:.2f}\n"
-                f"Concerns: {', '.join(result['concerns'])}\n\n"
-                f"Interpretation:\n{result['interpretation']}")
-        except Exception as e:
-            self.log(f"❌ Validation error: {e}", "ERROR")
-            messagebox.showerror("Error", str(e))
+        # Create progress window
+        progress = tk.Toplevel(self.root)
+        progress.title("Kiro Validation")
+        progress.geometry("400x150")
+        progress.transient(self.root)
+        progress.grab_set()
+        
+        ttk.Label(progress, text="🤖 Validating with Kiro CLI...", font=("Arial", 12, "bold")).pack(pady=10)
+        ttk.Label(progress, text="This may take 15-180 seconds", font=("Arial", 10)).pack(pady=5)
+        ttk.Label(progress, text="Kiro is loading and analyzing the poker state", font=("Arial", 9)).pack(pady=5)
+        
+        progress_bar = ttk.Progressbar(progress, mode='indeterminate', length=300)
+        progress_bar.pack(pady=10)
+        progress_bar.start(10)
+        
+        status_label = ttk.Label(progress, text="Please wait...", font=("Arial", 9), foreground="blue")
+        status_label.pack(pady=5)
+        
+        self.log("🤖 Validating state with Kiro CLI (this may take up to 3 minutes)...")
+        self.kiro_status.config(text="⏳ Validating...", foreground="orange")
+        self.root.update()
+        
+        def run_validation():
+            try:
+                from kiro_validator import KiroValidator
+                validator = KiroValidator()
+                result = validator.validate_table_state(self.last_state)
+                
+                progress.after(0, lambda: progress_bar.stop())
+                progress.after(0, lambda: progress.destroy())
+                
+                if result['understood']:
+                    self.kiro_status.config(text=f"✓ Valid (conf: {result['confidence']:.2f})", foreground="green")
+                    self.log(f"✅ Kiro validated: {result['interpretation'][:100]}", "SUCCESS")
+                else:
+                    self.kiro_status.config(text="✗ Invalid", foreground="red")
+                    self.log(f"⚠️ Kiro concerns: {result['concerns']}", "WARNING")
+                
+                # Show detailed response
+                msg = f"Valid: {result['understood']}\n"
+                msg += f"Confidence: {result['confidence']:.2f}\n"
+                msg += f"Concerns: {', '.join(result['concerns'])}\n\n"
+                msg += f"Interpretation:\n{result['interpretation']}"
+                
+                messagebox.showinfo("Kiro Validation", msg)
+            except Exception as e:
+                progress.after(0, lambda: progress_bar.stop())
+                progress.after(0, lambda: progress.destroy())
+                self.kiro_status.config(text="✗ Error", foreground="red")
+                self.log(f"❌ Validation error: {e}", "ERROR")
+                messagebox.showerror("Error", f"Validation failed:\n{str(e)}\n\nMake sure Kiro CLI is installed and accessible.")
+        
+        # Run in thread to keep UI responsive
+        import threading
+        thread = threading.Thread(target=run_validation, daemon=True)
+        thread.start()
     
     def validate_ui_with_kiro(self):
         """Validate UI detection with Kiro CLI"""
         if not self.detected_elements:
-            messagebox.showwarning("No Detection", "Run calibration first")
+            messagebox.showwarning("No Detection", 
+                "Please run calibration first:\n\n"
+                "1. Go to Calibration tab\n"
+                "2. Click 'Scan Windows'\n"
+                "3. Select poker window\n"
+                "4. Click 'Auto-Detect Elements'\n"
+                "5. Then come back here to validate")
             return
         
-        self.log("🤖 Validating UI with Kiro CLI...")
+        self.log("🤖 Validating UI with Kiro CLI (this may take up to 3 minutes)...")
+        self.kiro_status.config(text="⏳ Validating...", foreground="orange")
+        self.root.update()
+        
         try:
             from kiro_validator import KiroValidator
             validator = KiroValidator()
@@ -576,8 +652,9 @@ ACTION_DELAY = 2.0
             
             messagebox.showinfo("UI Validation", result['response'])
         except Exception as e:
+            self.kiro_status.config(text="✗ Error", foreground="red")
             self.log(f"❌ Validation error: {e}", "ERROR")
-            messagebox.showerror("Error", str(e))
+            messagebox.showerror("Error", f"Validation failed:\n{str(e)}\n\nMake sure Kiro CLI is installed and accessible.")
     
     def show_preview(self, img, canvas):
         """Display image on canvas"""

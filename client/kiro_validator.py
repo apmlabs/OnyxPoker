@@ -28,7 +28,7 @@ class KiroValidator:
                 ['kiro-cli', 'chat', prompt],
                 capture_output=True,
                 text=True,
-                timeout=5
+                timeout=180  # 3 minutes for initial setup
             )
             
             response = result.stdout.strip()
@@ -37,8 +37,8 @@ class KiroValidator:
         except subprocess.TimeoutExpired:
             return {
                 'understood': False,
-                'interpretation': 'Timeout',
-                'concerns': ['Kiro CLI timeout'],
+                'interpretation': 'Timeout (Kiro CLI took > 180 seconds)',
+                'concerns': ['Kiro CLI timeout - may need to increase timeout or check Kiro installation'],
                 'confidence': 0.0
             }
         except Exception as e:
@@ -122,7 +122,7 @@ Respond: VALID yes/no, CONCERNS: list"""
                 ['kiro-cli', 'chat', prompt],
                 capture_output=True,
                 text=True,
-                timeout=5
+                timeout=180  # 3 minutes for initial setup
             )
             
             response = result.stdout.strip().lower()
