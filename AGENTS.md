@@ -66,6 +66,76 @@ This project uses multiple markdown files for different purposes. **As an agent,
 
 ## RECENT LEARNINGS (2025-12-29)
 
+### Hotkeys + Mini Overlay + System Tray (15:30 UTC)
+**Challenge**: Single monitor - can't see both PokerStars and GUI at once
+
+**Solution**: Built complete single-monitor workflow system:
+- Mini overlay panel (always-on-top, 320×240)
+- Global hotkeys (F9-F12, work in background)
+- System tray icon (background operation)
+
+**Key Insights**:
+- Single monitor users need overlay, not dual windows
+- Global hotkeys essential for fullscreen gameplay
+- Mini overlay must show ONLY essential info (table, cards, decision)
+- Full GUI accessible via F12 for detailed review
+- System tray enables background operation
+
+**What Worked**:
+✅ Mini overlay with draggable positioning
+✅ Global hotkeys using `keyboard` library
+✅ System tray with `pystray` library
+✅ Real-time updates to overlay from main GUI
+✅ F9 for instant analysis without window switching
+✅ F12 to toggle main window visibility
+
+**What Didn't Work**:
+❌ Initial idea of dual window mode (doesn't work on single monitor)
+
+**Implementation Details**:
+- `mini_overlay.py`: Always-on-top tkinter window, semi-transparent
+- `hotkey_manager.py`: Global hotkey registration with keyboard library
+- `system_tray.py`: System tray icon with pystray library
+- Integration: Main GUI updates overlay via `update_game_state()`
+- Hotkeys work even when PokerStars is focused (global registration)
+
+### Validation Result Display (15:11 UTC)
+**Challenge**: Validation results not logged, popup text not copyable
+
+**Solution**: Enhanced validation display:
+- Log full Kiro analysis to Activity Log (line-by-line)
+- Custom popup with ScrolledText (selectable text)
+- Copy to Clipboard button in popup
+- Better formatting with headers and status colors
+
+**Key Insights**:
+- Users need to copy validation results for debugging
+- messagebox doesn't allow text selection
+- Custom tkinter popup with ScrolledText is better
+- Activity Log should capture everything for "Copy Logs" button
+- ANSI color codes from Kiro CLI need stripping (regex: `\x1b\[[0-9;]*m`)
+
+**What Worked**:
+✅ Custom popup with ScrolledText widget
+✅ Copy to Clipboard button
+✅ Full logging to Activity Log
+✅ ANSI color code stripping on server
+
+### UI Improvements (15:16 UTC)
+**Challenge**: Small popups in corner, not maximized main window
+
+**Solution**: Better window management:
+- Main window starts maximized (`root.state('zoomed')`)
+- Validation popup centered and large (60% width, 70% height)
+- Progress window centered and larger (500×200)
+- All popups positioned relative to screen center
+
+**Key Insights**:
+- Windows users expect maximized windows
+- Popups should be centered, not in corner
+- Calculate position: `(screen_width - popup_width) // 2`
+- Larger popups are more readable
+
 ### Production Server Setup (14:47 UTC)
 **Challenge**: Server was running with nohup (not production-ready), no monitoring, no auto-restart
 
