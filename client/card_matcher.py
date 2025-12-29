@@ -42,7 +42,7 @@ class CardMatcher:
                 if template is not None:
                     self.templates[card_name] = cv2.cvtColor(template, cv2.COLOR_BGR2GRAY)
         
-        print(f"✅ Loaded {len(self.real_templates)} real + {len(self.templates)} synthetic templates")
+        print(f"Loaded {len(self.real_templates)} real + {len(self.templates)} synthetic templates")
     
     def match_card(self, card_image: np.ndarray, threshold=0.7) -> Tuple[Optional[str], float]:
         """
@@ -112,7 +112,7 @@ class CardMatcher:
         # Add to real templates dictionary
         self.real_templates[card_name] = gray_card
         
-        print(f"✅ Saved real card template: {card_name}")
+        print(f"Saved real card template: {card_name}")
         return True
 
 if __name__ == '__main__':

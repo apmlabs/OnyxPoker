@@ -31,7 +31,7 @@ class CardTemplateGenerator:
             for suit_code, suit_symbol in self.suits.items():
                 self._generate_card_template(rank, suit_code, suit_symbol, card_width, card_height)
         
-        print(f"✅ Generated 52 card templates in {self.output_dir}/")
+        print(f"Generated 52 card templates in {self.output_dir}/")
     
     def _generate_card_template(self, rank, suit_code, suit_symbol, width, height):
         """Generate a single card template"""
