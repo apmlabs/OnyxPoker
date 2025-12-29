@@ -66,6 +66,41 @@ This project uses multiple markdown files for different purposes. **As an agent,
 
 ## RECENT LEARNINGS (2025-12-29)
 
+### Hotkey-Based Calibration (16:18 UTC)
+**Challenge**: Windows cannot capture background windows - client covering poker table breaks calibration
+
+**Solution**: Hotkey-driven calibration workflow:
+- User hides client with F12
+- User presses Ctrl+T to capture in background
+- Ctrl+T is context-aware (auto-detect or test OCR)
+- Overlay shows step-by-step instructions
+
+**Key Insights**:
+- Windows CANNOT capture windows in background (PyAutoGUI limitation)
+- Must hide client before capturing poker table
+- Overlay must guide user through entire calibration process
+- Context-aware hotkeys reduce confusion (Ctrl+T does right thing)
+- Step-by-step guidance essential for single monitor setup
+
+**What Worked**:
+✅ F12 to hide client before capture
+✅ Ctrl+T captures in background (no focus issues)
+✅ Context-aware Ctrl+T (detects calibration state)
+✅ Detailed overlay guidance (shows each step)
+✅ Overlay states: calibrate, scan_done, test, ready, playing
+
+**What Didn't Work**:
+❌ Side-by-side windows (user can't do this)
+❌ Capturing with client window covering table (captures client!)
+❌ Assuming user knows what to do (needs explicit guidance)
+
+**Implementation Details**:
+- `mini_overlay.py`: Added "scan_done" state with F12+Ctrl+T instructions
+- `hotkey_manager.py`: Made Ctrl+T context-aware (checks calibration state)
+- `poker_gui.py`: Updates overlay state after window selection and save
+- Calibration flow: Ctrl+C → Scan → Select → F12 → Ctrl+T → Save
+- Overlay shows: "Step 1: Scan", "Step 2: Select", "Step 3: F12, then Ctrl+T"
+
 ### Complete Hotkey Workflow (15:54 UTC)
 **Challenge**: User can't position windows side-by-side, needs pure hotkey workflow
 
