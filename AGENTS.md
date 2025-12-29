@@ -66,6 +66,33 @@ This project uses multiple markdown files for different purposes. **As an agent,
 
 ## RECENT LEARNINGS (2025-12-29)
 
+### Window Geometry Persistence (15:44 UTC)
+**Challenge**: Window size changed every time user showed/hid the window
+
+**Solution**: Implemented window geometry persistence:
+- Save window size/position to file when user resizes
+- Restore saved geometry on next launch
+- Default to maximized if no saved geometry
+- Debounce saves (500ms after resize stops)
+
+**Key Insights**:
+- Users expect window size to persist across show/hide
+- Need to debounce saves to avoid excessive file writes
+- Only save when window is in 'normal' state (not maximized/minimized)
+- File should be gitignored (user-specific preference)
+
+**What Worked**:
+✅ Bind to `<Configure>` event for resize detection
+✅ Debounce with `after()` and timer cancellation
+✅ Save to simple text file (window_geometry.txt)
+✅ Load on init, fall back to maximized
+
+**Implementation Details**:
+- `load_window_geometry()`: Load saved geometry or maximize
+- `save_window_geometry()`: Save current geometry if normal state
+- `on_window_configure()`: Debounced save on resize
+- Added window_geometry.txt to .gitignore
+
 ### Mini Overlay UX Improvements (15:45 UTC)
 **Challenge**: Mini overlay had window decorations, wasn't transparent enough, couldn't reopen after closing
 
