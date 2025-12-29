@@ -34,8 +34,8 @@ class HotkeyManager:
             # Ctrl+C - Open calibration
             keyboard.add_hotkey('ctrl+c', self.on_ctrl_c_calibrate)
             
-            # Ctrl+T - Test OCR
-            keyboard.add_hotkey('ctrl+t', self.on_ctrl_t_test_ocr)
+            # Ctrl+Shift+T - Test OCR (changed from Ctrl+T to avoid Chrome conflict)
+            keyboard.add_hotkey('ctrl+shift+t', self.on_ctrl_shift_t_test_ocr)
             
             self.registered = True
             self.parent.log("✅ Hotkeys registered:")
@@ -45,7 +45,7 @@ class HotkeyManager:
             self.parent.log("   F12 = Toggle Main Window")
             self.parent.log("   Ctrl+H = Toggle Mini Overlay")
             self.parent.log("   Ctrl+C = Open Calibration")
-            self.parent.log("   Ctrl+T = Test OCR")
+            self.parent.log("   Ctrl+Shift+T = Test OCR")
             
         except Exception as e:
             self.parent.log(f"⚠️ Could not register hotkeys: {e}", "WARNING")
@@ -63,7 +63,7 @@ class HotkeyManager:
             keyboard.remove_hotkey('f12')
             keyboard.remove_hotkey('ctrl+h')
             keyboard.remove_hotkey('ctrl+c')
-            keyboard.remove_hotkey('ctrl+t')
+            keyboard.remove_hotkey('ctrl+shift+t')
             self.registered = False
             self.parent.log("Hotkeys unregistered")
         except:
@@ -143,10 +143,10 @@ class HotkeyManager:
         except Exception as e:
             self.parent.log(f"❌ Ctrl+C error: {e}", "ERROR")
     
-    def on_ctrl_t_test_ocr(self):
-        """Ctrl+T - Test OCR or Auto-Detect (context-aware)"""
+    def on_ctrl_shift_t_test_ocr(self):
+        """Ctrl+Shift+T - Test OCR or Auto-Detect (context-aware)"""
         try:
-            self.parent.log("🔥 Ctrl+T pressed...")
+            self.parent.log("🔥 Ctrl+Shift+T pressed...")
             
             # Check if we're in calibration mode (window selected but not calibrated)
             if hasattr(self.parent, 'selected_window') and self.parent.selected_window:
@@ -155,21 +155,24 @@ class HotkeyManager:
                     import config
                     if not hasattr(config, 'TABLE_REGION') or config.TABLE_REGION == (0, 0, 0, 0):
                         # Not calibrated yet - do auto-detect
-                        self.parent.log("Running auto-detection...")
+                        self.parent.log("📸 Running auto-detection on selected window...")
+                        self.parent.log("💡 This will detect buttons, pot, and card regions")
                         self.parent.root.after(0, self.parent.auto_detect)
                         return
                 except:
                     # No config yet - do auto-detect
-                    self.parent.log("Running auto-detection...")
+                    self.parent.log("📸 Running auto-detection on selected window...")
+                    self.parent.log("💡 This will detect buttons, pot, and card regions")
                     self.parent.root.after(0, self.parent.auto_detect)
                     return
             
             # Already calibrated - do OCR test
-            self.parent.log("Testing OCR...")
+            self.parent.log("🧪 Testing OCR on current table...")
+            self.parent.log("💡 This will read pot, stacks, and cards")
             self.parent.root.after(0, self.parent.capture_debug)
             # Show main window and switch to debug tab
             self.parent.root.after(100, self.parent.root.deiconify)
             self.parent.root.after(100, self.parent.root.lift)
             self.parent.root.after(200, lambda: self.parent.notebook.select(2))
         except Exception as e:
-            self.parent.log(f"❌ Ctrl+T error: {e}", "ERROR")
+            self.parent.log(f"❌ Ctrl+Shift+T error: {e}", "ERROR")

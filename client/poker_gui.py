@@ -73,20 +73,32 @@ class OnyxPokerGUI:
         # Check setup status and update overlay
         self.check_setup_status()
         
-        # Auto-hide main window after 2 seconds
+        # Auto-hide main window after 2 seconds (only if already calibrated)
         self.root.after(2000, self.auto_hide_window)
         
         # Start log updater
         self.update_log()
     
     def auto_hide_window(self):
-        """Auto-hide main window after launch"""
+        """Auto-hide main window after launch (only if calibrated)"""
         try:
-            self.root.withdraw()
-            self.log("Main window auto-hidden. Press F12 to show, or use hotkeys:")
-            self.log("  Ctrl+C = Calibrate")
-            self.log("  Ctrl+T = Test OCR")
-            self.log("  F9 = Analyze hand")
+            # Only auto-hide if already calibrated
+            import os
+            if os.path.exists('config.py'):
+                import config
+                if hasattr(config, 'TABLE_REGION') and config.TABLE_REGION != (0, 0, 0, 0):
+                    # Already calibrated - safe to hide
+                    self.root.withdraw()
+                    self.log("Main window auto-hidden. Press F12 to show.")
+                    self.log("💡 Hotkeys: F9=Analyze, Ctrl+C=Calibrate, Ctrl+Shift+T=Test OCR")
+                else:
+                    # Not calibrated - keep window visible
+                    self.log("⚠️ First time setup - window staying visible")
+                    self.log("💡 Follow the Calibration tab to get started")
+            else:
+                # No config - keep window visible
+                self.log("⚠️ First time setup - window staying visible")
+                self.log("💡 Follow the Calibration tab to get started")
         except:
             pass
     
@@ -631,7 +643,12 @@ class OnyxPokerGUI:
             # Update overlay to show next step
             if hasattr(self, 'mini_overlay') and self.mini_overlay:
                 self.mini_overlay.set_next_step("scan_done")
-            self.log("✓ Window selected. Press F12 to hide, then Ctrl+T to capture")
+            self.log(f"✓ Window selected: {window_title}")
+            self.log("💡 Next: Press Ctrl+Shift+T to capture and auto-detect")
+            self.log("   (No need to hide window - capture works in background)")
+            
+            # Update overlay
+            self.mini_overlay.set_next_step("scan_done")
         else:
             self.calib_status.config(text="❌ Failed to activate", foreground="red")
     
@@ -717,7 +734,12 @@ ACTION_DELAY = 2.0
             if hasattr(self, 'mini_overlay') and self.mini_overlay:
                 self.mini_overlay.set_next_step("test")
             
-            self.log("Next: Press Ctrl+T to test OCR, or F9 to analyze a hand")
+            self.log("✓ Configuration saved to config.py")
+            self.log("💡 Next: Press Ctrl+Shift+T to test OCR, or F9 to analyze a hand")
+            self.log("   Calibration complete! Bot is ready to use.")
+            
+            # Update overlay
+            self.mini_overlay.set_next_step("test")
         
         except Exception as e:
             messagebox.showerror("Save Failed", str(e))
