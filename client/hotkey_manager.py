@@ -132,82 +132,39 @@ class HotkeyManager:
             self.parent.log(f"❌ F12 error: {e}", "ERROR")
     
     def on_f7_capture_window(self):
-        """F7 - Capture active window for calibration"""
+        """F7 - Open calibration tab"""
         try:
-            import pygetwindow as gw
-            
-            self.parent.log("🔥 F7 pressed - Capturing active window...")
-            self.parent.log("💡 Getting currently focused window...")
-            
-            # Get the active window
-            active_window = gw.getActiveWindow()
-            
-            if not active_window:
-                self.parent.log("❌ No active window detected (active_window is None)", "ERROR")
-                return
-                
-            if not active_window.title:
-                self.parent.log("❌ Active window has no title", "ERROR")
-                return
-            
-            # Store the window
-            self.parent.selected_window = {
-                'title': active_window.title,
-                'left': active_window.left,
-                'top': active_window.top,
-                'width': active_window.width,
-                'height': active_window.height,
-                'window': active_window
-            }
-            
-            self.parent.log(f"✓ Window captured: {active_window.title}")
-            self.parent.log(f"  Size: {active_window.width}x{active_window.height}")
-            self.parent.log(f"  Position: ({active_window.left}, {active_window.top})")
-            self.parent.log("💡 Next: Press F8 to capture screenshot and detect elements")
-            
-            # Update overlay
-            if hasattr(self.parent, 'mini_overlay') and self.parent.mini_overlay:
-                self.parent.mini_overlay.set_next_step("scan_done")
-                
+            self.parent.log("🔥 F7 pressed - Opening calibration...")
+            self.parent.root.after(0, self.parent.root.deiconify)
+            self.parent.root.after(0, self.parent.root.lift)
+            self.parent.root.after(100, lambda: self.parent.notebook.select(1))
         except Exception as e:
             self.parent.log(f"❌ F7 error: {e}", "ERROR")
-            import traceback
-            self.parent.log(f"   {traceback.format_exc()}", "ERROR")
     
     def on_f8_test_ocr(self):
-        """F8 - Test OCR or Auto-Detect (context-aware)"""
+        """F8 - Capture & detect (or test OCR if already calibrated)"""
         try:
             self.parent.log("🔥 F8 pressed...")
             
-            # Check if we have a selected window
-            if not hasattr(self.parent, 'selected_window') or not self.parent.selected_window:
-                self.parent.log("❌ No window selected - click 'Capture Active Window' first", "ERROR")
-                return
-            
-            # Check if already calibrated (not placeholder values)
+            # Check if already calibrated
             try:
                 import config
-                if (not hasattr(config, 'TABLE_REGION') or 
-                    config.TABLE_REGION == (0, 0, 0, 0) or
-                    config.TABLE_REGION == (100, 100, 800, 600)):  # Placeholder
-                    # Not calibrated yet - do auto-detect
-                    self.parent.log("📸 Capturing poker table for calibration...")
-                    self.parent.log("💡 Make sure poker table is visible!")
-                    self.parent.root.after(0, self.parent.auto_detect)
+                if (hasattr(config, 'TABLE_REGION') and 
+                    config.TABLE_REGION != (0, 0, 0, 0) and
+                    config.TABLE_REGION != (100, 100, 800, 600)):
+                    # Already calibrated - test OCR
+                    self.parent.log("🧪 Testing OCR...")
+                    self.parent.root.after(0, self.parent.capture_debug)
+                    self.parent.root.after(100, self.parent.root.deiconify)
+                    self.parent.root.after(100, self.parent.root.lift)
+                    self.parent.root.after(200, lambda: self.parent.notebook.select(2))
                     return
             except:
-                # No config yet - do auto-detect
-                self.parent.log("📸 Capturing poker table for calibration...")
-                self.parent.log("💡 Make sure poker table is visible!")
-                self.parent.root.after(0, self.parent.auto_detect)
-                return
+                pass
             
-            # Already calibrated - do OCR test
-            self.parent.log("🧪 Testing OCR on current table...")
-            self.parent.root.after(0, self.parent.capture_debug)
-            # Show main window and switch to debug tab
-            self.parent.root.after(100, self.parent.root.deiconify)
-            self.parent.root.after(100, self.parent.root.lift)
-            self.parent.root.after(200, lambda: self.parent.notebook.select(2))
+            # Not calibrated - do capture & detect
+            self.parent.log("📸 Capturing active window and detecting elements...")
+            self.parent.root.after(0, self.parent.auto_detect)
+            
         except Exception as e:
             self.parent.log(f"❌ F8 error: {e}", "ERROR")

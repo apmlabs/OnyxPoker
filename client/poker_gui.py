@@ -245,11 +245,10 @@ class OnyxPokerGUI:
         inst_text.pack(fill="x")
         inst_text.insert("1.0",
             "1. Open PokerStars and sit at a table\n"
-            "2. Click on poker window to focus it\n"
-            "3. Press F7 to capture window info\n"
-            "4. Press F8 to take screenshot and auto-detect elements\n"
-            "5. Review preview below (red=buttons, green=pot)\n"
-            "6. Click 'Save Configuration' if detection looks good"
+            "2. Click on poker window to make it active\n"
+            "3. Press F8 to capture and detect elements\n"
+            "4. Review preview below (red=buttons, green=pot)\n"
+            "5. Click 'Save Configuration' if detection looks good"
         )
         inst_text.config(state="disabled")
         
@@ -257,7 +256,7 @@ class OnyxPokerGUI:
         status_frame = ttk.LabelFrame(tab, text="Calibration Status", padding=10)
         status_frame.pack(fill="x", padx=10, pady=5)
         
-        self.calib_status = ttk.Label(status_frame, text="Press F7 to capture poker window", 
+        self.calib_status = ttk.Label(status_frame, text="Press F8 to capture active window", 
                                      foreground="gray", font=("Arial", 10))
         self.calib_status.pack(pady=5)
         
@@ -698,19 +697,35 @@ class OnyxPokerGUI:
             self.calib_status.config(text="❌ Failed to activate", foreground="red")
     
     def auto_detect(self):
-        """Auto-detect poker elements from selected window"""
-        if not self.selected_window:
-            self.log("❌ No window selected - press F7 first", "ERROR")
-            self.calib_status.config(text="❌ No window selected", foreground="red")
-            return
-        
-        self.calib_status.config(text="📸 Capturing screenshot...", foreground="blue")
-        self.log("📸 Capturing poker table...")
+        """Capture active window and auto-detect poker elements"""
+        self.calib_status.config(text="📸 Capturing active window...", foreground="blue")
+        self.log("📸 Capturing currently active window...")
         self.root.update()
         
         try:
-            # Capture the poker window
-            img = self.detector.capture_window(self.selected_window)
+            import pygetwindow as gw
+            
+            # Get active window
+            active_window = gw.getActiveWindow()
+            if not active_window or not active_window.title:
+                self.log("❌ No active window detected", "ERROR")
+                self.calib_status.config(text="❌ No active window", foreground="red")
+                return
+            
+            self.log(f"✓ Active window: {active_window.title}")
+            
+            # Store window info
+            window_info = {
+                'title': active_window.title,
+                'left': active_window.left,
+                'top': active_window.top,
+                'width': active_window.width,
+                'height': active_window.height,
+                'window': active_window
+            }
+            
+            # Capture screenshot
+            img = self.detector.capture_window(window_info)
             if img is None:
                 self.log("❌ Failed to capture screenshot", "ERROR")
                 self.calib_status.config(text="❌ Capture failed", foreground="red")
@@ -726,6 +741,14 @@ class OnyxPokerGUI:
             # Detect elements
             self.log("🔎 Detecting poker elements...")
             self.detected_elements = self.detector.detect_poker_elements(img)
+            
+            # Store window info for saving
+            self.detected_elements['window_region'] = (
+                window_info['left'],
+                window_info['top'],
+                window_info['width'],
+                window_info['height']
+            )
             
             # Validate
             valid, msg = self.detector.validate_elements(self.detected_elements)
@@ -747,11 +770,7 @@ class OnyxPokerGUI:
                 # Show main window and switch to calibration tab
                 self.root.deiconify()
                 self.root.lift()
-                self.notebook.select(1)  # Switch to Calibration tab
-                
-                # Update overlay ONLY after successful capture
-                if hasattr(self, 'mini_overlay') and self.mini_overlay:
-                    self.mini_overlay.set_next_step("test")
+                self.notebook.select(1)
                 
                 self.log("✓ Auto-detection complete. Review preview and click 'Save Configuration'")
             else:
@@ -764,7 +783,11 @@ class OnyxPokerGUI:
     
     def save_calibration(self):
         if not self.detected_elements:
-            messagebox.showwarning("No Detection", "Run auto-detect first")
+            messagebox.showwarning("No Detection", "Press F8 to capture first")
+            return
+        
+        if 'window_region' not in self.detected_elements:
+            messagebox.showerror("Error", "No window region detected. Press F8 first.")
             return
         
         valid, msg = self.detector.validate_elements(self.detected_elements)
@@ -773,10 +796,10 @@ class OnyxPokerGUI:
             return
         
         try:
+            x, y, w, h = self.detected_elements['window_region']
             content = f'''"""Auto-generated configuration"""
 
-TABLE_REGION = ({self.selected_window['left']}, {self.selected_window['top']}, 
-                {self.selected_window['width']}, {self.selected_window['height']})
+TABLE_REGION = ({x}, {y}, {w}, {h})
 
 BUTTON_REGIONS = {{
 '''
@@ -802,12 +825,6 @@ ACTION_DELAY = 2.0
             
             messagebox.showinfo("Success", "Configuration saved!")
             self.log("✅ Calibration saved to config.py", "SUCCESS")
-            
-            # Update overlay to test state
-            if hasattr(self, 'mini_overlay') and self.mini_overlay:
-                self.mini_overlay.set_next_step("test")
-            
-            self.log("✓ Configuration saved to config.py")
             self.log("💡 Next: Press F8 to test OCR, or F9 to analyze a hand")
             self.log("   Calibration complete! Bot is ready to use.")
             
