@@ -172,13 +172,27 @@ ONYXPOKER_SERVER_URL=http://YOUR_LINUX_IP:5000
 ONYXPOKER_API_KEY=test_key_12345
 ```
 
-### **Step 4: Test Connection**
+### **Step 4: Launch GUI**
 
 ```cmd
-python -c "from automation_client import OnyxPokerClient; client = OnyxPokerClient(); print('Connected!' if client.test_connection() else 'Failed')"
+python poker_gui.py
 ```
 
-**Expected:** `Connected!`
+**Expected:** GUI window opens with:
+- Settings panel
+- Control buttons
+- Status display
+- Game state panel
+- Activity log
+
+### **Step 5: Test Connection**
+
+In GUI:
+1. Click "🔧 Test Connection" button
+2. **Expected:** Success message popup
+3. **Check log:** Should show "✅ Server connection successful!"
+
+**If fails:** Check server is running and .env has correct URL
 
 ---
 
