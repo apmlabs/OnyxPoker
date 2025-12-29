@@ -16,6 +16,9 @@ class HotkeyManager:
             return
         
         try:
+            # F6 - Toggle mini overlay
+            keyboard.add_hotkey('f6', self.on_f6_toggle_overlay)
+            
             # F7 - Open calibration
             keyboard.add_hotkey('f7', self.on_f7_calibrate)
             
@@ -36,6 +39,7 @@ class HotkeyManager:
             
             self.registered = True
             self.parent.log("✅ Hotkeys registered:")
+            self.parent.log("   F6 = Toggle Mini Overlay")
             self.parent.log("   F7 = Open Calibration")
             self.parent.log("   F8 = Capture & Detect (or Test OCR)")
             self.parent.log("   F9 = Capture & Analyze")
@@ -53,6 +57,7 @@ class HotkeyManager:
             return
         
         try:
+            keyboard.remove_hotkey('f6')
             keyboard.remove_hotkey('f7')
             keyboard.remove_hotkey('f8')
             keyboard.remove_hotkey('f9')
@@ -63,6 +68,15 @@ class HotkeyManager:
             self.parent.log("Hotkeys unregistered")
         except:
             pass
+    
+    def on_f6_toggle_overlay(self):
+        """F6 - Toggle mini overlay"""
+        try:
+            if hasattr(self.parent, 'mini_overlay') and self.parent.mini_overlay:
+                self.parent.log("🔥 F6 pressed - Toggling mini overlay...")
+                self.parent.root.after(0, self.parent.mini_overlay.toggle_visibility)
+        except Exception as e:
+            self.parent.log(f"❌ F6 error: {e}", "ERROR")
     
     def on_f9_capture(self):
         """F9 - Capture screenshot and analyze"""

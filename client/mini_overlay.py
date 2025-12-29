@@ -82,7 +82,7 @@ class MiniOverlay:
         hints_frame = tk.Frame(main_frame, bg='#2b2b2b')
         hints_frame.pack(fill='x')
         
-        self.hints1 = tk.Label(hints_frame, text="F7:Calibrate  F8:Capture  F9:Analyze", 
+        self.hints1 = tk.Label(hints_frame, text="F6:Toggle  F7:Calibrate  F8:Capture  F9:Analyze", 
                         font=('Arial', 7), 
                         bg='#2b2b2b', fg='#888888')
         self.hints1.pack()
