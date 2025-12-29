@@ -26,9 +26,15 @@ class OnyxPokerGUI:
         self.root = root
         self.root.title("OnyxPoker - AI Poker Bot")
         
-        # Maximize window
-        self.root.state('zoomed')  # Windows
-        # self.root.attributes('-zoomed', True)  # Linux (if needed)
+        # Window geometry persistence
+        self.geometry_file = "window_geometry.txt"
+        self.saved_geometry = None
+        
+        # Load saved geometry or maximize
+        self.load_window_geometry()
+        
+        # Track geometry changes
+        self.root.bind('<Configure>', self.on_window_configure)
         
         # Bot state
         self.bot = None
@@ -1006,6 +1012,40 @@ ACTION_DELAY = 2.0
         canvas.delete('all')
         canvas.create_image(canvas_w//2, canvas_h//2, image=photo, anchor=tk.CENTER)
         canvas.image = photo
+    
+    def load_window_geometry(self):
+        """Load saved window geometry or maximize"""
+        try:
+            with open(self.geometry_file, 'r') as f:
+                self.saved_geometry = f.read().strip()
+                if self.saved_geometry:
+                    self.root.geometry(self.saved_geometry)
+                    return
+        except:
+            pass
+        
+        # Default: maximize
+        self.root.state('zoomed')
+    
+    def save_window_geometry(self):
+        """Save current window geometry"""
+        try:
+            # Only save if not maximized/minimized
+            if self.root.state() == 'normal':
+                geometry = self.root.geometry()
+                with open(self.geometry_file, 'w') as f:
+                    f.write(geometry)
+                self.saved_geometry = geometry
+        except:
+            pass
+    
+    def on_window_configure(self, event):
+        """Handle window resize/move"""
+        if event.widget == self.root:
+            # Save geometry after user stops resizing (debounce)
+            if hasattr(self, '_geometry_timer'):
+                self.root.after_cancel(self._geometry_timer)
+            self._geometry_timer = self.root.after(500, self.save_window_geometry)
 
 def main():
     logging.basicConfig(level=logging.INFO)
