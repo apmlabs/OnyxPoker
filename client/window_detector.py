@@ -84,10 +84,11 @@ class WindowDetector:
         return pyautogui.screenshot(region=region)
     
     def detect_poker_elements(self, img: Image.Image) -> Dict:
-        """Detect poker table elements using OCR text detection"""
+        """Detect poker table elements using OCR with spatial reasoning"""
         
         # Convert to OpenCV format
         img_cv = cv2.cvtColor(np.array(img), cv2.COLOR_RGB2BGR)
+        height, width = img_cv.shape[:2]
         
         elements = {
             'pot_region': None,
@@ -100,41 +101,60 @@ class WindowDetector:
         # Run OCR to get all text with bounding boxes
         ocr_data = pytesseract.image_to_data(img_cv, output_type=pytesseract.Output.DICT)
         
-        # Look for button text
+        # Collect all detected numbers (potential pot/stacks)
+        numbers = []
+        
         for i, text in enumerate(ocr_data['text']):
             if not text.strip():
                 continue
                 
-            text_lower = text.lower().strip()
+            text_clean = text.strip()
+            text_lower = text_clean.lower()
             x, y, w, h = (ocr_data['left'][i], ocr_data['top'][i], 
                          ocr_data['width'][i], ocr_data['height'][i])
             
-            # Expand bounding box to cover full button (text is usually smaller)
-            button_padding = 20
-            x = max(0, x - button_padding)
-            y = max(0, y - button_padding)
-            w = w + button_padding * 2
-            h = h + button_padding * 2
+            # Calculate relative position (0-1)
+            rel_x = x / width
+            rel_y = y / height
             
-            # Detect buttons by text
-            if 'fold' in text_lower:
-                elements['button_regions']['fold'] = (x, y, w, h)
-                elements['confidence'] += 0.3
-            elif 'call' in text_lower or 'check' in text_lower:
-                elements['button_regions']['call'] = (x, y, w, h)
-                elements['confidence'] += 0.3
-            elif 'raise' in text_lower or 'bet' in text_lower:
-                elements['button_regions']['raise'] = (x, y, w, h)
-                elements['confidence'] += 0.3
+            # Detect buttons by text (should be in bottom 20%)
+            if rel_y > 0.8:  # Bottom 20%
+                button_padding = 20
+                btn_x = max(0, x - button_padding)
+                btn_y = max(0, y - button_padding)
+                btn_w = w + button_padding * 2
+                btn_h = h + button_padding * 2
+                
+                if 'fold' in text_lower:
+                    elements['button_regions']['fold'] = (btn_x, btn_y, btn_w, btn_h)
+                    elements['confidence'] += 0.3
+                elif 'call' in text_lower or 'check' in text_lower:
+                    elements['button_regions']['call'] = (btn_x, btn_y, btn_w, btn_h)
+                    elements['confidence'] += 0.3
+                elif 'raise' in text_lower or 'bet' in text_lower:
+                    elements['button_regions']['raise'] = (btn_x, btn_y, btn_w, btn_h)
+                    elements['confidence'] += 0.3
             
-            # Detect pot by looking for $ amounts
-            elif '$' in text or text.replace(',', '').replace('.', '').isdigit():
-                # This might be pot or stack - use heuristics
-                # Pot is usually center-top, larger font
-                if y < img_cv.shape[0] * 0.4:  # Top 40% of screen
-                    if not elements['pot_region']:
-                        elements['pot_region'] = (x, y, w, h)
-                        elements['confidence'] += 0.1
+            # Collect numbers (remove currency symbols and commas)
+            number_text = text_clean.replace('$', '').replace('€', '').replace(',', '').replace('.', '')
+            if number_text.isdigit():
+                value = int(number_text)
+                numbers.append({
+                    'value': value,
+                    'x': x, 'y': y, 'w': w, 'h': h,
+                    'rel_x': rel_x, 'rel_y': rel_y
+                })
+        
+        # Find pot: largest number in center area (not edges, not bottom)
+        center_numbers = [n for n in numbers 
+                         if 0.3 < n['rel_x'] < 0.7  # Center horizontally
+                         and 0.2 < n['rel_y'] < 0.6]  # Middle vertically
+        
+        if center_numbers:
+            # Pot is usually the largest number in center
+            pot = max(center_numbers, key=lambda n: n['value'])
+            elements['pot_region'] = (pot['x'], pot['y'], pot['w'], pot['h'])
+            elements['confidence'] += 0.1
         
         return elements
     
