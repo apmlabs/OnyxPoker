@@ -163,7 +163,11 @@ class OnyxPokerGUI:
         self.log_text = scrolledtext.ScrolledText(log_frame, height=8, wrap="word", font=("Courier", 9))
         self.log_text.pack(fill="both", expand=True)
         
-        ttk.Button(log_frame, text="Clear Log", command=self.clear_log).pack(anchor="e", pady=5)
+        log_buttons = ttk.Frame(log_frame)
+        log_buttons.pack(anchor="e", pady=5)
+        ttk.Button(log_buttons, text="📋 Copy Logs", command=self.copy_logs).pack(side="left", padx=5)
+        ttk.Button(log_buttons, text="💾 Save Logs", command=self.save_logs).pack(side="left", padx=5)
+        ttk.Button(log_buttons, text="Clear Log", command=self.clear_log).pack(side="left", padx=5)
         
     def create_calibration_tab(self):
         """Calibration wizard tab"""
@@ -278,12 +282,16 @@ class OnyxPokerGUI:
         self.ocr_text = scrolledtext.ScrolledText(ocr_frame, height=8, wrap="word", font=("Courier", 9))
         self.ocr_text.pack(fill="both", expand=True)
         
+        ttk.Button(ocr_frame, text="📋 Copy OCR", command=self.copy_ocr).pack(anchor="e", pady=2)
+        
         # Raw State
         state_frame = ttk.LabelFrame(tab, text="Raw Game State (JSON)", padding=10)
         state_frame.pack(fill="both", expand=True, padx=10, pady=5)
         
         self.state_text = scrolledtext.ScrolledText(state_frame, height=6, wrap="word", font=("Courier", 9))
         self.state_text.pack(fill="both", expand=True)
+        
+        ttk.Button(state_frame, text="📋 Copy State", command=self.copy_state).pack(anchor="e", pady=2)
         
     # Logging
     def log(self, message, level="INFO"):
@@ -302,6 +310,47 @@ class OnyxPokerGUI:
         
     def clear_log(self):
         self.log_text.delete("1.0", "end")
+        
+    def copy_logs(self):
+        """Copy all logs to clipboard"""
+        logs = self.log_text.get("1.0", "end-1c")
+        self.root.clipboard_clear()
+        self.root.clipboard_append(logs)
+        self.root.update()
+        messagebox.showinfo("Copied", "Logs copied to clipboard!")
+        
+    def save_logs(self):
+        """Save logs to file"""
+        from tkinter import filedialog
+        filename = filedialog.asksaveasfilename(
+            defaultextension=".txt",
+            filetypes=[("Text files", "*.txt"), ("All files", "*.*")],
+            initialfile=f"onyxpoker_log_{datetime.now().strftime('%Y%m%d_%H%M%S')}.txt"
+        )
+        if filename:
+            try:
+                logs = self.log_text.get("1.0", "end-1c")
+                with open(filename, 'w', encoding='utf-8') as f:
+                    f.write(logs)
+                messagebox.showinfo("Saved", f"Logs saved to:\n{filename}")
+            except Exception as e:
+                messagebox.showerror("Error", f"Failed to save logs:\n{str(e)}")
+    
+    def copy_ocr(self):
+        """Copy OCR analysis to clipboard"""
+        ocr = self.ocr_text.get("1.0", "end-1c")
+        self.root.clipboard_clear()
+        self.root.clipboard_append(ocr)
+        self.root.update()
+        messagebox.showinfo("Copied", "OCR analysis copied to clipboard!")
+    
+    def copy_state(self):
+        """Copy game state to clipboard"""
+        state = self.state_text.get("1.0", "end-1c")
+        self.root.clipboard_clear()
+        self.root.clipboard_append(state)
+        self.root.update()
+        messagebox.showinfo("Copied", "Game state copied to clipboard!")
         
     # Status updates
     def update_status(self, status, hands=None):
