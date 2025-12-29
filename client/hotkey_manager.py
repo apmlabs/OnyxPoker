@@ -19,8 +19,8 @@ class HotkeyManager:
             # F6 - Toggle mini overlay
             keyboard.add_hotkey('f6', self.on_f6_toggle_overlay)
             
-            # F7 - Open calibration
-            keyboard.add_hotkey('f7', self.on_f7_calibrate)
+            # F7 - Capture active window for calibration
+            keyboard.add_hotkey('f7', self.on_f7_capture_window)
             
             # F8 - Test OCR / Auto-detect (context-aware)
             keyboard.add_hotkey('f8', self.on_f8_test_ocr)
@@ -40,7 +40,7 @@ class HotkeyManager:
             self.registered = True
             self.parent.log("✅ Hotkeys registered:")
             self.parent.log("   F6 = Toggle Mini Overlay")
-            self.parent.log("   F7 = Open Calibration")
+            self.parent.log("   F7 = Capture Active Window (for calibration)")
             self.parent.log("   F8 = Capture & Detect (or Test OCR)")
             self.parent.log("   F9 = Capture & Analyze")
             self.parent.log("   F10 = Start/Stop Bot")
@@ -131,15 +131,36 @@ class HotkeyManager:
         except Exception as e:
             self.parent.log(f"❌ F12 error: {e}", "ERROR")
     
-    def on_f7_calibrate(self):
-        """F7 - Open calibration tab"""
+    def on_f7_capture_window(self):
+        """F7 - Capture active window for calibration"""
         try:
-            self.parent.log("🔥 F7 pressed - Opening calibration...")
-            # Show main window
-            self.parent.root.after(0, self.parent.root.deiconify)
-            self.parent.root.after(0, self.parent.root.lift)
-            # Switch to calibration tab
-            self.parent.root.after(100, lambda: self.parent.notebook.select(1))
+            self.parent.log("🔥 F7 pressed - Capturing active window...")
+            
+            # Get the active window
+            import pygetwindow as gw
+            active_window = gw.getActiveWindow()
+            
+            if not active_window or not active_window.title:
+                self.parent.log("❌ No active window detected", "ERROR")
+                return
+            
+            # Store the window
+            self.parent.selected_window = {
+                'title': active_window.title,
+                'left': active_window.left,
+                'top': active_window.top,
+                'width': active_window.width,
+                'height': active_window.height,
+                'window': active_window
+            }
+            
+            self.parent.log(f"✓ Captured: {active_window.title} ({active_window.width}x{active_window.height})")
+            self.parent.log("💡 Press F8 to capture screenshot and detect elements")
+            
+            # Update overlay
+            if hasattr(self.parent, 'mini_overlay') and self.parent.mini_overlay:
+                self.parent.mini_overlay.set_next_step("scan_done")
+                
         except Exception as e:
             self.parent.log(f"❌ F7 error: {e}", "ERROR")
     
