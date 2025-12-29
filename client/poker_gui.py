@@ -697,7 +697,7 @@ class OnyxPokerGUI:
             self.calib_status.config(text="❌ Failed to activate", foreground="red")
     
     def auto_detect(self):
-        """Capture active window and detect elements using Kiro CLI"""
+        """Capture active window and detect elements (manual review required)"""
         self.calib_status.config(text="📸 Capturing active window...", foreground="blue")
         self.log("📸 Capturing currently active window...")
         self.root.update()
@@ -733,89 +733,41 @@ class OnyxPokerGUI:
                 
             self.log("✓ Screenshot captured")
             
-            # Show raw screenshot first
+            # Show screenshot
             self.show_preview(img, self.preview_canvas)
-            self.calib_status.config(text="🤖 Asking Kiro CLI to detect elements...", foreground="blue")
+            
+            # Try auto-detection (may not work)
+            self.calib_status.config(text="🔎 Attempting auto-detection...", foreground="blue")
             self.root.update()
             
-            # Send to Kiro CLI for detection
-            self.log("🤖 Sending to Kiro CLI for analysis...")
-            import io
-            import base64
-            
-            # Convert image to base64
-            buffer = io.BytesIO()
-            img.save(buffer, format='PNG')
-            img_base64 = base64.b64encode(buffer.getvalue()).decode()
-            
-            # Call server
-            client = OnyxPokerClient()
-            response = client.session.post(
-                f"{client.server_url}/detect-elements",
-                json={"image": img_base64},
-                headers={"Authorization": f"Bearer {client.api_key}"},
-                timeout=180
+            self.detected_elements = self.detector.detect_poker_elements(img)
+            self.detected_elements['window_region'] = (
+                window_info['left'], window_info['top'],
+                window_info['width'], window_info['height']
             )
             
-            if response.status_code != 200:
-                self.log(f"❌ Server error: {response.text}", "ERROR")
-                self.calib_status.config(text="❌ Detection failed", foreground="red")
-                return
-            
-            result = response.json()
-            self.log(f"✓ Kiro response received")
-            
-            # Convert percentages to pixel coordinates
-            elements = result.get('elements', [])
-            if not elements:
-                self.log("❌ No elements detected by Kiro", "ERROR")
-                self.log(f"Raw response: {result.get('raw_response', 'No response')}")
-                self.calib_status.config(text="❌ No elements found", foreground="red")
-                return
-            
-            # Convert to our format
-            self.detected_elements = {
-                'button_regions': {},
-                'pot_region': None,
-                'window_region': (window_info['left'], window_info['top'], 
-                                 window_info['width'], window_info['height']),
-                'confidence': 0.9  # Kiro-based detection
-            }
-            
-            for elem in elements:
-                elem_type = elem.get('type')
-                x_pct = elem.get('x_percent', 0)
-                y_pct = elem.get('y_percent', 0)
-                w_pct = elem.get('width_percent', 10)
-                h_pct = elem.get('height_percent', 5)
+            # Check if detection found anything
+            if self.detected_elements.get('button_regions'):
+                # Show preview with boxes
+                preview = self.detector.create_preview(img, self.detected_elements)
+                self.show_preview(preview, self.preview_canvas)
                 
-                # Convert percentages to pixels
-                x = int(window_info['width'] * x_pct / 100)
-                y = int(window_info['height'] * y_pct / 100)
-                w = int(window_info['width'] * w_pct / 100)
-                h = int(window_info['height'] * h_pct / 100)
-                
-                if 'button' in elem_type:
-                    button_name = elem_type.replace('_button', '')
-                    self.detected_elements['button_regions'][button_name] = (x, y, w, h)
-                elif elem_type == 'pot_region':
-                    self.detected_elements['pot_region'] = (x, y, w, h)
-            
-            self.log(f"✓ Detected {len(self.detected_elements['button_regions'])} buttons")
-            
-            # Create preview with detected areas
-            preview = self.detector.create_preview(img, self.detected_elements)
-            self.show_preview(preview, self.preview_canvas)
-            
-            self.calib_status.config(text="✓ Detection complete", foreground="green")
-            self.confidence_label.config(text="Confidence: 90% (Kiro CLI)", foreground="green")
+                conf = self.detected_elements.get('confidence', 0)
+                self.confidence_label.config(text=f"Confidence: {conf:.1%}", 
+                                            foreground="green" if conf > 0.7 else "orange")
+                self.calib_status.config(text="✓ Auto-detection complete", foreground="green")
+                self.log("✓ Auto-detection found elements. Review and save if correct.")
+            else:
+                # No detection - user must manually configure
+                self.confidence_label.config(text="Auto-detection failed", foreground="red")
+                self.calib_status.config(text="⚠️ Manual configuration needed", foreground="orange")
+                self.log("⚠️ Auto-detection failed. You'll need to manually edit config.py")
+                self.log("💡 See config.py for coordinate format")
             
             # Show main window
             self.root.deiconify()
             self.root.lift()
             self.notebook.select(1)
-            
-            self.log("✓ Detection complete. Review preview and click 'Save Configuration'")
         
         except Exception as e:
             self.calib_status.config(text=f"❌ Error: {e}", foreground="red")
