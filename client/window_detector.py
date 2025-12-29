@@ -84,11 +84,10 @@ class WindowDetector:
         return pyautogui.screenshot(region=region)
     
     def detect_poker_elements(self, img: Image.Image) -> Dict:
-        """Auto-detect poker table elements using CV"""
+        """Detect poker table elements using OCR text detection"""
         
         # Convert to OpenCV format
         img_cv = cv2.cvtColor(np.array(img), cv2.COLOR_RGB2BGR)
-        gray = cv2.cvtColor(img_cv, cv2.COLOR_BGR2GRAY)
         
         elements = {
             'pot_region': None,
@@ -98,45 +97,44 @@ class WindowDetector:
             'confidence': 0.0
         }
         
-        # Detect buttons by looking for rectangular regions at bottom
-        height, width = gray.shape
-        bottom_region = gray[int(height * 0.8):, :]
+        # Run OCR to get all text with bounding boxes
+        ocr_data = pytesseract.image_to_data(img_cv, output_type=pytesseract.Output.DICT)
         
-        # Find contours (potential buttons)
-        edges = cv2.Canny(bottom_region, 50, 150)
-        contours, _ = cv2.findContours(edges, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
-        
-        buttons = []
-        for contour in contours:
-            x, y, w, h = cv2.boundingRect(contour)
-            # Button-like dimensions
-            if 60 < w < 150 and 30 < h < 60:
-                buttons.append((x, y + int(height * 0.8), w, h))
-        
-        # Sort buttons left to right
-        buttons.sort(key=lambda b: b[0])
-        
-        if len(buttons) >= 3:
-            elements['button_regions'] = {
-                'fold': buttons[0],
-                'call': buttons[1] if len(buttons) > 1 else buttons[0],
-                'raise': buttons[2] if len(buttons) > 2 else buttons[0]
-            }
-            elements['confidence'] = 0.7
-        
-        # Detect pot region (center-top area with text)
-        pot_region = gray[int(height * 0.2):int(height * 0.4), int(width * 0.3):int(width * 0.7)]
-        
-        # Look for text in this region
-        text = pytesseract.image_to_string(pot_region)
-        if any(char.isdigit() for char in text):
-            elements['pot_region'] = (
-                int(width * 0.3),
-                int(height * 0.2),
-                int(width * 0.4),
-                int(height * 0.2)
-            )
-            elements['confidence'] += 0.2
+        # Look for button text
+        for i, text in enumerate(ocr_data['text']):
+            if not text.strip():
+                continue
+                
+            text_lower = text.lower().strip()
+            x, y, w, h = (ocr_data['left'][i], ocr_data['top'][i], 
+                         ocr_data['width'][i], ocr_data['height'][i])
+            
+            # Expand bounding box to cover full button (text is usually smaller)
+            button_padding = 20
+            x = max(0, x - button_padding)
+            y = max(0, y - button_padding)
+            w = w + button_padding * 2
+            h = h + button_padding * 2
+            
+            # Detect buttons by text
+            if 'fold' in text_lower:
+                elements['button_regions']['fold'] = (x, y, w, h)
+                elements['confidence'] += 0.3
+            elif 'call' in text_lower or 'check' in text_lower:
+                elements['button_regions']['call'] = (x, y, w, h)
+                elements['confidence'] += 0.3
+            elif 'raise' in text_lower or 'bet' in text_lower:
+                elements['button_regions']['raise'] = (x, y, w, h)
+                elements['confidence'] += 0.3
+            
+            # Detect pot by looking for $ amounts
+            elif '$' in text or text.replace(',', '').replace('.', '').isdigit():
+                # This might be pot or stack - use heuristics
+                # Pot is usually center-top, larger font
+                if y < img_cv.shape[0] * 0.4:  # Top 40% of screen
+                    if not elements['pot_region']:
+                        elements['pot_region'] = (x, y, w, h)
+                        elements['confidence'] += 0.1
         
         return elements
     
