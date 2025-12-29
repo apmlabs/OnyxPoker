@@ -66,6 +66,52 @@ This project uses multiple markdown files for different purposes. **As an agent,
 
 ## RECENT LEARNINGS (2025-12-29)
 
+### Production Server Setup (14:47 UTC)
+**Challenge**: Server was running with nohup (not production-ready), no monitoring, no auto-restart
+
+**Solution**: Proper systemd service with management script:
+- Created `/etc/systemd/system/onyxpoker.service`
+- Automatic restart on failure
+- Proper logging to `/var/log/onyxpoker/`
+- Management script (`manage.sh`) for easy control
+
+**Key Insights**:
+- nohup is NOT production-ready (just a hack)
+- systemd is the proper way to run services on Linux
+- Need automatic restart if server crashes
+- Need centralized logging for troubleshooting
+- Need easy management commands for operations
+
+**What Worked**:
+✅ systemd service with Restart=always
+✅ Separate log files (server.log, error.log)
+✅ Management script with start/stop/status/logs commands
+✅ Service starts on boot automatically
+✅ Easy to monitor and troubleshoot
+
+**What Didn't Work**:
+❌ nohup - no monitoring, no auto-restart
+❌ Manual process management - error-prone
+
+### Windows Client Issues (14:44 UTC)
+**Challenge**: Client couldn't connect - wasn't loading .env file
+
+**Solution**: Added `load_dotenv()` to automation_client.py
+- Import: `from dotenv import load_dotenv`
+- Call: `load_dotenv()` before reading env vars
+- Now properly reads ONYXPOKER_SERVER_URL and API_KEY
+
+**Key Insights**:
+- `os.getenv()` doesn't automatically load .env files
+- Must explicitly call `load_dotenv()` first
+- Windows console has encoding issues with emojis (cp1252)
+- Need `sys.stdout.reconfigure(encoding='utf-8')` for Windows
+
+**What Worked**:
+✅ load_dotenv() at module level
+✅ Removing emojis from print statements
+✅ UTF-8 encoding fix for Windows console
+
 ### Self-Improving Card Recognition (14:26 UTC)
 **Challenge**: Synthetic templates might not match real PokerStars cards
 
