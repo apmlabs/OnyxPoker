@@ -1,0 +1,8 @@
+pyautogui>=0.9
+pillow>=8.0
+pytesseract>=0.3
+opencv-python>=4.7
+imagehash>=4.3
+openai>=1.0
+numpy>=1.20  # used for optional vectorized operations
+eval7>=0.3    # optional: for hand equity calculations (if you implement Monte Carlo later)

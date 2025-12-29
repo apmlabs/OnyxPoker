@@ -1,0 +1,8 @@
+# Placeholder file to ensure the templates directory is tracked by version control.
+
+The `cards` subdirectory should contain reference images for each playing card,
+named using standard two‑character codes (e.g. `As.png` for Ace of spades,
+`Td.png` for Ten of diamonds).  These images are used for template
+matching in the card recognition logic.  You will need to extract
+individual card images from your poker client and save them here to
+enable card recognition.
