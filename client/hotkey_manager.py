@@ -16,14 +16,17 @@ class HotkeyManager:
             return
         
         try:
+            # F5 - Test OCR (debug)
+            keyboard.add_hotkey('f5', self.on_f5_test_ocr)
+            
             # F6 - Toggle mini overlay
             keyboard.add_hotkey('f6', self.on_f6_toggle_overlay)
             
-            # F7 - Capture active window for calibration
-            keyboard.add_hotkey('f7', self.on_f7_capture_window)
+            # F7 - Open calibration tab
+            keyboard.add_hotkey('f7', self.on_f7_open_calibration)
             
-            # F8 - Test OCR / Auto-detect (context-aware)
-            keyboard.add_hotkey('f8', self.on_f8_test_ocr)
+            # F8 - Capture & detect (calibration)
+            keyboard.add_hotkey('f8', self.on_f8_calibrate)
             
             # F9 - Capture and analyze
             keyboard.add_hotkey('f9', self.on_f9_capture)
@@ -39,9 +42,10 @@ class HotkeyManager:
             
             self.registered = True
             self.parent.log("✅ Hotkeys registered:")
+            self.parent.log("   F5 = Test OCR (Debug)")
             self.parent.log("   F6 = Toggle Mini Overlay")
-            self.parent.log("   F7 = Capture Active Window (for calibration)")
-            self.parent.log("   F8 = Capture & Detect (or Test OCR)")
+            self.parent.log("   F7 = Open Calibration")
+            self.parent.log("   F8 = Capture & Detect (Calibration)")
             self.parent.log("   F9 = Capture & Analyze")
             self.parent.log("   F10 = Start/Stop Bot")
             self.parent.log("   F11 = Emergency Stop")
@@ -57,6 +61,7 @@ class HotkeyManager:
             return
         
         try:
+            keyboard.remove_hotkey('f5')
             keyboard.remove_hotkey('f6')
             keyboard.remove_hotkey('f7')
             keyboard.remove_hotkey('f8')
@@ -68,6 +73,17 @@ class HotkeyManager:
             self.parent.log("Hotkeys unregistered")
         except:
             pass
+    
+    def on_f5_test_ocr(self):
+        """F5 - Test OCR (Debug)"""
+        try:
+            self.parent.log("🔥 F5 pressed - Testing OCR...")
+            self.parent.root.after(0, self.parent.capture_debug)
+            self.parent.root.after(100, self.parent.root.deiconify)
+            self.parent.root.after(100, self.parent.root.lift)
+            self.parent.root.after(200, lambda: self.parent.notebook.select(2))
+        except Exception as e:
+            self.parent.log(f"❌ F5 error: {e}", "ERROR")
     
     def on_f6_toggle_overlay(self):
         """F6 - Toggle mini overlay"""
@@ -131,7 +147,7 @@ class HotkeyManager:
         except Exception as e:
             self.parent.log(f"❌ F12 error: {e}", "ERROR")
     
-    def on_f7_capture_window(self):
+    def on_f7_open_calibration(self):
         """F7 - Open calibration tab"""
         try:
             self.parent.log("🔥 F7 pressed - Opening calibration...")
@@ -141,30 +157,10 @@ class HotkeyManager:
         except Exception as e:
             self.parent.log(f"❌ F7 error: {e}", "ERROR")
     
-    def on_f8_test_ocr(self):
-        """F8 - Capture & detect (or test OCR if already calibrated)"""
+    def on_f8_calibrate(self):
+        """F8 - Capture & detect (calibration)"""
         try:
-            self.parent.log("🔥 F8 pressed...")
-            
-            # Check if already calibrated
-            try:
-                import config
-                if (hasattr(config, 'TABLE_REGION') and 
-                    config.TABLE_REGION != (0, 0, 0, 0) and
-                    config.TABLE_REGION != (100, 100, 800, 600)):
-                    # Already calibrated - test OCR
-                    self.parent.log("🧪 Testing OCR...")
-                    self.parent.root.after(0, self.parent.capture_debug)
-                    self.parent.root.after(100, self.parent.root.deiconify)
-                    self.parent.root.after(100, self.parent.root.lift)
-                    self.parent.root.after(200, lambda: self.parent.notebook.select(2))
-                    return
-            except:
-                pass
-            
-            # Not calibrated - do capture & detect
-            self.parent.log("📸 Capturing active window and detecting elements...")
+            self.parent.log("🔥 F8 pressed - Capturing and detecting...")
             self.parent.root.after(0, self.parent.auto_detect)
-            
         except Exception as e:
             self.parent.log(f"❌ F8 error: {e}", "ERROR")

@@ -248,7 +248,8 @@ class OnyxPokerGUI:
             "2. Click on poker window to make it active\n"
             "3. Press F8 to capture and detect elements\n"
             "4. Review preview below (red=buttons, green=pot)\n"
-            "5. Click 'Save Configuration' if detection looks good"
+            "5. Click 'Save Configuration' if detection looks good\n"
+            "6. Press F5 to test OCR accuracy"
         )
         inst_text.config(state="disabled")
         
@@ -289,14 +290,14 @@ class OnyxPokerGUI:
         desc_text.pack(fill="x")
         desc_text.insert("1.0",
             "This tab is for testing OCR after calibration:\n"
-            "• Press F8 to capture poker table and test OCR\n"
+            "• Press F5 to capture poker table and test OCR\n"
             "• Verify pot/stack amounts are read correctly\n"
             "• Use Kiro validation to check if game state makes sense"
         )
         desc_text.config(state="disabled")
         
         # Screenshot preview
-        preview_frame = ttk.LabelFrame(tab, text="Table Screenshot (Press F8 to capture)", padding=10)
+        preview_frame = ttk.LabelFrame(tab, text="Table Screenshot (Press F5 to capture)", padding=10)
         preview_frame.pack(fill="both", expand=True, padx=10, pady=5)
         
         self.debug_canvas = tk.Canvas(preview_frame, bg="black", height=300)
@@ -588,9 +589,10 @@ class OnyxPokerGUI:
         hotkeys_text = tk.Text(hotkeys, height=9, wrap="word", font=("Courier", 9), bg="#e8f4f8")
         hotkeys_text.pack(fill="x")
         hotkeys_text.insert("1.0",
+            "F5       - Test OCR (capture screenshot, test OCR in Debug tab)\n"
             "F6       - Toggle Mini Overlay (show/hide mini panel)\n"
-            "F7       - Open Calibration (setup screen regions)\n"
-            "F8       - Capture & Detect (calibration) or Test OCR (after setup)\n"
+            "F7       - Open Calibration (open calibration tab)\n"
+            "F8       - Capture & Detect (calibration - capture + CV detection)\n"
             "F9       - Capture & Analyze (take screenshot, get AI decision)\n"
             "F10      - Start/Stop Bot (toggle automation on/off)\n"
             "F11      - Emergency Stop (immediately stop bot, show main window)\n"
