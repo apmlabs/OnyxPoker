@@ -66,6 +66,7 @@ class OnyxPokerGUI:
         self.create_control_tab()
         self.create_calibration_tab()
         self.create_debug_tab()
+        self.create_help_tab()
         
         # Initialize mini overlay, hotkeys, system tray
         self.init_advanced_features()
@@ -153,39 +154,6 @@ class OnyxPokerGUI:
         """Main control panel"""
         tab = ttk.Frame(self.notebook)
         self.notebook.add(tab, text="🎮 Control Panel")
-        
-        # Setup Guide
-        guide = ttk.LabelFrame(tab, text="📋 Setup Guide", padding=10)
-        guide.pack(fill="x", padx=10, pady=5)
-        
-        guide_text = tk.Text(guide, height=6, wrap="word", font=("Arial", 9), bg="#f0f0f0")
-        guide_text.pack(fill="x")
-        guide_text.insert("1.0", 
-            "🎯 First Time Setup:\n"
-            "1. Run 'python setup_cards.py' in client folder (one-time)\n"
-            "2. Go to Calibration tab → Scan Windows → Select poker window\n"
-            "3. Click 'Auto-Detect Elements' → Save Config\n"
-            "4. Go to Debug tab → Capture Now → Validate State (wait 3 min)\n"
-            "5. If validation passes, come back here and Start Bot!\n\n"
-            "⚠️ Note: Kiro CLI takes ~15-180 seconds to respond during validation"
-        )
-        guide_text.config(state="disabled")
-        
-        # Hotkeys Info
-        hotkeys = ttk.LabelFrame(tab, text="⌨️ Global Hotkeys", padding=10)
-        hotkeys.pack(fill="x", padx=10, pady=5)
-        
-        hotkeys_text = tk.Text(hotkeys, height=6, wrap="word", font=("Courier", 9), bg="#e8f4f8")
-        hotkeys_text.pack(fill="x")
-        hotkeys_text.insert("1.0",
-            "F9       - Capture & Analyze (take screenshot, get AI decision)\n"
-            "F10      - Start/Stop Bot (toggle automation on/off)\n"
-            "F11      - Emergency Stop (immediately stop bot, show main window)\n"
-            "F12      - Toggle Main Window (show/hide this window)\n"
-            "Ctrl+H   - Toggle Mini Overlay (show/hide mini panel)\n\n"
-            "💡 All hotkeys work globally, even when PokerStars is focused!"
-        )
-        hotkeys_text.config(state="disabled")
         
         # Settings
         settings = ttk.LabelFrame(tab, text="Bot Settings", padding=10)
@@ -612,6 +580,64 @@ class OnyxPokerGUI:
             self.running = False
             self.root.after(0, self.start_btn.config, {"state": "normal"})
             self.root.after(0, self.stop_btn.config, {"state": "disabled"})
+    
+    def create_help_tab(self):
+        """Help and documentation tab"""
+        tab = ttk.Frame(self.notebook)
+        self.notebook.add(tab, text="❓ Help")
+        
+        # Setup Guide
+        guide = ttk.LabelFrame(tab, text="📋 Setup Guide", padding=10)
+        guide.pack(fill="x", padx=10, pady=5)
+        
+        guide_text = tk.Text(guide, height=8, wrap="word", font=("Arial", 9), bg="#f0f0f0")
+        guide_text.pack(fill="x")
+        guide_text.insert("1.0", 
+            "🎯 First Time Setup:\n"
+            "1. Press F7 to open Calibration tab\n"
+            "2. Click 'Scan Windows' → Select your poker window\n"
+            "3. Press F12 to hide this window (poker table visible)\n"
+            "4. Press F8 to capture and auto-detect elements\n"
+            "5. Review preview → Click 'Save Configuration'\n"
+            "6. Press F8 to test OCR (optional)\n"
+            "7. Press F9 anytime to get AI advice!\n\n"
+            "💡 The mini overlay will guide you through each step"
+        )
+        guide_text.config(state="disabled")
+        
+        # Hotkeys Info
+        hotkeys = ttk.LabelFrame(tab, text="⌨️ Global Hotkeys", padding=10)
+        hotkeys.pack(fill="x", padx=10, pady=5)
+        
+        hotkeys_text = tk.Text(hotkeys, height=9, wrap="word", font=("Courier", 9), bg="#e8f4f8")
+        hotkeys_text.pack(fill="x")
+        hotkeys_text.insert("1.0",
+            "F6       - Toggle Mini Overlay (show/hide mini panel)\n"
+            "F7       - Open Calibration (setup screen regions)\n"
+            "F8       - Capture & Detect (calibration) or Test OCR (after setup)\n"
+            "F9       - Capture & Analyze (take screenshot, get AI decision)\n"
+            "F10      - Start/Stop Bot (toggle automation on/off)\n"
+            "F11      - Emergency Stop (immediately stop bot, show main window)\n"
+            "F12      - Toggle Main Window (show/hide this window)\n\n"
+            "💡 All hotkeys work globally, even when PokerStars is focused!"
+        )
+        hotkeys_text.config(state="disabled")
+        
+        # Tips
+        tips = ttk.LabelFrame(tab, text="💡 Tips & Tricks", padding=10)
+        tips.pack(fill="x", padx=10, pady=5)
+        
+        tips_text = tk.Text(tips, height=6, wrap="word", font=("Arial", 9), bg="#fffacd")
+        tips_text.pack(fill="x")
+        tips_text.insert("1.0",
+            "• Use F6 to hide overlay when playing manually\n"
+            "• Press F12 before F8 during calibration (hides window for clean capture)\n"
+            "• F9 works anytime - get advice on any hand\n"
+            "• Check Activity Log (Control tab) if something goes wrong\n"
+            "• Use 'Copy Logs' button to share logs for debugging\n"
+            "• Mini overlay always shows what to do next"
+        )
+        tips_text.config(state="disabled")
     
     # Calibration actions
     def scan_windows(self):
