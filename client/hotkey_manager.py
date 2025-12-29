@@ -28,8 +28,16 @@ class HotkeyManager:
             # F12 - Show/Hide main window
             keyboard.add_hotkey('f12', self.on_f12_toggle_window)
             
+            # Ctrl+H - Toggle mini overlay
+            keyboard.add_hotkey('ctrl+h', self.on_ctrl_h_toggle_overlay)
+            
             self.registered = True
-            self.parent.log("✅ Hotkeys registered: F9=Capture, F10=Start/Stop, F11=Emergency, F12=Toggle Window")
+            self.parent.log("✅ Hotkeys registered:")
+            self.parent.log("   F9 = Capture & Analyze")
+            self.parent.log("   F10 = Start/Stop Bot")
+            self.parent.log("   F11 = Emergency Stop")
+            self.parent.log("   F12 = Toggle Main Window")
+            self.parent.log("   Ctrl+H = Toggle Mini Overlay")
             
         except Exception as e:
             self.parent.log(f"⚠️ Could not register hotkeys: {e}", "WARNING")
@@ -45,6 +53,7 @@ class HotkeyManager:
             keyboard.remove_hotkey('f10')
             keyboard.remove_hotkey('f11')
             keyboard.remove_hotkey('f12')
+            keyboard.remove_hotkey('ctrl+h')
             self.registered = False
             self.parent.log("Hotkeys unregistered")
         except:
@@ -102,3 +111,12 @@ class HotkeyManager:
                 self.parent.root.after(0, self.parent.root.withdraw)
         except Exception as e:
             self.parent.log(f"❌ F12 error: {e}", "ERROR")
+    
+    def on_ctrl_h_toggle_overlay(self):
+        """Ctrl+H - Toggle mini overlay"""
+        try:
+            if hasattr(self.parent, 'mini_overlay') and self.parent.mini_overlay:
+                self.parent.log("🔥 Ctrl+H pressed - Toggling mini overlay...")
+                self.parent.root.after(0, self.parent.mini_overlay.toggle_visibility)
+        except Exception as e:
+            self.parent.log(f"❌ Ctrl+H error: {e}", "ERROR")

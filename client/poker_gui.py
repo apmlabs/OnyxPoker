@@ -110,6 +110,22 @@ class OnyxPokerGUI:
         )
         guide_text.config(state="disabled")
         
+        # Hotkeys Info
+        hotkeys = ttk.LabelFrame(tab, text="⌨️ Global Hotkeys", padding=10)
+        hotkeys.pack(fill="x", padx=10, pady=5)
+        
+        hotkeys_text = tk.Text(hotkeys, height=6, wrap="word", font=("Courier", 9), bg="#e8f4f8")
+        hotkeys_text.pack(fill="x")
+        hotkeys_text.insert("1.0",
+            "F9       - Capture & Analyze (take screenshot, get AI decision)\n"
+            "F10      - Start/Stop Bot (toggle automation on/off)\n"
+            "F11      - Emergency Stop (immediately stop bot, show main window)\n"
+            "F12      - Toggle Main Window (show/hide this window)\n"
+            "Ctrl+H   - Toggle Mini Overlay (show/hide mini panel)\n\n"
+            "💡 All hotkeys work globally, even when PokerStars is focused!"
+        )
+        hotkeys_text.config(state="disabled")
+        
         # Settings
         settings = ttk.LabelFrame(tab, text="Bot Settings", padding=10)
         settings.pack(fill="x", padx=10, pady=5)

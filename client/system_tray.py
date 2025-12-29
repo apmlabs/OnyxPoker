@@ -28,12 +28,15 @@ class SystemTrayIcon:
     def create_menu(self):
         """Create system tray menu"""
         return pystray.Menu(
-            pystray.MenuItem("Show Main Window", self.show_main),
-            pystray.MenuItem("Show Mini Overlay", self.show_mini),
-            pystray.MenuItem("Hide Mini Overlay", self.hide_mini),
+            pystray.MenuItem("Show Main Window (F12)", self.show_main),
+            pystray.MenuItem("Toggle Mini Overlay (Ctrl+H)", self.toggle_mini),
             pystray.Menu.SEPARATOR,
-            pystray.MenuItem("Start Bot", self.start_bot),
-            pystray.MenuItem("Stop Bot", self.stop_bot),
+            pystray.MenuItem("Start Bot (F10)", self.start_bot),
+            pystray.MenuItem("Stop Bot (F10)", self.stop_bot),
+            pystray.MenuItem("Capture & Analyze (F9)", self.capture),
+            pystray.MenuItem("Emergency Stop (F11)", self.emergency_stop),
+            pystray.Menu.SEPARATOR,
+            pystray.MenuItem("Hotkeys Help", self.show_hotkeys),
             pystray.Menu.SEPARATOR,
             pystray.MenuItem("Exit", self.exit_app)
         )
@@ -43,15 +46,45 @@ class SystemTrayIcon:
         self.parent.root.deiconify()
         self.parent.root.lift()
     
-    def show_mini(self):
-        """Show mini overlay"""
+    def toggle_mini(self):
+        """Toggle mini overlay"""
         if hasattr(self.parent, 'mini_overlay') and self.parent.mini_overlay:
-            self.parent.mini_overlay.show()
+            self.parent.mini_overlay.toggle_visibility()
     
-    def hide_mini(self):
-        """Hide mini overlay"""
-        if hasattr(self.parent, 'mini_overlay') and self.parent.mini_overlay:
-            self.parent.mini_overlay.hide()
+    def capture(self):
+        """Capture and analyze"""
+        self.parent.capture_debug()
+    
+    def emergency_stop(self):
+        """Emergency stop"""
+        self.parent.stop_bot()
+        self.parent.root.deiconify()
+        self.parent.root.lift()
+    
+    def show_hotkeys(self):
+        """Show hotkeys help"""
+        import tkinter.messagebox as messagebox
+        help_text = """OnyxPoker Global Hotkeys:
+
+F9 - Capture & Analyze
+     Take screenshot and get AI decision
+
+F10 - Start/Stop Bot
+      Toggle bot automation on/off
+
+F11 - Emergency Stop
+      Immediately stop bot and show main window
+
+F12 - Toggle Main Window
+      Show/hide the main control window
+
+Ctrl+H - Toggle Mini Overlay
+         Show/hide the mini overlay panel
+
+All hotkeys work globally, even when
+PokerStars is in focus!"""
+        
+        self.parent.root.after(0, lambda: messagebox.showinfo("Hotkeys Help", help_text))
     
     def start_bot(self):
         """Start the bot"""

@@ -10,15 +10,18 @@ class MiniOverlay:
     def __init__(self, parent_gui):
         self.parent = parent_gui
         self.window = tk.Toplevel()
-        self.window.title("OnyxPoker Mini")
+        self.visible = True
         
         # Window properties
-        self.window.geometry("320x240")
+        self.window.geometry("320x260")
         self.window.attributes('-topmost', True)  # Always on top
-        self.window.attributes('-alpha', 0.95)  # Slightly transparent
-        self.window.overrideredirect(False)  # Keep title bar for dragging
+        self.window.attributes('-alpha', 0.85)  # More transparent
+        self.window.overrideredirect(True)  # No title bar or buttons
         
-        # Make draggable
+        # Prevent closing via window manager
+        self.window.protocol("WM_DELETE_WINDOW", self.toggle_visibility)
+        
+        # Make draggable (entire window)
         self.window.bind('<Button-1>', self.start_drag)
         self.window.bind('<B1-Motion>', self.on_drag)
         
@@ -79,10 +82,15 @@ class MiniOverlay:
         hints_frame = tk.Frame(main_frame, bg='#2b2b2b')
         hints_frame.pack(fill='x')
         
-        hints = tk.Label(hints_frame, text="[F9] Analyze  [F10] Start/Stop  [F12] Main", 
-                        font=('Arial', 8), 
+        hints1 = tk.Label(hints_frame, text="F9:Analyze  F10:Start/Stop  F11:Emergency", 
+                        font=('Arial', 7), 
                         bg='#2b2b2b', fg='#888888')
-        hints.pack()
+        hints1.pack()
+        
+        hints2 = tk.Label(hints_frame, text="F12:Main Window  Ctrl+H:Toggle Overlay", 
+                        font=('Arial', 7), 
+                        bg='#2b2b2b', fg='#888888')
+        hints2.pack()
         
     def update_info(self, state, decision=None):
         """Update overlay with current game state"""
@@ -137,11 +145,22 @@ class MiniOverlay:
         self.window.geometry(f"+{x}+{y}")
     
     def show(self):
+        """Show the overlay"""
         self.window.deiconify()
         self.window.lift()
+        self.visible = True
     
     def hide(self):
+        """Hide the overlay"""
         self.window.withdraw()
+        self.visible = False
+    
+    def toggle_visibility(self):
+        """Toggle overlay visibility"""
+        if self.visible:
+            self.hide()
+        else:
+            self.show()
     
     def destroy(self):
         self.window.destroy()
