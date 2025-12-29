@@ -54,13 +54,77 @@ This project uses **6 essential markdown files**. **As an agent, I must understa
 4. **Document decisions** - Why certain approaches were chosen
 5. **Track progress** - What works, what doesn't, what's next
 6. **Keep GitHub synced** - Commit meaningful changes with clear messages
+7. **Test my assumptions** - User feedback reveals what actually works
+8. **Iterate quickly** - Fix issues immediately when discovered
+9. **Remember failures** - Document what didn't work to avoid repeating
+10. **Build on success** - Use proven patterns consistently
 
 ## PROVEN SUCCESS FORMULA ✅
 **Flask API + Kiro CLI + PyAutoGUI + HTTP Bridge = PERFECT real-time GUI automation**
 
 ## RECENT LEARNINGS (2025-12-29)
 
-### Hotkey-Based Calibration (16:18 UTC)
+### Calibration Flow Fixes (16:30-17:00 UTC)
+**Challenge**: Multiple calibration flow issues discovered during user testing
+
+**Problems Found**:
+1. Auto-hide conflicted with F12 instruction
+2. Ctrl+T opened Chrome tabs (browser conflict)
+3. Overlay showed wrong initial state ("All set" instead of "Setup Needed")
+4. Placeholder config.py detected as calibrated
+5. No clear hotkey-driven workflow
+
+**Solutions Implemented**:
+1. **Smart Auto-Hide**: Only hides if already calibrated (not placeholder)
+2. **F7-F12 Hotkeys**: Remapped all hotkeys to F-keys only (no Ctrl combinations)
+3. **Placeholder Detection**: Checks if config has real values vs (100, 100, 800, 600)
+4. **Complete Hotkey Workflow**: F7→Scan→Select→F12→F8→Review→Save
+5. **Auto-Show After Capture**: F8 captures, then auto-shows client with results
+
+**Key Insights**:
+- Ctrl combinations unreliable (browser conflicts, OS issues)
+- F-keys (F7-F12) are simple and always work
+- Must detect placeholder config vs real calibration
+- Auto-hide should be smart (only when appropriate)
+- User needs to hide client before capture (F12 then F8)
+- Auto-showing results after capture improves UX
+- Overlay must show correct initial state
+
+**What Worked**:
+✅ F7-F12 hotkey mapping (no Ctrl)
+✅ Placeholder config detection (100, 100, 800, 600)
+✅ F12 → F8 workflow (hide then capture)
+✅ Auto-show client after F8 capture
+✅ Auto-switch to Calibration tab to show preview
+✅ Smart auto-hide (only if calibrated)
+
+**What Didn't Work**:
+❌ Ctrl+C, Ctrl+Shift+T (browser conflicts)
+❌ Simple config.py existence check (missed placeholders)
+❌ Auto-hide without checking calibration state
+❌ Expecting user to manually show window after capture
+
+**Implementation Details**:
+- `poker_gui.py`: check_setup_status() detects placeholder (100, 100, 800, 600)
+- `poker_gui.py`: auto_hide_window() only hides if calibrated
+- `poker_gui.py`: auto_detect() auto-shows window and switches to Calibration tab
+- `hotkey_manager.py`: All hotkeys F7-F12, no Ctrl combinations
+- `hotkey_manager.py`: F8 handler detects placeholder config
+- `mini_overlay.py`: Updated all instructions to F7-F12
+- `mini_overlay.py`: scan_done state shows "F12 then F8" workflow
+
+**Final Workflow**:
+1. Launch → Overlay shows "Setup Needed" (if not calibrated)
+2. F7 → Opens calibration tab
+3. Scan → Select window
+4. F12 → Hide client (poker table visible)
+5. F8 → Capture & detect (auto-shows client with results)
+6. Review → Check preview in Calibration tab
+7. Save → Configuration saved
+8. F8 → Test OCR (optional)
+9. F9 → Get AI advice anytime
+
+### Hotkey-Based Calibration (16:00-16:30 UTC)
 **Challenge**: Windows cannot capture background windows - client covering poker table breaks calibration
 
 **Solution**: Hotkey-driven calibration workflow:
