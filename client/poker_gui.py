@@ -685,25 +685,40 @@ ACTION_DELAY = 2.0
         
         def run_validation():
             try:
-                from kiro_validator import KiroValidator
-                validator = KiroValidator()
-                result = validator.validate_table_state(self.last_state)
+                # Use server for validation instead of local Kiro CLI
+                client = OnyxPokerClient()
+                
+                # Send validation request to server
+                import requests
+                response = requests.post(
+                    f"{client.server_url}/validate-state",
+                    headers={"Authorization": f"Bearer {client.api_key}"},
+                    json={"state": self.last_state},
+                    timeout=180
+                )
+                
+                if response.status_code == 200:
+                    result = response.json()
+                else:
+                    raise Exception(f"Server error: {response.status_code}")
                 
                 progress.after(0, lambda: progress_bar.stop())
                 progress.after(0, lambda: progress.destroy())
                 
-                if result['understood']:
-                    self.kiro_status.config(text=f"✓ Valid (conf: {result['confidence']:.2f})", foreground="green")
-                    self.log(f"✅ Kiro validated: {result['interpretation'][:100]}", "SUCCESS")
+                if result.get('understood', False):
+                    conf = result.get('confidence', 0)
+                    self.kiro_status.config(text=f"✓ Valid (conf: {conf:.2f})", foreground="green")
+                    self.log(f"✅ Kiro validated: {result.get('interpretation', '')[:100]}", "SUCCESS")
                 else:
                     self.kiro_status.config(text="✗ Invalid", foreground="red")
-                    self.log(f"⚠️ Kiro concerns: {result['concerns']}", "WARNING")
+                    concerns = result.get('concerns', ['Unknown issue'])
+                    self.log(f"⚠️ Kiro concerns: {concerns}", "WARNING")
                 
                 # Show detailed response
-                msg = f"Valid: {result['understood']}\n"
-                msg += f"Confidence: {result['confidence']:.2f}\n"
-                msg += f"Concerns: {', '.join(result['concerns'])}\n\n"
-                msg += f"Interpretation:\n{result['interpretation']}"
+                msg = f"Valid: {result.get('understood', False)}\n"
+                msg += f"Confidence: {result.get('confidence', 0):.2f}\n"
+                msg += f"Concerns: {', '.join(result.get('concerns', []))}\n\n"
+                msg += f"Interpretation:\n{result.get('interpretation', 'No interpretation')}"
                 
                 messagebox.showinfo("Kiro Validation", msg)
             except Exception as e:
@@ -711,7 +726,7 @@ ACTION_DELAY = 2.0
                 progress.after(0, lambda: progress.destroy())
                 self.kiro_status.config(text="✗ Error", foreground="red")
                 self.log(f"❌ Validation error: {e}", "ERROR")
-                messagebox.showerror("Error", f"Validation failed:\n{str(e)}\n\nMake sure Kiro CLI is installed and accessible.")
+                messagebox.showerror("Error", f"Validation failed:\n{str(e)}\n\nMake sure server is running and accessible.")
         
         # Run in thread to keep UI responsive
         import threading
