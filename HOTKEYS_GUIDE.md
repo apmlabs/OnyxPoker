@@ -8,10 +8,11 @@
 ## 🎮 What's New
 
 ### 1. Mini Overlay Panel
+- **Borderless design** - No title bar or window buttons
+- **More transparent** (85% opacity)
 - **Always-on-top** window (stays above PokerStars)
-- **320×240 pixels** (small, non-intrusive)
-- **Semi-transparent** background
-- **Draggable** - position anywhere on screen
+- **Draggable** - Click and drag to reposition
+- **Toggle with Ctrl+H** - Show/hide without destroying
 
 **Shows:**
 - Table info (pot size)
@@ -28,10 +29,12 @@ Work even when PokerStars is focused!
 - **F10** - Start/Stop bot
 - **F11** - Emergency stop (shows main window)
 - **F12** - Show/Hide main window
+- **Ctrl+H** - Toggle mini overlay
 
 ### 3. System Tray Icon
 - Bot runs in background
-- Right-click for menu
+- Right-click for menu with hotkey labels
+- "Hotkeys Help" option shows full guide
 - Quick access to all functions
 
 ---
@@ -139,12 +142,15 @@ Work even when PokerStars is focused!
 ## 🎛️ System Tray Menu
 
 **Right-click tray icon:**
-- Show Main Window
-- Show Mini Overlay
-- Hide Mini Overlay
+- Show Main Window (F12)
+- Toggle Mini Overlay (Ctrl+H)
 - ─────────────────
-- Start Bot
-- Stop Bot
+- Start Bot (F10)
+- Stop Bot (F10)
+- Capture & Analyze (F9)
+- Emergency Stop (F11)
+- ─────────────────
+- Hotkeys Help
 - ─────────────────
 - Exit
 
@@ -158,6 +164,7 @@ Work even when PokerStars is focused!
 | **F10** | Start/Stop Bot | Toggle automation |
 | **F11** | Emergency Stop | Something wrong, stop now! |
 | **F12** | Show/Hide Main | Check logs, settings, debug |
+| **Ctrl+H** | Toggle Mini Overlay | Show/hide mini panel |
 
 **Note**: Hotkeys work globally (even when PokerStars is focused)
 
@@ -223,8 +230,14 @@ Right-click Python → Run as administrator
 
 ### "Mini overlay not showing"
 **Solution**: Check if it's hidden
-- Press F12 to show main window
-- System Tray → Right-click → Show Mini Overlay
+- Press Ctrl+H to toggle visibility
+- Or: System Tray → Right-click → Toggle Mini Overlay
+
+### "Can't close mini overlay"
+**Solution**: It doesn't close, it toggles
+- Press Ctrl+H to hide
+- Press Ctrl+H again to show
+- This prevents accidental closing
 
 ### "Can't install keyboard/pystray"
 **Solution**: Install manually
