@@ -837,19 +837,35 @@ ACTION_DELAY = 2.0
     # Debug actions
     def capture_debug(self):
         try:
+            import pygetwindow as gw
+            
+            # Get active window (full window for preview)
+            active_window = gw.getActiveWindow()
+            if not active_window or not active_window.title:
+                self.log("❌ No active window detected", "ERROR")
+                return
+            
+            # Capture full window for preview
+            window_info = {
+                'left': active_window.left,
+                'top': active_window.top,
+                'width': active_window.width,
+                'height': active_window.height
+            }
+            
+            import pyautogui
+            full_img = pyautogui.screenshot(region=(
+                window_info['left'],
+                window_info['top'],
+                window_info['width'],
+                window_info['height']
+            ))
+            
+            self.last_screenshot = full_img
+            self.show_preview(full_img, self.debug_canvas)
+            
+            # Run OCR on table region
             reader = PokerScreenReader()
-            img = reader.capture_screenshot()
-            
-            # Decode base64 to image
-            import base64
-            import io
-            img_data = base64.b64decode(img)
-            pil_img = Image.open(io.BytesIO(img_data))
-            
-            self.last_screenshot = pil_img
-            self.show_preview(pil_img, self.debug_canvas)
-            
-            # Run OCR
             state = reader.parse_game_state()
             self.last_state = state
             
@@ -868,16 +884,9 @@ ACTION_DELAY = 2.0
             self.state_text.delete("1.0", "end")
             self.state_text.insert("1.0", json.dumps(state, indent=2))
             
-            # Update overlay status
-            if hasattr(self, 'mini_overlay') and self.mini_overlay:
-                self.mini_overlay.set_next_step("ready")
-            
             self.log("📸 Debug capture complete")
         except Exception as e:
             self.log(f"❌ Capture error: {e}", "ERROR")
-            state = reader.parse_game_state()
-            self.last_state = state
-            self.ocr_text.delete("1.0", "end")
             self.ocr_text.insert("1.0", f"Pot: ${state['pot']}\n")
             self.ocr_text.insert("end", f"Stacks: {state['stacks']}\n")
             self.ocr_text.insert("end", f"Actions: {state['actions']}\n")
