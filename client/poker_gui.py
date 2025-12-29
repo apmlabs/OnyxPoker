@@ -124,14 +124,6 @@ class OnyxPokerGUI:
             self.log(f"Error checking setup status: {e}", "ERROR")
             # Default to calibrate if error
             self.mini_overlay.set_next_step("calibrate")
-                        # Not calibrated
-                        self.mini_overlay.set_next_step("calibrate")
-                except:
-                    self.mini_overlay.set_next_step("calibrate")
-            else:
-                self.mini_overlay.set_next_step("calibrate")
-        except:
-            self.mini_overlay.set_next_step("calibrate")
         
     def init_advanced_features(self):
         """Initialize mini overlay, hotkeys, and system tray"""
