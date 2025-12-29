@@ -13,6 +13,10 @@ import pyautogui
 from PIL import Image
 import logging
 from datetime import datetime
+from dotenv import load_dotenv
+
+# Load environment variables from .env file
+load_dotenv()
 
 # Configuration
 SERVER_URL = os.getenv('ONYXPOKER_SERVER_URL', 'http://localhost:5000')
