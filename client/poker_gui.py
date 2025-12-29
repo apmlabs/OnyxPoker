@@ -643,39 +643,57 @@ class OnyxPokerGUI:
             return
         
         self.selected_window = self.windows[sel[0]]
+        window_title = self.selected_window['title']
         
         if self.detector.activate_window(self.selected_window):
-            self.calib_status.config(text=f"✓ Selected: {self.selected_window['title']}", foreground="green")
-            # Update overlay to show next step
-            if hasattr(self, 'mini_overlay') and self.mini_overlay:
-                self.mini_overlay.set_next_step("scan_done")
+            self.calib_status.config(text=f"✓ Selected: {window_title}", foreground="green")
             self.log(f"✓ Window selected: {window_title}")
-            self.log("💡 Next: Press F8 to capture and auto-detect")
-            self.log("   (Capture works in background - no need to hide window)")
+            self.log("💡 Next steps:")
+            self.log("   1. Press F12 to hide this window")
+            self.log("   2. Press F8 to capture poker table")
+            self.log("   3. Press F12 again to see results")
             
             # Update overlay
-            self.mini_overlay.set_next_step("scan_done")
+            if hasattr(self, 'mini_overlay') and self.mini_overlay:
+                self.mini_overlay.set_next_step("scan_done")
         else:
             self.calib_status.config(text="❌ Failed to activate", foreground="red")
     
     def auto_detect(self):
+        """Auto-detect poker elements from selected window"""
         if not self.selected_window:
             messagebox.showwarning("No Window", "Select window first")
             return
         
         self.calib_status.config(text="🔎 Detecting...", foreground="blue")
+        self.log("📸 Capturing poker table...")
         self.root.update()
         
         try:
+            # Capture the poker window
             img = self.detector.capture_window(self.selected_window)
+            self.log("✓ Screenshot captured")
+            
+            # Detect elements
+            self.log("🔎 Detecting poker elements...")
             self.detected_elements = self.detector.detect_poker_elements(img)
             
+            # Validate
             valid, msg = self.detector.validate_elements(self.detected_elements)
             
             if valid:
                 self.calib_status.config(text=f"✓ {msg}", foreground="green")
+                self.log(f"✓ {msg}")
+                
+                # Show preview
                 preview = self.detector.create_preview(img, self.detected_elements)
                 self.show_preview(preview, self.preview_canvas)
+                self.log("✓ Preview updated - check Calibration tab")
+                
+                # Show main window and switch to calibration tab
+                self.root.deiconify()
+                self.root.lift()
+                self.notebook.select(1)
                 
                 conf = self.detected_elements.get('confidence', 0)
                 self.confidence_label.config(text=f"Confidence: {conf:.1%}", 

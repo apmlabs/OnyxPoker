@@ -141,20 +141,19 @@ class HotkeyManager:
                     import config
                     if not hasattr(config, 'TABLE_REGION') or config.TABLE_REGION == (0, 0, 0, 0):
                         # Not calibrated yet - do auto-detect
-                        self.parent.log("📸 Running auto-detection on selected window...")
-                        self.parent.log("💡 This will detect buttons, pot, and card regions")
+                        self.parent.log("📸 Capturing poker table for calibration...")
+                        self.parent.log("💡 Make sure poker table is visible!")
                         self.parent.root.after(0, self.parent.auto_detect)
                         return
                 except:
                     # No config yet - do auto-detect
-                    self.parent.log("📸 Running auto-detection on selected window...")
-                    self.parent.log("💡 This will detect buttons, pot, and card regions")
+                    self.parent.log("📸 Capturing poker table for calibration...")
+                    self.parent.log("💡 Make sure poker table is visible!")
                     self.parent.root.after(0, self.parent.auto_detect)
                     return
             
             # Already calibrated - do OCR test
             self.parent.log("🧪 Testing OCR on current table...")
-            self.parent.log("💡 This will read pot, stacks, and cards")
             self.parent.root.after(0, self.parent.capture_debug)
             # Show main window and switch to debug tab
             self.parent.root.after(100, self.parent.root.deiconify)
