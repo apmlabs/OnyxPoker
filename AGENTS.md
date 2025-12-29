@@ -66,6 +66,46 @@ This project uses multiple markdown files for different purposes. **As an agent,
 
 ## RECENT LEARNINGS (2025-12-29)
 
+### Mini Overlay UX Improvements (15:45 UTC)
+**Challenge**: Mini overlay had window decorations, wasn't transparent enough, couldn't reopen after closing
+
+**Solution**: Complete UX overhaul:
+- Removed window decorations (`overrideredirect(True)`)
+- Increased transparency (85% opacity)
+- Changed close behavior to toggle visibility
+- Added Ctrl+H hotkey to toggle overlay
+- Added hotkey info panel in GUI
+- Added hotkey labels in tray menu
+
+**Key Insights**:
+- Window decorations (title bar, buttons) make overlay look unprofessional
+- `overrideredirect(True)` removes all decorations but keeps draggability
+- Closing should toggle visibility, not destroy window
+- Users need hotkey info visible in multiple places (GUI, tray, overlay)
+- Ctrl+H is intuitive for "hide/show"
+- Tray menu should show hotkey labels for discoverability
+
+**What Worked**:
+✅ Borderless overlay looks clean and professional
+✅ 85% opacity is visible but not obtrusive
+✅ Toggle behavior prevents accidental destruction
+✅ Ctrl+H hotkey is easy to remember
+✅ Hotkey info panel in Control tab
+✅ Tray menu with hotkey labels
+✅ "Hotkeys Help" dialog in tray menu
+
+**What Didn't Work**:
+❌ 95% opacity was too opaque
+❌ Destroying window on close (couldn't reopen)
+❌ No hotkey info visible (users didn't know about F9-F12)
+
+**Implementation Details**:
+- `mini_overlay.py`: Added `visible` state, `toggle_visibility()` method
+- `hotkey_manager.py`: Added Ctrl+H hotkey, improved logging format
+- `poker_gui.py`: Added hotkeys info panel in Control tab
+- `system_tray.py`: Added hotkey labels to menu, "Hotkeys Help" dialog
+- All hotkeys now documented in 3 places: GUI, tray, overlay
+
 ### Hotkeys + Mini Overlay + System Tray (15:30 UTC)
 **Challenge**: Single monitor - can't see both PokerStars and GUI at once
 
