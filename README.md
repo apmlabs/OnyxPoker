@@ -38,7 +38,23 @@ Windows Machine
 
 ## Quick Start
 
-### Analysis Mode (Safe)
+### GUI Mode (Recommended)
+```cmd
+cd client
+python poker_gui.py
+```
+
+**Features:**
+- Start/Stop bot controls
+- Mode selection (Remote/Local)
+- Execution mode (Analysis/Auto)
+- Real-time game state display
+- Decision monitoring
+- Activity log
+- Connection testing
+- OCR testing
+
+### Command Line Mode
 ```cmd
 cd client
 python poker_bot.py --execution analysis
