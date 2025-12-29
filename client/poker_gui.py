@@ -837,35 +837,18 @@ ACTION_DELAY = 2.0
     # Debug actions
     def capture_debug(self):
         try:
-            import pygetwindow as gw
-            
-            # Get active window (full window for preview)
-            active_window = gw.getActiveWindow()
-            if not active_window or not active_window.title:
-                self.log("❌ No active window detected", "ERROR")
-                return
-            
-            # Capture full window for preview
-            window_info = {
-                'left': active_window.left,
-                'top': active_window.top,
-                'width': active_window.width,
-                'height': active_window.height
-            }
-            
-            import pyautogui
-            full_img = pyautogui.screenshot(region=(
-                window_info['left'],
-                window_info['top'],
-                window_info['width'],
-                window_info['height']
-            ))
-            
-            self.last_screenshot = full_img
-            self.show_preview(full_img, self.debug_canvas)
-            
-            # Run OCR on table region
             reader = PokerScreenReader()
+            
+            # Capture only table region (what OCR sees)
+            import pyautogui
+            import config
+            
+            table_img = pyautogui.screenshot(region=config.TABLE_REGION)
+            
+            self.last_screenshot = table_img
+            self.show_preview(table_img, self.debug_canvas)
+            
+            # Run OCR
             state = reader.parse_game_state()
             self.last_state = state
             
@@ -884,7 +867,7 @@ ACTION_DELAY = 2.0
             self.state_text.delete("1.0", "end")
             self.state_text.insert("1.0", json.dumps(state, indent=2))
             
-            self.log("📸 Debug capture complete")
+            self.log("📸 Debug capture complete - showing table region only")
         except Exception as e:
             self.log(f"❌ Capture error: {e}", "ERROR")
             self.ocr_text.insert("1.0", f"Pot: ${state['pot']}\n")
