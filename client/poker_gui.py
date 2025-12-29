@@ -241,49 +241,28 @@ class OnyxPokerGUI:
         instructions = ttk.LabelFrame(tab, text="📖 Calibration Instructions", padding=10)
         instructions.pack(fill="x", padx=10, pady=5)
         
-        inst_text = tk.Text(instructions, height=4, wrap="word", font=("Arial", 9), bg="#fffacd")
+        inst_text = tk.Text(instructions, height=5, wrap="word", font=("Arial", 9), bg="#fffacd")
         inst_text.pack(fill="x")
         inst_text.insert("1.0",
             "1. Open PokerStars and sit at a table\n"
-            "2. Click 'Scan Windows' to find poker window\n"
-            "3. Select your poker window from the list\n"
-            "4. Click 'Auto-Detect Elements' to find buttons/pot (uses computer vision)\n"
-            "5. Review the preview and click 'Save Config' if it looks good\n"
-            "6. Go to Debug tab to validate with Kiro CLI"
+            "2. Click on poker window to focus it\n"
+            "3. Press F7 to capture window info\n"
+            "4. Press F8 to take screenshot and auto-detect elements\n"
+            "5. Review preview below (red=buttons, green=pot)\n"
+            "6. Click 'Save Configuration' if detection looks good"
         )
         inst_text.config(state="disabled")
         
-        # Step 1: Window Selection
-        step1 = ttk.LabelFrame(tab, text="Step 1: Capture Active Window", padding=10)
-        step1.pack(fill="x", padx=10, pady=5)
+        # Status
+        status_frame = ttk.LabelFrame(tab, text="Calibration Status", padding=10)
+        status_frame.pack(fill="x", padx=10, pady=5)
         
-        inst = ttk.Label(step1, text="1. Click on your poker window to focus it\n2. Click 'Capture Active Window' below", 
-                        font=("Arial", 9), foreground="blue")
-        inst.pack(pady=5)
-        
-        self.window_list = tk.Listbox(step1, height=2, font=("Arial", 10))
-        self.window_list.pack(fill="x", pady=5)
-        
-        btn_frame1 = ttk.Frame(step1)
-        btn_frame1.pack(fill="x")
-        
-        ttk.Button(btn_frame1, text="📸 Capture Active Window", command=self.scan_windows).pack(side="left", padx=5)
-        
-        if not self.detector.can_capture_background:
-            ttk.Label(step1, text="⚠️ Window must be visible (not minimized)", 
-                     foreground="orange", font=("Arial", 9, "italic")).pack(pady=5)
-        
-        # Step 2: Auto-Detect
-        step2 = ttk.LabelFrame(tab, text="Step 2: Auto-Detect Elements", padding=10)
-        step2.pack(fill="x", padx=10, pady=5)
-        
-        self.calib_status = ttk.Label(step2, text="Select window first", foreground="gray")
+        self.calib_status = ttk.Label(status_frame, text="Press F7 to capture poker window", 
+                                     foreground="gray", font=("Arial", 10))
         self.calib_status.pack(pady=5)
         
-        ttk.Button(step2, text="🔎 Auto-Detect", command=self.auto_detect).pack(pady=5)
-        
         # Step 3: Preview
-        step3 = ttk.LabelFrame(tab, text="Step 3: Verify Detection", padding=10)
+        step3 = ttk.LabelFrame(tab, text="Preview (F8 will show screenshot here)", padding=10)
         step3.pack(fill="both", expand=True, padx=10, pady=5)
         
         self.preview_canvas = tk.Canvas(step3, bg="black", height=300)
@@ -302,6 +281,20 @@ class OnyxPokerGUI:
         """Debug and analysis tab"""
         tab = ttk.Frame(self.notebook)
         self.notebook.add(tab, text="🐛 Debug")
+        
+        # Description
+        desc = ttk.LabelFrame(tab, text="About Debug Tab", padding=10)
+        desc.pack(fill="x", padx=10, pady=5)
+        
+        desc_text = tk.Text(desc, height=3, wrap="word", font=("Arial", 9), bg="#e6f3ff")
+        desc_text.pack(fill="x")
+        desc_text.insert("1.0",
+            "This tab is for manual testing and debugging:\n"
+            "• Capture screenshots to see what the bot sees\n"
+            "• Test OCR to verify pot/stack reading accuracy\n"
+            "• Validate with Kiro CLI to check if game state makes sense"
+        )
+        desc_text.config(state="disabled")
         
         # Screenshot preview
         preview_frame = ttk.LabelFrame(tab, text="Table Screenshot", padding=10)
@@ -707,11 +700,11 @@ class OnyxPokerGUI:
     def auto_detect(self):
         """Auto-detect poker elements from selected window"""
         if not self.selected_window:
-            self.log("❌ No window selected", "ERROR")
-            messagebox.showwarning("No Window", "Click 'Capture Active Window' first")
+            self.log("❌ No window selected - press F7 first", "ERROR")
+            self.calib_status.config(text="❌ No window selected", foreground="red")
             return
         
-        self.calib_status.config(text="🔎 Detecting...", foreground="blue")
+        self.calib_status.config(text="📸 Capturing screenshot...", foreground="blue")
         self.log("📸 Capturing poker table...")
         self.root.update()
         
@@ -724,6 +717,11 @@ class OnyxPokerGUI:
                 return
                 
             self.log("✓ Screenshot captured")
+            
+            # Show raw screenshot first
+            self.show_preview(img, self.preview_canvas)
+            self.calib_status.config(text="🔎 Detecting elements...", foreground="blue")
+            self.root.update()
             
             # Detect elements
             self.log("🔎 Detecting poker elements...")
@@ -741,6 +739,11 @@ class OnyxPokerGUI:
                 self.show_preview(preview, self.preview_canvas)
                 self.log("✓ Preview updated - check Calibration tab")
                 
+                # Update confidence
+                conf = self.detected_elements.get('confidence', 0)
+                self.confidence_label.config(text=f"Confidence: {conf:.1%}", 
+                                            foreground="green" if conf > 0.7 else "orange")
+                
                 # Show main window and switch to calibration tab
                 self.root.deiconify()
                 self.root.lift()
@@ -749,20 +752,6 @@ class OnyxPokerGUI:
                 # Update overlay ONLY after successful capture
                 if hasattr(self, 'mini_overlay') and self.mini_overlay:
                     self.mini_overlay.set_next_step("test")
-                
-                conf = self.detected_elements.get('confidence', 0)
-                self.root.deiconify()
-                self.root.lift()
-                self.notebook.select(1)
-                
-                conf = self.detected_elements.get('confidence', 0)
-                self.confidence_label.config(text=f"Confidence: {conf:.1%}", 
-                                            foreground="green" if conf > 0.7 else "orange")
-                
-                # Show main window with results
-                self.root.deiconify()
-                self.root.lift()
-                self.notebook.select(1)  # Show calibration tab
                 
                 self.log("✓ Auto-detection complete. Review preview and click 'Save Configuration'")
             else:
