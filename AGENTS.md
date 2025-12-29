@@ -2,30 +2,24 @@
 
 ## 📚 DOCUMENTATION STRUCTURE
 
-This project uses multiple markdown files for different purposes. **As an agent, I must understand and reference this structure:**
+This project uses **6 essential markdown files**. **As an agent, I must understand and reference this structure:**
 
 ### Core Agent Files (My Memory)
-- **AGENTS.md** (this file) - Agent context, learnings, architecture decisions
-- **AmazonQ.md** - Current status, progress tracking, what's done/in-progress/todo
-- **AGENT_PROTOCOL.md** - Mandatory workflow checklist (incorporated below)
+- **AGENTS.md** (this file) - Agent context, learnings, architecture decisions, mandatory workflow
+- **AmazonQ.md** - Current status, progress tracking (local file, gitignored)
 
 ### User Documentation
 - **README.md** - Project overview, quick start, current status
-- **QUICKSTART.md** - User-friendly setup and usage guide
-- **client/CALIBRATION.md** - Calibration wizard documentation
+- **USER_GUIDE.md** - Complete user guide (setup, hotkeys, workflow, troubleshooting)
 
-### Technical Documentation
+### Development Documentation
+- **NEXT_STEPS.md** - Development roadmap, testing priorities, feature plans
+- **INTEGRATION_PLAN.md** - 3-week development plan, architecture decisions
+- **TESTING_PLAN.md** - Step-by-step testing procedures
+
+### Technical Documentation (in docs/)
 - **docs/API.md** - API endpoints, request/response formats
 - **docs/DEPLOYMENT.md** - Deployment procedures for server and client
-
-### Planning & Testing
-- **INTEGRATION_PLAN.md** - 3-week development roadmap
-- **TESTING_PLAN.md** - Step-by-step testing procedures
-- **TESTING_GUIDE.md** - Detailed testing workflows
-
-### Historical Context
-- **CHAT_HISTORY.md** - Initial requirements and architecture discussions
-- **PROJECT_AUDIT_REPORT.md** - Code quality audit from Dec 29
 
 ## 🧠 AGENT WORKFLOW (from AGENT_PROTOCOL.md)
 
