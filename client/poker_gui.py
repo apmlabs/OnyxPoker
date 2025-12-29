@@ -627,21 +627,29 @@ class OnyxPokerGUI:
     
     # Calibration actions
     def scan_windows(self):
-        """Simplified - just use the currently focused window"""
+        """Capture the window that was active before clicking this button"""
         self.window_list.delete(0, tk.END)
-        self.calib_status.config(text="Getting active window...", foreground="blue")
-        self.log("🔍 Getting currently focused window...")
+        self.calib_status.config(text="Waiting...", foreground="blue")
+        self.log("🔍 Click on your poker window in 3 seconds...")
         self.root.update()
         
+        # Give user 3 seconds to click on poker window
+        import time
+        for i in range(3, 0, -1):
+            self.calib_status.config(text=f"Click poker window... {i}", foreground="orange")
+            self.log(f"  {i}...")
+            self.root.update()
+            time.sleep(1)
+        
         try:
-            # Get the active window
+            # Now get the active window (should be poker window)
             active_window = gw.getActiveWindow()
             
             if not active_window or not active_window.title:
                 self.calib_status.config(text="❌ No active window", foreground="red")
                 self.log("❌ No active window detected")
-                self.log("💡 Click on your poker window first, then click Scan")
-                messagebox.showwarning("No Active Window", "Click on your poker window first, then click Scan Windows.")
+                self.log("💡 Make sure you clicked on poker window during countdown")
+                messagebox.showwarning("No Active Window", "No window was focused during countdown.\nTry again and click on your poker window.")
                 return
             
             # Store as single window
@@ -656,7 +664,7 @@ class OnyxPokerGUI:
             
             display_text = f"{active_window.title} ({active_window.width}x{active_window.height})"
             self.window_list.insert(tk.END, display_text)
-            self.log(f"✓ Active window: {display_text}")
+            self.log(f"✓ Captured: {display_text}")
             
             # Auto-select it
             self.window_list.selection_set(0)
