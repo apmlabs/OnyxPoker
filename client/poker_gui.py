@@ -9,6 +9,7 @@ import queue
 import json
 from datetime import datetime
 from PIL import Image, ImageTk
+import pygetwindow as gw
 from poker_bot import OnyxPokerBot
 from poker_reader import PokerScreenReader
 from automation_client import OnyxPokerClient
@@ -253,17 +254,20 @@ class OnyxPokerGUI:
         inst_text.config(state="disabled")
         
         # Step 1: Window Selection
-        step1 = ttk.LabelFrame(tab, text="Step 1: Find Poker Window", padding=10)
+        step1 = ttk.LabelFrame(tab, text="Step 1: Capture Active Window", padding=10)
         step1.pack(fill="x", padx=10, pady=5)
         
-        self.window_list = tk.Listbox(step1, height=4, font=("Arial", 10))
+        inst = ttk.Label(step1, text="1. Click on your poker window to focus it\n2. Click 'Capture Active Window' below", 
+                        font=("Arial", 9), foreground="blue")
+        inst.pack(pady=5)
+        
+        self.window_list = tk.Listbox(step1, height=2, font=("Arial", 10))
         self.window_list.pack(fill="x", pady=5)
         
         btn_frame1 = ttk.Frame(step1)
         btn_frame1.pack(fill="x")
         
-        ttk.Button(btn_frame1, text="🔍 Scan Windows", command=self.scan_windows).pack(side="left", padx=5)
-        ttk.Button(btn_frame1, text="✓ Select", command=self.select_window).pack(side="left", padx=5)
+        ttk.Button(btn_frame1, text="📸 Capture Active Window", command=self.scan_windows).pack(side="left", padx=5)
         
         if not self.detector.can_capture_background:
             ttk.Label(step1, text="⚠️ Window must be visible (not minimized)", 
@@ -623,29 +627,51 @@ class OnyxPokerGUI:
     
     # Calibration actions
     def scan_windows(self):
+        """Simplified - just use the currently focused window"""
         self.window_list.delete(0, tk.END)
-        self.calib_status.config(text="Scanning...", foreground="blue")
-        self.log("🔍 Scanning for poker windows...")
+        self.calib_status.config(text="Getting active window...", foreground="blue")
+        self.log("🔍 Getting currently focused window...")
         self.root.update()
         
-        self.windows = self.detector.find_poker_windows()
-        
-        self.log(f"Found {len(self.windows)} window(s)")
-        
-        if not self.windows:
-            self.calib_status.config(text="❌ No windows found", foreground="red")
-            self.log("❌ No poker windows detected")
-            self.log("💡 Make sure PokerStars is open and a table is visible")
-            messagebox.showwarning("No Windows", "No poker windows detected.\nOpen PokerStars and try again.")
-            return
-        
-        for i, win in enumerate(self.windows):
-            display_text = f"{i+1}. {win['title']} ({win['width']}x{win['height']})"
+        try:
+            # Get the active window
+            active_window = gw.getActiveWindow()
+            
+            if not active_window or not active_window.title:
+                self.calib_status.config(text="❌ No active window", foreground="red")
+                self.log("❌ No active window detected")
+                self.log("💡 Click on your poker window first, then click Scan")
+                messagebox.showwarning("No Active Window", "Click on your poker window first, then click Scan Windows.")
+                return
+            
+            # Store as single window
+            self.windows = [{
+                'title': active_window.title,
+                'left': active_window.left,
+                'top': active_window.top,
+                'width': active_window.width,
+                'height': active_window.height,
+                'window': active_window
+            }]
+            
+            display_text = f"{active_window.title} ({active_window.width}x{active_window.height})"
             self.window_list.insert(tk.END, display_text)
-            self.log(f"  {display_text}")
-        
-        self.calib_status.config(text=f"✓ Found {len(self.windows)} window(s)", foreground="green")
-        self.log(f"✓ Found {len(self.windows)} window(s) - select one from the list")
+            self.log(f"✓ Active window: {display_text}")
+            
+            # Auto-select it
+            self.window_list.selection_set(0)
+            self.selected_window = self.windows[0]
+            
+            self.calib_status.config(text=f"✓ Ready: {active_window.title}", foreground="green")
+            self.log("💡 Press F12 to hide this window, then F8 to capture")
+            
+            # Update overlay
+            if hasattr(self, 'mini_overlay') and self.mini_overlay:
+                self.mini_overlay.set_next_step("scan_done")
+                
+        except Exception as e:
+            self.calib_status.config(text=f"❌ Error: {e}", foreground="red")
+            self.log(f"❌ Error getting active window: {e}", "ERROR")
     
     def select_window(self):
         sel = self.window_list.curselection()
