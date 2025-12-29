@@ -1,22 +1,21 @@
 """
-Poker screen reader - OCR and state parsing
-Adapted from GitHub skeleton
+Poker screen reader - GPT-4o Vision-based detection
+Replaces OCR with AI that understands poker
 """
 
 import pyautogui
 from PIL import Image
-import pytesseract
-import re
-import cv2
-import numpy as np
+import tempfile
+import os
 from typing import Dict, List, Tuple
 import config
-from card_matcher import CardMatcher
+from vision_detector import VisionDetector
 
 class PokerScreenReader:
     def __init__(self):
         pyautogui.FAILSAFE = True
-        self.card_matcher = CardMatcher()
+        self.vision = VisionDetector()
+    
     
     def capture_region(self, region: Tuple[int, int, int, int]) -> Image.Image:
         """Capture screen region relative to table"""
@@ -97,15 +96,43 @@ class PokerScreenReader:
         return bool(actions.get('call', '').strip())
     
     def parse_game_state(self) -> Dict:
-        """Parse complete game state"""
-        return {
-            'hero_cards': self.get_hole_cards(),
-            'community_cards': self.get_community_cards(),
-            'pot': self.get_pot_size(),
-            'stacks': self.get_stack_sizes(),
-            'actions': self.get_action_buttons(),
-        }
+        """Parse complete game state using GPT-4o vision"""
+        # Capture full table screenshot
+        img = pyautogui.screenshot(region=config.TABLE_REGION)
+        
+        # Save to temp file
+        with tempfile.NamedTemporaryFile(suffix='.png', delete=False) as f:
+            img.save(f.name)
+            temp_path = f.name
+        
+        try:
+            # Use GPT-4o to analyze
+            result = self.vision.detect_poker_elements(temp_path)
+            
+            # Convert to expected format
+            return {
+                'hero_cards': result.get('hero_cards', ['??', '??']),
+                'community_cards': result.get('community_cards', []),
+                'pot': result.get('pot', 0),
+                'hero_stack': result.get('hero_stack', 0),
+                'stacks': result.get('opponent_stacks', []),
+                'to_call': result.get('to_call', 0),
+                'min_raise': result.get('min_raise', 0),
+                'actions': result.get('available_actions', []),
+                'button_positions': result.get('button_positions', {}),
+                'confidence': result.get('confidence', 0.0)
+            }
+        finally:
+            # Cleanup temp file
+            if os.path.exists(temp_path):
+                os.unlink(temp_path)
     
+    def is_hero_turn(self) -> bool:
+        """Check if it's hero's turn"""
+        state = self.parse_game_state()
+        actions = state.get('actions', [])
+        return len(actions) > 0 and 'fold' in [a.lower() for a in actions]
+
     def capture_screenshot(self) -> str:
         """Capture full table as base64"""
         import io
