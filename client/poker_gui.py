@@ -22,7 +22,10 @@ class OnyxPokerGUI:
     def __init__(self, root):
         self.root = root
         self.root.title("OnyxPoker - AI Poker Bot")
-        self.root.geometry("1200x800")
+        
+        # Maximize window
+        self.root.state('zoomed')  # Windows
+        # self.root.attributes('-zoomed', True)  # Linux (if needed)
         
         # Bot state
         self.bot = None
@@ -661,10 +664,19 @@ ACTION_DELAY = 2.0
             messagebox.showwarning("No State", "Please capture a screenshot first using '📸 Capture Now' button")
             return
         
-        # Create progress window
+        # Create progress window (centered)
         progress = tk.Toplevel(self.root)
         progress.title("Kiro Validation")
-        progress.geometry("400x150")
+        
+        # Center progress window
+        progress_width = 500
+        progress_height = 200
+        screen_width = self.root.winfo_screenwidth()
+        screen_height = self.root.winfo_screenheight()
+        x = (screen_width - progress_width) // 2
+        y = (screen_height - progress_height) // 2
+        progress.geometry(f"{progress_width}x{progress_height}+{x}+{y}")
+        
         progress.transient(self.root)
         progress.grab_set()
         
@@ -732,7 +744,16 @@ ACTION_DELAY = 2.0
                 # Show detailed response in popup with selectable text
                 popup = tk.Toplevel(self.root)
                 popup.title("Kiro Validation Result")
-                popup.geometry("600x500")
+                
+                # Center and size popup (80% of screen)
+                screen_width = self.root.winfo_screenwidth()
+                screen_height = self.root.winfo_screenheight()
+                popup_width = int(screen_width * 0.6)
+                popup_height = int(screen_height * 0.7)
+                x = (screen_width - popup_width) // 2
+                y = (screen_height - popup_height) // 2
+                popup.geometry(f"{popup_width}x{popup_height}+{x}+{y}")
+                
                 popup.transient(self.root)
                 
                 # Header
