@@ -78,6 +78,82 @@ def health_check():
         "version": "1.0.0"
     })
 
+@app.route('/detect-elements', methods=['POST'])
+def detect_elements():
+    """Detect poker table elements using Kiro CLI vision"""
+    if not authenticate_request():
+        return jsonify({"error": "Unauthorized"}), 401
+    
+    try:
+        data = request.get_json()
+        image_data = data.get('image')
+        
+        if not image_data:
+            return jsonify({"error": "No image provided"}), 400
+        
+        # Save screenshot to temp file
+        img_bytes = base64.b64decode(image_data)
+        with tempfile.NamedTemporaryFile(suffix='.png', dir=TEMP_DIR, delete=False) as f:
+            f.write(img_bytes)
+            temp_path = f.name
+        
+        try:
+            # Ask Kiro to analyze the poker table screenshot
+            prompt = """Analyze this poker table screenshot and identify UI element locations.
+
+Look for:
+1. Action buttons (Fold, Call, Raise/Bet) - usually at bottom
+2. Pot amount display - usually center-top
+3. Player cards area - usually bottom-center
+
+For each element, provide approximate position as percentage of image dimensions.
+
+Respond in JSON format:
+{
+  "elements": [
+    {"type": "fold_button", "x_percent": 25, "y_percent": 85, "width_percent": 10, "height_percent": 5},
+    {"type": "call_button", "x_percent": 45, "y_percent": 85, "width_percent": 10, "height_percent": 5},
+    {"type": "raise_button", "x_percent": 65, "y_percent": 85, "width_percent": 10, "height_percent": 5},
+    {"type": "pot_region", "x_percent": 45, "y_percent": 25, "width_percent": 10, "height_percent": 5}
+  ]
+}"""
+            
+            result = subprocess.run(
+                [KIRO_CLI_PATH, 'chat', '--image', temp_path, prompt],
+                capture_output=True,
+                text=True,
+                timeout=180
+            )
+            
+            if result.returncode != 0:
+                logger.error(f"Kiro CLI error: {result.stderr}")
+                return jsonify({"error": "Kiro CLI failed", "details": result.stderr}), 500
+            
+            # Parse Kiro's response
+            response = result.stdout.strip()
+            logger.info(f"Kiro response: {response}")
+            
+            # Try to extract JSON from response
+            try:
+                import re
+                json_match = re.search(r'\{.*\}', response, re.DOTALL)
+                if json_match:
+                    elements_data = json.loads(json_match.group())
+                else:
+                    elements_data = {"raw_response": response, "elements": []}
+            except:
+                elements_data = {"raw_response": response, "elements": []}
+            
+            return jsonify(elements_data)
+            
+        finally:
+            if os.path.exists(temp_path):
+                os.unlink(temp_path)
+    
+    except Exception as e:
+        logger.error(f"Detection error: {str(e)}")
+        return jsonify({"error": str(e)}), 500
+
 @app.route('/analyze', methods=['POST'])
 def analyze_screenshot():
     """
