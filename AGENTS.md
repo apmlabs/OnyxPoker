@@ -66,7 +66,36 @@ This project uses multiple markdown files for different purposes. **As an agent,
 
 ## RECENT LEARNINGS (2025-12-29)
 
-### Auto-Calibration System
+### Card Recognition System (14:15 UTC)
+**Challenge**: Need automated card detection without manual template creation
+
+**Solution**: Built complete automated system:
+- Synthetic template generation (52 cards)
+- OpenCV template matching
+- Kiro CLI validation
+- GUI integration
+
+**Key Insights**:
+- Synthetic templates work for initial testing
+- Template matching is fast (<50ms per card)
+- Kiro CLI can validate if detected state makes sense
+- Real card captures may be needed for production accuracy
+- Validation feedback loop helps catch OCR errors
+
+**What Worked**:
+✅ Automated template generation with PIL
+✅ OpenCV TM_CCOEFF_NORMED matching
+✅ Kiro CLI validation integration
+✅ GUI shows validation status with color coding
+✅ Complete pipeline: generate → match → validate → display
+
+**What to Test**:
+🔄 Accuracy on real PokerStars tables
+🔄 Confidence thresholds (currently 0.7)
+🔄 Different card designs/themes
+🔄 Kiro's understanding of poker situations
+
+### Auto-Calibration System (13:53 UTC)
 **Challenge**: Manual coordinate calibration is tedious and error-prone
 
 **Solution**: Built intelligent auto-detection using:
@@ -147,7 +176,7 @@ This project uses multiple markdown files for different purposes. **As an agent,
 - **Authentication**: Bearer token (yNJ-qFbJJGCFp8A5WA1RuQB4KqIjPqBYt783x3otVhU)
 - **Documentation**: See docs/API.md for full specification
 
-## CURRENT PROJECT STATUS (2025-12-29 13:56 UTC)
+## CURRENT PROJECT STATUS (2025-12-29 14:15 UTC)
 
 **See AmazonQ.md for detailed status tracking**
 
@@ -157,14 +186,18 @@ This project uses multiple markdown files for different purposes. **As an agent,
 - Windows client framework (automation_client.py)
 - Poker-specific OCR (poker_reader.py)
 - Main bot orchestrator (poker_bot.py)
-- **NEW**: Unified GUI with 3 tabs (poker_gui.py)
-- **NEW**: Auto-calibration system (window_detector.py)
-- **NEW**: Debug tab with OCR analysis and screenshots
+- Unified GUI with 3 tabs (poker_gui.py)
+- Auto-calibration system (window_detector.py)
+- Debug tab with OCR analysis and screenshots
+- **NEW**: Automated card template generation
+- **NEW**: Card recognition using OpenCV template matching
+- **NEW**: Kiro CLI validation for table state and UI
+- **NEW**: GUI integration with validation buttons
 - Server-client communication tested and working
 
 ### In Progress 🔄
-- Card recognition (template matching) - NEXT
-- Testing and validation - AFTER CARDS
+- Testing card recognition on real tables - NEXT
+- Validating Kiro CLI understanding
 - Fine-tuning OCR accuracy
 
 ### Not Started 📝
