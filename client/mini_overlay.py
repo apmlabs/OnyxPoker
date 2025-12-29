@@ -149,15 +149,33 @@ class MiniOverlay:
         if step == "calibrate":
             self.decision_label.config(text="📋 Setup Needed", fg='#ffaa00')
             self.reasoning_label.config(text="Press Ctrl+C to calibrate\nOr F12 to open main window")
+            self.table_label.config(text="Step 1: Scan Windows")
+            self.cards_label.config(text="Step 2: Select poker window")
+            self.stack_label.config(text="Step 3: Press F12, then Ctrl+T")
+        elif step == "scan_done":
+            self.decision_label.config(text="📸 Capture Table", fg='#00aaff')
+            self.reasoning_label.config(text="Press F12 to hide this window\nThen press Ctrl+T to capture")
+            self.table_label.config(text="✓ Window selected")
+            self.cards_label.config(text="Next: F12 (hide)")
+            self.stack_label.config(text="Then: Ctrl+T (capture)")
         elif step == "test":
             self.decision_label.config(text="📸 Test OCR", fg='#00aaff')
             self.reasoning_label.config(text="Press Ctrl+T to test OCR\nOr F9 to capture & analyze")
+            self.table_label.config(text="Calibration saved!")
+            self.cards_label.config(text="Test: Ctrl+T")
+            self.stack_label.config(text="Or: F9 to analyze")
         elif step == "ready":
             self.decision_label.config(text="✅ Ready!", fg='#00ff00')
             self.reasoning_label.config(text="Press F9 to get AI advice\nBot is ready to help!")
+            self.table_label.config(text="All set!")
+            self.cards_label.config(text="F9: Get advice")
+            self.stack_label.config(text="F10: Start bot")
         elif step == "playing":
             self.decision_label.config(text="🎮 Playing", fg='#00ffff')
             self.reasoning_label.config(text="Waiting for your turn...\nPress F9 for advice anytime")
+            self.table_label.config(text="Bot active")
+            self.cards_label.config(text="F9: Analyze")
+            self.stack_label.config(text="F11: Emergency stop")
     
     def show(self):
         """Show the overlay"""

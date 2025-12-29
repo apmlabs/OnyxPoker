@@ -144,10 +144,28 @@ class HotkeyManager:
             self.parent.log(f"❌ Ctrl+C error: {e}", "ERROR")
     
     def on_ctrl_t_test_ocr(self):
-        """Ctrl+T - Test OCR"""
+        """Ctrl+T - Test OCR or Auto-Detect (context-aware)"""
         try:
-            self.parent.log("🔥 Ctrl+T pressed - Testing OCR...")
-            # Capture and show results
+            self.parent.log("🔥 Ctrl+T pressed...")
+            
+            # Check if we're in calibration mode (window selected but not calibrated)
+            if hasattr(self.parent, 'selected_window') and self.parent.selected_window:
+                # Check if already calibrated
+                try:
+                    import config
+                    if not hasattr(config, 'TABLE_REGION') or config.TABLE_REGION == (0, 0, 0, 0):
+                        # Not calibrated yet - do auto-detect
+                        self.parent.log("Running auto-detection...")
+                        self.parent.root.after(0, self.parent.auto_detect)
+                        return
+                except:
+                    # No config yet - do auto-detect
+                    self.parent.log("Running auto-detection...")
+                    self.parent.root.after(0, self.parent.auto_detect)
+                    return
+            
+            # Already calibrated - do OCR test
+            self.parent.log("Testing OCR...")
             self.parent.root.after(0, self.parent.capture_debug)
             # Show main window and switch to debug tab
             self.parent.root.after(100, self.parent.root.deiconify)

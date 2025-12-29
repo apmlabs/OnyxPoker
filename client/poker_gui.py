@@ -628,6 +628,10 @@ class OnyxPokerGUI:
         
         if self.detector.activate_window(self.selected_window):
             self.calib_status.config(text=f"✓ Selected: {self.selected_window['title']}", foreground="green")
+            # Update overlay to show next step
+            if hasattr(self, 'mini_overlay') and self.mini_overlay:
+                self.mini_overlay.set_next_step("scan_done")
+            self.log("✓ Window selected. Press F12 to hide, then Ctrl+T to capture")
         else:
             self.calib_status.config(text="❌ Failed to activate", foreground="red")
     
@@ -653,12 +657,20 @@ class OnyxPokerGUI:
                 conf = self.detected_elements.get('confidence', 0)
                 self.confidence_label.config(text=f"Confidence: {conf:.1%}", 
                                             foreground="green" if conf > 0.7 else "orange")
+                
+                # Show main window with results
+                self.root.deiconify()
+                self.root.lift()
+                self.notebook.select(1)  # Show calibration tab
+                
+                self.log("✓ Auto-detection complete. Review preview and click 'Save Configuration'")
             else:
                 self.calib_status.config(text=f"❌ {msg}", foreground="red")
                 messagebox.showerror("Detection Failed", msg)
         
         except Exception as e:
             self.calib_status.config(text=f"❌ Error: {e}", foreground="red")
+            self.log(f"❌ Auto-detect error: {e}", "ERROR")
     
     def save_calibration(self):
         if not self.detected_elements:
@@ -700,6 +712,12 @@ ACTION_DELAY = 2.0
             
             messagebox.showinfo("Success", "Configuration saved!")
             self.log("✅ Calibration saved to config.py", "SUCCESS")
+            
+            # Update overlay to test state
+            if hasattr(self, 'mini_overlay') and self.mini_overlay:
+                self.mini_overlay.set_next_step("test")
+            
+            self.log("Next: Press Ctrl+T to test OCR, or F9 to analyze a hand")
         
         except Exception as e:
             messagebox.showerror("Save Failed", str(e))
