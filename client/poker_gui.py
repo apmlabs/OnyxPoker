@@ -13,6 +13,9 @@ from poker_bot import OnyxPokerBot
 from poker_reader import PokerScreenReader
 from automation_client import OnyxPokerClient
 from window_detector import WindowDetector
+from mini_overlay import MiniOverlay
+from hotkey_manager import HotkeyManager
+from system_tray import SystemTrayIcon
 import config
 import logging
 
@@ -44,6 +47,11 @@ class OnyxPokerGUI:
         self.last_decision = {}
         self.last_screenshot = None
         
+        # Mini overlay and hotkeys
+        self.mini_overlay = None
+        self.hotkey_manager = None
+        self.system_tray = None
+        
         # Create notebook (tabs)
         self.notebook = ttk.Notebook(self.root)
         self.notebook.pack(fill="both", expand=True, padx=5, pady=5)
@@ -53,8 +61,32 @@ class OnyxPokerGUI:
         self.create_calibration_tab()
         self.create_debug_tab()
         
+        # Initialize mini overlay, hotkeys, system tray
+        self.init_advanced_features()
+        
         # Start log updater
         self.update_log()
+        
+    def init_advanced_features(self):
+        """Initialize mini overlay, hotkeys, and system tray"""
+        try:
+            # Create mini overlay
+            self.mini_overlay = MiniOverlay(self)
+            self.mini_overlay.show()
+            self.log("✅ Mini overlay created")
+            
+            # Register hotkeys
+            self.hotkey_manager = HotkeyManager(self)
+            self.hotkey_manager.register_hotkeys()
+            
+            # Create system tray icon
+            self.system_tray = SystemTrayIcon(self)
+            self.system_tray.run()
+            self.log("✅ System tray icon created")
+            
+        except Exception as e:
+            self.log(f"⚠️ Could not initialize advanced features: {e}", "WARNING")
+            self.log("💡 Some features may require 'pip install keyboard pystray'", "INFO")
         
     def create_control_tab(self):
         """Main control panel"""
@@ -395,6 +427,13 @@ class OnyxPokerGUI:
         # Update debug tab
         self.state_text.delete("1.0", "end")
         self.state_text.insert("1.0", json.dumps(state, indent=2))
+        
+        # Update mini overlay
+        if self.mini_overlay:
+            try:
+                self.mini_overlay.update_info(state, decision)
+            except:
+                pass
         
     # Control actions
     def test_connection(self):
