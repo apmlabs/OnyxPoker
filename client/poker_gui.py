@@ -288,21 +288,19 @@ class OnyxPokerGUI:
         desc_text = tk.Text(desc, height=3, wrap="word", font=("Arial", 9), bg="#e6f3ff")
         desc_text.pack(fill="x")
         desc_text.insert("1.0",
-            "This tab is for manual testing and debugging:\n"
-            "• Capture screenshots to see what the bot sees\n"
-            "• Test OCR to verify pot/stack reading accuracy\n"
-            "• Validate with Kiro CLI to check if game state makes sense"
+            "This tab is for testing OCR after calibration:\n"
+            "• Press F8 to capture poker table and test OCR\n"
+            "• Verify pot/stack amounts are read correctly\n"
+            "• Use Kiro validation to check if game state makes sense"
         )
         desc_text.config(state="disabled")
         
         # Screenshot preview
-        preview_frame = ttk.LabelFrame(tab, text="Table Screenshot", padding=10)
+        preview_frame = ttk.LabelFrame(tab, text="Table Screenshot (Press F8 to capture)", padding=10)
         preview_frame.pack(fill="both", expand=True, padx=10, pady=5)
         
         self.debug_canvas = tk.Canvas(preview_frame, bg="black", height=300)
         self.debug_canvas.pack(fill="both", expand=True)
-        
-        ttk.Button(preview_frame, text="📸 Capture Now", command=self.capture_debug).pack(pady=5)
         
         # Kiro Validation Panel
         kiro_frame = ttk.LabelFrame(tab, text="🤖 Kiro CLI Validation", padding=10)
