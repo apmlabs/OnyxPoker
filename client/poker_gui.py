@@ -209,18 +209,28 @@ class OnyxPokerGUI:
         
         ttk.Button(preview_frame, text="📸 Capture Now", command=self.capture_debug).pack(pady=5)
         
+        # Kiro Validation Panel
+        kiro_frame = ttk.LabelFrame(tab, text="🤖 Kiro CLI Validation", padding=10)
+        kiro_frame.pack(fill="x", padx=10, pady=5)
+        
+        ttk.Button(kiro_frame, text="✓ Validate State", command=self.validate_with_kiro).pack(side="left", padx=5)
+        ttk.Button(kiro_frame, text="✓ Validate UI", command=self.validate_ui_with_kiro).pack(side="left", padx=5)
+        
+        self.kiro_status = ttk.Label(kiro_frame, text="Not validated", foreground="gray")
+        self.kiro_status.pack(side="left", padx=10)
+        
         # OCR Results
         ocr_frame = ttk.LabelFrame(tab, text="OCR Analysis", padding=10)
         ocr_frame.pack(fill="both", expand=True, padx=10, pady=5)
         
-        self.ocr_text = scrolledtext.ScrolledText(ocr_frame, height=10, wrap="word", font=("Courier", 9))
+        self.ocr_text = scrolledtext.ScrolledText(ocr_frame, height=8, wrap="word", font=("Courier", 9))
         self.ocr_text.pack(fill="both", expand=True)
         
         # Raw State
         state_frame = ttk.LabelFrame(tab, text="Raw Game State (JSON)", padding=10)
         state_frame.pack(fill="both", expand=True, padx=10, pady=5)
         
-        self.state_text = scrolledtext.ScrolledText(state_frame, height=8, wrap="word", font=("Courier", 9))
+        self.state_text = scrolledtext.ScrolledText(state_frame, height=6, wrap="word", font=("Courier", 9))
         self.state_text.pack(fill="both", expand=True)
         
     # Logging
@@ -504,6 +514,7 @@ ACTION_DELAY = 2.0
             
             # Run OCR
             state = reader.parse_game_state()
+            self.last_state = state
             self.ocr_text.delete("1.0", "end")
             self.ocr_text.insert("1.0", f"Pot: ${state['pot']}\n")
             self.ocr_text.insert("end", f"Stacks: {state['stacks']}\n")
@@ -514,6 +525,59 @@ ACTION_DELAY = 2.0
             self.log("📸 Debug capture complete")
         except Exception as e:
             self.log(f"❌ Capture error: {e}", "ERROR")
+    
+    def validate_with_kiro(self):
+        """Validate current table state with Kiro CLI"""
+        if not self.last_state:
+            messagebox.showwarning("No State", "Capture a screenshot first")
+            return
+        
+        self.log("🤖 Validating state with Kiro CLI...")
+        try:
+            from kiro_validator import KiroValidator
+            validator = KiroValidator()
+            result = validator.validate_table_state(self.last_state)
+            
+            if result['understood']:
+                self.kiro_status.config(text=f"✓ Valid (conf: {result['confidence']:.2f})", foreground="green")
+                self.log(f"✅ Kiro validated: {result['interpretation'][:100]}", "SUCCESS")
+            else:
+                self.kiro_status.config(text="✗ Invalid", foreground="red")
+                self.log(f"⚠️ Kiro concerns: {result['concerns']}", "WARNING")
+            
+            # Show full response
+            messagebox.showinfo("Kiro Validation", 
+                f"Valid: {result['understood']}\n"
+                f"Confidence: {result['confidence']:.2f}\n"
+                f"Concerns: {', '.join(result['concerns'])}\n\n"
+                f"Interpretation:\n{result['interpretation']}")
+        except Exception as e:
+            self.log(f"❌ Validation error: {e}", "ERROR")
+            messagebox.showerror("Error", str(e))
+    
+    def validate_ui_with_kiro(self):
+        """Validate UI detection with Kiro CLI"""
+        if not self.detected_elements:
+            messagebox.showwarning("No Detection", "Run calibration first")
+            return
+        
+        self.log("🤖 Validating UI with Kiro CLI...")
+        try:
+            from kiro_validator import KiroValidator
+            validator = KiroValidator()
+            result = validator.validate_ui_detection(self.detected_elements)
+            
+            if result['valid']:
+                self.kiro_status.config(text="✓ UI Valid", foreground="green")
+                self.log("✅ Kiro validated UI layout", "SUCCESS")
+            else:
+                self.kiro_status.config(text="✗ UI Invalid", foreground="red")
+                self.log(f"⚠️ UI concerns: {result['concerns']}", "WARNING")
+            
+            messagebox.showinfo("UI Validation", result['response'])
+        except Exception as e:
+            self.log(f"❌ Validation error: {e}", "ERROR")
+            messagebox.showerror("Error", str(e))
     
     def show_preview(self, img, canvas):
         """Display image on canvas"""

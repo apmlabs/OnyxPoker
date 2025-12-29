@@ -7,12 +7,16 @@ import pyautogui
 from PIL import Image
 import pytesseract
 import re
+import cv2
+import numpy as np
 from typing import Dict, List, Tuple
 import config
+from card_matcher import CardMatcher
 
 class PokerScreenReader:
     def __init__(self):
         pyautogui.FAILSAFE = True
+        self.card_matcher = CardMatcher()
     
     def capture_region(self, region: Tuple[int, int, int, int]) -> Image.Image:
         """Capture screen region relative to table"""
@@ -35,12 +39,32 @@ class PokerScreenReader:
         return int(match.group()) if match else 0
     
     def get_hole_cards(self) -> List[str]:
-        """Get hero's cards (placeholder - needs template matching)"""
-        return ['??', '??']  # TODO: Implement card recognition
+        """Get hero's cards using template matching"""
+        cards = []
+        for region in config.HOLE_CARD_REGIONS:
+            img = self.capture_region(region)
+            # Convert PIL to OpenCV format
+            img_cv = cv2.cvtColor(np.array(img), cv2.COLOR_RGB2BGR)
+            card_name, confidence = self.card_matcher.match_card(img_cv)
+            if card_name and confidence > 0.7:
+                cards.append(self.card_matcher.format_card(card_name))
+            else:
+                cards.append('??')
+        return cards
     
     def get_community_cards(self) -> List[str]:
-        """Get board cards (placeholder)"""
-        return []  # TODO: Implement card recognition
+        """Get board cards using template matching"""
+        if not hasattr(config, 'COMMUNITY_CARD_REGIONS'):
+            return []
+        
+        cards = []
+        for region in config.COMMUNITY_CARD_REGIONS:
+            img = self.capture_region(region)
+            img_cv = cv2.cvtColor(np.array(img), cv2.COLOR_RGB2BGR)
+            card_name, confidence = self.card_matcher.match_card(img_cv)
+            if card_name and confidence > 0.7:
+                cards.append(self.card_matcher.format_card(card_name))
+        return cards
     
     def get_pot_size(self) -> int:
         """OCR pot size"""
