@@ -66,6 +66,38 @@ This project uses multiple markdown files for different purposes. **As an agent,
 
 ## RECENT LEARNINGS (2025-12-29)
 
+### Complete Hotkey Workflow (15:54 UTC)
+**Challenge**: User can't position windows side-by-side, needs pure hotkey workflow
+
+**Solution**: Complete hotkey-driven system with overlay guidance:
+- Auto-hide main window after 2 seconds
+- Mini overlay shows next step ("Calibrate", "Test OCR", "Ready")
+- Ctrl+C opens calibration tab
+- Ctrl+T tests OCR and shows debug tab
+- F9 works in background for analysis
+
+**Key Insights**:
+- Users may not be able to position windows side-by-side
+- Overlay must guide user through entire setup process
+- Every action needs a hotkey (no mouse required)
+- Status detection shows appropriate next step
+- Auto-hide eliminates manual window management
+
+**What Worked**:
+✅ Auto-hide after 2 seconds (smooth UX)
+✅ Overlay guidance (always know what to do next)
+✅ Ctrl+C for calibration (intuitive)
+✅ Ctrl+T for testing (logical progression)
+✅ Status detection (checks config.py existence)
+✅ Tab switching on hotkey press (opens correct tab)
+
+**Implementation Details**:
+- `mini_overlay.py`: Added `set_next_step()` method with 4 states
+- `hotkey_manager.py`: Added Ctrl+C and Ctrl+T handlers
+- `poker_gui.py`: Added `auto_hide_window()` and `check_setup_status()`
+- Status states: "calibrate", "test", "ready", "playing"
+- Auto-hide uses `root.after(2000, self.root.withdraw)`
+
 ### Window Geometry Persistence (15:44 UTC)
 **Challenge**: Window size changed every time user showed/hid the window
 
