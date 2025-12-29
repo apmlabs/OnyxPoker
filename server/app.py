@@ -198,7 +198,7 @@ Respond with: VALID or INVALID, followed by your reasoning."""
         
         # Call Kiro CLI
         result = subprocess.run(
-            ['kiro-cli', 'chat', prompt],
+            ['/home/ubuntu/.local/bin/kiro-cli', 'chat', prompt],
             capture_output=True,
             text=True,
             timeout=180
