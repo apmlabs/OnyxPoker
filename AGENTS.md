@@ -64,6 +64,64 @@ This project uses **6 essential markdown files**. **As an agent, I must understa
 
 ## RECENT LEARNINGS (2025-12-29)
 
+### Session 8: Calibration Simplification - Learning from Overcomplication (19:15-19:30 UTC)
+**Challenge**: Overcomplicated calibration with unnecessary two-step process (F7 then F8)
+
+**Critical User Feedback**:
+- "Why do we need separately the window info and the screenshot?"
+- "You could do both in one go"
+- "Window info is not really necessary since we can't take screenshots of inactive windows anyway"
+- "I told you many times I won't be able to keep both windows open"
+
+**What I Did Wrong**:
+- Created F7 to capture window info, F8 to capture screenshot
+- Stored `selected_window` state variable
+- Made user do two steps when one would work
+- Ignored user's repeated feedback about single monitor setup
+- Overcomplicated a simple problem
+
+**What I Learned**:
+1. **Listen to user constraints** - User said "single monitor" multiple times, I kept designing for dual monitor
+2. **Question my assumptions** - I assumed we needed window info separately, but we don't
+3. **Simplify ruthlessly** - If you can do it in one step, don't make it two
+4. **Windows can't capture inactive windows** - This is a hard constraint, design around it
+5. **User feedback reveals real problems** - When user says "I told you many times", I missed something important
+
+**Solution Implemented**:
+- F8 now captures active window + detects elements in one step
+- Removed F7 window capture (F7 just opens calibration tab now)
+- Removed `selected_window` state variable
+- 68 lines of code removed
+- Workflow: Click poker window → F8 → Review → Save
+
+**Key Insight**:
+**When user repeats the same constraint multiple times, STOP and redesign from scratch with that constraint as the PRIMARY requirement, not an afterthought.**
+
+**What Worked**:
+✅ Single-step calibration (F8 does everything)
+✅ No separate window info storage
+✅ Simpler code (68 lines removed)
+✅ Matches user's actual workflow
+
+**What Didn't Work**:
+❌ Two-step process (F7 then F8)
+❌ Storing window info separately
+❌ Ignoring "single monitor" constraint
+❌ Not listening when user repeated feedback
+
+**Implementation Details**:
+- `auto_detect()`: Now calls `gw.getActiveWindow()` directly, captures screenshot, detects elements
+- `on_f8_test_ocr()`: Simplified to just call `auto_detect()` if not calibrated
+- `save_calibration()`: Uses `window_region` from detected_elements instead of selected_window
+- Removed all references to `selected_window`
+
+**Agent Learning Protocol**:
+- ✅ Updated AGENTS.md immediately after session
+- ✅ Documented what went wrong and why
+- ✅ Captured user feedback verbatim
+- ✅ Identified pattern: "user repeats constraint = I'm not listening"
+- ✅ Will check for repeated user feedback in future sessions
+
 ### Session 7: UI Improvements & Calibration Simplification (17:00-19:00 UTC)
 **Challenge**: UI cluttered with help content, calibration workflow too complex
 
