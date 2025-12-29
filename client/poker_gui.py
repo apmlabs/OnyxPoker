@@ -110,7 +110,10 @@ class OnyxPokerGUI:
             if os.path.exists('config.py'):
                 try:
                     import config
-                    if hasattr(config, 'TABLE_REGION') and config.TABLE_REGION != (0, 0, 0, 0):
+                    # Check if TABLE_REGION has real values (not placeholder 100, 100, 800, 600)
+                    if (hasattr(config, 'TABLE_REGION') and 
+                        config.TABLE_REGION != (0, 0, 0, 0) and
+                        config.TABLE_REGION != (100, 100, 800, 600)):  # Not placeholder
                         # Already calibrated - show ready
                         self.mini_overlay.set_next_step("ready")
                         return

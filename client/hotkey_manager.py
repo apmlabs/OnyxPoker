@@ -136,10 +136,12 @@ class HotkeyManager:
             
             # Check if we're in calibration mode (window selected but not calibrated)
             if hasattr(self.parent, 'selected_window') and self.parent.selected_window:
-                # Check if already calibrated
+                # Check if already calibrated (not placeholder values)
                 try:
                     import config
-                    if not hasattr(config, 'TABLE_REGION') or config.TABLE_REGION == (0, 0, 0, 0):
+                    if (not hasattr(config, 'TABLE_REGION') or 
+                        config.TABLE_REGION == (0, 0, 0, 0) or
+                        config.TABLE_REGION == (100, 100, 800, 600)):  # Placeholder
                         # Not calibrated yet - do auto-detect
                         self.parent.log("📸 Capturing poker table for calibration...")
                         self.parent.log("💡 Make sure poker table is visible!")
