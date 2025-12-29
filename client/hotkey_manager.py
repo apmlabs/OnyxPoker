@@ -134,14 +134,20 @@ class HotkeyManager:
     def on_f7_capture_window(self):
         """F7 - Capture active window for calibration"""
         try:
+            import pygetwindow as gw
+            
             self.parent.log("🔥 F7 pressed - Capturing active window...")
+            self.parent.log("💡 Getting currently focused window...")
             
             # Get the active window
-            import pygetwindow as gw
             active_window = gw.getActiveWindow()
             
-            if not active_window or not active_window.title:
-                self.parent.log("❌ No active window detected", "ERROR")
+            if not active_window:
+                self.parent.log("❌ No active window detected (active_window is None)", "ERROR")
+                return
+                
+            if not active_window.title:
+                self.parent.log("❌ Active window has no title", "ERROR")
                 return
             
             # Store the window
@@ -154,8 +160,10 @@ class HotkeyManager:
                 'window': active_window
             }
             
-            self.parent.log(f"✓ Captured: {active_window.title} ({active_window.width}x{active_window.height})")
-            self.parent.log("💡 Press F8 to capture screenshot and detect elements")
+            self.parent.log(f"✓ Window captured: {active_window.title}")
+            self.parent.log(f"  Size: {active_window.width}x{active_window.height}")
+            self.parent.log(f"  Position: ({active_window.left}, {active_window.top})")
+            self.parent.log("💡 Next: Press F8 to capture screenshot and detect elements")
             
             # Update overlay
             if hasattr(self.parent, 'mini_overlay') and self.parent.mini_overlay:
@@ -163,6 +171,8 @@ class HotkeyManager:
                 
         except Exception as e:
             self.parent.log(f"❌ F7 error: {e}", "ERROR")
+            import traceback
+            self.parent.log(f"   {traceback.format_exc()}", "ERROR")
     
     def on_f8_test_ocr(self):
         """F8 - Test OCR or Auto-Detect (context-aware)"""
