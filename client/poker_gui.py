@@ -705,22 +705,72 @@ ACTION_DELAY = 2.0
                 progress.after(0, lambda: progress_bar.stop())
                 progress.after(0, lambda: progress.destroy())
                 
+                # Log full interpretation to Activity Log
+                interpretation = result.get('interpretation', 'No interpretation')
+                self.log("=" * 50)
+                self.log("🤖 KIRO VALIDATION RESULT")
+                self.log("=" * 50)
+                
                 if result.get('understood', False):
                     conf = result.get('confidence', 0)
                     self.kiro_status.config(text=f"✓ Valid (conf: {conf:.2f})", foreground="green")
-                    self.log(f"✅ Kiro validated: {result.get('interpretation', '')[:100]}", "SUCCESS")
+                    self.log(f"✅ Status: VALID (confidence: {conf:.2f})")
                 else:
                     self.kiro_status.config(text="✗ Invalid", foreground="red")
                     concerns = result.get('concerns', ['Unknown issue'])
-                    self.log(f"⚠️ Kiro concerns: {concerns}", "WARNING")
+                    self.log(f"⚠️ Status: INVALID")
+                    self.log(f"⚠️ Concerns: {', '.join(concerns)}")
                 
-                # Show detailed response
-                msg = f"Valid: {result.get('understood', False)}\n"
-                msg += f"Confidence: {result.get('confidence', 0):.2f}\n"
-                msg += f"Concerns: {', '.join(result.get('concerns', []))}\n\n"
-                msg += f"Interpretation:\n{result.get('interpretation', 'No interpretation')}"
+                # Log full interpretation (line by line for readability)
+                self.log("📝 Kiro's Analysis:")
+                for line in interpretation.split('\n'):
+                    if line.strip():
+                        self.log(f"   {line.strip()}")
                 
-                messagebox.showinfo("Kiro Validation", msg)
+                self.log("=" * 50)
+                
+                # Show detailed response in popup with selectable text
+                popup = tk.Toplevel(self.root)
+                popup.title("Kiro Validation Result")
+                popup.geometry("600x500")
+                popup.transient(self.root)
+                
+                # Header
+                header_frame = ttk.Frame(popup)
+                header_frame.pack(fill="x", padx=10, pady=10)
+                
+                status_text = "✅ VALID" if result.get('understood', False) else "⚠️ INVALID"
+                status_color = "green" if result.get('understood', False) else "red"
+                ttk.Label(header_frame, text=status_text, font=("Arial", 14, "bold"), 
+                         foreground=status_color).pack()
+                ttk.Label(header_frame, text=f"Confidence: {result.get('confidence', 0):.2f}",
+                         font=("Arial", 10)).pack()
+                
+                if result.get('concerns'):
+                    ttk.Label(header_frame, text=f"Concerns: {', '.join(result.get('concerns', []))}",
+                             font=("Arial", 9), foreground="orange").pack()
+                
+                # Scrollable text area
+                text_frame = ttk.Frame(popup)
+                text_frame.pack(fill="both", expand=True, padx=10, pady=5)
+                
+                text_widget = scrolledtext.ScrolledText(text_frame, wrap="word", font=("Courier", 9))
+                text_widget.pack(fill="both", expand=True)
+                text_widget.insert("1.0", interpretation)
+                text_widget.config(state="normal")  # Keep editable for copy-paste
+                
+                # Buttons
+                btn_frame = ttk.Frame(popup)
+                btn_frame.pack(fill="x", padx=10, pady=10)
+                
+                def copy_result():
+                    popup.clipboard_clear()
+                    popup.clipboard_append(interpretation)
+                    popup.update()
+                    messagebox.showinfo("Copied", "Validation result copied to clipboard!", parent=popup)
+                
+                ttk.Button(btn_frame, text="📋 Copy to Clipboard", command=copy_result).pack(side="left", padx=5)
+                ttk.Button(btn_frame, text="Close", command=popup.destroy).pack(side="right", padx=5)
             except Exception as e:
                 progress.after(0, lambda: progress_bar.stop())
                 progress.after(0, lambda: progress.destroy())
