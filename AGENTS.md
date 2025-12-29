@@ -10,6 +10,8 @@
 - `logs/` directory (may contain sensitive automation data)
 - Windows client configuration files with credentials
 - API authentication keys and secrets
+- `SERVER_TEST_REPORT.md` (contains API keys and server details)
+- `SERVER_QUICK_REFERENCE.md` (contains connection details)
 
 **Before every commit, check for secrets:**
 ```bash

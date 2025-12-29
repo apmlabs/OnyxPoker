@@ -1,11 +1,28 @@
 # OnyxPoker - AI-Powered Poker Bot
 
+**Status**: ✅ Server Operational | Ready for Client Testing
+
+## Quick Start
+
+### Server (Linux - AWS)
+```bash
+Server URL: http://54.80.204.92:5000
+API Key: test_key_12345
+Status: Running ✅
+```
+
+### Client (Windows)
+```bash
+ONYXPOKER_SERVER_URL=http://54.80.204.92:5000
+ONYXPOKER_API_KEY=test_key_12345
+```
+
 ## Project Overview
 OnyxPoker is an intelligent poker bot that combines poker-specific screen reading with Kiro CLI-powered decision making for 6-max No-Limit Texas Hold'em.
 
 ## What It Does
 - **Reads Poker Tables**: OCR-based parsing of cards, bets, stacks, and actions
-- **AI Decision Making**: Uses Kiro CLI (you) for poker strategy instead of GPT API
+- **AI Decision Making**: Uses Kiro CLI for poker strategy (real AI, not mocked)
 - **Dual Modes**: Local (Windows-only) or Remote (Windows + Linux server)
 - **Safe Testing**: Analysis mode displays decisions without clicking
 
@@ -16,81 +33,63 @@ Windows Machine
     ↓ Poker OCR (cards, bets, stacks)
     ↓ Parse Poker State
     ↓ HTTP POST to Linux Server
-Linux Server
-    ↓ Kiro CLI Analysis
+Linux Server (AWS)
+    ↓ Kiro CLI Analysis (REAL AI)
     ↓ Poker Decision (fold/call/raise)
     ↑ JSON Response
 Windows Machine
     ↓ Display or Execute Action
 ```
 
-## Key Components
-1. **Poker Screen Reader** - OCR for cards, pot, stacks, buttons
-2. **Kiro CLI Strategy** - AI-powered poker decision engine
-3. **Bot Orchestrator** - Main loop with turn detection
-4. **HTTP Bridge** - Cross-platform communication
+## Current Status
+
+### ✅ Phase 1 Complete: Server Setup
+- Flask API running on AWS (54.80.204.92:5000)
+- Real Kiro CLI integration tested and confirmed
+- Authentication working
+- Port 5000 publicly accessible
+- All 8 comprehensive tests passed
+
+### ➡️ Phase 2: Client Setup
+- Configure Windows client
+- Test end-to-end communication
+- Calibrate screen regions
+- Test poker bot in analysis mode
+
+## Documentation
+- **SERVER_TEST_REPORT.md** - Comprehensive test results
+- **SERVER_QUICK_REFERENCE.md** - Quick API reference
+- **SERVER_STATUS.md** - Current server status
+- **QUICKSTART.md** - Setup and usage guide
+- **INTEGRATION_PLAN.md** - 3-week development roadmap
+- **TESTING_PLAN.md** - Step-by-step testing guide
+- **TESTING_GUIDE.md** - Detailed testing procedures
 
 ## Technology Stack
+- **Server**: Python + Flask + Kiro CLI (Linux/AWS)
 - **Client**: Python + PyAutoGUI + Tesseract OCR (Windows)
-- **Server**: Python + Flask + Kiro CLI (Linux)
 - **OCR**: pytesseract, opencv-python, imagehash
 - **Communication**: HTTP REST API with JSON
 
-## Quick Start
+## Test Results Summary
 
-### GUI Mode (Recommended)
-```cmd
-cd client
-python poker_gui.py
-```
-
-**Features:**
-- Start/Stop bot controls
-- Mode selection (Remote/Local)
-- Execution mode (Analysis/Auto)
-- Real-time game state display
-- Decision monitoring
-- Activity log
-- Connection testing
-- OCR testing
-
-### Command Line Mode
-```cmd
-cd client
-python poker_bot.py --execution analysis
-```
-
-### Full Automation (Advanced)
-```cmd
-python poker_bot.py --execution auto --hands 10
-```
-
-See **QUICKSTART.md** for detailed setup instructions.
-
-## Features
-- ✅ Turn detection
-- ✅ Pot/stack OCR
-- ✅ Action button parsing
-- ✅ Kiro CLI integration
-- ✅ Analysis mode (safe testing)
-- ✅ Auto mode (full automation)
-- 📝 Card recognition (needs templates)
-
-## Documentation
-- **QUICKSTART.md** - Setup and usage guide
-- **INTEGRATION_PLAN.md** - 3-week development roadmap
-- **PROJECT_AUDIT_REPORT.md** - Code quality audit
-- **docs/API.md** - API reference
-- **docs/DEPLOYMENT.md** - Deployment guide
-
-## Research Goals
-- Analyze poker decision-making with AI
-- Compare Kiro CLI strategies vs traditional GTO
-- Log all decisions for learning
-- Build training dataset for future models
+| Test | Result | Details |
+|------|--------|---------|
+| Health Check | ✅ PASS | Server responding |
+| Authentication | ✅ PASS | API key validation |
+| Pocket Aces | ✅ PASS | Raise (correct) |
+| Seven-Two | ✅ PASS | Fold (correct) |
+| King-Queen | ✅ PASS | Raise (correct) |
+| External Access | ✅ PASS | Publicly accessible |
+| Kiro CLI | ✅ CONFIRMED | Real AI integration |
+| Background Operation | ✅ PASS | Stable |
 
 ## Legal Notice
-⚠️ **For research and educational purposes only**. Use only on play money tables or private simulations. Automating actions on real money poker sites may violate terms of service.
+⚠️ **For research and educational purposes only**. Use only on play money tables or private simulations.
 
-## Status
-✅ **Phase 1 Complete** - Core integration done, ready for testing!
+## Next Steps
+1. ✅ Server setup and testing complete
+2. ➡️ Configure Windows client
+3. ➡️ Test end-to-end communication
+4. ➡️ Calibrate screen regions
+5. ➡️ Run poker bot in analysis mode
