@@ -66,6 +66,30 @@ This project uses multiple markdown files for different purposes. **As an agent,
 
 ## RECENT LEARNINGS (2025-12-29)
 
+### UI/UX Improvements (14:14 UTC)
+**Challenge**: Users need guidance through setup, Kiro takes 15+ seconds to respond
+
+**Solution**: Enhanced UI with guidance and proper timeouts:
+- Increased Kiro timeout to 180 seconds (3 minutes)
+- Added setup guide to Control Panel
+- Added calibration instructions
+- Progress window with spinner during validation
+- Threaded validation to keep UI responsive
+
+**Key Insights**:
+- Kiro CLI takes 15 seconds to load initially
+- Users need step-by-step guidance for first-time setup
+- Progress indicators are critical for long operations
+- Threading prevents UI freeze during Kiro calls
+- Clear error messages with solutions reduce support burden
+
+**What Worked**:
+✅ 180-second timeout accommodates Kiro's load time
+✅ Progress window with spinner shows activity
+✅ Setup guide in Control Panel helps new users
+✅ Calibration instructions reduce confusion
+✅ Threaded execution keeps UI responsive
+
 ### Card Recognition System (14:15 UTC)
 **Challenge**: Need automated card detection without manual template creation
 
