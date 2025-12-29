@@ -252,6 +252,25 @@ class OnyxPokerGUI:
         self.kiro_status = ttk.Label(kiro_frame, text="Not validated", foreground="gray")
         self.kiro_status.pack(side="left", padx=10)
         
+        # Card Validation Panel (NEW)
+        card_val_frame = ttk.LabelFrame(tab, text="🎴 Card Validation & Learning", padding=10)
+        card_val_frame.pack(fill="x", padx=10, pady=5)
+        
+        ttk.Label(card_val_frame, text="Detected Cards:", font=("Arial", 9, "bold")).pack(anchor="w")
+        self.detected_cards_label = ttk.Label(card_val_frame, text="--", font=("Courier", 14, "bold"))
+        self.detected_cards_label.pack(anchor="w", pady=5)
+        
+        btn_frame = ttk.Frame(card_val_frame)
+        btn_frame.pack(fill="x", pady=5)
+        
+        ttk.Button(btn_frame, text="✓ Correct", command=self.confirm_cards, 
+                  style="success.TButton").pack(side="left", padx=5)
+        ttk.Button(btn_frame, text="✗ Wrong - Let Me Fix", command=self.open_card_correction,
+                  style="warning.TButton").pack(side="left", padx=5)
+        
+        self.card_validation_status = ttk.Label(card_val_frame, text="", foreground="gray")
+        self.card_validation_status.pack(anchor="w", pady=5)
+        
         # OCR Results
         ocr_frame = ttk.LabelFrame(tab, text="OCR Analysis", padding=10)
         ocr_frame.pack(fill="both", expand=True, padx=10, pady=5)
@@ -548,6 +567,34 @@ ACTION_DELAY = 2.0
             # Run OCR
             state = reader.parse_game_state()
             self.last_state = state
+            
+            # Update detected cards display
+            cards = state.get('hero_cards', ['??', '??'])
+            self.detected_cards_label.config(text=f"{cards[0]}, {cards[1]}")
+            
+            self.ocr_text.delete("1.0", "end")
+            self.ocr_text.insert("1.0", f"Pot: ${state['pot']}\n")
+            self.ocr_text.insert("end", f"Stacks: {state['stacks']}\n")
+            self.ocr_text.insert("end", f"Actions: {state['actions']}\n")
+            self.ocr_text.insert("end", f"Cards: {state['hero_cards']}\n")
+            self.ocr_text.insert("end", f"Board: {state['community_cards']}\n")
+            
+            # Update state display
+            self.state_text.delete("1.0", "end")
+            self.state_text.insert("1.0", json.dumps(state, indent=2))
+            
+            self.log("📸 Debug capture complete")
+        except Exception as e:
+            self.log(f"❌ Capture error: {e}", "ERROR")
+            img_data = base64.b64decode(img)
+            pil_img = Image.open(io.BytesIO(img_data))
+            
+            self.last_screenshot = pil_img
+            self.show_preview(pil_img, self.debug_canvas)
+            
+            # Run OCR
+            state = reader.parse_game_state()
+            self.last_state = state
             self.ocr_text.delete("1.0", "end")
             self.ocr_text.insert("1.0", f"Pot: ${state['pot']}\n")
             self.ocr_text.insert("end", f"Stacks: {state['stacks']}\n")
@@ -621,6 +668,104 @@ ACTION_DELAY = 2.0
         import threading
         thread = threading.Thread(target=run_validation, daemon=True)
         thread.start()
+    
+    def confirm_cards(self):
+        """User confirms detected cards are correct"""
+        if not self.last_state or not self.last_state.get('hero_cards'):
+            messagebox.showwarning("No Cards", "Capture a screenshot first")
+            return
+        
+        cards = self.last_state['hero_cards']
+        if '??' in cards:
+            messagebox.showinfo("Unknown Cards", "Cards were not detected. Please use 'Wrong - Let Me Fix' to teach the system.")
+            return
+        
+        self.card_validation_status.config(text="✅ Cards confirmed correct", foreground="green")
+        self.log(f"✅ User confirmed cards: {cards}", "SUCCESS")
+    
+    def open_card_correction(self):
+        """Open dialog to correct detected cards and save real templates"""
+        if not self.last_state:
+            messagebox.showwarning("No State", "Capture a screenshot first")
+            return
+        
+        # Create correction dialog
+        dialog = tk.Toplevel(self.root)
+        dialog.title("Correct Card Detection")
+        dialog.geometry("400x300")
+        dialog.transient(self.root)
+        dialog.grab_set()
+        
+        ttk.Label(dialog, text="What are the actual cards?", font=("Arial", 12, "bold")).pack(pady=10)
+        
+        detected = self.last_state.get('hero_cards', ['??', '??'])
+        ttk.Label(dialog, text=f"Bot detected: {', '.join(detected)}", font=("Arial", 10)).pack(pady=5)
+        
+        # Card 1
+        frame1 = ttk.Frame(dialog)
+        frame1.pack(pady=10)
+        
+        ttk.Label(frame1, text="Card 1:", font=("Arial", 10, "bold")).pack(side="left", padx=5)
+        
+        ranks = ['A', 'K', 'Q', 'J', '10', '9', '8', '7', '6', '5', '4', '3', '2']
+        suits = ['♠ (s)', '♥ (h)', '♦ (d)', '♣ (c)']
+        
+        rank1_var = tk.StringVar(value='A')
+        suit1_var = tk.StringVar(value='♠ (s)')
+        
+        ttk.Combobox(frame1, textvariable=rank1_var, values=ranks, width=5, state="readonly").pack(side="left", padx=5)
+        ttk.Combobox(frame1, textvariable=suit1_var, values=suits, width=8, state="readonly").pack(side="left", padx=5)
+        
+        # Card 2
+        frame2 = ttk.Frame(dialog)
+        frame2.pack(pady=10)
+        
+        ttk.Label(frame2, text="Card 2:", font=("Arial", 10, "bold")).pack(side="left", padx=5)
+        
+        rank2_var = tk.StringVar(value='K')
+        suit2_var = tk.StringVar(value='♥ (h)')
+        
+        ttk.Combobox(frame2, textvariable=rank2_var, values=ranks, width=5, state="readonly").pack(side="left", padx=5)
+        ttk.Combobox(frame2, textvariable=suit2_var, values=suits, width=8, state="readonly").pack(side="left", padx=5)
+        
+        def save_correction():
+            # Get corrected cards
+            suit_map = {'♠ (s)': 's', '♥ (h)': 'h', '♦ (d)': 'd', '♣ (c)': 'c'}
+            card1 = rank1_var.get() + suit_map[suit1_var.get()]
+            card2 = rank2_var.get() + suit_map[suit2_var.get()]
+            
+            self.log(f"📝 User corrected cards to: {card1}, {card2}")
+            
+            # Capture and save real card images
+            try:
+                from poker_reader import PokerScreenReader
+                from card_matcher import CardMatcher
+                import config
+                import cv2
+                import numpy as np
+                
+                reader = PokerScreenReader()
+                matcher = CardMatcher()
+                
+                # Capture card regions
+                for i, (region, card_name) in enumerate(zip(config.HOLE_CARD_REGIONS, [card1, card2])):
+                    img = reader.capture_region(region)
+                    img_cv = cv2.cvtColor(np.array(img), cv2.COLOR_RGB2BGR)
+                    
+                    # Save as real template
+                    matcher.save_real_card(img_cv, card_name)
+                    self.log(f"✅ Saved real template for {card_name}")
+                
+                self.card_validation_status.config(text=f"✅ Learned: {card1}, {card2}", foreground="green")
+                messagebox.showinfo("Success", f"Saved real card templates!\n\n{card1}, {card2}\n\nNext time these cards appear, recognition will be more accurate.")
+                dialog.destroy()
+                
+            except Exception as e:
+                self.log(f"❌ Error saving cards: {e}", "ERROR")
+                messagebox.showerror("Error", f"Failed to save cards:\n{str(e)}")
+        
+        ttk.Button(dialog, text="💾 Save & Learn", command=save_correction).pack(pady=20)
+        ttk.Button(dialog, text="Cancel", command=dialog.destroy).pack(pady=5)
     
     def validate_ui_with_kiro(self):
         """Validate UI detection with Kiro CLI"""
