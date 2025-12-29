@@ -64,6 +64,60 @@ This project uses **6 essential markdown files**. **As an agent, I must understa
 
 ## RECENT LEARNINGS (2025-12-29)
 
+### Session 7: UI Improvements & Calibration Simplification (17:00-19:00 UTC)
+**Challenge**: UI cluttered with help content, calibration workflow too complex
+
+**Problems Found**:
+1. Control Panel tab cluttered with Setup Guide and Hotkeys
+2. Auto-hide window interfered with calibration workflow
+3. Window scanning showed filtered list (only poker keywords)
+4. User had to manually select from window list
+5. Extra steps made calibration confusing
+
+**Solutions Implemented**:
+1. **Help Tab**: Moved Setup Guide and Hotkeys to dedicated Help tab
+2. **Disabled Auto-Hide**: Window stays visible, user hides manually with F12
+3. **Active Window Capture**: Just captures currently focused window
+4. **Auto-Selection**: Window automatically selected after capture
+5. **F6 Hotkey**: Added toggle for mini overlay
+
+**Key Insights**:
+- Help content belongs in separate tab, not in Control Panel
+- Auto-hide creates confusion during first-time setup
+- Simpler is better - capture focused window instead of scanning all
+- One-click workflow better than multi-step selection
+- User knows which window they want - just let them focus it
+
+**What Worked**:
+✅ Help tab with Setup Guide, Hotkeys, Tips
+✅ Disabled auto-hide (user controls with F12)
+✅ Active window capture (gw.getActiveWindow())
+✅ Auto-selection after capture
+✅ F6 toggle for mini overlay
+✅ Cleaner Control Panel (only controls and status)
+
+**What Didn't Work**:
+❌ Auto-hide on launch (interfered with calibration)
+❌ Scanning all windows with keyword filter (missed windows)
+❌ Manual window selection from list (extra step)
+
+**Implementation Details**:
+- `poker_gui.py`: Created create_help_tab() with Setup Guide, Hotkeys, Tips
+- `poker_gui.py`: auto_hide_window() disabled (just pass)
+- `poker_gui.py`: scan_windows() uses gw.getActiveWindow()
+- `poker_gui.py`: Auto-selects captured window, updates overlay
+- `hotkey_manager.py`: Added F6 hotkey for toggle overlay
+- `mini_overlay.py`: Updated hints to show F6
+
+**Final Workflow**:
+1. Launch → Window stays visible
+2. Click on poker window to focus it
+3. Click "Capture Active Window"
+4. F12 → Hide client
+5. F8 → Capture & detect
+6. Review → Save
+7. F9 → Get advice anytime
+
 ### Calibration Flow Fixes (16:30-17:00 UTC)
 **Challenge**: Multiple calibration flow issues discovered during user testing
 
