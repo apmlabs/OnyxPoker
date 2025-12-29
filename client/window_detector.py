@@ -32,22 +32,18 @@ class WindowDetector:
             return False
     
     def find_poker_windows(self) -> List[Dict]:
-        """Find all PokerStars windows"""
+        """Find all windows (not just poker-related)"""
         windows = []
         
-        # Common poker client window titles
-        poker_keywords = ['pokerstars', 'poker', 'table', 'hold', 'holdem']
-        
         for window in gw.getAllWindows():
-            title_lower = window.title.lower()
-            if any(kw in title_lower for kw in poker_keywords):
-                if window.width > 400 and window.height > 300:  # Reasonable size
-                    windows.append({
-                        'title': window.title,
-                        'left': window.left,
-                        'top': window.top,
-                        'width': window.width,
-                        'height': window.height,
+            # Skip empty titles and very small windows
+            if window.title and window.width > 400 and window.height > 300:
+                windows.append({
+                    'title': window.title,
+                    'left': window.left,
+                    'top': window.top,
+                    'width': window.width,
+                    'height': window.height,
                         'window': window
                     })
         
