@@ -82,12 +82,12 @@ class MiniOverlay:
         hints_frame = tk.Frame(main_frame, bg='#2b2b2b')
         hints_frame.pack(fill='x')
         
-        self.hints1 = tk.Label(hints_frame, text="F9:Analyze  F12:Main  Ctrl+C:Calibrate", 
+        self.hints1 = tk.Label(hints_frame, text="F7:Calibrate  F8:Capture  F9:Analyze", 
                         font=('Arial', 7), 
                         bg='#2b2b2b', fg='#888888')
         self.hints1.pack()
         
-        self.hints2 = tk.Label(hints_frame, text="Ctrl+Shift+T:Test  Ctrl+H:Toggle", 
+        self.hints2 = tk.Label(hints_frame, text="F10:Bot  F11:Stop  F12:Window", 
                         font=('Arial', 7), 
                         bg='#2b2b2b', fg='#888888')
         self.hints2.pack()
@@ -148,21 +148,21 @@ class MiniOverlay:
         """Update overlay with next step guidance"""
         if step == "calibrate":
             self.decision_label.config(text="📋 Setup Needed", fg='#ffaa00')
-            self.reasoning_label.config(text="Press Ctrl+C to calibrate\nOr F12 to open main window")
+            self.reasoning_label.config(text="Press F7 to calibrate\nOr F12 to open main window")
             self.table_label.config(text="Step 1: Scan Windows")
             self.cards_label.config(text="Step 2: Select poker window")
-            self.stack_label.config(text="Step 3: Ctrl+Shift+T to capture")
+            self.stack_label.config(text="Step 3: F8 to capture")
         elif step == "scan_done":
             self.decision_label.config(text="📸 Capture Table", fg='#00aaff')
-            self.reasoning_label.config(text="Press Ctrl+Shift+T to capture\nand auto-detect elements")
+            self.reasoning_label.config(text="Press F8 to capture\nand auto-detect elements")
             self.table_label.config(text="✓ Window selected")
-            self.cards_label.config(text="Next: Ctrl+Shift+T")
+            self.cards_label.config(text="Next: F8")
             self.stack_label.config(text="(captures & detects)")
         elif step == "test":
             self.decision_label.config(text="📸 Test OCR", fg='#00aaff')
-            self.reasoning_label.config(text="Press Ctrl+Shift+T to test OCR\nOr F9 to capture & analyze")
+            self.reasoning_label.config(text="Press F8 to test OCR\nOr F9 to capture & analyze")
             self.table_label.config(text="Calibration saved!")
-            self.cards_label.config(text="Test: Ctrl+Shift+T")
+            self.cards_label.config(text="Test: F8")
             self.stack_label.config(text="Or: F9 to analyze")
         elif step == "ready":
             self.decision_label.config(text="✅ Ready!", fg='#00ff00')

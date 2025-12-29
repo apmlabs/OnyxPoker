@@ -16,6 +16,12 @@ class HotkeyManager:
             return
         
         try:
+            # F7 - Open calibration
+            keyboard.add_hotkey('f7', self.on_f7_calibrate)
+            
+            # F8 - Test OCR / Auto-detect (context-aware)
+            keyboard.add_hotkey('f8', self.on_f8_test_ocr)
+            
             # F9 - Capture and analyze
             keyboard.add_hotkey('f9', self.on_f9_capture)
             
@@ -28,24 +34,14 @@ class HotkeyManager:
             # F12 - Show/Hide main window
             keyboard.add_hotkey('f12', self.on_f12_toggle_window)
             
-            # Ctrl+H - Toggle mini overlay
-            keyboard.add_hotkey('ctrl+h', self.on_ctrl_h_toggle_overlay)
-            
-            # Ctrl+C - Open calibration
-            keyboard.add_hotkey('ctrl+c', self.on_ctrl_c_calibrate)
-            
-            # Ctrl+Shift+T - Test OCR (changed from Ctrl+T to avoid Chrome conflict)
-            keyboard.add_hotkey('ctrl+shift+t', self.on_ctrl_shift_t_test_ocr)
-            
             self.registered = True
             self.parent.log("✅ Hotkeys registered:")
+            self.parent.log("   F7 = Open Calibration")
+            self.parent.log("   F8 = Capture & Detect (or Test OCR)")
             self.parent.log("   F9 = Capture & Analyze")
             self.parent.log("   F10 = Start/Stop Bot")
             self.parent.log("   F11 = Emergency Stop")
             self.parent.log("   F12 = Toggle Main Window")
-            self.parent.log("   Ctrl+H = Toggle Mini Overlay")
-            self.parent.log("   Ctrl+C = Open Calibration")
-            self.parent.log("   Ctrl+Shift+T = Test OCR")
             
         except Exception as e:
             self.parent.log(f"⚠️ Could not register hotkeys: {e}", "WARNING")
@@ -57,13 +53,12 @@ class HotkeyManager:
             return
         
         try:
+            keyboard.remove_hotkey('f7')
+            keyboard.remove_hotkey('f8')
             keyboard.remove_hotkey('f9')
             keyboard.remove_hotkey('f10')
             keyboard.remove_hotkey('f11')
             keyboard.remove_hotkey('f12')
-            keyboard.remove_hotkey('ctrl+h')
-            keyboard.remove_hotkey('ctrl+c')
-            keyboard.remove_hotkey('ctrl+shift+t')
             self.registered = False
             self.parent.log("Hotkeys unregistered")
         except:
@@ -122,31 +117,22 @@ class HotkeyManager:
         except Exception as e:
             self.parent.log(f"❌ F12 error: {e}", "ERROR")
     
-    def on_ctrl_h_toggle_overlay(self):
-        """Ctrl+H - Toggle mini overlay"""
+    def on_f7_calibrate(self):
+        """F7 - Open calibration tab"""
         try:
-            if hasattr(self.parent, 'mini_overlay') and self.parent.mini_overlay:
-                self.parent.log("🔥 Ctrl+H pressed - Toggling mini overlay...")
-                self.parent.root.after(0, self.parent.mini_overlay.toggle_visibility)
-        except Exception as e:
-            self.parent.log(f"❌ Ctrl+H error: {e}", "ERROR")
-    
-    def on_ctrl_c_calibrate(self):
-        """Ctrl+C - Open calibration tab"""
-        try:
-            self.parent.log("🔥 Ctrl+C pressed - Opening calibration...")
+            self.parent.log("🔥 F7 pressed - Opening calibration...")
             # Show main window
             self.parent.root.after(0, self.parent.root.deiconify)
             self.parent.root.after(0, self.parent.root.lift)
             # Switch to calibration tab
             self.parent.root.after(100, lambda: self.parent.notebook.select(1))
         except Exception as e:
-            self.parent.log(f"❌ Ctrl+C error: {e}", "ERROR")
+            self.parent.log(f"❌ F7 error: {e}", "ERROR")
     
-    def on_ctrl_shift_t_test_ocr(self):
-        """Ctrl+Shift+T - Test OCR or Auto-Detect (context-aware)"""
+    def on_f8_test_ocr(self):
+        """F8 - Test OCR or Auto-Detect (context-aware)"""
         try:
-            self.parent.log("🔥 Ctrl+Shift+T pressed...")
+            self.parent.log("🔥 F8 pressed...")
             
             # Check if we're in calibration mode (window selected but not calibrated)
             if hasattr(self.parent, 'selected_window') and self.parent.selected_window:
@@ -175,4 +161,4 @@ class HotkeyManager:
             self.parent.root.after(100, self.parent.root.lift)
             self.parent.root.after(200, lambda: self.parent.notebook.select(2))
         except Exception as e:
-            self.parent.log(f"❌ Ctrl+Shift+T error: {e}", "ERROR")
+            self.parent.log(f"❌ F8 error: {e}", "ERROR")

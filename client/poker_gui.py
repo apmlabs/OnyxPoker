@@ -90,7 +90,7 @@ class OnyxPokerGUI:
                     # Already calibrated - safe to hide
                     self.root.withdraw()
                     self.log("Main window auto-hidden. Press F12 to show.")
-                    self.log("💡 Hotkeys: F9=Analyze, Ctrl+C=Calibrate, Ctrl+Shift+T=Test OCR")
+                    self.log("💡 Hotkeys: F7=Calibrate, F8=Capture, F9=Analyze")
                 else:
                     # Not calibrated - keep window visible
                     self.log("⚠️ First time setup - window staying visible")
@@ -106,18 +106,24 @@ class OnyxPokerGUI:
         """Check setup status and update overlay guidance"""
         try:
             import os
-            # Check if config exists
+            # Check if config exists and is calibrated
             if os.path.exists('config.py'):
-                # Check if calibrated (has saved regions)
                 try:
                     import config
                     if hasattr(config, 'TABLE_REGION') and config.TABLE_REGION != (0, 0, 0, 0):
-                        # Calibrated - show ready or test
-                        if hasattr(self, 'last_state') and self.last_state:
-                            self.mini_overlay.set_next_step("ready")
-                        else:
-                            self.mini_overlay.set_next_step("test")
-                    else:
+                        # Already calibrated - show ready
+                        self.mini_overlay.set_next_step("ready")
+                        return
+                except:
+                    pass
+            
+            # Not calibrated - show calibration steps
+            self.mini_overlay.set_next_step("calibrate")
+                    
+        except Exception as e:
+            self.log(f"Error checking setup status: {e}", "ERROR")
+            # Default to calibrate if error
+            self.mini_overlay.set_next_step("calibrate")
                         # Not calibrated
                         self.mini_overlay.set_next_step("calibrate")
                 except:
@@ -644,8 +650,8 @@ class OnyxPokerGUI:
             if hasattr(self, 'mini_overlay') and self.mini_overlay:
                 self.mini_overlay.set_next_step("scan_done")
             self.log(f"✓ Window selected: {window_title}")
-            self.log("💡 Next: Press Ctrl+Shift+T to capture and auto-detect")
-            self.log("   (No need to hide window - capture works in background)")
+            self.log("💡 Next: Press F8 to capture and auto-detect")
+            self.log("   (Capture works in background - no need to hide window)")
             
             # Update overlay
             self.mini_overlay.set_next_step("scan_done")
@@ -735,7 +741,7 @@ ACTION_DELAY = 2.0
                 self.mini_overlay.set_next_step("test")
             
             self.log("✓ Configuration saved to config.py")
-            self.log("💡 Next: Press Ctrl+Shift+T to test OCR, or F9 to analyze a hand")
+            self.log("💡 Next: Press F8 to test OCR, or F9 to analyze a hand")
             self.log("   Calibration complete! Bot is ready to use.")
             
             # Update overlay
