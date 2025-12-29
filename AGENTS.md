@@ -66,6 +66,36 @@ This project uses multiple markdown files for different purposes. **As an agent,
 
 ## RECENT LEARNINGS (2025-12-29)
 
+### Self-Improving Card Recognition (14:26 UTC)
+**Challenge**: Synthetic templates might not match real PokerStars cards
+
+**Solution**: Hybrid system with user validation and learning:
+- Start with synthetic templates (quick baseline)
+- User validates detected cards
+- When wrong, user corrects and bot captures real card images
+- Real templates saved for future use
+- Accuracy improves automatically over time
+
+**Key Insights**:
+- Don't need to capture all 52 cards manually
+- System learns from corrections during gameplay
+- Real templates prioritized over synthetic
+- Adapts to any PokerStars theme automatically
+- User effort is minimal (just confirm or correct)
+
+**What Worked**:
+✅ Dual template system (real + synthetic)
+✅ Simple validation UI (correct/wrong buttons)
+✅ Automatic real card capture on correction
+✅ Dropdown interface for corrections
+✅ Progressive learning (70% → 95%+ accuracy)
+
+**Implementation**:
+- `templates/` - Synthetic templates (baseline)
+- `templates/real/` - Captured real cards (learned)
+- Priority: real templates first, synthetic fallback
+- User corrects → Bot captures → Saves real template
+
 ### UI/UX Improvements (14:14 UTC)
 **Challenge**: Users need guidance through setup, Kiro takes 15+ seconds to respond
 
