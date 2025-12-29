@@ -1,12 +1,17 @@
 # OnyxPoker API Documentation
 
 ## Overview
-The OnyxPoker API enables real-time screenshot analysis and GUI automation through HTTP endpoints.
+The OnyxPoker API provides poker-specific analysis using Kiro CLI for decision making.
+
+## Base URL
+```
+http://54.80.204.92:5000
+```
 
 ## Authentication
-All requests require Bearer token authentication:
+All requests (except /health) require Bearer token authentication:
 ```
-Authorization: Bearer your_api_key_here
+Authorization: Bearer test_key_12345
 ```
 
 ## Endpoints
@@ -14,93 +19,72 @@ Authorization: Bearer your_api_key_here
 ### Health Check
 **GET** `/health`
 
-Returns server health status.
+Returns server health status. No authentication required.
 
 **Response:**
 ```json
 {
   "status": "healthy",
-  "timestamp": "2025-12-29T12:19:00.000Z",
-  "version": "1.0.0"
+  "timestamp": "2025-12-29T23:50:00.000Z"
 }
 ```
 
-### Analyze Screenshot
-**POST** `/analyze`
+### Analyze Poker State
+**POST** `/analyze-poker`
 
-Analyzes a screenshot and returns recommended actions.
+Analyzes poker game state and returns AI decision.
 
 **Request:**
 ```json
 {
-  "image": "base64_encoded_png_data",
-  "context": "Optional context or goal description"
+  "hero_cards": ["As", "Kh"],
+  "community_cards": ["Qd", "Jc", "Ts"],
+  "pot": 150,
+  "hero_stack": 500,
+  "to_call": 20,
+  "position": "button",
+  "num_opponents": 2
 }
 ```
 
 **Response:**
 ```json
 {
-  "action": "click",
-  "coordinates": [450, 300],
-  "confidence": 0.85,
-  "reasoning": "Detected login button at center of screen",
-  "next_steps": ["Enter username", "Enter password", "Click login"],
-  "goal_achieved": false
-}
-```
-
-### Server Status
-**GET** `/status`
-
-Returns detailed server status and configuration.
-
-**Response:**
-```json
-{
-  "server": "OnyxPoker AI Analysis Server",
-  "status": "running",
-  "temp_dir": "/tmp/onyxpoker_screenshots",
-  "kiro_cli_path": "kiro-cli",
-  "timestamp": "2025-12-29T12:19:00.000Z"
-}
-```
-
-## Action Types
-
-### Click Action
-```json
-{
-  "action": "click",
-  "coordinates": [x, y],
+  "action": "raise",
+  "amount": 60,
+  "reasoning": "Strong hand with straight draw, good pot odds",
   "confidence": 0.85
 }
 ```
 
-### Type Action
+**Actions:**
+- `fold` - Fold hand
+- `call` - Call current bet
+- `raise` - Raise (includes amount)
+
+### Validate Game State
+**POST** `/validate-state`
+
+Validates detected game state using Kiro CLI vision analysis.
+
+**Request:**
 ```json
 {
-  "action": "type",
-  "text": "username@example.com",
-  "confidence": 0.90
+  "screenshot": "base64_encoded_image",
+  "detected_state": {
+    "hero_cards": ["As", "Kh"],
+    "pot": 150,
+    "hero_stack": 500
+  }
 }
 ```
 
-### Key Press Action
+**Response:**
 ```json
 {
-  "action": "key",
-  "key": "enter",
-  "confidence": 0.95
-}
-```
-
-### Wait Action
-```json
-{
-  "action": "wait",
-  "duration": 2.0,
-  "confidence": 1.0
+  "valid": true,
+  "confidence": 0.92,
+  "concerns": []
 }
 ```
 
@@ -109,7 +93,7 @@ Returns detailed server status and configuration.
 ### Authentication Error
 ```json
 {
-  "error": "Unauthorized"
+  "error": "Unauthorized - Invalid API key"
 }
 ```
 Status: 401
@@ -117,7 +101,7 @@ Status: 401
 ### Bad Request
 ```json
 {
-  "error": "Missing image data"
+  "error": "Missing required field: hero_cards"
 }
 ```
 Status: 400
@@ -125,7 +109,7 @@ Status: 400
 ### Server Error
 ```json
 {
-  "error": "Analysis failed: detailed error message"
+  "error": "Kiro CLI analysis failed"
 }
 ```
 Status: 500
@@ -134,9 +118,31 @@ Status: 500
 - Default: 60 requests per minute per API key
 - Exceeded: HTTP 429 Too Many Requests
 
+## Client Integration
+
+### Python Example
+```python
+import requests
+
+url = "http://54.80.204.92:5000/analyze-poker"
+headers = {"Authorization": "Bearer test_key_12345"}
+data = {
+    "hero_cards": ["As", "Kh"],
+    "community_cards": ["Qd", "Jc", "Ts"],
+    "pot": 150,
+    "hero_stack": 500,
+    "to_call": 20
+}
+
+response = requests.post(url, json=data, headers=headers)
+decision = response.json()
+print(f"Action: {decision['action']}")
+print(f"Reasoning: {decision['reasoning']}")
+```
+
 ## Best Practices
-1. Always include meaningful context in analysis requests
+1. Always include complete game state for accurate decisions
 2. Handle errors gracefully with retry logic
-3. Respect rate limits to avoid throttling
-4. Use appropriate image compression to reduce payload size
-5. Implement proper authentication token management
+3. Respect rate limits
+4. Use HTTPS in production
+5. Rotate API keys regularly
