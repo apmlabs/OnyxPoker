@@ -199,7 +199,7 @@ Return ONLY valid JSON, no explanation."""
         # Convert to calibration format
         calibration = {
             'button_regions': elements.get('button_positions', {}),
-            'pot_region': None,  # GPT-4o reads pot directly, no region needed
+            'pot_region': None,  # GPT-5-mini reads pot directly, no region needed
             'confidence': elements.get('confidence', 0.95)
         }
         

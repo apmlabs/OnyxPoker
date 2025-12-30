@@ -33,7 +33,7 @@ class OnyxPokerBot:
         
         try:
             while max_hands is None or hands_played < max_hands:
-                # Get game state with decision from GPT-4o
+                # Get game state with decision from GPT-5-mini
                 state = self.reader.parse_game_state(include_decision=True)
                 
                 # Check if our turn
@@ -81,7 +81,7 @@ class OnyxPokerBot:
         return len(actions) > 0
     
     def execute_action(self, state: Dict[str, Any]):
-        """Execute poker action using GPT-4o detected button positions"""
+        """Execute poker action using GPT-5-mini detected button positions"""
         action = state.get('recommended_action', 'fold')
         amount = state.get('recommended_amount', 0)
         button_positions = state.get('button_positions', {})

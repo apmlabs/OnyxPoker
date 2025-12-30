@@ -233,15 +233,21 @@ class OnyxPokerGUI:
         instructions = ttk.LabelFrame(tab, text="📖 Calibration Instructions", padding=10)
         instructions.pack(fill="x", padx=10, pady=5)
         
-        inst_text = tk.Text(instructions, height=5, wrap="word", font=("Arial", 9), bg="#fffacd")
+        inst_text = tk.Text(instructions, height=8, wrap="word", font=("Arial", 9), bg="#fffacd")
         inst_text.pack(fill="x")
         inst_text.insert("1.0",
-            "1. Open PokerStars and sit at a table\n"
-            "2. Click on poker window to make it active\n"
-            "3. Press F8 to capture and detect elements\n"
-            "4. Review preview below (red=buttons, green=pot)\n"
-            "5. Click 'Save Configuration' if detection looks good\n"
-            "6. Press F5 to test OCR accuracy"
+            "🎯 WHAT CALIBRATION DOES:\n"
+            "• Captures your poker window boundaries (full screenshot area)\n"
+            "• Uses GPT-5-mini AI to find buttons, pot, and card positions\n"
+            "• Saves table region so bot knows where to look\n"
+            "• Auto-saves configuration (no manual save needed)\n\n"
+            "📋 STEPS:\n"
+            "1. Open PokerStars and sit at a table (any table works)\n"
+            "2. Click on poker window to make it the active window\n"
+            "3. Press F8 - bot will capture FULL window and analyze with AI\n"
+            "4. Review results below - should show detected elements\n"
+            "5. Done! Configuration saves automatically\n\n"
+            "💡 F8 captures the ENTIRE active window, not just a small region"
         )
         inst_text.config(state="disabled")
         
@@ -253,8 +259,8 @@ class OnyxPokerGUI:
                                      foreground="gray", font=("Arial", 10))
         self.calib_status.pack(pady=5)
         
-        # Step 3: Preview
-        step3 = ttk.LabelFrame(tab, text="Preview (F8 will show screenshot here)", padding=10)
+        # Step 3: Preview & Auto-Save
+        step3 = ttk.LabelFrame(tab, text="Preview & Results (F8 will show screenshot and auto-save)", padding=10)
         step3.pack(fill="both", expand=True, padx=10, pady=5)
         
         self.preview_canvas = tk.Canvas(step3, bg="black", height=300)
@@ -263,11 +269,13 @@ class OnyxPokerGUI:
         self.confidence_label = ttk.Label(step3, text="Confidence: --", font=("Arial", 10, "bold"))
         self.confidence_label.pack(pady=5)
         
-        # Step 4: Save
-        step4 = ttk.Frame(tab)
-        step4.pack(fill="x", padx=10, pady=10)
+        # Info about auto-save
+        info_frame = ttk.Frame(step3)
+        info_frame.pack(fill="x", pady=5)
         
-        ttk.Button(step4, text="💾 Save Configuration", command=self.save_calibration).pack(fill="x", pady=5)
+        info_label = ttk.Label(info_frame, text="ℹ️ Configuration saves automatically after F8 - no manual save needed!", 
+                              foreground="green", font=("Arial", 9, "italic"))
+        info_label.pack()
         
     def create_debug_tab(self):
         """Debug and analysis tab"""
@@ -712,11 +720,18 @@ class OnyxPokerGUI:
     
     def auto_detect(self):
         """Capture active window and detect elements using GPT-5-mini"""
-        # Immediate feedback
-        self.calib_status.config(text="📸 Capturing active window...", foreground="blue")
-        self.log("📸 Capturing currently active window...")
+        # Immediate feedback with explanation
+        self.calib_status.config(text="🎯 CALIBRATION: Finding poker table boundaries...", foreground="blue")
+        self.log("🎯 CALIBRATION STARTED")
+        self.log("📋 What calibration does:")
+        self.log("   1. Captures the active poker window")
+        self.log("   2. Uses GPT-5-mini to find buttons, pot, cards")
+        self.log("   3. Saves table region for future screenshots")
+        self.log("   4. Auto-saves configuration (no manual save needed)")
+        self.log("")
+        
         if hasattr(self, 'mini_overlay') and self.mini_overlay:
-            self.mini_overlay.update_status("📸 Capturing...")
+            self.mini_overlay.update_status("🎯 Calibrating...")
         self.root.update()
         
         try:
@@ -725,14 +740,19 @@ class OnyxPokerGUI:
             import tempfile
             from vision_detector import VisionDetector
             
-            # Get active window
+            # Step 1: Get active window
+            self.calib_status.config(text="📸 Step 1/4: Capturing active window...", foreground="blue")
+            self.log("📸 Step 1: Capturing currently active window...")
+            self.root.update()
+            
             active_window = gw.getActiveWindow()
             if not active_window or not active_window.title:
                 self.log("❌ No active window detected", "ERROR")
                 self.calib_status.config(text="❌ No active window", foreground="red")
                 return
             
-            self.log(f"✓ Active window: {active_window.title}")
+            self.log(f"✓ Found window: '{active_window.title}'")
+            self.log(f"✓ Size: {active_window.width}x{active_window.height} pixels")
             
             # Store window region
             window_region = (
@@ -742,13 +762,26 @@ class OnyxPokerGUI:
                 active_window.height
             )
             
-            # Capture screenshot
-            self.calib_status.config(text="🔎 Analyzing with GPT-5-mini...", foreground="blue")
+            # Step 2: Capture full screenshot
+            self.calib_status.config(text="📷 Step 2/4: Taking full window screenshot...", foreground="blue")
+            self.log("📷 Step 2: Taking full window screenshot...")
             if hasattr(self, 'mini_overlay') and self.mini_overlay:
-                self.mini_overlay.update_status("🔎 GPT-5-mini analyzing...")
+                self.mini_overlay.update_status("📷 Screenshot...")
             self.root.update()
             
             img = pyautogui.screenshot(region=window_region)
+            self.log(f"✓ Screenshot captured: {img.size[0]}x{img.size[1]} pixels")
+            
+            # Step 3: GPT-5-mini analysis
+            self.calib_status.config(text="🧠 Step 3/4: GPT-5-mini analyzing poker elements...", foreground="blue")
+            self.log("🧠 Step 3: GPT-5-mini analyzing poker table...")
+            self.log("   - Looking for fold/call/raise buttons")
+            self.log("   - Finding pot area")
+            self.log("   - Detecting card positions")
+            self.log("   - This may take 5-10 seconds...")
+            if hasattr(self, 'mini_overlay') and self.mini_overlay:
+                self.mini_overlay.update_status("🧠 GPT-5-mini analyzing...")
+            self.root.update()
             
             # Save to temp file for GPT-5-mini
             with tempfile.NamedTemporaryFile(suffix='.png', delete=False) as f:
@@ -763,35 +796,126 @@ class OnyxPokerGUI:
                 self.detected_elements = {
                     'window_region': window_region,
                     'button_regions': result.get('button_positions', {}),
-                    'confidence': result.get('confidence', 0.95)
+                    'confidence': result.get('confidence', 0.95),
+                    'pot': result.get('pot'),
+                    'hero_cards': result.get('hero_cards'),
+                    'community_cards': result.get('community_cards')
                 }
+                
+                # Step 4: Save automatically
+                self.calib_status.config(text="💾 Step 4/4: Auto-saving configuration...", foreground="blue")
+                self.log("💾 Step 4: Auto-saving configuration...")
+                if hasattr(self, 'mini_overlay') and self.mini_overlay:
+                    self.mini_overlay.update_status("💾 Auto-saving...")
+                self.root.update()
+                
+                # Auto-save (no manual button click needed)
+                self.auto_save_calibration()
                 
                 # Show preview
                 self.show_preview(img, self.preview_canvas)
                 
+                # Show results
                 conf = self.detected_elements.get('confidence', 0)
                 self.confidence_label.config(text=f"Confidence: {conf:.1%}", 
                                             foreground="green" if conf > 0.7 else "orange")
-                self.calib_status.config(text="✓ GPT-5-mini detection complete", foreground="green")
-                self.log("✓ GPT-5-mini detected elements. Review and save if correct.")
+                
+                # Success feedback
+                self.calib_status.config(text="✅ CALIBRATION COMPLETE - Ready to use!", foreground="green")
+                self.log("✅ CALIBRATION COMPLETE!")
+                self.log("📊 Results:")
+                self.log(f"   - Window region: {window_region}")
+                self.log(f"   - Buttons found: {len(result.get('button_positions', {}))}")
+                self.log(f"   - Confidence: {conf:.1%}")
+                if result.get('pot'):
+                    self.log(f"   - Pot detected: ${result.get('pot')}")
+                if result.get('hero_cards'):
+                    self.log(f"   - Cards detected: {result.get('hero_cards')}")
+                self.log("")
+                self.log("🎮 READY TO USE:")
+                self.log("   - Press F9 to get AI advice")
+                self.log("   - Press F10 to start auto-bot")
+                self.log("   - Configuration saved automatically!")
                 
                 # Update overlay
                 if hasattr(self, 'mini_overlay') and self.mini_overlay:
-                    self.mini_overlay.update_status("✓ Detection complete")
+                    self.mini_overlay.set_next_step("ready")
                 
             finally:
                 import os
                 if os.path.exists(temp_path):
                     os.unlink(temp_path)
             
-            # Show main window
+            # Show main window with results
             self.root.deiconify()
             self.root.lift()
-            self.notebook.select(1)
+            self.notebook.select(1)  # Switch to calibration tab
         
         except Exception as e:
-            self.calib_status.config(text=f"❌ Error: {e}", foreground="red")
-            self.log(f"❌ Auto-detect error: {e}", "ERROR")
+            self.calib_status.config(text=f"❌ Calibration failed: {e}", foreground="red")
+            self.log(f"❌ Calibration error: {e}", "ERROR")
+            self.log("💡 Try again: Make sure poker window is visible and active")
+    
+    def auto_save_calibration(self):
+        """Auto-save calibration without user clicking save button"""
+        if not self.detected_elements:
+            self.log("❌ No detection data to save", "ERROR")
+            return
+        
+        if 'window_region' not in self.detected_elements:
+            self.log("❌ No window region detected", "ERROR")
+            return
+        
+        try:
+            x, y, w, h = self.detected_elements['window_region']
+            
+            # Create comprehensive config
+            content = f'''"""
+Auto-generated poker table configuration
+Generated by GPT-5-mini vision calibration
+Window: {w}x{h} pixels at ({x}, {y})
+Confidence: {self.detected_elements.get('confidence', 0.95):.1%}
+"""
+
+# Main table region (what bot will screenshot)
+TABLE_REGION = ({x}, {y}, {w}, {h})
+
+# Button positions detected by GPT-5-mini
+BUTTON_REGIONS = {{'''
+            
+            # Add detected button positions
+            for name, pos in self.detected_elements.get('button_regions', {}).items():
+                if isinstance(pos, list) and len(pos) >= 2:
+                    bx, by = pos[0], pos[1]
+                    content += f'\n    "{name}": ({bx}, {by}, 100, 40),  # GPT-5-mini detected'
+            
+            content += '''
+}
+
+# Legacy regions (GPT-5-mini doesn't need these, but kept for compatibility)
+POT_REGION = (400, 200, 200, 50)
+HOLE_CARD_REGIONS = [(350, 500, 50, 70), (420, 500, 50, 70)]
+STACK_REGIONS = [(200, 150, 80, 30), (600, 150, 80, 30), (700, 350, 80, 30), 
+                 (600, 550, 80, 30), (200, 550, 80, 30), (100, 350, 80, 30)]
+
+# Bot settings
+POLL_INTERVAL = 0.5
+ACTION_DELAY = 2.0
+'''
+            
+            # Write config file
+            with open('config.py', 'w') as f:
+                f.write(content)
+            
+            self.log("✅ Configuration auto-saved to config.py", "SUCCESS")
+            self.log("💡 No manual save needed - calibration complete!")
+            
+            # Update overlay to ready state
+            if hasattr(self, 'mini_overlay') and self.mini_overlay:
+                self.mini_overlay.set_next_step("ready")
+        
+        except Exception as e:
+            self.log(f"❌ Auto-save failed: {e}", "ERROR")
     
     def save_calibration(self):
         if not self.detected_elements:

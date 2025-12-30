@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-Test GPT-4o vision detection on a poker table screenshot
+Test GPT-5-mini vision detection on a poker table screenshot
 """
 
 import sys
@@ -8,7 +8,7 @@ import os
 from vision_detector import VisionDetector
 
 def test_vision(screenshot_path):
-    """Test GPT-4o vision on screenshot"""
+    """Test GPT-5-mini vision on screenshot"""
     
     # Check file exists
     if not os.path.exists(screenshot_path):
@@ -30,7 +30,7 @@ def test_vision(screenshot_path):
     detector = VisionDetector(api_key=api_key)
     
     # Analyze
-    print("⏳ Calling GPT-4o...")
+    print("⏳ Calling GPT-5-mini...")
     result = detector.detect_poker_elements(screenshot_path)
     
     # Display results
