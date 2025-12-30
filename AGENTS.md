@@ -379,6 +379,64 @@ This project uses **9 essential markdown files**. **As an agent, I must understa
 4. Testing if possible
 **In this case: I said gpt-5-mini doesn't support vision. User was RIGHT - it does. I was WRONG. The actual issue was temperature parameter. Always research thoroughly before making negative claims.**
 
+**Fourteenth Critical Lesson (Windows Encoding - STOP USING EMOJIS)**:
+**NEVER USE EMOJIS IN LOGGING ON WINDOWS. This is the THIRD TIME I've made this mistake:**
+- Session 9 Part 2: UnicodeEncodeError with 💡 emoji in debug prints
+- Session 9 Part 4: Fixed by removing emojis from debug prints  
+- Session 10: SAME ERROR AGAIN with 🧠 emoji in vision_detector.py logs
+**Windows console (cp1252) CANNOT display Unicode emojis. ALWAYS use plain ASCII:**
+- ✅ → "SUCCESS:" or remove entirely
+- ❌ → "ERROR:"  
+- ⚠️ → "WARNING:"
+- 🧠 → remove entirely
+- 🎯 → remove entirely
+**This is a BASIC Windows compatibility issue I keep forgetting. NO EXCUSES.**
+
+### Session 10: Windows Encoding Error (AGAIN) - December 30, 2025 23:50 UTC
+**Challenge**: User reported calibration failing with encoding error
+
+**What I Did Wrong (AGAIN)**:
+1. **Used emojis in logging** - 🧠 character in vision_detector.py
+2. **Forgot Windows encoding limitations** - cp1252 can't handle Unicode emojis
+3. **Repeated same mistake from Session 9** - didn't learn from previous fixes
+4. **User frustrated** - "WTF" because I keep making same error
+
+**The Error**:
+```
+'charmap' codec can't encode character '\U0001f9e0' in position 7: character maps to <undefined>
+```
+
+**Root Cause**: 
+- Added `🧠 GPT-5-mini Analysis Started` in logging
+- Windows console can't display Unicode emoji \U0001f9e0 (🧠)
+- Same exact issue as Session 9 Parts 2 & 4
+
+**What I Fixed**:
+1. **Removed ALL emojis** from vision_detector.py logging
+2. **Used plain ASCII text** - "GPT-5-mini Analysis Started" 
+3. **Replaced emoji prefixes** - ❌ → "ERROR:", ⚠️ → "WARNING:"
+4. **Updated agent context** with this lesson (finally)
+
+**What Worked**:
+✅ Removing all emojis from logging
+✅ Plain ASCII text works on Windows
+✅ Error disappeared after fix
+
+**What Didn't Work**:
+❌ Using emojis in Windows console logging (NEVER WORKS)
+❌ My memory of previous fixes (I forgot Session 9 lessons)
+❌ Learning from past mistakes (user had to remind me)
+
+**Critical Agent Learning**:
+**This is the THIRD TIME I've made the Windows emoji encoding error. User is rightfully frustrated. I MUST:**
+1. **NEVER use emojis in any logging code on Windows**
+2. **Always use plain ASCII text for cross-platform compatibility**  
+3. **Remember lessons from previous sessions** - this was already fixed in Session 9
+4. **Update agent files IMMEDIATELY** when I make repeated mistakes
+5. **Test on Windows before committing** emoji-containing code
+
+**Pattern Recognition**: When user says "WTF" it means I've repeated a basic mistake they've seen before. This indicates I'm not learning from my work and not updating my context files properly.
+
 ### Session 9 Continuation Part 4: GPT-5-mini Research + Temperature Fix (03:14-03:16 UTC December 30, 2025)
 **Challenge**: User insisted gpt-5-mini supports vision, I doubted it
 

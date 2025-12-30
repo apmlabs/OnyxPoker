@@ -1,20 +1,21 @@
 # OnyxPoker - Current Status & Development Progress
 
-## Current Development Status: GPT-5-MINI VISION + DECISION MAKING ✅
+## Current Development Status: GPT-5-MINI WORKING ✅
 
-**Last Updated**: December 30, 2025 03:16 UTC
+**Last Updated**: December 30, 2025 23:52 UTC
 
-**🚀 PROJECT STATUS**: GPT-5-mini working - 80% cheaper, faster than gpt-5.2
+**🚀 PROJECT STATUS**: GPT-5-mini working after Windows encoding fix
 **📊 ARCHITECTURE STATUS**: Phase 1 (Vision LLM) - Client-only with GPT-5-mini
 **🌐 SERVER STATUS**: Running as systemd service (optional for Phase 1, required for Phase 2)
-**🎮 CLIENT STATUS**: GPT-5-mini vision + decision making + ENHANCED UX + ALL BUGS FIXED
-**🎴 VISION**: GPT-5-mini Vision API (95-99% accuracy) - CONFIRMED supports vision
+**🎮 CLIENT STATUS**: GPT-5-mini vision + decision making + Windows compatibility fixed
+**🎴 VISION**: GPT-5-mini Vision API (95-99% accuracy) - Token limit fixed (500→1000)
 **🧠 DECISIONS**: GPT-5-mini (good poker reasoning, faster) - Ready for testing
 **⌨️ HOTKEYS**: F5-F12 (F8=Calibrate, F9=Analyze) - WORKING
 **📱 MINI OVERLAY**: Enhanced 400x380 with pot, board, confidence, timestamp - WORKING
-**🐛 DEBUG LOGGING**: Comprehensive timing and state logging - WORKING
+**🐛 DEBUG LOGGING**: All emojis removed for Windows compatibility - WORKING
 **⚡ PERFORMANCE**: Expected 5-8s per analysis (faster than gpt-5.2)
 **💰 COST**: $0.25 per 1M input tokens (80% cheaper than gpt-5.2, 90% cheaper than gpt-4o)
+**🔧 WINDOWS FIX**: Removed all emojis from logging (cp1252 encoding compatibility)
 
 ## Project Overview
 **OnyxPoker** - AI-Powered Poker Bot with Computer Vision
