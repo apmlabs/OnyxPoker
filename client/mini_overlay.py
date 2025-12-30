@@ -82,18 +82,43 @@ class MiniOverlay:
         hints_frame = tk.Frame(main_frame, bg='#2b2b2b')
         hints_frame.pack(fill='x')
         
-        self.hints1 = tk.Label(hints_frame, text="F5:Test OCR  F6:Toggle  F7:Calibrate  F8:Capture  F9:Analyze", 
+        self.hints1 = tk.Label(hints_frame, text="F5:Test  F6:Toggle  F8:Calibrate  F9:Advice  F10:Bot", 
                         font=('Arial', 7), 
                         bg='#2b2b2b', fg='#888888')
         self.hints1.pack()
         
-        self.hints2 = tk.Label(hints_frame, text="F10:Bot  F11:Stop  F12:Window", 
+        self.hints2 = tk.Label(hints_frame, text="F11:Stop  F12:Window", 
                         font=('Arial', 7), 
                         bg='#2b2b2b', fg='#888888')
         self.hints2.pack()
         
+    def update_game_state(self, cards=None, pot=None, stack=None, decision=None, reasoning=None):
+        """Update overlay with game state (GPT-4o compatible)"""
+        # Table info
+        if pot is not None:
+            self.table_label.config(text=f"Table: ${pot} pot")
+        
+        # Cards
+        if cards:
+            cards_str = ' '.join(cards) if isinstance(cards, list) else str(cards)
+            self.cards_label.config(text=f"Cards: {cards_str}")
+        
+        # Stack
+        if stack is not None:
+            self.stack_label.config(text=f"Stack: ${stack}")
+        
+        # Decision
+        if decision:
+            self.decision_label.config(text=f"💡 {decision}", fg='#00ffff')
+        
+        # Reasoning
+        if reasoning:
+            if len(reasoning) > 100:
+                reasoning = reasoning[:97] + "..."
+            self.reasoning_label.config(text=reasoning)
+    
     def update_info(self, state, decision=None):
-        """Update overlay with current game state"""
+        """Update overlay with current game state (legacy method)"""
         # Table info
         pot = state.get('pot', 0)
         self.table_label.config(text=f"Table: ${pot} pot")
@@ -104,8 +129,10 @@ class MiniOverlay:
         self.cards_label.config(text=f"Cards: {cards_str}")
         
         # Stack
-        stacks = state.get('stacks', [])
-        stack = stacks[2] if len(stacks) > 2 else 0
+        stack = state.get('hero_stack', 0)
+        if stack == 0:
+            stacks = state.get('stacks', [])
+            stack = stacks[2] if len(stacks) > 2 else 0
         self.stack_label.config(text=f"Stack: ${stack}")
         
         # Decision
@@ -118,7 +145,7 @@ class MiniOverlay:
             else:
                 action_text = f"💡 {action}"
             
-            self.decision_label.config(text=action_text)
+            self.decision_label.config(text=action_text, fg='#00ffff')
             
             # Reasoning (first 100 chars)
             reasoning = decision.get('reasoning', 'No reasoning')
@@ -148,34 +175,28 @@ class MiniOverlay:
         """Update overlay with next step guidance"""
         if step == "calibrate":
             self.decision_label.config(text="📋 Setup Needed", fg='#ffaa00')
-            self.reasoning_label.config(text="Press F7 to calibrate\nOr F12 to open main window")
-            self.table_label.config(text="Step 1: Scan Windows")
-            self.cards_label.config(text="Step 2: Select poker window")
-            self.stack_label.config(text="Step 3: F12, then F8")
-        elif step == "scan_done":
-            self.decision_label.config(text="📸 Ready to Capture", fg='#00aaff')
-            self.reasoning_label.config(text="1. Press F12 to hide\n2. Press F8 to capture")
-            self.table_label.config(text="✓ Window selected")
-            self.cards_label.config(text="Next: F12 (hide)")
-            self.stack_label.config(text="Then: F8 (capture)")
+            self.reasoning_label.config(text="Open Calibration tab in GUI\nThen press F8 to capture")
+            self.table_label.config(text="Step 1: Open Calibration tab")
+            self.cards_label.config(text="Step 2: Focus poker window")
+            self.stack_label.config(text="Step 3: Press F8")
         elif step == "test":
             self.decision_label.config(text="✅ Calibrated!", fg='#00ff00')
-            self.reasoning_label.config(text="Press F8 to test OCR\nOr F9 to get advice")
+            self.reasoning_label.config(text="Press F5 to test OCR\nOr F9 to get advice")
             self.table_label.config(text="Calibration saved!")
-            self.cards_label.config(text="Test: F8")
-            self.stack_label.config(text="Or: F9 for advice")
+            self.cards_label.config(text="Test: F5")
+            self.stack_label.config(text="Advice: F9")
         elif step == "ready":
             self.decision_label.config(text="✅ Ready!", fg='#00ff00')
-            self.reasoning_label.config(text="Press F9 to get AI advice\nBot is ready to help!")
+            self.reasoning_label.config(text="F9: Get advice (one-time)\nF10: Start bot (auto mode)")
             self.table_label.config(text="All set!")
-            self.cards_label.config(text="F9: Get advice")
-            self.stack_label.config(text="F10: Start bot")
+            self.cards_label.config(text="F9: Advice")
+            self.stack_label.config(text="F10: Auto bot")
         elif step == "playing":
             self.decision_label.config(text="🎮 Playing", fg='#00ffff')
-            self.reasoning_label.config(text="Waiting for your turn...\nPress F9 for advice anytime")
+            self.reasoning_label.config(text="Bot is running...\nF11: Emergency stop")
             self.table_label.config(text="Bot active")
-            self.cards_label.config(text="F9: Analyze")
-            self.stack_label.config(text="F11: Emergency stop")
+            self.cards_label.config(text="F9: Quick advice")
+            self.stack_label.config(text="F11: Stop")
     
     def show(self):
         """Show the overlay"""
