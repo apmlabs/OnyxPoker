@@ -73,6 +73,51 @@ This project uses **9 essential markdown files**. **As an agent, I must understa
 
 ## RECENT LEARNINGS (2025-12-29 to 2025-12-30)
 
+### Session 9 Continuation: UX Debugging + Windows Encoding Fix (01:36-02:13 UTC December 30, 2025)
+**Challenge**: User tested GPT-4o on real PokerStars tables - vision worked perfectly, but overlay wasn't updating
+
+**Critical Discovery**: 
+- GPT-4o vision accuracy confirmed EXCELLENT in real testing
+- User successfully read cards (Qd/8c, Ah/Td, Ah/Kd, 4h/2h, etc.)
+- Pot amounts accurate ($1312, $300, etc.)
+- Decisions sensible (pair of Queens call, AK raise, weak cards fold)
+- BUT overlay not updating, no immediate feedback on hotkeys
+
+**Root Cause Found**: Windows console encoding error with emoji characters
+- UnicodeEncodeError: 'charmap' codec can't encode '\U0001f4a1' (💡 emoji)
+- Windows cp1252 encoding can't handle Unicode emojis in debug prints
+- Overlay WAS being called and working, but failing silently on debug print
+
+**What I Did**:
+1. **Added Immediate Feedback**: F8/F9 now show "🔍 Analyzing..." in overlay immediately
+2. **Unified Overlay Update**: Single update_game_state() method handles both dict and individual params
+3. **Added Debug Logging**: Extensive debug prints to trace execution flow
+4. **Fixed Windows Encoding**: Removed emoji characters from debug prints causing UnicodeEncodeError
+5. **Fixed Capture Error**: Removed code outside try block accessing undefined 'state' variable
+
+**Key Insights**:
+1. **Test Files Can Cause More Problems**: Avoided creating test files due to Windows encoding issues
+2. **Windows Encoding Matters**: cp1252 can't handle Unicode emojis - use plain text in debug prints
+3. **Exception Handling Can Mask Issues**: Need specific error catching and full tracebacks
+4. **Real-World Testing Reveals UX Issues**: GPT-4o works great, but user experience needs immediate feedback
+5. **Debug Logging Must Be Encoding-Safe**: Cross-platform compatibility requires avoiding emojis
+
+**What Worked**:
+✅ GPT-4o vision (excellent accuracy on real tables)
+✅ Immediate feedback system (F8/F9 show progress)
+✅ Unified overlay update method
+✅ Debug logging to trace execution
+✅ Windows encoding fix (removed emojis)
+
+**What Didn't Work**:
+❌ Test files (encoding issues on Windows)
+❌ Emoji characters in debug prints (UnicodeEncodeError)
+❌ Code outside try blocks (undefined variables)
+❌ Silent failures in overlay updates
+
+**Critical Agent Learning**:
+**When user says overlay "not working" but code looks right, check for silent failures in debug prints. Windows encoding errors can break the entire update chain even if the main logic is correct.**
+
 ### Session 9: GPT-4o Vision Implementation + Architecture Planning (20:33-00:05 UTC December 29-30, 2025)
 **Challenge**: OpenCV doesn't understand poker - 60-70% accuracy, brittle, no context
 
@@ -194,6 +239,9 @@ This project uses **9 essential markdown files**. **As an agent, I must understa
 - All duplicate code (removed duplicate execute_action)
 - All unused parameters (removed --mode CLI arg)
 **Create audit report, fix issues, verify syntax, commit. Complete cleanup = deleted files + updated references.**
+
+**Sixth Critical Lesson (Windows Encoding + Silent Failures)**:
+**When user reports "not working" but code looks correct, check for silent failures in debug prints. Windows encoding errors (cp1252 vs Unicode emojis) can break entire update chains even if main logic is correct. Always use encoding-safe debug prints for cross-platform compatibility.**
 
 
 
