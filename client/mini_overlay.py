@@ -199,28 +199,28 @@ class MiniOverlay:
         """Update overlay with next step guidance"""
         if step == "calibrate":
             self.decision_label.config(text="📋 Setup Needed", fg='#ffaa00')
-            self.reasoning_label.config(text="Open Calibration tab in GUI\nThen press F8 to capture")
-            self.table_label.config(text="Step 1: Open Calibration tab")
-            self.cards_label.config(text="Step 2: Focus poker window")
-            self.stack_label.config(text="Step 3: Press F8")
+            self.reasoning_label.config(text="Press F8 to calibrate\n(Focus poker window first)")
+            self.pot_label.config(text="Step 1: Focus poker window")
+            self.cards_label.config(text="Step 2: Press F8")
+            self.board_label.config(text="Step 3: Save config")
         elif step == "test":
             self.decision_label.config(text="✅ Calibrated!", fg='#00ff00')
             self.reasoning_label.config(text="Press F5 to test OCR\nOr F9 to get advice")
-            self.table_label.config(text="Calibration saved!")
+            self.pot_label.config(text="Calibration saved!")
             self.cards_label.config(text="Test: F5")
-            self.stack_label.config(text="Advice: F9")
+            self.board_label.config(text="Advice: F9")
         elif step == "ready":
             self.decision_label.config(text="✅ Ready!", fg='#00ff00')
             self.reasoning_label.config(text="F9: Get advice (one-time)\nF10: Start bot (auto mode)")
-            self.table_label.config(text="All set!")
+            self.pot_label.config(text="All set!")
             self.cards_label.config(text="F9: Advice")
-            self.stack_label.config(text="F10: Auto bot")
+            self.board_label.config(text="F10: Auto bot")
         elif step == "playing":
             self.decision_label.config(text="🎮 Playing", fg='#00ffff')
             self.reasoning_label.config(text="Bot is running...\nF11: Emergency stop")
-            self.table_label.config(text="Bot active")
+            self.pot_label.config(text="Bot active")
             self.cards_label.config(text="F9: Quick advice")
-            self.stack_label.config(text="F11: Stop")
+            self.board_label.config(text="F11: Stop")
     
     def show(self):
         """Show the overlay"""
