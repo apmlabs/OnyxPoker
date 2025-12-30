@@ -153,7 +153,7 @@ class MiniOverlay:
             if isinstance(decision, dict):
                 action = decision.get('action', '--').upper()
                 amount = decision.get('amount', 0)
-                if amount > 0:
+                if amount and amount > 0:
                     decision_text = f"💡 {action} ${amount}"
                 else:
                     decision_text = f"💡 {action}"

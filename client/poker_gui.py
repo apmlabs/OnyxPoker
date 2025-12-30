@@ -430,7 +430,7 @@ class OnyxPokerGUI:
         if decision:
             action = decision.get('action', '--').upper()
             amount = decision.get('amount', 0)
-            if amount > 0:
+            if amount and amount > 0:
                 action += f" ${amount}"
             self.decision_label.config(text=action)
             
