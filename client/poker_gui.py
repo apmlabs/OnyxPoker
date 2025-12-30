@@ -446,11 +446,16 @@ class OnyxPokerGUI:
         if self.mini_overlay:
             try:
                 print(f"DEBUG: Calling overlay.update_game_state with state={bool(state)}, decision={bool(decision)}")
+                print(f"DEBUG: Overlay object exists: {self.mini_overlay}")
+                print(f"DEBUG: Overlay has update_game_state method: {hasattr(self.mini_overlay, 'update_game_state')}")
                 self.mini_overlay.update_game_state(state=state, decision=decision)
                 print(f"DEBUG: Overlay update completed successfully")
             except Exception as e:
                 print(f"DEBUG: Overlay update failed: {e}")
-                pass
+                import traceback
+                traceback.print_exc()
+        else:
+            print("DEBUG: No mini_overlay found!")
         
     # Control actions
     def test_connection(self):
