@@ -52,7 +52,6 @@ ENV/
 Thumbs.db
 
 # Project specific
-AmazonQ.md
 config.json
 auth_tokens.json
 onyxpoker
