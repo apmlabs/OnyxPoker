@@ -135,7 +135,7 @@ class MiniOverlay:
                 else:
                     decision_text = f"💡 {action}"
                 self.decision_label.config(text=decision_text, fg='#00ffff')
-                print(f"OVERLAY DEBUG: Updated decision to {decision_text}")
+                print(f"OVERLAY DEBUG: Updated decision to {action} ${amount if amount else ''}")
                 
                 reasoning = decision.get('reasoning', 'No reasoning')
             else:
