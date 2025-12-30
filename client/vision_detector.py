@@ -103,7 +103,7 @@ Use null if you can't see something. Cards format: As=Ace spades, Kh=King hearts
                     ]
                 }
             ],
-            max_completion_tokens=1000  # Increased from 500
+            max_completion_tokens=2000  # Increased from 1000
         )
         
         api_elapsed = time.time() - api_start

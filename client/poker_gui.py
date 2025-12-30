@@ -790,8 +790,12 @@ class OnyxPokerGUI:
             
             try:
                 # Use GPT-5-mini to detect elements
-                vision = VisionDetector()
+                vision = VisionDetector(logger=self.log)
                 result = vision.detect_poker_elements(temp_path, include_decision=False)
+                
+                if not result:
+                    self.log("❌ GPT-5-mini returned empty result", "ERROR")
+                    return
                 
                 self.detected_elements = {
                     'window_region': window_region,
