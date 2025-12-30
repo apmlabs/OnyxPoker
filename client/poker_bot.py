@@ -114,37 +114,15 @@ class OnyxPokerBot:
             if 'fold' in button_positions:
                 x, y = button_positions['fold']
                 pyautogui.click(x, y)
-        action = decision.get('action')
-        amount = decision.get('amount', 0)
-        
-        if action == 'fold':
-            self.click_button('fold')
-        elif action == 'call':
-            self.click_button('call')
-        elif action == 'raise':
-            self.click_button('raise')
-            if amount > 0:
-                time.sleep(0.3)
-                pyautogui.hotkey('ctrl', 'a')
-                pyautogui.typewrite(str(amount), interval=0.05)
-                pyautogui.press('enter')
-    
-    def click_button(self, button_name: str):
-        """Click poker action button"""
-        x, y, w, h = config.BUTTON_REGIONS[button_name]
-        table_x, table_y, _, _ = config.TABLE_REGION
-        pyautogui.click(table_x + x + w // 2, table_y + y + h // 2)
 
 def main():
     parser = argparse.ArgumentParser(description='OnyxPoker Bot')
-    parser.add_argument('--mode', choices=['local', 'remote'], default='remote',
-                       help='Decision mode: local Kiro CLI or remote server')
     parser.add_argument('--execution', choices=['auto', 'analysis'], default='analysis',
                        help='Execution mode: auto (click) or analysis (display only)')
     parser.add_argument('--hands', type=int, help='Max hands to play')
     args = parser.parse_args()
     
-    bot = OnyxPokerBot(mode=args.mode, execution=args.execution)
+    bot = OnyxPokerBot(execution=args.execution)
     bot.run(max_hands=args.hands)
 
 if __name__ == '__main__':

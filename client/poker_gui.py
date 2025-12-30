@@ -13,7 +13,6 @@ import pygetwindow as gw
 from poker_bot import OnyxPokerBot
 from poker_reader import PokerScreenReader
 from automation_client import OnyxPokerClient
-from window_detector import WindowDetector
 from mini_overlay import MiniOverlay
 from hotkey_manager import HotkeyManager
 from system_tray import SystemTrayIcon
@@ -44,7 +43,6 @@ class OnyxPokerGUI:
         self.log_queue = queue.Queue()
         
         # Calibration state
-        self.detector = WindowDetector()
         self.selected_window = None
         self.detected_elements = None
         self.windows = []
@@ -714,13 +712,16 @@ class OnyxPokerGUI:
             self.calib_status.config(text="❌ Failed to activate", foreground="red")
     
     def auto_detect(self):
-        """Capture active window and detect elements (manual review required)"""
+        """Capture active window and detect elements using GPT-4o"""
         self.calib_status.config(text="📸 Capturing active window...", foreground="blue")
         self.log("📸 Capturing currently active window...")
         self.root.update()
         
         try:
             import pygetwindow as gw
+            import pyautogui
+            import tempfile
+            from vision_detector import VisionDetector
             
             # Get active window
             active_window = gw.getActiveWindow()
@@ -731,55 +732,49 @@ class OnyxPokerGUI:
             
             self.log(f"✓ Active window: {active_window.title}")
             
-            # Store window info
-            window_info = {
-                'title': active_window.title,
-                'left': active_window.left,
-                'top': active_window.top,
-                'width': active_window.width,
-                'height': active_window.height,
-                'window': active_window
-            }
-            
-            # Capture screenshot
-            img = self.detector.capture_window(window_info)
-            if img is None:
-                self.log("❌ Failed to capture screenshot", "ERROR")
-                self.calib_status.config(text="❌ Capture failed", foreground="red")
-                return
-                
-            self.log("✓ Screenshot captured")
-            
-            # Show screenshot
-            self.show_preview(img, self.preview_canvas)
-            
-            # Try auto-detection (may not work)
-            self.calib_status.config(text="🔎 Attempting auto-detection...", foreground="blue")
-            self.root.update()
-            
-            self.detected_elements = self.detector.detect_poker_elements(img)
-            self.detected_elements['window_region'] = (
-                window_info['left'], window_info['top'],
-                window_info['width'], window_info['height']
+            # Store window region
+            window_region = (
+                active_window.left,
+                active_window.top,
+                active_window.width,
+                active_window.height
             )
             
-            # Check if detection found anything
-            if self.detected_elements.get('button_regions'):
-                # Show preview with boxes
-                preview = self.detector.create_preview(img, self.detected_elements)
-                self.show_preview(preview, self.preview_canvas)
+            # Capture screenshot
+            self.calib_status.config(text="🔎 Analyzing with GPT-4o...", foreground="blue")
+            self.root.update()
+            
+            img = pyautogui.screenshot(region=window_region)
+            
+            # Save to temp file for GPT-4o
+            with tempfile.NamedTemporaryFile(suffix='.png', delete=False) as f:
+                img.save(f.name)
+                temp_path = f.name
+            
+            try:
+                # Use GPT-4o to detect elements
+                vision = VisionDetector()
+                result = vision.detect_poker_elements(temp_path, include_decision=False)
+                
+                self.detected_elements = {
+                    'window_region': window_region,
+                    'button_regions': result.get('button_positions', {}),
+                    'confidence': result.get('confidence', 0.95)
+                }
+                
+                # Show preview
+                self.show_preview(img, self.preview_canvas)
                 
                 conf = self.detected_elements.get('confidence', 0)
                 self.confidence_label.config(text=f"Confidence: {conf:.1%}", 
                                             foreground="green" if conf > 0.7 else "orange")
-                self.calib_status.config(text="✓ Auto-detection complete", foreground="green")
-                self.log("✓ Auto-detection found elements. Review and save if correct.")
-            else:
-                # No detection - user must manually configure
-                self.confidence_label.config(text="Auto-detection failed", foreground="red")
-                self.calib_status.config(text="⚠️ Manual configuration needed", foreground="orange")
-                self.log("⚠️ Auto-detection failed. You'll need to manually edit config.py")
-                self.log("💡 See config.py for coordinate format")
+                self.calib_status.config(text="✓ GPT-4o detection complete", foreground="green")
+                self.log("✓ GPT-4o detected elements. Review and save if correct.")
+                
+            finally:
+                import os
+                if os.path.exists(temp_path):
+                    os.unlink(temp_path)
             
             # Show main window
             self.root.deiconify()
