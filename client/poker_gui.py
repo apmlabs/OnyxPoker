@@ -924,7 +924,9 @@ ACTION_DELAY = 2.0
             self.log(f"DEBUG: Updating overlay with decision: {action} ${amount if amount else ''}")
             self.log(f"DEBUG: Reasoning: {reasoning[:50]}...")
             
+            print("DEBUG: About to call self.update_game_state")
             self.update_game_state(state, decision)
+            print("DEBUG: self.update_game_state completed")
             
             # Update state display
             self.state_text.delete("1.0", "end")
