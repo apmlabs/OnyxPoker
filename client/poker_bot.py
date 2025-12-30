@@ -41,63 +41,87 @@ class OnyxPokerBot:
         
         try:
             while max_hands is None or hands_played < max_hands:
-                if not self.reader.is_hero_turn():
-                    time.sleep(config.POLL_INTERVAL)
+                # Get game state with decision from GPT-4o
+                state = self.reader.parse_game_state(include_decision=True)
+                
+                # Check if our turn
+                if not self.is_hero_turn(state):
+                    time.sleep(0.5)
                     continue
                 
-                # Parse state
-                state = self.reader.parse_game_state()
+                # Display state
                 print(f"\n{'='*50}")
                 print(f"🃏 Hand {hands_played + 1}")
                 print(f"{'='*50}")
-                print(f"Cards: {state['hero_cards']}")
-                print(f"Board: {state['community_cards']}")
-                print(f"Pot: ${state['pot']}")
-                print(f"Stack: ${state['stacks'][2] if len(state['stacks']) > 2 else 0}")
-                print(f"Actions: {state['actions']}")
+                print(f"Cards: {state.get('hero_cards', ['??', '??'])}")
+                print(f"Board: {state.get('community_cards', [])}")
+                print(f"Pot: ${state.get('pot', 0)}")
+                print(f"Stack: ${state.get('hero_stack', 0)}")
+                print(f"To Call: ${state.get('to_call', 0)}")
                 
-                # Get decision
-                decision = self.get_decision(state)
-                print(f"\n💡 Decision: {decision['action'].upper()}", end='')
-                if decision.get('amount'):
-                    print(f" ${decision['amount']}", end='')
-                print(f"\n📝 Reasoning: {decision.get('reasoning', 'N/A')[:100]}...")
+                # Display decision
+                action = state.get('recommended_action', 'fold')
+                amount = state.get('recommended_amount', 0)
+                reasoning = state.get('reasoning', 'No reasoning provided')
+                
+                print(f"\n💡 Recommended: {action.upper()}", end='')
+                if amount:
+                    print(f" ${amount}", end='')
+                print(f"\n📝 Reasoning: {reasoning}")
                 
                 # Execute or display
                 if self.execution == 'auto':
-                    self.execute_action(decision)
+                    self.execute_action(state)
                     print("✅ Action executed")
                 else:
-                    print("ℹ️  [ANALYSIS MODE - No action taken]")
+                    print("ℹ️  [ADVICE MODE - No action taken]")
                 
                 hands_played += 1
-                time.sleep(config.ACTION_DELAY)
+                time.sleep(2)  # Wait before next check
                 
         except KeyboardInterrupt:
             print(f"\n\n🛑 Bot stopped. Hands played: {hands_played}")
     
-    def get_decision(self, state: Dict[str, Any]) -> Dict[str, Any]:
-        """Get decision from Kiro CLI"""
-        if self.mode == 'local':
-            # Local subprocess (TODO: implement)
-            import subprocess
-            from poker_strategy import analyze_poker_state
-            return analyze_poker_state(state)
-        else:
-            # Remote HTTP call
-            screenshot = self.reader.capture_screenshot()
-            response = self.client.session.post(
-                f"{self.client.server_url}/analyze-poker",
-                json={'state': state, 'image': screenshot},
-                timeout=15
-            )
-            if response.status_code == 200:
-                return response.json()
-            else:
-                return {'action': 'fold', 'amount': 0, 'reasoning': 'Server error'}
+    def is_hero_turn(self, state: Dict[str, Any]) -> bool:
+        """Check if it's hero's turn"""
+        actions = state.get('actions', [])
+        # If we have available actions, it's our turn
+        return len(actions) > 0
     
-    def execute_action(self, decision: Dict[str, Any]):
-        """Execute poker action"""
+    def execute_action(self, state: Dict[str, Any]):
+        """Execute poker action using GPT-4o detected button positions"""
+        action = state.get('recommended_action', 'fold')
+        amount = state.get('recommended_amount', 0)
+        button_positions = state.get('button_positions', {})
+        
+        if action == 'fold' and 'fold' in button_positions:
+            x, y = button_positions['fold']
+            pyautogui.click(x, y)
+            
+        elif action == 'call' and 'call' in button_positions:
+            x, y = button_positions['call']
+            pyautogui.click(x, y)
+            
+        elif action == 'raise' and 'raise' in button_positions:
+            x, y = button_positions['raise']
+            pyautogui.click(x, y)
+            time.sleep(0.5)
+            
+            # Type amount if needed
+            if amount:
+                # Clear existing amount
+                pyautogui.hotkey('ctrl', 'a')
+                time.sleep(0.2)
+                # Type new amount
+                pyautogui.typewrite(str(int(amount)))
+                time.sleep(0.2)
+                # Confirm
+                pyautogui.press('enter')
+        else:
+            # Fallback: fold
+            if 'fold' in button_positions:
+                x, y = button_positions['fold']
+                pyautogui.click(x, y)
         action = decision.get('action')
         amount = decision.get('amount', 0)
         

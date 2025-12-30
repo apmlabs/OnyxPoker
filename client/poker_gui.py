@@ -518,40 +518,64 @@ class OnyxPokerGUI:
         self.update_status("Stopped")
         
     def run_bot(self, mode, execution, max_hands):
+        """Bot main loop - runs in separate thread"""
         try:
+            from poker_bot import OnyxPokerBot
             bot = OnyxPokerBot(mode=mode, execution=execution)
             reader = bot.reader
             hands = 0
             
+            self.log(f"🎰 Bot started: {execution} mode")
+            
             while self.running and (max_hands is None or hands < max_hands):
-                if not reader.is_hero_turn():
-                    self.root.after(0, self.update_status, "Waiting", hands)
+                # Get game state with GPT-4o decision
+                state = reader.parse_game_state(include_decision=True)
+                
+                # Check if our turn
+                if not bot.is_hero_turn(state):
+                    self.root.after(0, self.update_status, "Waiting for turn", hands)
                     import time
-                    time.sleep(config.POLL_INTERVAL)
+                    time.sleep(0.5)
                     continue
                 
-                state = reader.parse_game_state()
-                self.log(f"Hand {hands+1}: Pot=${state['pot']}")
+                # Log hand info
+                cards = state.get('hero_cards', ['??', '??'])
+                pot = state.get('pot', 0)
+                action = state.get('recommended_action', 'fold')
+                amount = state.get('recommended_amount', 0)
+                reasoning = state.get('reasoning', 'No reasoning')
                 
-                decision = bot.get_decision(state)
-                self.log(f"Decision: {decision['action'].upper()}")
+                self.log(f"\n🃏 Hand {hands+1}")
+                self.log(f"Cards: {cards}, Pot: ${pot}")
+                self.log(f"💡 Recommended: {action.upper()}" + (f" ${amount}" if amount else ""))
+                self.log(f"📝 {reasoning[:80]}...")
                 
-                self.root.after(0, self.update_game_state, state, decision)
+                # Update GUI
+                self.root.after(0, self.update_game_state, state, {
+                    'action': action,
+                    'amount': amount,
+                    'reasoning': reasoning
+                })
                 self.root.after(0, self.update_status, "Playing", hands+1)
                 
+                # Execute or just advise
                 if execution == 'auto':
-                    bot.execute_action(decision)
-                    self.log(f"✅ Executed: {decision['action']}")
+                    bot.execute_action(state)
+                    self.log(f"✅ Executed: {action}")
+                else:
+                    self.log(f"ℹ️  Advice only - no action taken")
                 
                 hands += 1
                 import time
-                time.sleep(config.ACTION_DELAY)
+                time.sleep(2)  # Wait before next check
                 
-            self.log(f"Finished: {hands} hands")
+            self.log(f"✅ Finished: {hands} hands")
             self.root.after(0, self.update_status, "Finished", hands)
             
         except Exception as e:
+            import traceback
             self.log(f"❌ Error: {e}", "ERROR")
+            self.log(traceback.format_exc(), "ERROR")
             self.root.after(0, messagebox.showerror, "Error", str(e))
         finally:
             self.running = False
