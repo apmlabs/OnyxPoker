@@ -187,6 +187,14 @@ This project uses **9 essential markdown files**. **As an agent, I must understa
 - Never assume I'll remember - write it down
 - When user double-checks if I updated files → I probably didn't do it well enough the first time
 
+**Fifth Critical Lesson (Code Audit After Cleanup)**:
+**After deleting files, AUDIT all imports and references. Don't assume cleanup is complete just because files are deleted. Check:**
+- All import statements (removed window_detector import)
+- All method calls (updated auto_detect to use GPT-4o)
+- All duplicate code (removed duplicate execute_action)
+- All unused parameters (removed --mode CLI arg)
+**Create audit report, fix issues, verify syntax, commit. Complete cleanup = deleted files + updated references.**
+
 
 
 ### Session 8: Calibration Simplification - Learning from Overcomplication (19:15-19:30 UTC)
