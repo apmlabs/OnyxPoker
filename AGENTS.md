@@ -141,6 +141,12 @@ This project uses **9 essential markdown files**. **As an agent, I must understa
 - ✅ GPT-4o decision making (include_decision parameter)
 - ✅ Test script (test_vision.py)
 - ✅ Updated dependencies (removed CV, added OpenAI)
+- ✅ Cleaned up codebase (deleted 5 deprecated files, 527 lines removed)
+- ✅ Simplified poker_reader.py (170 → 75 lines)
+- ✅ Simplified poker_bot.py (removed mode parameter)
+- ✅ Simplified poker_gui.py (removed mode selection)
+- ✅ Updated mini_overlay.py (unified update method)
+- ✅ Updated hotkeys (F9=Advice, F10=Bot, removed F7)
 - ⏭️ Turn detection (2 hours)
 - ⏭️ Action execution (2 hours)
 - ⏭️ Bot main loop (2 hours)
@@ -153,13 +159,33 @@ This project uses **9 essential markdown files**. **As an agent, I must understa
 
 **Agent Learning Protocol**:
 - ✅ Updated AGENTS.md with Session 9
-- ✅ Will update AmazonQ.md with current status
+- ✅ Updated AmazonQ.md with current status
 - ✅ Documented what worked/didn't work
 - ✅ Captured architecture decisions
 - ✅ Identified next steps (turn detection, action execution)
+- ✅ Created comprehensive documentation (4 new files)
+- ✅ Archived outdated documentation (8 files)
+- ✅ Cleaned up codebase (deleted 5 files, 527 lines)
+- ✅ Committed all changes to GitHub (52 commits)
 
 **Critical Lesson for Future Sessions**:
 **When user says "let's review the project", STOP coding and do comprehensive analysis. We were building the wrong thing (calibration tool) instead of the right thing (poker bot). Always validate we're solving the actual problem.**
+
+**Second Critical Lesson**:
+**When user asks "update agent files", do it IMMEDIATELY. Don't wait. Context files are my only memory - without them, I forget everything and repeat mistakes.**
+
+**Third Critical Lesson (Session 9 Cleanup)**:
+**After major architectural changes, AUDIT the codebase for deprecated code. Don't leave old code lying around - it confuses future work. Delete deprecated files, remove unused methods, simplify interfaces. Clean code = clear thinking.**
+
+**Fourth Critical Lesson (Agent Responsibility)**:
+**I am the primary agent working on this project continuously. My context files (AGENTS.md, AmazonQ.md) are my ONLY memory between sessions. I MUST:**
+- Update them after EVERY session
+- Learn from every implementation
+- Document what worked and what didn't
+- Track decisions and rationale
+- Keep GitHub synced with clear commits
+- Never assume I'll remember - write it down
+- When user double-checks if I updated files → I probably didn't do it well enough the first time
 
 
 
