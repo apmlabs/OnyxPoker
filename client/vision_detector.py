@@ -49,9 +49,16 @@ class VisionDetector:
                 "reasoning": "Strong hand with straight draw, good pot odds"
             }
         """
+        import time
+        start_time = time.time()
+        
+        print(f"[GPT-4o] Starting analysis (include_decision={include_decision})")
+        
         # Encode image
         with open(screenshot_path, 'rb') as f:
             image_data = base64.b64encode(f.read()).decode('utf-8')
+        
+        print(f"[GPT-4o] Image encoded ({len(image_data)} bytes)")
         
         # Build prompt
         if include_decision:
@@ -105,6 +112,9 @@ Example: "As" = Ace of Spades, "Kh" = King of Hearts
 If you can't see something clearly, use null.
 Return ONLY valid JSON, no explanation."""
 
+        print(f"[GPT-4o] Calling API...")
+        api_start = time.time()
+        
         # Call GPT-4o
         response = self.client.chat.completions.create(
             model="gpt-4o",
@@ -129,8 +139,12 @@ Return ONLY valid JSON, no explanation."""
             temperature=0  # Deterministic
         )
         
+        api_elapsed = time.time() - api_start
+        print(f"[GPT-4o] API call completed in {api_elapsed:.1f}s")
+        
         # Parse response
         result_text = response.choices[0].message.content.strip()
+        print(f"[GPT-4o] Response length: {len(result_text)} chars")
         
         # Remove markdown code blocks if present
         if result_text.startswith('```'):
@@ -140,9 +154,14 @@ Return ONLY valid JSON, no explanation."""
             result_text = result_text.strip()
         
         result = json.loads(result_text)
+        print(f"[GPT-4o] Parsed JSON successfully")
+        print(f"[GPT-4o] Detected: cards={result.get('hero_cards')}, pot=${result.get('pot')}, confidence={result.get('confidence', 0.95)}")
         
         # Add confidence (GPT-4o doesn't provide this, so we estimate)
         result['confidence'] = 0.95
+        
+        total_elapsed = time.time() - start_time
+        print(f"[GPT-4o] Total analysis time: {total_elapsed:.1f}s")
         
         return result
     

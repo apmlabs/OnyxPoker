@@ -445,17 +445,11 @@ class OnyxPokerGUI:
         # Update mini overlay
         if self.mini_overlay:
             try:
-                print(f"DEBUG: Calling overlay.update_game_state with state={bool(state)}, decision={bool(decision)}")
-                print(f"DEBUG: Overlay object exists: {self.mini_overlay}")
-                print(f"DEBUG: Overlay has update_game_state method: {hasattr(self.mini_overlay, 'update_game_state')}")
                 self.mini_overlay.update_game_state(state=state, decision=decision)
-                print(f"DEBUG: Overlay update completed successfully")
             except Exception as e:
-                print(f"DEBUG: Overlay update failed: {e}")
+                self.log(f"ERROR: Overlay update failed: {e}", "ERROR")
                 import traceback
-                traceback.print_exc()
-        else:
-            print("DEBUG: No mini_overlay found!")
+                self.log(traceback.format_exc(), "ERROR")
         
     # Control actions
     def test_connection(self):
@@ -890,28 +884,48 @@ ACTION_DELAY = 2.0
     
     def get_advice(self):
         """F9 - Get one-time advice from GPT-4o"""
+        import time
+        start_time = time.time()
+        
         try:
             # Immediate feedback
             self.log("💡 Getting advice...")
+            self.log("📸 Capturing screenshot...")
             if hasattr(self, 'mini_overlay') and self.mini_overlay:
                 self.mini_overlay.update_status("🔍 Analyzing...")
+            self.root.update()
             
             reader = PokerScreenReader()
+            
+            # Progress update
+            self.log("🤖 Calling GPT-4o Vision API...")
+            if hasattr(self, 'mini_overlay') and self.mini_overlay:
+                self.mini_overlay.update_status("🤖 GPT-4o analyzing...")
+            self.root.update()
             
             # Get state with decision from GPT-4o
             state = reader.parse_game_state(include_decision=True)
             
+            elapsed = time.time() - start_time
+            self.log(f"✓ Analysis complete in {elapsed:.1f}s")
+            
             # Display in activity log
             cards = state.get('hero_cards', ['??', '??'])
             pot = state.get('pot', 0)
+            board = state.get('community_cards', [])
             action = state.get('recommended_action', 'fold')
             amount = state.get('recommended_amount', 0)
             reasoning = state.get('reasoning', 'No reasoning')
+            confidence = state.get('confidence', 0.0)
             
             self.log(f"\n🃏 Current Hand")
-            self.log(f"Cards: {cards}, Pot: ${pot}")
+            self.log(f"Cards: {cards}, Board: {board}")
+            self.log(f"Pot: ${pot}, Confidence: {confidence:.0%}")
             self.log(f"💡 Recommended: {action.upper()}" + (f" ${amount}" if amount else ""))
             self.log(f"📝 {reasoning}")
+            
+            # Debug: Log full state
+            self.log(f"DEBUG: Full state: {json.dumps(state, indent=2)}")
             
             # Update game state display and overlay (unified)
             decision = {
@@ -920,13 +934,7 @@ ACTION_DELAY = 2.0
                 'reasoning': reasoning
             }
             
-            # Debug: Log what we're sending to overlay
-            self.log(f"DEBUG: Updating overlay with decision: {action} ${amount if amount else ''}")
-            self.log(f"DEBUG: Reasoning: {reasoning[:50]}...")
-            
-            print("DEBUG: About to call self.update_game_state")
             self.update_game_state(state, decision)
-            print("DEBUG: self.update_game_state completed")
             
             # Update state display
             self.state_text.delete("1.0", "end")

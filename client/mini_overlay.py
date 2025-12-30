@@ -13,9 +13,9 @@ class MiniOverlay:
         self.visible = True
         
         # Window properties
-        self.window.geometry("320x260")
+        self.window.geometry("400x380")
         self.window.attributes('-topmost', True)  # Always on top
-        self.window.attributes('-alpha', 0.85)  # More transparent
+        self.window.attributes('-alpha', 0.90)  # Slightly more opaque
         self.window.overrideredirect(True)  # No title bar or buttons
         
         # Prevent closing via window manager
@@ -34,7 +34,7 @@ class MiniOverlay:
         
         # Header
         header = tk.Label(main_frame, text="🎰 OnyxPoker", 
-                         font=('Arial', 12, 'bold'), 
+                         font=('Arial', 14, 'bold'), 
                          bg='#2b2b2b', fg='#00ff00')
         header.pack(pady=(0, 5))
         
@@ -44,18 +44,23 @@ class MiniOverlay:
         info_frame = tk.Frame(main_frame, bg='#2b2b2b')
         info_frame.pack(fill='x', pady=5)
         
-        self.table_label = tk.Label(info_frame, text="Table: --", 
-                                    font=('Courier', 9), 
-                                    bg='#2b2b2b', fg='#ffffff', anchor='w')
-        self.table_label.pack(fill='x')
+        self.pot_label = tk.Label(info_frame, text="Pot: $--", 
+                                 font=('Courier', 11, 'bold'), 
+                                 bg='#2b2b2b', fg='#ffff00', anchor='w')
+        self.pot_label.pack(fill='x')
         
         self.cards_label = tk.Label(info_frame, text="Cards: --", 
-                                    font=('Courier', 10, 'bold'), 
-                                    bg='#2b2b2b', fg='#ffff00', anchor='w')
+                                    font=('Courier', 12, 'bold'), 
+                                    bg='#2b2b2b', fg='#00ffff', anchor='w')
         self.cards_label.pack(fill='x')
         
-        self.stack_label = tk.Label(info_frame, text="Stack: --", 
-                                    font=('Courier', 9), 
+        self.board_label = tk.Label(info_frame, text="Board: --", 
+                                    font=('Courier', 10), 
+                                    bg='#2b2b2b', fg='#ffffff', anchor='w')
+        self.board_label.pack(fill='x')
+        
+        self.stack_label = tk.Label(info_frame, text="Stack: $--", 
+                                    font=('Courier', 10), 
                                     bg='#2b2b2b', fg='#ffffff', anchor='w')
         self.stack_label.pack(fill='x')
         
@@ -66,15 +71,29 @@ class MiniOverlay:
         decision_frame.pack(fill='x', pady=5)
         
         self.decision_label = tk.Label(decision_frame, text="💡 --", 
-                                       font=('Arial', 14, 'bold'), 
+                                       font=('Arial', 16, 'bold'), 
                                        bg='#2b2b2b', fg='#00ffff', anchor='w')
         self.decision_label.pack(fill='x')
         
         self.reasoning_label = tk.Label(decision_frame, text="Waiting for action...", 
-                                       font=('Arial', 8), 
+                                       font=('Arial', 9), 
                                        bg='#2b2b2b', fg='#cccccc', 
-                                       anchor='w', wraplength=280, justify='left')
+                                       anchor='w', wraplength=360, justify='left')
         self.reasoning_label.pack(fill='x')
+        
+        # Confidence and timestamp
+        meta_frame = tk.Frame(main_frame, bg='#2b2b2b')
+        meta_frame.pack(fill='x', pady=2)
+        
+        self.confidence_label = tk.Label(meta_frame, text="", 
+                                        font=('Arial', 8), 
+                                        bg='#2b2b2b', fg='#888888', anchor='w')
+        self.confidence_label.pack(side='left')
+        
+        self.timestamp_label = tk.Label(meta_frame, text="", 
+                                       font=('Arial', 8), 
+                                       bg='#2b2b2b', fg='#888888', anchor='e')
+        self.timestamp_label.pack(side='right')
         
         tk.Frame(main_frame, height=2, bg='#555555').pack(fill='x', pady=5)
         
@@ -82,51 +101,55 @@ class MiniOverlay:
         hints_frame = tk.Frame(main_frame, bg='#2b2b2b')
         hints_frame.pack(fill='x')
         
-        self.hints1 = tk.Label(hints_frame, text="F5:Test  F6:Toggle  F8:Calibrate  F9:Advice  F10:Bot", 
-                        font=('Arial', 7), 
+        self.hints1 = tk.Label(hints_frame, text="F8:Calibrate  F9:Advice  F10:Bot", 
+                        font=('Arial', 8), 
                         bg='#2b2b2b', fg='#888888')
         self.hints1.pack()
         
         self.hints2 = tk.Label(hints_frame, text="F11:Stop  F12:Window", 
-                        font=('Arial', 7), 
+                        font=('Arial', 8), 
                         bg='#2b2b2b', fg='#888888')
         self.hints2.pack()
         
     def update_game_state(self, state=None, decision=None, cards=None, pot=None, stack=None, reasoning=None):
         """Update overlay with game state - unified method"""
-        
-        print(f"OVERLAY DEBUG: update_game_state called")
-        print(f"OVERLAY DEBUG: state={bool(state)}, decision={bool(decision)}")
+        from datetime import datetime
         
         # If state dict provided, extract values
         if state:
             cards = state.get('hero_cards', ['??', '??'])
             pot = state.get('pot', 0)
+            board = state.get('community_cards', [])
             stack = state.get('hero_stack', 0)
             if stack == 0:
                 stacks = state.get('stacks', [])
                 stack = stacks[2] if len(stacks) > 2 else 0
-            print(f"OVERLAY DEBUG: Extracted from state - cards={cards}, pot={pot}, stack={stack}")
+            confidence = state.get('confidence', 0.0)
         
-        # Update table info
+        # Update pot
         if pot is not None:
-            self.table_label.config(text=f"Table: ${pot} pot")
-            print(f"OVERLAY DEBUG: Updated pot to ${pot}")
+            self.pot_label.config(text=f"Pot: ${pot}")
         
         # Update cards
         if cards:
             cards_str = ' '.join(cards) if isinstance(cards, list) else str(cards)
             self.cards_label.config(text=f"Cards: {cards_str}")
-            print(f"OVERLAY DEBUG: Updated cards to {cards_str}")
+        
+        # Update board
+        if state and 'community_cards' in state:
+            board = state['community_cards']
+            if board:
+                board_str = ' '.join(board)
+                self.board_label.config(text=f"Board: {board_str}")
+            else:
+                self.board_label.config(text="Board: --")
         
         # Update stack
         if stack is not None:
             self.stack_label.config(text=f"Stack: ${stack}")
-            print(f"OVERLAY DEBUG: Updated stack to ${stack}")
         
         # Update decision
         if decision:
-            print(f"OVERLAY DEBUG: Processing decision: {decision}")
             if isinstance(decision, dict):
                 action = decision.get('action', '--').upper()
                 amount = decision.get('amount', 0)
@@ -135,28 +158,27 @@ class MiniOverlay:
                 else:
                     decision_text = f"💡 {action}"
                 self.decision_label.config(text=decision_text, fg='#00ffff')
-                print(f"OVERLAY DEBUG: Updated decision to {action} ${amount if amount else ''}")
                 
                 reasoning = decision.get('reasoning', 'No reasoning')
             else:
                 # decision is a string like "RAISE $60"
                 self.decision_label.config(text=f"💡 {decision}", fg='#00ffff')
-                print(f"OVERLAY DEBUG: Updated decision (string) to {decision}")
         
         # Update reasoning
         if reasoning:
-            if len(reasoning) > 100:
-                reasoning = reasoning[:97] + "..."
+            if len(reasoning) > 150:
+                reasoning = reasoning[:147] + "..."
             self.reasoning_label.config(text=reasoning)
-            print(f"OVERLAY DEBUG: Updated reasoning to {reasoning[:50]}...")
-        elif decision and isinstance(decision, dict):
-            reasoning = decision.get('reasoning', 'No reasoning')
-            if len(reasoning) > 100:
-                reasoning = reasoning[:97] + "..."
-            self.reasoning_label.config(text=reasoning)
-            print(f"OVERLAY DEBUG: Updated reasoning from decision dict to {reasoning[:50]}...")
         
-        print(f"OVERLAY DEBUG: update_game_state completed")
+        # Update confidence
+        if state and 'confidence' in state:
+            conf = state['confidence']
+            conf_color = '#00ff00' if conf > 0.9 else '#ffff00' if conf > 0.7 else '#ff8800'
+            self.confidence_label.config(text=f"Confidence: {conf:.0%}", fg=conf_color)
+        
+        # Update timestamp
+        now = datetime.now().strftime("%H:%M:%S")
+        self.timestamp_label.config(text=now)
     
     def update_status(self, status):
         """Update status message"""
