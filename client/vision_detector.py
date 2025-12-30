@@ -147,16 +147,38 @@ Return ONLY valid JSON, no explanation."""
         
         # Parse response
         parse_start = time.time()
-        result_text = response.choices[0].message.content
+        
+        # Debug: Print full response object
+        print(f"[GPT-5-mini] DEBUG: Full API response object:")
+        print(f"[GPT-5-mini] Response ID: {response.id}")
+        print(f"[GPT-5-mini] Model: {response.model}")
+        print(f"[GPT-5-mini] Choices count: {len(response.choices)}")
+        print(f"[GPT-5-mini] Usage: {response.usage}")
+        
+        if not response.choices:
+            print(f"[GPT-5-mini] ERROR: No choices in response")
+            raise ValueError("GPT-5-mini returned no choices")
+        
+        choice = response.choices[0]
+        print(f"[GPT-5-mini] Choice finish_reason: {choice.finish_reason}")
+        print(f"[GPT-5-mini] Choice message role: {choice.message.role}")
+        
+        result_text = choice.message.content
         
         if not result_text:
-            print(f"[GPT-5-mini] ERROR: Empty response from API")
-            print(f"[GPT-5-mini] Full response: {response}")
-            raise ValueError("GPT-5-mini returned empty response")
+            print(f"[GPT-5-mini] ERROR: Empty content in message")
+            print(f"[GPT-5-mini] Message object: {choice.message}")
+            print(f"[GPT-5-mini] Full response dict: {response.model_dump()}")
+            raise ValueError("GPT-5-mini returned empty content")
         
         result_text = result_text.strip()
         print(f"[GPT-5-mini] Response length: {len(result_text)} chars")
-        print(f"[GPT-5-mini] First 200 chars: {result_text[:200]}")
+        print(f"[GPT-5-mini] First 500 chars: {result_text[:500]}")
+        
+        # Check if response looks like an error message
+        if "I cannot" in result_text or "I'm unable" in result_text or "I can't" in result_text:
+            print(f"[GPT-5-mini] WARNING: Response appears to be a refusal")
+            print(f"[GPT-5-mini] Full response: {result_text}")
         
         # Remove markdown code blocks if present
         if result_text.startswith('```'):
@@ -169,7 +191,7 @@ Return ONLY valid JSON, no explanation."""
             result = json.loads(result_text)
         except json.JSONDecodeError as e:
             print(f"[GPT-5-mini] ERROR: Invalid JSON response")
-            print(f"[GPT-5-mini] Response text: {result_text[:500]}")
+            print(f"[GPT-5-mini] Response text: {result_text[:1000]}")
             print(f"[GPT-5-mini] JSON error: {e}")
             raise ValueError(f"GPT-5-mini returned invalid JSON: {e}")
         
