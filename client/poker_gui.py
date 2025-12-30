@@ -445,8 +445,11 @@ class OnyxPokerGUI:
         # Update mini overlay
         if self.mini_overlay:
             try:
+                print(f"🔧 DEBUG: Calling overlay.update_game_state with state={bool(state)}, decision={bool(decision)}")
                 self.mini_overlay.update_game_state(state=state, decision=decision)
-            except:
+                print(f"🔧 DEBUG: Overlay update completed successfully")
+            except Exception as e:
+                print(f"🔧 DEBUG: Overlay update failed: {e}")
                 pass
         
     # Control actions
@@ -911,6 +914,11 @@ ACTION_DELAY = 2.0
                 'amount': amount,
                 'reasoning': reasoning
             }
+            
+            # Debug: Log what we're sending to overlay
+            self.log(f"🔧 DEBUG: Updating overlay with decision: {action} ${amount if amount else ''}")
+            self.log(f"🔧 DEBUG: Reasoning: {reasoning[:50]}...")
+            
             self.update_game_state(state, decision)
             
             # Update state display
@@ -922,15 +930,6 @@ ACTION_DELAY = 2.0
             self.log(f"❌ Capture error: {e}", "ERROR")
             if hasattr(self, 'mini_overlay') and self.mini_overlay:
                 self.mini_overlay.update_status("❌ Error")
-            self.ocr_text.insert("1.0", f"Pot: ${state['pot']}\n")
-            self.ocr_text.insert("end", f"Stacks: {state['stacks']}\n")
-            self.ocr_text.insert("end", f"Actions: {state['actions']}\n")
-            self.ocr_text.insert("end", f"Cards: {state['hero_cards']}\n")
-            self.ocr_text.insert("end", f"Board: {state['community_cards']}\n")
-            
-            self.log("📸 Debug capture complete")
-        except Exception as e:
-            self.log(f"❌ Capture error: {e}", "ERROR")
     
     def validate_with_kiro(self):
         """Validate current table state with Kiro CLI"""
