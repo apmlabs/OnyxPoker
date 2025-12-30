@@ -699,19 +699,16 @@ class OnyxPokerGUI:
         self.selected_window = self.windows[sel[0]]
         window_title = self.selected_window['title']
         
-        if self.detector.activate_window(self.selected_window):
-            self.calib_status.config(text=f"✓ Selected: {window_title}", foreground="green")
-            self.log(f"✓ Window selected: {window_title}")
-            self.log("💡 Next steps:")
-            self.log("   1. Press F12 to hide this window")
-            self.log("   2. Press F8 to capture poker table")
-            self.log("   3. Press F12 again to see results")
-            
-            # Update overlay
-            if hasattr(self, 'mini_overlay') and self.mini_overlay:
-                self.mini_overlay.set_next_step("scan_done")
-        else:
-            self.calib_status.config(text="❌ Failed to activate", foreground="red")
+        self.calib_status.config(text=f"✓ Selected: {window_title}", foreground="green")
+        self.log(f"✓ Window selected: {window_title}")
+        self.log("💡 Next steps:")
+        self.log("   1. Press F12 to hide this window")
+        self.log("   2. Press F8 to capture poker table")
+        self.log("   3. Press F12 again to see results")
+        
+        # Update overlay
+        if hasattr(self, 'mini_overlay') and self.mini_overlay:
+            self.mini_overlay.set_next_step("scan_done")
     
     def auto_detect(self):
         """Capture active window and detect elements using GPT-4o"""
@@ -803,11 +800,6 @@ class OnyxPokerGUI:
         
         if 'window_region' not in self.detected_elements:
             messagebox.showerror("Error", "No window region detected. Press F8 first.")
-            return
-        
-        valid, msg = self.detector.validate_elements(self.detected_elements)
-        if not valid:
-            messagebox.showerror("Invalid", msg)
             return
         
         try:
