@@ -138,8 +138,8 @@ Return ONLY valid JSON, no explanation."""
                     ]
                 }
             ],
-            max_completion_tokens=500,
-            temperature=0  # Deterministic
+            max_completion_tokens=500
+            # Note: GPT-5-mini only supports default temperature (1)
         )
         
         api_elapsed = time.time() - api_start
