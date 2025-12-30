@@ -2,16 +2,17 @@
 
 ## Current Development Status: GPT-4O VISION + DECISION MAKING ✅
 
-**Last Updated**: December 30, 2025 02:13 UTC
+**Last Updated**: December 30, 2025 02:20 UTC
 
-**🚀 PROJECT STATUS**: GPT-4o Vision API implemented - reads tables AND makes decisions
+**🚀 PROJECT STATUS**: Priority 1 fixes complete - UX dramatically improved
 **📊 ARCHITECTURE STATUS**: Phase 1 (Vision LLM) - Client-only with GPT-4o
 **🌐 SERVER STATUS**: Running as systemd service (optional for Phase 1, required for Phase 2)
-**🎮 CLIENT STATUS**: GPT-4o vision + decision making implemented, UX issues FIXED
+**🎮 CLIENT STATUS**: GPT-4o vision + decision making + ENHANCED UX
 **🎴 VISION**: GPT-4o Vision API (95-99% accuracy) - CONFIRMED on real tables
 **🧠 DECISIONS**: GPT-4o (understands poker strategy) - CONFIRMED sensible decisions
 **⌨️ HOTKEYS**: F5-F12 (F5=Test OCR, F8=Capture & detect, F9=Analyze) - WORKING
-**📱 MINI OVERLAY**: Always-on-top panel with step-by-step guidance - FIXED encoding issue
+**📱 MINI OVERLAY**: Enhanced 400x380 with pot, board, confidence, timestamp - FIXED
+**🐛 DEBUG LOGGING**: Comprehensive timing and state logging - ADDED
 
 ## Project Overview
 **OnyxPoker** - AI-Powered Poker Bot with Computer Vision
