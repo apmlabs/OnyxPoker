@@ -92,69 +92,57 @@ class MiniOverlay:
                         bg='#2b2b2b', fg='#888888')
         self.hints2.pack()
         
-    def update_game_state(self, cards=None, pot=None, stack=None, decision=None, reasoning=None):
-        """Update overlay with game state (GPT-4o compatible)"""
-        # Table info
+    def update_game_state(self, state=None, decision=None, cards=None, pot=None, stack=None, reasoning=None):
+        """Update overlay with game state - unified method"""
+        
+        # If state dict provided, extract values
+        if state:
+            cards = state.get('hero_cards', ['??', '??'])
+            pot = state.get('pot', 0)
+            stack = state.get('hero_stack', 0)
+            if stack == 0:
+                stacks = state.get('stacks', [])
+                stack = stacks[2] if len(stacks) > 2 else 0
+        
+        # Update table info
         if pot is not None:
             self.table_label.config(text=f"Table: ${pot} pot")
         
-        # Cards
+        # Update cards
         if cards:
             cards_str = ' '.join(cards) if isinstance(cards, list) else str(cards)
             self.cards_label.config(text=f"Cards: {cards_str}")
         
-        # Stack
+        # Update stack
         if stack is not None:
             self.stack_label.config(text=f"Stack: ${stack}")
         
-        # Decision
+        # Update decision
         if decision:
-            self.decision_label.config(text=f"💡 {decision}", fg='#00ffff')
+            if isinstance(decision, dict):
+                action = decision.get('action', '--').upper()
+                amount = decision.get('amount', 0)
+                if amount > 0:
+                    decision_text = f"💡 {action} ${amount}"
+                else:
+                    decision_text = f"💡 {action}"
+                self.decision_label.config(text=decision_text, fg='#00ffff')
+                
+                reasoning = decision.get('reasoning', 'No reasoning')
+            else:
+                # decision is a string like "RAISE $60"
+                self.decision_label.config(text=f"💡 {decision}", fg='#00ffff')
         
-        # Reasoning
+        # Update reasoning
         if reasoning:
             if len(reasoning) > 100:
                 reasoning = reasoning[:97] + "..."
             self.reasoning_label.config(text=reasoning)
-    
-    def update_info(self, state, decision=None):
-        """Update overlay with current game state (legacy method)"""
-        # Table info
-        pot = state.get('pot', 0)
-        self.table_label.config(text=f"Table: ${pot} pot")
-        
-        # Cards
-        cards = state.get('hero_cards', ['??', '??'])
-        cards_str = ' '.join(cards)
-        self.cards_label.config(text=f"Cards: {cards_str}")
-        
-        # Stack
-        stack = state.get('hero_stack', 0)
-        if stack == 0:
-            stacks = state.get('stacks', [])
-            stack = stacks[2] if len(stacks) > 2 else 0
-        self.stack_label.config(text=f"Stack: ${stack}")
-        
-        # Decision
-        if decision:
-            action = decision.get('action', '--').upper()
-            amount = decision.get('amount', 0)
-            
-            if amount > 0:
-                action_text = f"💡 {action} ${amount}"
-            else:
-                action_text = f"💡 {action}"
-            
-            self.decision_label.config(text=action_text, fg='#00ffff')
-            
-            # Reasoning (first 100 chars)
+        elif decision and isinstance(decision, dict):
             reasoning = decision.get('reasoning', 'No reasoning')
             if len(reasoning) > 100:
                 reasoning = reasoning[:97] + "..."
             self.reasoning_label.config(text=reasoning)
-        else:
-            self.decision_label.config(text="💡 --")
-            self.reasoning_label.config(text="Waiting for action...")
     
     def update_status(self, status):
         """Update status message"""

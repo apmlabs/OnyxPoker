@@ -453,7 +453,7 @@ class OnyxPokerGUI:
         # Update mini overlay
         if self.mini_overlay:
             try:
-                self.mini_overlay.update_info(state, decision)
+                self.mini_overlay.update_game_state(state=state, decision=decision)
             except:
                 pass
         
