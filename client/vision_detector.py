@@ -54,11 +54,14 @@ class VisionDetector:
         
         print(f"[GPT-4o] Starting analysis (include_decision={include_decision})")
         
-        # Encode image
+        # Timing: Encode image
+        encode_start = time.time()
         with open(screenshot_path, 'rb') as f:
             image_data = base64.b64encode(f.read()).decode('utf-8')
+        encode_time = time.time() - encode_start
         
-        print(f"[GPT-4o] Image encoded ({len(image_data)} bytes)")
+        print(f"[GPT-4o] Image encoded ({len(image_data)} bytes) in {encode_time:.3f}s")
+        print(f"[PERF] Image encoding: {encode_time:.3f}s")
         
         # Build prompt
         if include_decision:
@@ -141,8 +144,10 @@ Return ONLY valid JSON, no explanation."""
         
         api_elapsed = time.time() - api_start
         print(f"[GPT-4o] API call completed in {api_elapsed:.1f}s")
+        print(f"[PERF] GPT-4o API call: {api_elapsed:.3f}s")
         
-        # Parse response
+        # Timing: Parse response
+        parse_start = time.time()
         result_text = response.choices[0].message.content.strip()
         print(f"[GPT-4o] Response length: {len(result_text)} chars")
         
@@ -154,7 +159,9 @@ Return ONLY valid JSON, no explanation."""
             result_text = result_text.strip()
         
         result = json.loads(result_text)
-        print(f"[GPT-4o] Parsed JSON successfully")
+        parse_time = time.time() - parse_start
+        print(f"[GPT-4o] Parsed JSON successfully in {parse_time:.3f}s")
+        print(f"[PERF] JSON parsing: {parse_time:.3f}s")
         print(f"[GPT-4o] Detected: cards={result.get('hero_cards')}, pot=${result.get('pot')}, confidence={result.get('confidence', 0.95)}")
         
         # Add confidence (GPT-4o doesn't provide this, so we estimate)
@@ -162,6 +169,8 @@ Return ONLY valid JSON, no explanation."""
         
         total_elapsed = time.time() - start_time
         print(f"[GPT-4o] Total analysis time: {total_elapsed:.1f}s")
+        print(f"[PERF] Total GPT-4o time: {total_elapsed:.3f}s")
+        print(f"[PERF] Breakdown: encode={encode_time:.3f}s, api={api_elapsed:.3f}s, parse={parse_time:.3f}s")
         
         return result
     

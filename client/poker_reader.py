@@ -28,19 +28,31 @@ class PokerScreenReader:
         Returns:
             Dict with game state and optional decision
         """
-        # Capture full table screenshot
-        img = pyautogui.screenshot(region=config.TABLE_REGION)
+        import time
         
-        # Save to temp file
+        # Timing: Screenshot capture
+        capture_start = time.time()
+        img = pyautogui.screenshot(region=config.TABLE_REGION)
+        capture_time = time.time() - capture_start
+        print(f"[PERF] Screenshot capture: {capture_time:.3f}s")
+        
+        # Timing: Save to temp file
+        save_start = time.time()
         with tempfile.NamedTemporaryFile(suffix='.png', delete=False) as f:
             img.save(f.name)
             temp_path = f.name
+        save_time = time.time() - save_start
+        print(f"[PERF] Save to temp file: {save_time:.3f}s")
         
         try:
-            # Use GPT-4o to analyze (with optional decision)
+            # Timing: GPT-4o analysis (this is the big one)
+            gpt4o_start = time.time()
             result = self.vision.detect_poker_elements(temp_path, include_decision=include_decision)
+            gpt4o_time = time.time() - gpt4o_start
+            print(f"[PERF] GPT-4o analysis: {gpt4o_time:.3f}s")
             
-            # Convert to expected format
+            # Timing: Convert to expected format
+            convert_start = time.time()
             state = {
                 'hero_cards': result.get('hero_cards', ['??', '??']),
                 'community_cards': result.get('community_cards', []),
@@ -60,11 +72,17 @@ class PokerScreenReader:
                 state['recommended_amount'] = result.get('recommended_amount')
                 state['reasoning'] = result.get('reasoning')
             
+            convert_time = time.time() - convert_start
+            print(f"[PERF] Convert format: {convert_time:.3f}s")
+            
             return state
         finally:
             # Cleanup temp file
+            cleanup_start = time.time()
             if os.path.exists(temp_path):
                 os.unlink(temp_path)
+            cleanup_time = time.time() - cleanup_start
+            print(f"[PERF] Cleanup: {cleanup_time:.3f}s")
     
     def capture_screenshot(self) -> str:
         """Capture full table as base64"""
