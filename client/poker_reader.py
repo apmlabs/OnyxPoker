@@ -95,8 +95,13 @@ class PokerScreenReader:
         actions = self.get_action_buttons()
         return bool(actions.get('call', '').strip())
     
-    def parse_game_state(self) -> Dict:
-        """Parse complete game state using GPT-4o vision"""
+    def parse_game_state(self, include_decision: bool = False) -> Dict:
+        """
+        Parse complete game state using GPT-4o vision
+        
+        Args:
+            include_decision: If True, also get poker decision recommendation
+        """
         # Capture full table screenshot
         img = pyautogui.screenshot(region=config.TABLE_REGION)
         
@@ -106,11 +111,11 @@ class PokerScreenReader:
             temp_path = f.name
         
         try:
-            # Use GPT-4o to analyze
-            result = self.vision.detect_poker_elements(temp_path)
+            # Use GPT-4o to analyze (with optional decision)
+            result = self.vision.detect_poker_elements(temp_path, include_decision=include_decision)
             
             # Convert to expected format
-            return {
+            state = {
                 'hero_cards': result.get('hero_cards', ['??', '??']),
                 'community_cards': result.get('community_cards', []),
                 'pot': result.get('pot', 0),
@@ -122,6 +127,14 @@ class PokerScreenReader:
                 'button_positions': result.get('button_positions', {}),
                 'confidence': result.get('confidence', 0.0)
             }
+            
+            # Add decision if requested
+            if include_decision:
+                state['recommended_action'] = result.get('recommended_action')
+                state['recommended_amount'] = result.get('recommended_amount')
+                state['reasoning'] = result.get('reasoning')
+            
+            return state
         finally:
             # Cleanup temp file
             if os.path.exists(temp_path):

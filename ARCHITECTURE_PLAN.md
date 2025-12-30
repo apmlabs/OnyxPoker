@@ -32,10 +32,10 @@ Functional poker bot that reads real PokerStars tables and makes basic decisions
 │    - Reads cards, pot, stacks, buttons                      │
 │    - Returns structured JSON                                 │
 │         ↓                                                    │
-│  Simple Decision Logic (Client-Side)                         │
-│    - Basic poker rules                                       │
-│    - Hand strength evaluation                                │
-│    - Pot odds calculation                                    │
+│  GPT-4o Decision Making (Same API Call)                      │
+│    - Analyzes poker situation                                │
+│    - Recommends action (fold/call/raise)                     │
+│    - Provides reasoning                                      │
 │         ↓                                                    │
 │  PyAutoGUI Click/Type                                        │
 │    - Execute fold/call/raise                                 │
@@ -65,22 +65,24 @@ Optional: Linux Server (Kiro CLI for advice/validation)
 ```
 1. Capture screenshot (F9 or auto)
    ↓
-2. GPT-4o Vision API
+2. GPT-4o Vision API - Single Call
    - Input: Screenshot (base64)
-   - Output: {cards, pot, stacks, actions, button_positions}
+   - Prompt: "Analyze poker table AND recommend action"
+   - Output: {
+       cards, pot, stacks, actions, button_positions,
+       recommended_action: "raise",
+       amount: 60,
+       reasoning: "Strong hand with straight draw"
+     }
    ↓
-3. Client-side decision logic
-   - Hand strength (lookup table)
-   - Pot odds (math)
-   - Position (button/early/late)
-   - Stack size (BB count)
-   ↓
-4. Execute action
+3. Execute action
    - Click button at coordinates from GPT-4o
    - Type raise amount if needed
    ↓
-5. Wait for next turn
+4. Wait for next turn
 ```
+
+**Key Insight**: GPT-4o understands poker strategy! We can ask it to both read the table AND make the decision in one API call.
 
 ### Why Client-Only for Phase 1?
 
