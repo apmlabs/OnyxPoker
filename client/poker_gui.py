@@ -713,8 +713,11 @@ class OnyxPokerGUI:
     
     def auto_detect(self):
         """Capture active window and detect elements using GPT-4o"""
+        # Immediate feedback
         self.calib_status.config(text="📸 Capturing active window...", foreground="blue")
         self.log("📸 Capturing currently active window...")
+        if hasattr(self, 'mini_overlay') and self.mini_overlay:
+            self.mini_overlay.update_status("📸 Capturing...")
         self.root.update()
         
         try:
@@ -742,6 +745,8 @@ class OnyxPokerGUI:
             
             # Capture screenshot
             self.calib_status.config(text="🔎 Analyzing with GPT-4o...", foreground="blue")
+            if hasattr(self, 'mini_overlay') and self.mini_overlay:
+                self.mini_overlay.update_status("🔎 GPT-4o analyzing...")
             self.root.update()
             
             img = pyautogui.screenshot(region=window_region)
@@ -770,6 +775,10 @@ class OnyxPokerGUI:
                                             foreground="green" if conf > 0.7 else "orange")
                 self.calib_status.config(text="✓ GPT-4o detection complete", foreground="green")
                 self.log("✓ GPT-4o detected elements. Review and save if correct.")
+                
+                # Update overlay
+                if hasattr(self, 'mini_overlay') and self.mini_overlay:
+                    self.mini_overlay.update_status("✓ Detection complete")
                 
             finally:
                 import os
@@ -874,7 +883,10 @@ ACTION_DELAY = 2.0
     def get_advice(self):
         """F9 - Get one-time advice from GPT-4o"""
         try:
+            # Immediate feedback
             self.log("💡 Getting advice...")
+            if hasattr(self, 'mini_overlay') and self.mini_overlay:
+                self.mini_overlay.update_status("🔍 Analyzing...")
             
             reader = PokerScreenReader()
             
@@ -893,23 +905,13 @@ ACTION_DELAY = 2.0
             self.log(f"💡 Recommended: {action.upper()}" + (f" ${amount}" if amount else ""))
             self.log(f"📝 {reasoning}")
             
-            # Update game state display
+            # Update game state display and overlay (unified)
             decision = {
                 'action': action,
                 'amount': amount,
                 'reasoning': reasoning
             }
             self.update_game_state(state, decision)
-            
-            # Update mini overlay
-            if hasattr(self, 'mini_overlay') and self.mini_overlay:
-                self.mini_overlay.update_game_state(
-                    cards=cards,
-                    pot=pot,
-                    stack=state.get('hero_stack', 0),
-                    decision=f"{action.upper()}" + (f" ${amount}" if amount else ""),
-                    reasoning=reasoning[:50] + "..." if len(reasoning) > 50 else reasoning
-                )
             
             # Update state display
             self.state_text.delete("1.0", "end")
@@ -918,6 +920,8 @@ ACTION_DELAY = 2.0
             self.log("📸 Debug capture complete - showing table region only")
         except Exception as e:
             self.log(f"❌ Capture error: {e}", "ERROR")
+            if hasattr(self, 'mini_overlay') and self.mini_overlay:
+                self.mini_overlay.update_status("❌ Error")
             self.ocr_text.insert("1.0", f"Pot: ${state['pot']}\n")
             self.ocr_text.insert("end", f"Stacks: {state['stacks']}\n")
             self.ocr_text.insert("end", f"Actions: {state['actions']}\n")
