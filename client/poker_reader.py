@@ -49,7 +49,7 @@ class PokerScreenReader:
             gpt4o_start = time.time()
             result = self.vision.detect_poker_elements(temp_path, include_decision=include_decision)
             gpt4o_time = time.time() - gpt4o_start
-            print(f"[PERF] GPT-4o analysis: {gpt4o_time:.3f}s")
+            print(f"[PERF] GPT-4o analysis: {gpt4o_time:.3f}s (API call is the bottleneck)")
             
             # Timing: Convert to expected format
             convert_start = time.time()

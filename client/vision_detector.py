@@ -146,7 +146,7 @@ Return ONLY valid JSON, no explanation."""
         print(f"[GPT-4o] API call completed in {api_elapsed:.1f}s")
         print(f"[PERF] GPT-4o API call: {api_elapsed:.3f}s")
         
-        # Timing: Parse response
+        # Parse response
         parse_start = time.time()
         result_text = response.choices[0].message.content.strip()
         print(f"[GPT-4o] Response length: {len(result_text)} chars")
@@ -158,7 +158,14 @@ Return ONLY valid JSON, no explanation."""
                 result_text = result_text[4:]
             result_text = result_text.strip()
         
-        result = json.loads(result_text)
+        try:
+            result = json.loads(result_text)
+        except json.JSONDecodeError as e:
+            print(f"[GPT-4o] ERROR: Invalid JSON response")
+            print(f"[GPT-4o] Response text: {result_text[:500]}")
+            print(f"[GPT-4o] JSON error: {e}")
+            raise ValueError(f"GPT-4o returned invalid JSON: {e}")
+        
         parse_time = time.time() - parse_start
         print(f"[GPT-4o] Parsed JSON successfully in {parse_time:.3f}s")
         print(f"[PERF] JSON parsing: {parse_time:.3f}s")
