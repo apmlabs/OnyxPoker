@@ -12,25 +12,17 @@ from automation_client import OnyxPokerClient
 import config
 
 class OnyxPokerBot:
-    def __init__(self, mode='remote', execution='analysis'):
+    def __init__(self, execution='analysis'):
         """
         Initialize poker bot
         
         Args:
-            mode: 'local' (Kiro CLI subprocess) or 'remote' (HTTP to server)
             execution: 'auto' (click actions) or 'analysis' (display only)
         """
-        self.mode = mode
         self.execution = execution
         self.reader = PokerScreenReader()
         
-        if mode == 'remote':
-            self.client = OnyxPokerClient()
-            if not self.client.test_connection():
-                raise ConnectionError("Cannot connect to server")
-        
         print(f"🎰 OnyxPoker Bot initialized")
-        print(f"   Mode: {mode}")
         print(f"   Execution: {execution}")
     
     def run(self, max_hands: Optional[int] = None):

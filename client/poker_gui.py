@@ -142,22 +142,16 @@ class OnyxPokerGUI:
         settings = ttk.LabelFrame(tab, text="Bot Settings", padding=10)
         settings.pack(fill="x", padx=10, pady=5)
         
-        # Mode
-        ttk.Label(settings, text="Mode:").grid(row=0, column=0, sticky="w", padx=5)
-        self.mode_var = tk.StringVar(value="remote")
-        ttk.Radiobutton(settings, text="Remote (Server)", variable=self.mode_var, value="remote").grid(row=0, column=1, sticky="w")
-        ttk.Radiobutton(settings, text="Local (Kiro CLI)", variable=self.mode_var, value="local").grid(row=0, column=2, sticky="w")
-        
         # Execution
-        ttk.Label(settings, text="Execution:").grid(row=1, column=0, sticky="w", padx=5)
+        ttk.Label(settings, text="Execution:").grid(row=0, column=0, sticky="w", padx=5)
         self.exec_var = tk.StringVar(value="analysis")
-        ttk.Radiobutton(settings, text="Analysis Only", variable=self.exec_var, value="analysis").grid(row=1, column=1, sticky="w")
-        ttk.Radiobutton(settings, text="Auto (Clicks)", variable=self.exec_var, value="auto").grid(row=1, column=2, sticky="w")
+        ttk.Radiobutton(settings, text="Analysis Only", variable=self.exec_var, value="analysis").grid(row=0, column=1, sticky="w")
+        ttk.Radiobutton(settings, text="Auto (Clicks)", variable=self.exec_var, value="auto").grid(row=0, column=2, sticky="w")
         
         # Max hands
-        ttk.Label(settings, text="Max Hands:").grid(row=2, column=0, sticky="w", padx=5)
+        ttk.Label(settings, text="Max Hands:").grid(row=1, column=0, sticky="w", padx=5)
         self.hands_var = tk.StringVar(value="")
-        ttk.Entry(settings, textvariable=self.hands_var, width=10).grid(row=2, column=1, sticky="w")
+        ttk.Entry(settings, textvariable=self.hands_var, width=10).grid(row=1, column=1, sticky="w")
         
         # Controls
         controls = ttk.Frame(tab)
@@ -496,18 +490,17 @@ class OnyxPokerGUI:
         if self.running:
             return
             
-        mode = self.mode_var.get()
         execution = self.exec_var.get()
         max_hands = self.hands_var.get()
         max_hands = int(max_hands) if max_hands else None
         
-        self.log(f"Starting: mode={mode}, exec={execution}, hands={max_hands}")
+        self.log(f"Starting: exec={execution}, hands={max_hands}")
         self.running = True
         self.start_btn.config(state="disabled")
         self.stop_btn.config(state="normal")
         self.update_status("Running", 0)
         
-        self.bot_thread = threading.Thread(target=self.run_bot, args=(mode, execution, max_hands), daemon=True)
+        self.bot_thread = threading.Thread(target=self.run_bot, args=(execution, max_hands), daemon=True)
         self.bot_thread.start()
         
     def stop_bot(self):
@@ -517,11 +510,11 @@ class OnyxPokerGUI:
         self.stop_btn.config(state="disabled")
         self.update_status("Stopped")
         
-    def run_bot(self, mode, execution, max_hands):
+    def run_bot(self, execution, max_hands):
         """Bot main loop - runs in separate thread"""
         try:
             from poker_bot import OnyxPokerBot
-            bot = OnyxPokerBot(mode=mode, execution=execution)
+            bot = OnyxPokerBot(execution=execution)
             reader = bot.reader
             hands = 0
             
