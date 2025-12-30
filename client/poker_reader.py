@@ -49,7 +49,7 @@ class PokerScreenReader:
             gpt4o_start = time.time()
             result = self.vision.detect_poker_elements(temp_path, include_decision=include_decision)
             gpt4o_time = time.time() - gpt4o_start
-            print(f"[PERF] GPT-4o analysis: {gpt4o_time:.3f}s (API call is the bottleneck)")
+            print(f"[PERF] GPT-4o total: {gpt4o_time:.3f}s (API call is 95% of this)")
             
             # Timing: Convert to expected format
             convert_start = time.time()
@@ -74,6 +74,10 @@ class PokerScreenReader:
             
             convert_time = time.time() - convert_start
             print(f"[PERF] Convert format: {convert_time:.3f}s")
+            
+            # Performance summary
+            total_time = capture_time + save_time + gpt4o_time + convert_time
+            print(f"[PERF] TOTAL: {total_time:.3f}s (capture={capture_time:.3f}s, save={save_time:.3f}s, gpt4o={gpt4o_time:.3f}s, convert={convert_time:.3f}s)")
             
             return state
         finally:

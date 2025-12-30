@@ -932,7 +932,14 @@ ACTION_DELAY = 2.0
             self.state_text.delete("1.0", "end")
             self.state_text.insert("1.0", json.dumps(state, indent=2))
             
-            self.log("📸 Debug capture complete - showing table region only")
+            # Show screenshot in Debug tab
+            import pyautogui
+            import config
+            screenshot = pyautogui.screenshot(region=config.TABLE_REGION)
+            self.last_screenshot = screenshot
+            self.show_preview(screenshot, self.debug_canvas)
+            
+            self.log("📸 Screenshot shown in Debug tab")
         except Exception as e:
             self.log(f"❌ Capture error: {e}", "ERROR")
             if hasattr(self, 'mini_overlay') and self.mini_overlay:
