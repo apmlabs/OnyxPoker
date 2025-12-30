@@ -17,35 +17,35 @@ class HotkeyManager:
         
         try:
             # Test keyboard library
-            print("🔧 DEBUG: Testing keyboard library...")
+            print("DEBUG: Testing keyboard library...")
             
             # F5 - Test OCR (debug)
             keyboard.add_hotkey('f5', self.on_f5_test_ocr)
-            print("🔧 DEBUG: F5 registered")
+            print("DEBUG: F5 registered")
             
             # F6 - Toggle mini overlay
             keyboard.add_hotkey('f6', self.on_f6_toggle_overlay)
-            print("🔧 DEBUG: F6 registered")
+            print("DEBUG: F6 registered")
             
             # F8 - Capture & detect (calibration)
             keyboard.add_hotkey('f8', self.on_f8_calibrate)
-            print("🔧 DEBUG: F8 registered")
+            print("DEBUG: F8 registered")
             
             # F9 - Get advice (one-time analysis)
             keyboard.add_hotkey('f9', self.on_f9_advice)
-            print("🔧 DEBUG: F9 registered")
+            print("DEBUG: F9 registered")
             
             # F10 - Start/Stop bot (auto mode)
             keyboard.add_hotkey('f10', self.on_f10_toggle_bot)
-            print("🔧 DEBUG: F10 registered")
+            print("DEBUG: F10 registered")
             
             # F11 - Emergency stop
             keyboard.add_hotkey('f11', self.on_f11_emergency)
-            print("🔧 DEBUG: F11 registered")
+            print("DEBUG: F11 registered")
             
             # F12 - Show/Hide main window
             keyboard.add_hotkey('f12', self.on_f12_toggle_window)
-            print("🔧 DEBUG: F12 registered")
+            print("DEBUG: F12 registered")
             
             self.registered = True
             self.parent.log("✅ Hotkeys registered:")
@@ -102,7 +102,7 @@ class HotkeyManager:
     def on_f9_advice(self):
         """F9 - Get advice (one-time analysis)"""
         try:
-            print("🔧 DEBUG: F9 hotkey method called!")
+            print("DEBUG: F9 hotkey method called!")
             self.parent.log("🔥 F9 pressed - Getting advice...")
             
             # Capture and analyze with decision
@@ -113,7 +113,7 @@ class HotkeyManager:
                 self.parent.root.after(100, self.parent.mini_overlay.show)
                 
         except Exception as e:
-            print(f"🔧 DEBUG: F9 error: {e}")
+            print(f"DEBUG: F9 error: {e}")
             self.parent.log(f"❌ F9 error: {e}", "ERROR")
     
     def on_f10_toggle_bot(self):
@@ -157,9 +157,9 @@ class HotkeyManager:
     def on_f8_calibrate(self):
         """F8 - Capture & detect (calibration)"""
         try:
-            print("🔧 DEBUG: F8 hotkey method called!")
+            print("DEBUG: F8 hotkey method called!")
             self.parent.log("🔥 F8 pressed - Capturing and detecting...")
             self.parent.root.after(0, self.parent.auto_detect)
         except Exception as e:
-            print(f"🔧 DEBUG: F8 error: {e}")
+            print(f"DEBUG: F8 error: {e}")
             self.parent.log(f"❌ F8 error: {e}", "ERROR")

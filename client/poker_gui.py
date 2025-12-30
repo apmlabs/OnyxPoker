@@ -445,11 +445,11 @@ class OnyxPokerGUI:
         # Update mini overlay
         if self.mini_overlay:
             try:
-                print(f"🔧 DEBUG: Calling overlay.update_game_state with state={bool(state)}, decision={bool(decision)}")
+                print(f"DEBUG: Calling overlay.update_game_state with state={bool(state)}, decision={bool(decision)}")
                 self.mini_overlay.update_game_state(state=state, decision=decision)
-                print(f"🔧 DEBUG: Overlay update completed successfully")
+                print(f"DEBUG: Overlay update completed successfully")
             except Exception as e:
-                print(f"🔧 DEBUG: Overlay update failed: {e}")
+                print(f"DEBUG: Overlay update failed: {e}")
                 pass
         
     # Control actions
@@ -916,8 +916,8 @@ ACTION_DELAY = 2.0
             }
             
             # Debug: Log what we're sending to overlay
-            self.log(f"🔧 DEBUG: Updating overlay with decision: {action} ${amount if amount else ''}")
-            self.log(f"🔧 DEBUG: Reasoning: {reasoning[:50]}...")
+            self.log(f"DEBUG: Updating overlay with decision: {action} ${amount if amount else ''}")
+            self.log(f"DEBUG: Reasoning: {reasoning[:50]}...")
             
             self.update_game_state(state, decision)
             

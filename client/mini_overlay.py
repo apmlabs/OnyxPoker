@@ -95,8 +95,8 @@ class MiniOverlay:
     def update_game_state(self, state=None, decision=None, cards=None, pot=None, stack=None, reasoning=None):
         """Update overlay with game state - unified method"""
         
-        print(f"🔧 OVERLAY DEBUG: update_game_state called")
-        print(f"🔧 OVERLAY DEBUG: state={bool(state)}, decision={bool(decision)}")
+        print(f"OVERLAY DEBUG: update_game_state called")
+        print(f"OVERLAY DEBUG: state={bool(state)}, decision={bool(decision)}")
         
         # If state dict provided, extract values
         if state:
@@ -106,27 +106,27 @@ class MiniOverlay:
             if stack == 0:
                 stacks = state.get('stacks', [])
                 stack = stacks[2] if len(stacks) > 2 else 0
-            print(f"🔧 OVERLAY DEBUG: Extracted from state - cards={cards}, pot={pot}, stack={stack}")
+            print(f"OVERLAY DEBUG: Extracted from state - cards={cards}, pot={pot}, stack={stack}")
         
         # Update table info
         if pot is not None:
             self.table_label.config(text=f"Table: ${pot} pot")
-            print(f"🔧 OVERLAY DEBUG: Updated pot to ${pot}")
+            print(f"OVERLAY DEBUG: Updated pot to ${pot}")
         
         # Update cards
         if cards:
             cards_str = ' '.join(cards) if isinstance(cards, list) else str(cards)
             self.cards_label.config(text=f"Cards: {cards_str}")
-            print(f"🔧 OVERLAY DEBUG: Updated cards to {cards_str}")
+            print(f"OVERLAY DEBUG: Updated cards to {cards_str}")
         
         # Update stack
         if stack is not None:
             self.stack_label.config(text=f"Stack: ${stack}")
-            print(f"🔧 OVERLAY DEBUG: Updated stack to ${stack}")
+            print(f"OVERLAY DEBUG: Updated stack to ${stack}")
         
         # Update decision
         if decision:
-            print(f"🔧 OVERLAY DEBUG: Processing decision: {decision}")
+            print(f"OVERLAY DEBUG: Processing decision: {decision}")
             if isinstance(decision, dict):
                 action = decision.get('action', '--').upper()
                 amount = decision.get('amount', 0)
@@ -135,28 +135,28 @@ class MiniOverlay:
                 else:
                     decision_text = f"💡 {action}"
                 self.decision_label.config(text=decision_text, fg='#00ffff')
-                print(f"🔧 OVERLAY DEBUG: Updated decision to {decision_text}")
+                print(f"OVERLAY DEBUG: Updated decision to {decision_text}")
                 
                 reasoning = decision.get('reasoning', 'No reasoning')
             else:
                 # decision is a string like "RAISE $60"
                 self.decision_label.config(text=f"💡 {decision}", fg='#00ffff')
-                print(f"🔧 OVERLAY DEBUG: Updated decision (string) to {decision}")
+                print(f"OVERLAY DEBUG: Updated decision (string) to {decision}")
         
         # Update reasoning
         if reasoning:
             if len(reasoning) > 100:
                 reasoning = reasoning[:97] + "..."
             self.reasoning_label.config(text=reasoning)
-            print(f"🔧 OVERLAY DEBUG: Updated reasoning to {reasoning[:50]}...")
+            print(f"OVERLAY DEBUG: Updated reasoning to {reasoning[:50]}...")
         elif decision and isinstance(decision, dict):
             reasoning = decision.get('reasoning', 'No reasoning')
             if len(reasoning) > 100:
                 reasoning = reasoning[:97] + "..."
             self.reasoning_label.config(text=reasoning)
-            print(f"🔧 OVERLAY DEBUG: Updated reasoning from decision dict to {reasoning[:50]}...")
+            print(f"OVERLAY DEBUG: Updated reasoning from decision dict to {reasoning[:50]}...")
         
-        print(f"🔧 OVERLAY DEBUG: update_game_state completed")
+        print(f"OVERLAY DEBUG: update_game_state completed")
     
     def update_status(self, status):
         """Update status message"""
