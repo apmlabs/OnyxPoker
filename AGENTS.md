@@ -347,6 +347,80 @@ This project uses **9 essential markdown files**. **As an agent, I must understa
 **Tenth Critical Lesson (Research Before Recommending)**:
 **When user asks about models/services, RESEARCH official documentation first. Don't rely on training data - it's outdated. User corrected me on GPT models - I had wrong information. Always check current docs before making recommendations. When user questions my info → they're probably right, research immediately.**
 
+**Eleventh Critical Lesson (User Double-Checks = Agent Failure)**:
+**When user says "THIS IS A DOUBLE CHECK, I have already asked for this" - this means I FAILED to update context files properly the first time. User should NEVER have to remind me twice. After EVERY session:**
+1. Update AGENTS.md with learnings (what worked, what didn't, WHY)
+2. Update AmazonQ.md with current status and timestamp
+3. Commit to GitHub with detailed message
+4. Self-reflect: What did I learn? What mistakes did I make? How do I avoid them?
+**Context files are my ONLY memory. Without them, I'm useless to the user. This is my PRIMARY responsibility as the continuous agent on this project.**
+
+**Eleventh Critical Lesson (User Double-Checks = Agent Failure)**:
+**When user says "THIS IS A DOUBLE CHECK, I have already asked for this" - this means I FAILED to update context files properly the first time. User should NEVER have to remind me twice. After EVERY session:**
+1. Update AGENTS.md with learnings (what worked, what didn't, WHY)
+2. Update AmazonQ.md with current status and timestamp
+3. Commit to GitHub with detailed message
+4. Self-reflect: What did I learn? What mistakes did I make? How do I avoid them?
+**Context files are my ONLY memory. Without them, I'm useless to the user. This is my PRIMARY responsibility as the continuous agent on this project.**
+
+**Twelfth Critical Lesson (GPT-5 Models Don't Support Temperature)**:
+**GPT-5 reasoning models (gpt-5, gpt-5-mini, gpt-5-nano) do NOT support temperature, top_p, or logprob parameters. This is a breaking change from GPT-4 models. When switching models:**
+1. Check official docs for supported parameters
+2. Don't assume GPT-5 works like GPT-4
+3. Remove unsupported parameters (don't set to 0, don't set to 1, OMIT them)
+4. User was RIGHT about gpt-5-mini supporting vision - I was wrong to doubt
+5. Always verify claims with official documentation before telling user something doesn't work
+
+**Thirteenth Critical Lesson (Always Research When User Challenges)**:
+**When user says "I need you to actually check all the possible docs and everything on the internet" - this means I made a claim without proper research. NEVER tell user something doesn't work without:**
+1. Checking official documentation (platform.openai.com/docs)
+2. Searching for recent examples and discussions
+3. Verifying with multiple sources
+4. Testing if possible
+**In this case: I said gpt-5-mini doesn't support vision. User was RIGHT - it does. I was WRONG. The actual issue was temperature parameter. Always research thoroughly before making negative claims.**
+
+### Session 9 Continuation Part 4: GPT-5-mini Research + Temperature Fix (03:14-03:16 UTC December 30, 2025)
+**Challenge**: User insisted gpt-5-mini supports vision, I doubted it
+
+**What I Did Wrong**:
+1. **Didn't research properly** - Made assumption based on empty responses
+2. **Doubted user** - User was right, I was wrong
+3. **Wrong diagnosis** - Blamed vision support instead of temperature parameter
+
+**What I Did Right**:
+1. **Researched thoroughly** when user pushed back
+2. **Found official docs** - platform.openai.com/docs/models/gpt-5-mini
+3. **Confirmed vision support** - "Image: Input only" clearly stated
+4. **Found real issue** - GPT-5 models don't support temperature parameter
+5. **Fixed immediately** - Removed temperature=0 from API call
+
+**Research Findings**:
+- ✅ gpt-5-mini DOES support vision (official docs confirm)
+- ✅ Works with Chat Completions API (same format as gpt-4o)
+- ❌ GPT-5 models DON'T support temperature/top_p/logprob
+- ❌ Must OMIT these parameters (not set to 0, just omit)
+- 💰 gpt-5-mini is 80% cheaper than gpt-5.2 ($0.25 vs $1.25 per 1M input tokens)
+
+**What Worked**:
+✅ Web research (platform.openai.com/docs)
+✅ Found official model specs
+✅ Confirmed vision support
+✅ Identified temperature as real issue
+✅ Fixed code (removed temperature parameter)
+✅ Switched to gpt-5-mini (cheaper, faster)
+
+**What Didn't Work**:
+❌ Initial assumption without research
+❌ Doubting user's knowledge
+❌ Not checking official docs first
+
+**Critical Agent Learning**:
+**When user challenges my claim, they're usually RIGHT. Don't defend wrong information - research immediately. Official docs are the source of truth, not my training data. In this case:**
+- I said: "gpt-5-mini doesn't support vision"
+- User said: "check all the docs, I think it does"
+- Reality: User was 100% correct, I was 100% wrong
+- Lesson: Always research before making negative claims
+
 
 
 ### Session 8: Calibration Simplification - Learning from Overcomplication (19:15-19:30 UTC)

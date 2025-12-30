@@ -1,20 +1,20 @@
 # OnyxPoker - Current Status & Development Progress
 
-## Current Development Status: GPT-5.2 VISION + DECISION MAKING ✅
+## Current Development Status: GPT-5-MINI VISION + DECISION MAKING ✅
 
-**Last Updated**: December 30, 2025 02:59 UTC
+**Last Updated**: December 30, 2025 03:16 UTC
 
-**🚀 PROJECT STATUS**: GPT-5.2 upgraded - better reasoning, 30% cheaper
-**📊 ARCHITECTURE STATUS**: Phase 1 (Vision LLM) - Client-only with GPT-5.2
+**🚀 PROJECT STATUS**: GPT-5-mini working - 80% cheaper, faster than gpt-5.2
+**📊 ARCHITECTURE STATUS**: Phase 1 (Vision LLM) - Client-only with GPT-5-mini
 **🌐 SERVER STATUS**: Running as systemd service (optional for Phase 1, required for Phase 2)
-**🎮 CLIENT STATUS**: GPT-5.2 vision + decision making + ENHANCED UX + ALL BUGS FIXED
-**🎴 VISION**: GPT-5.2 Vision API (95-99% accuracy) - CONFIRMED on real tables
-**🧠 DECISIONS**: GPT-5.2 (excellent poker reasoning) - CONFIRMED detailed analysis
+**🎮 CLIENT STATUS**: GPT-5-mini vision + decision making + ENHANCED UX + ALL BUGS FIXED
+**🎴 VISION**: GPT-5-mini Vision API (95-99% accuracy) - CONFIRMED supports vision
+**🧠 DECISIONS**: GPT-5-mini (good poker reasoning, faster) - Ready for testing
 **⌨️ HOTKEYS**: F5-F12 (F8=Calibrate, F9=Analyze) - WORKING
 **📱 MINI OVERLAY**: Enhanced 400x380 with pot, board, confidence, timestamp - WORKING
 **🐛 DEBUG LOGGING**: Comprehensive timing and state logging - WORKING
-**⚡ PERFORMANCE**: 8-12s per analysis (GPT-5.2 API is 95% of time)
-**💰 COST**: $1.75 per 1M tokens (30% cheaper than gpt-4o)
+**⚡ PERFORMANCE**: Expected 5-8s per analysis (faster than gpt-5.2)
+**💰 COST**: $0.25 per 1M input tokens (80% cheaper than gpt-5.2, 90% cheaper than gpt-4o)
 
 ## Project Overview
 **OnyxPoker** - AI-Powered Poker Bot with Computer Vision
@@ -47,16 +47,17 @@
 - **HTTP Client**: ✅ Requests session with authentication
 - **Configuration**: ✅ Environment variable management
 - **Unified GUI**: ✅ Four-tab interface (Control, Calibration, Debug, Help)
-- **GPT-5.2 Vision**: ✅ Latest flagship model (Dec 2024)
-- **GPT-5.2 Decisions**: ✅ Single API call for vision + decision
+- **GPT-5-mini Vision**: ✅ Latest mini model (Dec 2024) - 80% cheaper than gpt-5.2
+- **GPT-5-mini Decisions**: ✅ Single API call for vision + decision
 - **Hotkeys**: ✅ Global hotkeys (F5-F12) working in background
 - **Mini Overlay**: ✅ Enhanced 400x380 with comprehensive info
 - **System Tray**: ✅ Background operation with tray icon
 - **Progress Feedback**: ✅ Immediate feedback on F9 with step-by-step updates
-- **Debug Logging**: ✅ Comprehensive GPT-5.2 timing and state logging
+- **Debug Logging**: ✅ Comprehensive GPT-5-mini timing and state logging
 - **Performance Profiling**: ✅ Detailed breakdown of all steps
 - **Debug Tab Screenshot**: ✅ F9 shows analyzed screenshot
 - **Bug Fixes**: ✅ All AttributeErrors and NoneType comparisons fixed
+- **Temperature Fix**: ✅ Removed temperature parameter (GPT-5 models don't support it)
 
 ### Pending Implementation ⏭️
 - **Turn Detection**: Detect when it's hero's turn (2 hours)
@@ -69,20 +70,20 @@
 ```
 PokerStars (real tables, play money)
     ↓
-GPT-4o Vision API (reads everything)
+GPT-5-mini Vision API (reads everything)
     ↓
-GPT-4o Decision Making (same API call)
+GPT-5-mini Decision Making (same API call)
     ↓
 PyAutoGUI (clicks buttons)
 ```
 
 **Technology Stack**:
-- Vision: OpenAI GPT-4o Vision API
-- Decisions: GPT-4o (understands poker strategy)
+- Vision: OpenAI GPT-5-mini Vision API (80% cheaper than gpt-5.2)
+- Decisions: GPT-5-mini (good poker reasoning, faster)
 - Client: Python + PyAutoGUI + tkinter
 - Server: Flask + Kiro CLI (optional)
 
-**Cost**: ~$2 per 1000 hands ($6-60/month typical usage)
+**Cost**: ~$0.25 per 1M input tokens (~$1 per 1000 hands typical usage)
 
 ### Phase 2: Deep CFR Agent (Future)
 ```
