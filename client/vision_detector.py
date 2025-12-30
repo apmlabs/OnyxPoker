@@ -1,6 +1,6 @@
 """
-GPT-4o Vision-Based Poker Table Detection
-Replaces OpenCV with AI that understands poker context
+GPT-5.2 Vision-Based Poker Table Detection
+Uses GPT-5.2 multimodal model for poker table analysis
 """
 
 import os
@@ -11,7 +11,7 @@ from openai import OpenAI
 
 class VisionDetector:
     def __init__(self, api_key: Optional[str] = None):
-        """Initialize GPT-4o vision detector"""
+        """Initialize GPT-5.2 vision detector"""
         self.api_key = api_key or os.getenv('OPENAI_API_KEY')
         if not self.api_key:
             raise ValueError("OPENAI_API_KEY not found in environment")
@@ -20,7 +20,7 @@ class VisionDetector:
     
     def detect_poker_elements(self, screenshot_path: str, include_decision: bool = False) -> Dict[str, Any]:
         """
-        Analyze poker table screenshot with GPT-4o
+        Analyze poker table screenshot with GPT-5.2
         
         Args:
             screenshot_path: Path to screenshot
@@ -52,7 +52,7 @@ class VisionDetector:
         import time
         start_time = time.time()
         
-        print(f"[GPT-4o] Starting analysis (include_decision={include_decision})")
+        print(f"[GPT-5.2] Starting analysis (include_decision={include_decision})")
         
         # Timing: Encode image
         encode_start = time.time()
@@ -60,7 +60,7 @@ class VisionDetector:
             image_data = base64.b64encode(f.read()).decode('utf-8')
         encode_time = time.time() - encode_start
         
-        print(f"[GPT-4o] Image encoded ({len(image_data)} bytes) in {encode_time:.3f}s")
+        print(f"[GPT-5.2] Image encoded ({len(image_data)} bytes) in {encode_time:.3f}s")
         print(f"[PERF] Image encoding: {encode_time:.3f}s")
         
         # Build prompt
@@ -115,12 +115,12 @@ Example: "As" = Ace of Spades, "Kh" = King of Hearts
 If you can't see something clearly, use null.
 Return ONLY valid JSON, no explanation."""
 
-        print(f"[GPT-4o] Calling API...")
+        print(f"[GPT-5.2] Calling API...")
         api_start = time.time()
         
-        # Call GPT-4o
+        # Call GPT-5.2
         response = self.client.chat.completions.create(
-            model="gpt-4o",
+            model="gpt-5.2",
             messages=[
                 {
                     "role": "user",
@@ -143,13 +143,13 @@ Return ONLY valid JSON, no explanation."""
         )
         
         api_elapsed = time.time() - api_start
-        print(f"[GPT-4o] API call completed in {api_elapsed:.1f}s")
-        print(f"[PERF] GPT-4o API call: {api_elapsed:.3f}s")
+        print(f"[GPT-5.2] API call completed in {api_elapsed:.1f}s")
+        print(f"[PERF] GPT-5.2 API call: {api_elapsed:.3f}s")
         
         # Parse response
         parse_start = time.time()
         result_text = response.choices[0].message.content.strip()
-        print(f"[GPT-4o] Response length: {len(result_text)} chars")
+        print(f"[GPT-5.2] Response length: {len(result_text)} chars")
         
         # Remove markdown code blocks if present
         if result_text.startswith('```'):
@@ -161,22 +161,22 @@ Return ONLY valid JSON, no explanation."""
         try:
             result = json.loads(result_text)
         except json.JSONDecodeError as e:
-            print(f"[GPT-4o] ERROR: Invalid JSON response")
-            print(f"[GPT-4o] Response text: {result_text[:500]}")
-            print(f"[GPT-4o] JSON error: {e}")
-            raise ValueError(f"GPT-4o returned invalid JSON: {e}")
+            print(f"[GPT-5.2] ERROR: Invalid JSON response")
+            print(f"[GPT-5.2] Response text: {result_text[:500]}")
+            print(f"[GPT-5.2] JSON error: {e}")
+            raise ValueError(f"GPT-5.2 returned invalid JSON: {e}")
         
         parse_time = time.time() - parse_start
-        print(f"[GPT-4o] Parsed JSON successfully in {parse_time:.3f}s")
+        print(f"[GPT-5.2] Parsed JSON successfully in {parse_time:.3f}s")
         print(f"[PERF] JSON parsing: {parse_time:.3f}s")
-        print(f"[GPT-4o] Detected: cards={result.get('hero_cards')}, pot=${result.get('pot')}, confidence={result.get('confidence', 0.95)}")
+        print(f"[GPT-5.2] Detected: cards={result.get('hero_cards')}, pot=${result.get('pot')}, confidence={result.get('confidence', 0.95)}")
         
-        # Add confidence (GPT-4o doesn't provide this, so we estimate)
+        # Add confidence (GPT-5.2 doesn't provide this, so we estimate)
         result['confidence'] = 0.95
         
         total_elapsed = time.time() - start_time
-        print(f"[GPT-4o] Total analysis time: {total_elapsed:.1f}s")
-        print(f"[PERF] Total GPT-4o time: {total_elapsed:.3f}s")
+        print(f"[GPT-5.2] Total analysis time: {total_elapsed:.1f}s")
+        print(f"[PERF] Total GPT-5.2 time: {total_elapsed:.3f}s")
         print(f"[PERF] Breakdown: encode={encode_time:.3f}s, api={api_elapsed:.3f}s, parse={parse_time:.3f}s")
         
         return result
