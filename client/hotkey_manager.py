@@ -22,17 +22,14 @@ class HotkeyManager:
             # F6 - Toggle mini overlay
             keyboard.add_hotkey('f6', self.on_f6_toggle_overlay)
             
-            # F7 - Open calibration tab
-            keyboard.add_hotkey('f7', self.on_f7_open_calibration)
-            
             # F8 - Capture & detect (calibration)
             keyboard.add_hotkey('f8', self.on_f8_calibrate)
             
-            # F9 - Capture and analyze
-            keyboard.add_hotkey('f9', self.on_f9_capture)
+            # F9 - Get advice (one-time analysis)
+            keyboard.add_hotkey('f9', self.on_f9_advice)
             
-            # F10 - Start/Stop bot
-            keyboard.add_hotkey('f10', self.on_f10_toggle)
+            # F10 - Start/Stop bot (auto mode)
+            keyboard.add_hotkey('f10', self.on_f10_toggle_bot)
             
             # F11 - Emergency stop
             keyboard.add_hotkey('f11', self.on_f11_emergency)
@@ -44,10 +41,9 @@ class HotkeyManager:
             self.parent.log("✅ Hotkeys registered:")
             self.parent.log("   F5 = Test OCR (Debug)")
             self.parent.log("   F6 = Toggle Mini Overlay")
-            self.parent.log("   F7 = Open Calibration")
             self.parent.log("   F8 = Capture & Detect (Calibration)")
-            self.parent.log("   F9 = Capture & Analyze")
-            self.parent.log("   F10 = Start/Stop Bot")
+            self.parent.log("   F9 = Get Advice (one-time)")
+            self.parent.log("   F10 = Start/Stop Bot (auto mode)")
             self.parent.log("   F11 = Emergency Stop")
             self.parent.log("   F12 = Toggle Main Window")
             
@@ -63,7 +59,6 @@ class HotkeyManager:
         try:
             keyboard.remove_hotkey('f5')
             keyboard.remove_hotkey('f6')
-            keyboard.remove_hotkey('f7')
             keyboard.remove_hotkey('f8')
             keyboard.remove_hotkey('f9')
             keyboard.remove_hotkey('f10')
@@ -94,13 +89,13 @@ class HotkeyManager:
         except Exception as e:
             self.parent.log(f"❌ F6 error: {e}", "ERROR")
     
-    def on_f9_capture(self):
-        """F9 - Capture screenshot and analyze"""
+    def on_f9_advice(self):
+        """F9 - Get advice (one-time analysis)"""
         try:
-            self.parent.log("🔥 F9 pressed - Capturing and analyzing...")
+            self.parent.log("🔥 F9 pressed - Getting advice...")
             
-            # Capture in main thread
-            self.parent.root.after(0, self.parent.capture_debug)
+            # Capture and analyze with decision
+            self.parent.root.after(0, self.parent.get_advice)
             
             # Show mini overlay if hidden
             if hasattr(self.parent, 'mini_overlay') and self.parent.mini_overlay:
@@ -109,8 +104,8 @@ class HotkeyManager:
         except Exception as e:
             self.parent.log(f"❌ F9 error: {e}", "ERROR")
     
-    def on_f10_toggle(self):
-        """F10 - Start/Stop bot"""
+    def on_f10_toggle_bot(self):
+        """F10 - Start/Stop bot (auto mode)"""
         try:
             if self.parent.running:
                 self.parent.log("🔥 F10 pressed - Stopping bot...")
@@ -146,16 +141,6 @@ class HotkeyManager:
                 self.parent.root.after(0, self.parent.root.withdraw)
         except Exception as e:
             self.parent.log(f"❌ F12 error: {e}", "ERROR")
-    
-    def on_f7_open_calibration(self):
-        """F7 - Open calibration tab"""
-        try:
-            self.parent.log("🔥 F7 pressed - Opening calibration...")
-            self.parent.root.after(0, self.parent.root.deiconify)
-            self.parent.root.after(0, self.parent.root.lift)
-            self.parent.root.after(100, lambda: self.parent.notebook.select(1))
-        except Exception as e:
-            self.parent.log(f"❌ F7 error: {e}", "ERROR")
     
     def on_f8_calibrate(self):
         """F8 - Capture & detect (calibration)"""

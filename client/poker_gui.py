@@ -879,6 +879,50 @@ ACTION_DELAY = 2.0
             self.ocr_text.insert("end", f"Cards: {state['hero_cards']}\n")
             self.ocr_text.insert("end", f"Board: {state['community_cards']}\n")
             
+        except Exception as e:
+            self.log(f"❌ Capture error: {e}", "ERROR")
+            messagebox.showerror("Error", str(e))
+    
+    def get_advice(self):
+        """F9 - Get one-time advice from GPT-4o"""
+        try:
+            self.log("💡 Getting advice...")
+            
+            reader = PokerScreenReader()
+            
+            # Get state with decision from GPT-4o
+            state = reader.parse_game_state(include_decision=True)
+            
+            # Display in activity log
+            cards = state.get('hero_cards', ['??', '??'])
+            pot = state.get('pot', 0)
+            action = state.get('recommended_action', 'fold')
+            amount = state.get('recommended_amount', 0)
+            reasoning = state.get('reasoning', 'No reasoning')
+            
+            self.log(f"\n🃏 Current Hand")
+            self.log(f"Cards: {cards}, Pot: ${pot}")
+            self.log(f"💡 Recommended: {action.upper()}" + (f" ${amount}" if amount else ""))
+            self.log(f"📝 {reasoning}")
+            
+            # Update game state display
+            decision = {
+                'action': action,
+                'amount': amount,
+                'reasoning': reasoning
+            }
+            self.update_game_state(state, decision)
+            
+            # Update mini overlay
+            if hasattr(self, 'mini_overlay') and self.mini_overlay:
+                self.mini_overlay.update_game_state(
+                    cards=cards,
+                    pot=pot,
+                    stack=state.get('hero_stack', 0),
+                    decision=f"{action.upper()}" + (f" ${amount}" if amount else ""),
+                    reasoning=reasoning[:50] + "..." if len(reasoning) > 50 else reasoning
+                )
+            
             # Update state display
             self.state_text.delete("1.0", "end")
             self.state_text.insert("1.0", json.dumps(state, indent=2))
