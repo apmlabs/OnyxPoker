@@ -148,8 +148,16 @@ Return ONLY valid JSON, no explanation."""
         
         # Parse response
         parse_start = time.time()
-        result_text = response.choices[0].message.content.strip()
+        result_text = response.choices[0].message.content
+        
+        if not result_text:
+            print(f"[GPT-5-mini] ERROR: Empty response from API")
+            print(f"[GPT-5-mini] Full response: {response}")
+            raise ValueError("GPT-5-mini returned empty response")
+        
+        result_text = result_text.strip()
         print(f"[GPT-5-mini] Response length: {len(result_text)} chars")
+        print(f"[GPT-5-mini] First 200 chars: {result_text[:200]}")
         
         # Remove markdown code blocks if present
         if result_text.startswith('```'):
