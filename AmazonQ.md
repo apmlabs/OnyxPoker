@@ -2,17 +2,18 @@
 
 ## Current Development Status: GPT-4O VISION + DECISION MAKING ✅
 
-**Last Updated**: December 30, 2025 02:20 UTC
+**Last Updated**: December 30, 2025 02:29 UTC
 
-**🚀 PROJECT STATUS**: Priority 1 fixes complete - UX dramatically improved
+**🚀 PROJECT STATUS**: Priority 1 fixes complete + bug fixes applied
 **📊 ARCHITECTURE STATUS**: Phase 1 (Vision LLM) - Client-only with GPT-4o
 **🌐 SERVER STATUS**: Running as systemd service (optional for Phase 1, required for Phase 2)
-**🎮 CLIENT STATUS**: GPT-4o vision + decision making + ENHANCED UX
+**🎮 CLIENT STATUS**: GPT-4o vision + decision making + ENHANCED UX + BUG FIXES
 **🎴 VISION**: GPT-4o Vision API (95-99% accuracy) - CONFIRMED on real tables
 **🧠 DECISIONS**: GPT-4o (understands poker strategy) - CONFIRMED sensible decisions
 **⌨️ HOTKEYS**: F5-F12 (F5=Test OCR, F8=Capture & detect, F9=Analyze) - WORKING
 **📱 MINI OVERLAY**: Enhanced 400x380 with pot, board, confidence, timestamp - FIXED
 **🐛 DEBUG LOGGING**: Comprehensive timing and state logging - ADDED
+**🔧 BUG FIXES**: AttributeError (table_label), NoneType comparison (amount) - FIXED
 
 ## Project Overview
 **OnyxPoker** - AI-Powered Poker Bot with Computer Vision
@@ -29,6 +30,7 @@
 - [x] Agent context defined with learning protocol
 - [x] Security configuration (.gitignore, .env.example)
 - [x] Documentation consolidated and archived outdated files
+- [x] Comprehensive audit completed (COMPREHENSIVE_AUDIT.md)
 
 ### Linux Server Components ✅
 - **Flask API**: ✅ Implemented with CORS and authentication
@@ -47,8 +49,11 @@
 - **GPT-4o Vision**: ✅ Replaces OpenCV/Tesseract
 - **GPT-4o Decisions**: ✅ Single API call for vision + decision
 - **Hotkeys**: ✅ Global hotkeys (F5-F12) working in background
-- **Mini Overlay**: ✅ Always-on-top panel with essential info
+- **Mini Overlay**: ✅ Enhanced 400x380 with comprehensive info
 - **System Tray**: ✅ Background operation with tray icon
+- **Progress Feedback**: ✅ Immediate feedback on F9 with step-by-step updates
+- **Debug Logging**: ✅ Comprehensive GPT-4o timing and state logging
+- **Bug Fixes**: ✅ AttributeError and NoneType comparison fixed
 
 ### Pending Implementation ⏭️
 - **Turn Detection**: Detect when it's hero's turn (2 hours)

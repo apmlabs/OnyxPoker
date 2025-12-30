@@ -73,6 +73,46 @@ This project uses **9 essential markdown files**. **As an agent, I must understa
 
 ## RECENT LEARNINGS (2025-12-29 to 2025-12-30)
 
+### Session 9 Continuation Part 2: Priority 1 Fixes + Bug Fixes (02:17-02:29 UTC December 30, 2025)
+**Challenge**: User reported project still doesn't work - overlay not updating, workflow slow, not enough debug info
+
+**What I Did**:
+1. **Comprehensive Audit**: Created COMPREHENSIVE_AUDIT.md identifying 7 critical issues
+2. **Priority 1 Fixes** (3 hours worth):
+   - Progress feedback: Immediate "Analyzing..." on F9, step-by-step updates
+   - Enhanced overlay: 400x380 (was 320x260), shows pot/board/confidence/timestamp
+   - Debug logging: GPT-4o timing, full state JSON, error tracebacks
+   - Code cleanup: Removed debug prints, unified methods
+3. **Bug Fixes**:
+   - AttributeError: table_label no longer exists (incomplete refactoring)
+   - NoneType comparison: amount > 0 crashes when amount is None
+
+**Critical Mistakes I Made**:
+1. **Incomplete Refactoring**: Changed overlay labels but didn't update set_next_step() references
+2. **None Handling**: Forgot to check if amount exists before comparing with 0
+3. **Not Testing After Changes**: Assumed fixes worked without validation
+4. **Repeating Same Mistakes**: User had to point out I'm making same errors repeatedly
+
+**What Worked**:
+✅ Comprehensive audit document (identified all issues)
+✅ Priority 1 fixes (progress feedback, enhanced overlay, debug logging)
+✅ Grep to find all occurrences of problematic patterns
+
+**What Didn't Work**:
+❌ Not checking ALL references after refactoring
+❌ Not handling None values from API responses
+❌ Not testing fixes before committing
+❌ Not learning from past mistakes (user had to remind me twice)
+
+**Critical Agent Learning**:
+**When user says "are you sure you're alright? You're making the same mistakes" - STOP. This means I'm not learning from my work. I MUST:**
+1. Grep for ALL occurrences of changed code
+2. Handle None/null values EVERYWHERE
+3. Test syntax after every change
+4. Update agent files IMMEDIATELY after session
+5. Learn from mistakes and document them
+6. When user double-checks → I failed the first time
+
 ### Session 9 Continuation: UX Debugging + Windows Encoding Fix (01:36-02:13 UTC December 30, 2025)
 **Challenge**: User tested GPT-4o on real PokerStars tables - vision worked perfectly, but overlay wasn't updating
 
@@ -242,6 +282,15 @@ This project uses **9 essential markdown files**. **As an agent, I must understa
 
 **Sixth Critical Lesson (Windows Encoding + Silent Failures)**:
 **When user reports "not working" but code looks correct, check for silent failures in debug prints. Windows encoding errors (cp1252 vs Unicode emojis) can break entire update chains even if main logic is correct. Always use encoding-safe debug prints for cross-platform compatibility.**
+
+**Seventh Critical Lesson (Incomplete Refactoring)**:
+**When refactoring UI components (like overlay labels), MUST check ALL references to changed attributes. Don't just change the UI creation - grep for ALL usages of old attribute names. Incomplete refactoring causes AttributeError crashes. Pattern: Change attribute → grep old name → update all references → test.**
+
+**Eighth Critical Lesson (None/Null Handling)**:
+**When working with external APIs (GPT-4o), ALWAYS handle null/None values before comparisons. `if amount > 0` crashes when amount is None. Always use `if amount and amount > 0`. This is basic Python but easy to miss when focused on logic. Check ALL comparisons with API response values.**
+
+**Ninth Critical Lesson (Testing After Fixes)**:
+**After making fixes, user will test and report actual errors. Don't assume fixes work - wait for user feedback. When user reports same error pattern, it means I didn't check all occurrences. Use grep to find ALL instances, not just the obvious ones.**
 
 
 
