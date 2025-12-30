@@ -76,7 +76,7 @@ Use null if you can't see something. Cards format: As=Ace spades, Kh=King hearts
 Use null if you can't see something. Cards format: As=Ace spades, Kh=King hearts."""
 
         # Detailed logging to GUI
-        self.log(f"🧠 GPT-5-mini Analysis Started")
+        self.log(f"GPT-5-mini Analysis Started")
         self.log(f"   Image size: {len(image_data)} bytes")
         self.log(f"   Include decision: {include_decision}")
         self.log(f"   Encoding time: {encode_time:.3f}s")
@@ -112,7 +112,7 @@ Use null if you can't see something. Cards format: As=Ace spades, Kh=King hearts
         print(f"[API] GPT-5-mini response: {api_elapsed:.1f}s, {response.usage.total_tokens} tokens")
         
         # Detailed logging to GUI
-        self.log(f"✅ GPT-5-mini API Response:")
+        self.log(f"GPT-5-mini API Response:")
         self.log(f"   Response time: {api_elapsed:.1f}s")
         self.log(f"   Model: {response.model}")
         self.log(f"   Total tokens: {response.usage.total_tokens}")
@@ -123,7 +123,7 @@ Use null if you can't see something. Cards format: As=Ace spades, Kh=King hearts
         parse_start = time.time()
         
         if not response.choices:
-            self.log("❌ No choices in API response", "ERROR")
+            self.log(f"ERROR: No choices in API response", "ERROR")
             raise ValueError("No choices in API response")
         
         choice = response.choices[0]
@@ -131,15 +131,14 @@ Use null if you can't see something. Cards format: As=Ace spades, Kh=King hearts
         
         result_text = choice.message.content
         
-        # Check for token limit issue
         if choice.finish_reason == 'length':
-            self.log(f"❌ Response truncated due to token limit!", "ERROR")
+            self.log(f"ERROR: Response truncated due to token limit!", "ERROR")
             self.log(f"   Used {response.usage.completion_tokens} completion tokens", "ERROR")
             self.log(f"   Try increasing max_completion_tokens", "ERROR")
             raise ValueError(f"Response truncated due to token limit. Used {response.usage.completion_tokens} tokens. Try shorter prompt or increase max_completion_tokens.")
         
         if not result_text:
-            self.log(f"❌ Empty response content", "ERROR")
+            self.log(f"ERROR: Empty response content", "ERROR")
             self.log(f"   Finish reason: {choice.finish_reason}", "ERROR")
             raise ValueError(f"Empty response. Finish reason: {choice.finish_reason}")
         
@@ -148,7 +147,7 @@ Use null if you can't see something. Cards format: As=Ace spades, Kh=King hearts
         
         # Check for refusal
         if any(phrase in result_text.lower() for phrase in ["i cannot", "i'm unable", "i can't", "sorry"]):
-            self.log(f"⚠️ GPT-5-mini appears to be refusing the request", "WARNING")
+            self.log(f"WARNING: GPT-5-mini appears to be refusing the request", "WARNING")
             self.log(f"   Response: {result_text[:200]}...", "WARNING")
         
         # Remove markdown code blocks if present
@@ -160,9 +159,9 @@ Use null if you can't see something. Cards format: As=Ace spades, Kh=King hearts
         
         try:
             result = json.loads(result_text)
-            self.log(f"✅ JSON parsed successfully")
+            self.log(f"JSON parsed successfully")
         except json.JSONDecodeError as e:
-            self.log(f"❌ Invalid JSON response", "ERROR")
+            self.log(f"ERROR: Invalid JSON response", "ERROR")
             self.log(f"   JSON error: {e}", "ERROR")
             self.log(f"   Response preview: {result_text[:200]}...", "ERROR")
             raise ValueError(f"Invalid JSON response: {e}. Response: {result_text[:200]}")
@@ -175,7 +174,7 @@ Use null if you can't see something. Cards format: As=Ace spades, Kh=King hearts
         total_elapsed = time.time() - start_time
         
         # Final success log
-        self.log(f"🎯 Analysis Complete:")
+        self.log(f"Analysis Complete:")
         self.log(f"   Cards detected: {result.get('hero_cards', 'None')}")
         self.log(f"   Pot: ${result.get('pot', 'None')}")
         self.log(f"   Actions: {result.get('available_actions', 'None')}")
