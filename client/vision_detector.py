@@ -10,115 +10,80 @@ from typing import Dict, Any, Optional
 from openai import OpenAI
 
 class VisionDetector:
-    def __init__(self, api_key: Optional[str] = None):
+    def __init__(self, api_key: Optional[str] = None, logger=None):
         """Initialize GPT-5-mini vision detector"""
         self.api_key = api_key or os.getenv('OPENAI_API_KEY')
         if not self.api_key:
             raise ValueError("OPENAI_API_KEY not found in environment")
         
         self.client = OpenAI(api_key=self.api_key)
+        self.logger = logger  # GUI logger function
+    
+    def log(self, message: str, level: str = "INFO"):
+        """Log to GUI if logger provided, otherwise print"""
+        if self.logger:
+            self.logger(message, level)
+        else:
+            print(f"[{level}] {message}")
     
     def detect_poker_elements(self, screenshot_path: str, include_decision: bool = False) -> Dict[str, Any]:
         """
         Analyze poker table screenshot with GPT-5-mini
-        
-        Args:
-            screenshot_path: Path to screenshot
-            include_decision: If True, also get poker decision recommendation
-        
-        Returns:
-            {
-                "hero_cards": ["As", "Kh"],
-                "community_cards": ["Qd", "Jc", "Ts"],
-                "pot": 150,
-                "hero_stack": 500,
-                "opponent_stacks": [480, 500, 450, 520, 490],
-                "to_call": 20,
-                "min_raise": 40,
-                "available_actions": ["fold", "call", "raise"],
-                "button_positions": {
-                    "fold": [300, 700],
-                    "call": [400, 700],
-                    "raise": [500, 700]
-                },
-                "confidence": 0.95,
-                
-                # If include_decision=True:
-                "recommended_action": "raise",
-                "recommended_amount": 60,
-                "reasoning": "Strong hand with straight draw, good pot odds"
-            }
         """
         import time
         start_time = time.time()
         
-        print(f"[GPT-5-mini] Starting analysis (include_decision={include_decision})")
-        
-        # Timing: Encode image
+        # Encode image
         encode_start = time.time()
         with open(screenshot_path, 'rb') as f:
             image_data = base64.b64encode(f.read()).decode('utf-8')
         encode_time = time.time() - encode_start
         
-        print(f"[GPT-5-mini] Image encoded ({len(image_data)} bytes) in {encode_time:.3f}s")
-        print(f"[PERF] Image encoding: {encode_time:.3f}s")
+        # Short console log for HTTP requests only
+        print(f"[API] GPT-5-mini request: {len(image_data)} bytes")
         
-        # Build prompt
+        # Build prompt (shorter for token efficiency)
         if include_decision:
-            prompt = """Analyze this poker table screenshot carefully and recommend the best action.
+            prompt = """Analyze this poker screenshot. Return JSON only:
 
-Identify and return JSON with:
-1. hero_cards: Your 2 hole cards (e.g., ["As", "Kh"])
-2. community_cards: Board cards 0-5 (e.g., ["Qd", "Jc", "Ts"])
-3. pot: Pot amount in dollars (number)
-4. hero_stack: Your stack in dollars (number)
-5. opponent_stacks: List of opponent stacks (up to 5 players)
-6. to_call: Amount to call in dollars (number)
-7. min_raise: Minimum raise amount (number)
-8. available_actions: List of actions you can take (["fold", "call", "raise"])
-9. button_positions: Pixel coordinates of action buttons {"fold": [x, y], "call": [x, y], "raise": [x, y]}
+{
+  "hero_cards": ["As", "Kh"],
+  "community_cards": ["Qd", "Jc", "Ts"],
+  "pot": 150,
+  "hero_stack": 500,
+  "to_call": 20,
+  "available_actions": ["fold", "call", "raise"],
+  "button_positions": {"fold": [300, 700], "call": [400, 700], "raise": [500, 700]},
+  "recommended_action": "raise",
+  "recommended_amount": 60,
+  "reasoning": "Strong hand, good pot odds"
+}
 
-POKER DECISION (analyze the situation):
-10. recommended_action: "fold", "call", or "raise"
-11. recommended_amount: If raising, the amount to raise (number)
-12. reasoning: Brief explanation of why this is the best play (string)
-
-Consider:
-- Hand strength (pair, two pair, straight, flush, etc.)
-- Pot odds (is calling profitable?)
-- Position (early/middle/late)
-- Stack sizes (yours and opponents)
-- Board texture (wet/dry, draw-heavy)
-
-Card format: Rank (A,K,Q,J,T,9-2) + Suit (s=spades, h=hearts, d=diamonds, c=clubs)
-Example: "As" = Ace of Spades, "Kh" = King of Hearts
-
-If you can't see something clearly, use null.
-Return ONLY valid JSON, no explanation."""
+Use null if you can't see something. Cards format: As=Ace spades, Kh=King hearts."""
         else:
-            prompt = """Analyze this poker table screenshot carefully.
+            prompt = """Analyze this poker screenshot. Return JSON only:
 
-Identify and return JSON with:
-1. hero_cards: Your 2 hole cards (e.g., ["As", "Kh"])
-2. community_cards: Board cards 0-5 (e.g., ["Qd", "Jc", "Ts"])
-3. pot: Pot amount in dollars (number)
-4. hero_stack: Your stack in dollars (number)
-5. opponent_stacks: List of opponent stacks (up to 5 players)
-6. to_call: Amount to call in dollars (number)
-7. min_raise: Minimum raise amount (number)
-8. available_actions: List of actions you can take (["fold", "call", "raise"])
-9. button_positions: Pixel coordinates of action buttons {"fold": [x, y], "call": [x, y], "raise": [x, y]}
+{
+  "hero_cards": ["As", "Kh"],
+  "community_cards": ["Qd", "Jc", "Ts"],
+  "pot": 150,
+  "hero_stack": 500,
+  "to_call": 20,
+  "available_actions": ["fold", "call", "raise"],
+  "button_positions": {"fold": [300, 700], "call": [400, 700], "raise": [500, 700]}
+}
 
-Card format: Rank (A,K,Q,J,T,9-2) + Suit (s=spades, h=hearts, d=diamonds, c=clubs)
-Example: "As" = Ace of Spades, "Kh" = King of Hearts
+Use null if you can't see something. Cards format: As=Ace spades, Kh=King hearts."""
 
-If you can't see something clearly, use null.
-Return ONLY valid JSON, no explanation."""
-
-        print(f"[GPT-5-mini] Calling API...")
+        # Detailed logging to GUI
+        self.log(f"🧠 GPT-5-mini Analysis Started")
+        self.log(f"   Image size: {len(image_data)} bytes")
+        self.log(f"   Include decision: {include_decision}")
+        self.log(f"   Encoding time: {encode_time:.3f}s")
+        
         api_start = time.time()
         
-        # Call GPT-5-mini (no temperature parameter - reasoning models don't support it)
+        # Call GPT-5-mini with higher token limit
         response = self.client.chat.completions.create(
             model="gpt-5-mini",
             messages=[
@@ -138,47 +103,53 @@ Return ONLY valid JSON, no explanation."""
                     ]
                 }
             ],
-            max_completion_tokens=500
+            max_completion_tokens=1000  # Increased from 500
         )
         
         api_elapsed = time.time() - api_start
-        print(f"[GPT-5-mini] API call completed in {api_elapsed:.1f}s")
-        print(f"[PERF] GPT-5-mini API call: {api_elapsed:.3f}s")
+        
+        # Short console log
+        print(f"[API] GPT-5-mini response: {api_elapsed:.1f}s, {response.usage.total_tokens} tokens")
+        
+        # Detailed logging to GUI
+        self.log(f"✅ GPT-5-mini API Response:")
+        self.log(f"   Response time: {api_elapsed:.1f}s")
+        self.log(f"   Model: {response.model}")
+        self.log(f"   Total tokens: {response.usage.total_tokens}")
+        self.log(f"   Prompt tokens: {response.usage.prompt_tokens}")
+        self.log(f"   Completion tokens: {response.usage.completion_tokens}")
         
         # Parse response
         parse_start = time.time()
         
-        # Debug: Print full response object
-        print(f"[GPT-5-mini] DEBUG: Full API response object:")
-        print(f"[GPT-5-mini] Response ID: {response.id}")
-        print(f"[GPT-5-mini] Model: {response.model}")
-        print(f"[GPT-5-mini] Choices count: {len(response.choices)}")
-        print(f"[GPT-5-mini] Usage: {response.usage}")
-        
         if not response.choices:
-            print(f"[GPT-5-mini] ERROR: No choices in response")
-            raise ValueError("GPT-5-mini returned no choices")
+            self.log("❌ No choices in API response", "ERROR")
+            raise ValueError("No choices in API response")
         
         choice = response.choices[0]
-        print(f"[GPT-5-mini] Choice finish_reason: {choice.finish_reason}")
-        print(f"[GPT-5-mini] Choice message role: {choice.message.role}")
+        self.log(f"   Finish reason: {choice.finish_reason}")
         
         result_text = choice.message.content
         
+        # Check for token limit issue
+        if choice.finish_reason == 'length':
+            self.log(f"❌ Response truncated due to token limit!", "ERROR")
+            self.log(f"   Used {response.usage.completion_tokens} completion tokens", "ERROR")
+            self.log(f"   Try increasing max_completion_tokens", "ERROR")
+            raise ValueError(f"Response truncated due to token limit. Used {response.usage.completion_tokens} tokens. Try shorter prompt or increase max_completion_tokens.")
+        
         if not result_text:
-            print(f"[GPT-5-mini] ERROR: Empty content in message")
-            print(f"[GPT-5-mini] Message object: {choice.message}")
-            print(f"[GPT-5-mini] Full response dict: {response.model_dump()}")
-            raise ValueError("GPT-5-mini returned empty content")
+            self.log(f"❌ Empty response content", "ERROR")
+            self.log(f"   Finish reason: {choice.finish_reason}", "ERROR")
+            raise ValueError(f"Empty response. Finish reason: {choice.finish_reason}")
         
         result_text = result_text.strip()
-        print(f"[GPT-5-mini] Response length: {len(result_text)} chars")
-        print(f"[GPT-5-mini] First 500 chars: {result_text[:500]}")
+        self.log(f"   Response length: {len(result_text)} chars")
         
-        # Check if response looks like an error message
-        if "I cannot" in result_text or "I'm unable" in result_text or "I can't" in result_text:
-            print(f"[GPT-5-mini] WARNING: Response appears to be a refusal")
-            print(f"[GPT-5-mini] Full response: {result_text}")
+        # Check for refusal
+        if any(phrase in result_text.lower() for phrase in ["i cannot", "i'm unable", "i can't", "sorry"]):
+            self.log(f"⚠️ GPT-5-mini appears to be refusing the request", "WARNING")
+            self.log(f"   Response: {result_text[:200]}...", "WARNING")
         
         # Remove markdown code blocks if present
         if result_text.startswith('```'):
@@ -189,24 +160,28 @@ Return ONLY valid JSON, no explanation."""
         
         try:
             result = json.loads(result_text)
+            self.log(f"✅ JSON parsed successfully")
         except json.JSONDecodeError as e:
-            print(f"[GPT-5-mini] ERROR: Invalid JSON response")
-            print(f"[GPT-5-mini] Response text: {result_text[:1000]}")
-            print(f"[GPT-5-mini] JSON error: {e}")
-            raise ValueError(f"GPT-5-mini returned invalid JSON: {e}")
+            self.log(f"❌ Invalid JSON response", "ERROR")
+            self.log(f"   JSON error: {e}", "ERROR")
+            self.log(f"   Response preview: {result_text[:200]}...", "ERROR")
+            raise ValueError(f"Invalid JSON response: {e}. Response: {result_text[:200]}")
         
         parse_time = time.time() - parse_start
-        print(f"[GPT-5-mini] Parsed JSON successfully in {parse_time:.3f}s")
-        print(f"[PERF] JSON parsing: {parse_time:.3f}s")
-        print(f"[GPT-5-mini] Detected: cards={result.get('hero_cards')}, pot=${result.get('pot')}, confidence={result.get('confidence', 0.95)}")
         
         # Add confidence (GPT-5-mini doesn't provide this, so we estimate)
         result['confidence'] = 0.95
         
         total_elapsed = time.time() - start_time
-        print(f"[GPT-5-mini] Total analysis time: {total_elapsed:.1f}s")
-        print(f"[PERF] Total GPT-5-mini time: {total_elapsed:.3f}s")
-        print(f"[PERF] Breakdown: encode={encode_time:.3f}s, api={api_elapsed:.3f}s, parse={parse_time:.3f}s")
+        
+        # Final success log
+        self.log(f"🎯 Analysis Complete:")
+        self.log(f"   Cards detected: {result.get('hero_cards', 'None')}")
+        self.log(f"   Pot: ${result.get('pot', 'None')}")
+        self.log(f"   Actions: {result.get('available_actions', 'None')}")
+        if include_decision:
+            self.log(f"   Recommendation: {result.get('recommended_action', 'None')}")
+        self.log(f"   Total time: {total_elapsed:.1f}s")
         
         return result
     

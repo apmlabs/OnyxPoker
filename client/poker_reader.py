@@ -14,9 +14,15 @@ import config
 from vision_detector import VisionDetector
 
 class PokerScreenReader:
-    def __init__(self):
+    def __init__(self, logger=None):
         pyautogui.FAILSAFE = True
-        self.vision = VisionDetector()
+        self.vision = VisionDetector(logger=logger)
+        self.logger = logger
+    
+    def log(self, message: str, level: str = "INFO"):
+        """Log to GUI if logger provided"""
+        if self.logger:
+            self.logger(message, level)
     
     def parse_game_state(self, include_decision: bool = False) -> Dict:
         """
