@@ -73,6 +73,58 @@ This project uses **9 essential markdown files**. **As an agent, I must understa
 
 ## RECENT LEARNINGS (2025-12-29 to 2025-12-30)
 
+### Session 9 Continuation Part 3: Performance Profiling + GPT-5.2 Upgrade (02:33-02:59 UTC December 30, 2025)
+**Challenge**: Project working but needed performance analysis and model optimization
+
+**What I Did**:
+1. **Added Performance Profiling**:
+   - Detailed timing for every step (screenshot, save, encode, API, parse)
+   - Console logs show [PERF] breakdown
+   - Identified GPT API as 95% of total time (expected)
+   
+2. **Fixed Remaining Bugs**:
+   - AttributeError: self.detector no longer exists (incomplete refactoring)
+   - Removed validation calls that referenced deleted code
+   - Fixed indentation issues after removal
+
+3. **Enhanced Debug Tab**:
+   - F9 now shows screenshot in Debug tab
+   - User can verify what AI is analyzing
+   - Same region as calibration (TABLE_REGION)
+
+4. **Upgraded to GPT-5.2**:
+   - Researched current OpenAI models (user corrected my outdated info)
+   - Switched from gpt-4o to gpt-5.2
+   - Fixed parameter: max_tokens → max_completion_tokens
+   - 30% cheaper, better reasoning
+
+**Performance Results**:
+- Screenshot capture: 0.050-0.100s
+- Save to temp: 0.312-0.350s
+- Image encoding: 0.014-0.022s
+- **GPT-5.2 API: 8-12s** (95% of total time)
+- JSON parsing: 0.000s
+- Total: 8.5-12.4s per analysis
+
+**GPT-5.2 vs GPT-4o**:
+- Speed: 10s vs 7s (43% slower)
+- Reasoning: Much better (detailed poker analysis)
+- Cost: $1.75 vs $2.50 per 1M tokens (30% cheaper)
+- Accuracy: Excellent (same or better)
+
+**What Worked**:
+✅ Performance profiling (identified bottleneck)
+✅ GPT-5.2 upgrade (better reasoning, cheaper)
+✅ Debug tab screenshot (user can verify)
+✅ Fixed all AttributeErrors
+
+**What Didn't Work**:
+❌ Initial model info was outdated (user corrected me)
+❌ Forgot max_tokens → max_completion_tokens change
+
+**Critical Agent Learning**:
+**When user says "can we try X model" - RESEARCH FIRST. Don't rely on outdated knowledge. Check official docs. User was right to question my model info - I had outdated information about GPT models.**
+
 ### Session 9 Continuation Part 2: Priority 1 Fixes + Bug Fixes (02:17-02:29 UTC December 30, 2025)
 **Challenge**: User reported project still doesn't work - overlay not updating, workflow slow, not enough debug info
 
@@ -291,6 +343,9 @@ This project uses **9 essential markdown files**. **As an agent, I must understa
 
 **Ninth Critical Lesson (Testing After Fixes)**:
 **After making fixes, user will test and report actual errors. Don't assume fixes work - wait for user feedback. When user reports same error pattern, it means I didn't check all occurrences. Use grep to find ALL instances, not just the obvious ones.**
+
+**Tenth Critical Lesson (Research Before Recommending)**:
+**When user asks about models/services, RESEARCH official documentation first. Don't rely on training data - it's outdated. User corrected me on GPT models - I had wrong information. Always check current docs before making recommendations. When user questions my info → they're probably right, research immediately.**
 
 
 
