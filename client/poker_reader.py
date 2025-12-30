@@ -1,5 +1,5 @@
 """
-Poker screen reader - GPT-5-mini Vision-based detection
+Poker screen reader - GPT-5.2 Vision-based detection
 Replaces OCR with AI that understands poker
 """
 
@@ -20,7 +20,7 @@ class PokerScreenReader:
     
     def parse_game_state(self, include_decision: bool = False) -> Dict:
         """
-        Parse complete game state using GPT-5-mini vision
+        Parse complete game state using GPT-5.2 vision
         
         Args:
             include_decision: If True, also get poker decision recommendation
@@ -45,11 +45,11 @@ class PokerScreenReader:
         print(f"[PERF] Save to temp file: {save_time:.3f}s")
         
         try:
-            # Timing: GPT-5-mini analysis (this is the big one)
+            # Timing: GPT-5.2 analysis (this is the big one)
             gpt4o_start = time.time()
             result = self.vision.detect_poker_elements(temp_path, include_decision=include_decision)
             gpt4o_time = time.time() - gpt4o_start
-            print(f"[PERF] GPT-5-mini total: {gpt4o_time:.3f}s (API call is 95% of this)")
+            print(f"[PERF] GPT-5.2 total: {gpt4o_time:.3f}s (API call is 95% of this)")
             
             # Timing: Convert to expected format
             convert_start = time.time()

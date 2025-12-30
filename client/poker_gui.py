@@ -521,7 +521,7 @@ class OnyxPokerGUI:
             self.log(f"🎰 Bot started: {execution} mode")
             
             while self.running and (max_hands is None or hands < max_hands):
-                # Get game state with GPT-5-mini decision
+                # Get game state with GPT-5.2 decision
                 state = reader.parse_game_state(include_decision=True)
                 
                 # Check if our turn
@@ -711,7 +711,7 @@ class OnyxPokerGUI:
             self.mini_overlay.set_next_step("scan_done")
     
     def auto_detect(self):
-        """Capture active window and detect elements using GPT-5-mini"""
+        """Capture active window and detect elements using GPT-5.2"""
         # Immediate feedback
         self.calib_status.config(text="📸 Capturing active window...", foreground="blue")
         self.log("📸 Capturing currently active window...")
@@ -743,20 +743,20 @@ class OnyxPokerGUI:
             )
             
             # Capture screenshot
-            self.calib_status.config(text="🔎 Analyzing with GPT-5-mini...", foreground="blue")
+            self.calib_status.config(text="🔎 Analyzing with GPT-5.2...", foreground="blue")
             if hasattr(self, 'mini_overlay') and self.mini_overlay:
-                self.mini_overlay.update_status("🔎 GPT-5-mini analyzing...")
+                self.mini_overlay.update_status("🔎 GPT-5.2 analyzing...")
             self.root.update()
             
             img = pyautogui.screenshot(region=window_region)
             
-            # Save to temp file for GPT-5-mini
+            # Save to temp file for GPT-5.2
             with tempfile.NamedTemporaryFile(suffix='.png', delete=False) as f:
                 img.save(f.name)
                 temp_path = f.name
             
             try:
-                # Use GPT-5-mini to detect elements
+                # Use GPT-5.2 to detect elements
                 vision = VisionDetector()
                 result = vision.detect_poker_elements(temp_path, include_decision=False)
                 
@@ -772,8 +772,8 @@ class OnyxPokerGUI:
                 conf = self.detected_elements.get('confidence', 0)
                 self.confidence_label.config(text=f"Confidence: {conf:.1%}", 
                                             foreground="green" if conf > 0.7 else "orange")
-                self.calib_status.config(text="✓ GPT-5-mini detection complete", foreground="green")
-                self.log("✓ GPT-5-mini detected elements. Review and save if correct.")
+                self.calib_status.config(text="✓ GPT-5.2 detection complete", foreground="green")
+                self.log("✓ GPT-5.2 detected elements. Review and save if correct.")
                 
                 # Update overlay
                 if hasattr(self, 'mini_overlay') and self.mini_overlay:
@@ -875,7 +875,7 @@ ACTION_DELAY = 2.0
             messagebox.showerror("Error", str(e))
     
     def get_advice(self):
-        """F9 - Get one-time advice from GPT-5-mini"""
+        """F9 - Get one-time advice from GPT-5.2"""
         import time
         start_time = time.time()
         
@@ -890,12 +890,12 @@ ACTION_DELAY = 2.0
             reader = PokerScreenReader()
             
             # Progress update
-            self.log("🤖 Calling GPT-5-mini Vision API...")
+            self.log("🤖 Calling GPT-5.2 Vision API...")
             if hasattr(self, 'mini_overlay') and self.mini_overlay:
-                self.mini_overlay.update_status("🤖 GPT-5-mini analyzing...")
+                self.mini_overlay.update_status("🤖 GPT-5.2 analyzing...")
             self.root.update()
             
-            # Get state with decision from GPT-5-mini
+            # Get state with decision from GPT-5.2
             state = reader.parse_game_state(include_decision=True)
             
             elapsed = time.time() - start_time
