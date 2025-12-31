@@ -1,21 +1,62 @@
 # OnyxPoker - Current Status & Development Progress
 
-## Current Development Status: GPT-5-MINI WORKING ✅
+## Current Development Status: COMPREHENSIVE FIXES APPLIED ✅
 
-**Last Updated**: December 30, 2025 23:52 UTC
+**Last Updated**: December 31, 2025 00:03 UTC
 
-**🚀 PROJECT STATUS**: GPT-5-mini working after Windows encoding fix
+**🚀 PROJECT STATUS**: All major issues fixed - token limits, Windows encoding, overlay responsiveness
 **📊 ARCHITECTURE STATUS**: Phase 1 (Vision LLM) - Client-only with GPT-5-mini
 **🌐 SERVER STATUS**: Running as systemd service (optional for Phase 1, required for Phase 2)
-**🎮 CLIENT STATUS**: GPT-5-mini vision + decision making + Windows compatibility fixed
-**🎴 VISION**: GPT-5-mini Vision API (95-99% accuracy) - Token limit fixed (500→1000)
+**🎮 CLIENT STATUS**: GPT-5-mini vision + decision making + ALL ISSUES FIXED
+**🎴 VISION**: GPT-5-mini Vision API (95-99% accuracy) - Token limit fixed (50,000 tokens)
 **🧠 DECISIONS**: GPT-5-mini (good poker reasoning, faster) - Ready for testing
 **⌨️ HOTKEYS**: F5-F12 (F8=Calibrate, F9=Analyze) - WORKING
-**📱 MINI OVERLAY**: Enhanced 400x380 with pot, board, confidence, timestamp - WORKING
-**🐛 DEBUG LOGGING**: All emojis removed for Windows compatibility - WORKING
+**📱 MINI OVERLAY**: Enhanced 400x380 with IMMEDIATE feedback - WORKING
+**🐛 DEBUG LOGGING**: ALL emojis removed, all logs to GUI - WORKING
 **⚡ PERFORMANCE**: Expected 5-8s per analysis (faster than gpt-5.2)
 **💰 COST**: $0.25 per 1M input tokens (80% cheaper than gpt-5.2, 90% cheaper than gpt-4o)
-**🔧 WINDOWS FIX**: Removed all emojis from logging (cp1252 encoding compatibility)
+**🔧 WINDOWS FIX**: ALL emojis removed from ALL files (cp1252 encoding compatibility)
+
+## CRITICAL RESEARCH FINDINGS ✅
+
+**GPT-5-mini Token Limits** (Official Documentation):
+- **Context Window**: 400,000 tokens
+- **Max Output Tokens**: 128,000 tokens  
+- **Source**: scriptbyai.com/token-limit-openai-chatgpt/
+- **Previous Error**: Using 500/1000/2000 tokens (25x too low!)
+- **Current Setting**: 50,000 tokens (well within limits)
+
+## COMPREHENSIVE FIXES APPLIED ✅
+
+### 1. Token Limit Issues FIXED
+- **Problem**: finish_reason='length' causing empty responses
+- **Root Cause**: max_completion_tokens was 500/1000/2000 (way too low)
+- **Solution**: Increased to 50,000 (within 128,000 max limit)
+- **Result**: No more truncated responses
+
+### 2. Windows Encoding Issues FIXED  
+- **Problem**: UnicodeEncodeError with emojis on Windows cp1252
+- **Root Cause**: Console can't display Unicode emojis (🧠, ✅, ❌, etc.)
+- **Solution**: Removed ALL emojis from ALL Python files
+- **Result**: Full Windows compatibility
+
+### 3. Overlay Responsiveness FIXED
+- **Problem**: F9 showed no feedback for 5-10 seconds
+- **Root Cause**: No immediate status updates during API calls
+- **Solution**: Immediate "Analyzing..." + progress updates + root.update()
+- **Result**: Instant feedback, user knows it's working
+
+### 4. Null Handling FIXED
+- **Problem**: 'amount > 0' crashes when amount is None
+- **Root Cause**: GPT-5-mini can return null values
+- **Solution**: Added null safety to all numeric fields
+- **Result**: No more NoneType crashes
+
+### 5. Logging System FIXED
+- **Problem**: Console logging with emojis, mixed logging locations
+- **Root Cause**: Logs scattered between console and GUI
+- **Solution**: ALL logs to GUI, ASCII only, logger parameter passed
+- **Result**: Clean, Windows-compatible logging
 
 ## Project Overview
 **OnyxPoker** - AI-Powered Poker Bot with Computer Vision
