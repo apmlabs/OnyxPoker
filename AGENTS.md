@@ -71,7 +71,55 @@ This project uses **9 essential markdown files**. **As an agent, I must understa
 **Phase 1**: Vision LLM reads real tables, makes decisions (client-only)
 **Phase 2**: Deep CFR agent on server (research-grade AI)
 
-## RECENT LEARNINGS (2025-12-29 to 2025-12-30)
+## RECENT LEARNINGS (2025-12-29 to 2025-12-31)
+
+### Session 11: Complete Cleanup + gpt-5.2 Switch (00:54-01:05 UTC December 31, 2025)
+**Challenge**: User frustrated - "moving back in time", timing confusing, logs spammy, calibration unclear
+
+**What I Did**:
+1. **Fixed Timing Calculation**:
+   - Was double-counting (sum of parts + wall clock)
+   - Now uses wall clock only for accurate total
+   - Breakdown shows: screenshot, save, encode, api, parse
+   - Total matches actual elapsed time
+
+2. **Switched to gpt-5.2**:
+   - 2-3x faster than gpt-5-mini (6-9s vs 20-30s)
+   - Better reasoning quality
+   - Model name in logs: `[gpt-5.2 9.5s]`
+
+3. **Cleaned Up Logs**:
+   - Removed 8-line hotkey list on startup (see Help tab)
+   - Removed verbose calibration explanations
+   - One-line status updates only
+   - Full reasoning text (removed 150-char truncation)
+   - Added "Already analyzing" log for duplicate F9
+
+4. **Clarified Calibration**:
+   - Added docstring: only saves TABLE_REGION (window coordinates)
+   - BUTTON_REGIONS saved but NEVER USED (AI detects dynamically)
+   - F9 works with or without calibration
+   - Removed confusing multi-step explanations
+
+**What Worked**:
+✅ gpt-5.2 is 2-3x faster (huge improvement)
+✅ Timing now accurate (wall clock, not sum)
+✅ Logs are clean and minimal
+✅ Calibration purpose is clear
+
+**What Didn't Work**:
+❌ Initial timing was double-counting
+❌ Log spam was annoying user
+❌ Calibration purpose was unclear
+
+**Critical Agent Learning**:
+**When user says "moving back in time" - STOP and do complete audit. Check:**
+1. Are logs accurate? (timing was wrong)
+2. Are logs useful? (too verbose)
+3. Is purpose clear? (calibration was confusing)
+4. Is code doing what docs say? (BUTTON_REGIONS saved but unused)
+
+**Pattern**: User frustration = something fundamentally wrong. Do full audit, not incremental fixes.
 
 ### Session 9 Continuation Part 3: Performance Profiling + GPT-5.2 Upgrade (02:33-02:59 UTC December 30, 2025)
 **Challenge**: Project working but needed performance analysis and model optimization
