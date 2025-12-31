@@ -1008,23 +1008,36 @@ ACTION_DELAY = 2.0
         start = time.time()
         
         try:
-            reader = PokerScreenReader(logger=self.log)  # Pass logger for timing info
+            self.root.after(0, lambda: self.log("DEBUG: Thread started"))
+            
+            reader = PokerScreenReader(logger=self.log)
+            
+            self.root.after(0, lambda: self.log("DEBUG: Calling parse_game_state..."))
             state = reader.parse_game_state(include_decision=True)
+            
+            self.root.after(0, lambda: self.log(f"DEBUG: Got state: {state is not None}"))
             
             if not state:
                 self.root.after(0, lambda: self.log("ERROR: No response"))
                 return
             
             elapsed = time.time() - start
+            
+            self.root.after(0, lambda: self.log(f"DEBUG: Scheduling display (elapsed={elapsed:.1f}s)"))
             self.root.after(0, lambda: self._display_advice(state, elapsed))
             
         except Exception as e:
-            self.root.after(0, lambda: self.log(f"ERROR: {e}"))
+            import traceback
+            tb = traceback.format_exc()
+            self.root.after(0, lambda: self.log(f"ERROR: {e}\n{tb}"))
         finally:
             self._analyzing = False
+            self.root.after(0, lambda: self.log("DEBUG: Thread finished"))
     
     def _display_advice(self, state, elapsed):
         """Display results (main thread)"""
+        self.log("DEBUG: _display_advice called")
+        
         cards = state.get('hero_cards', ['??', '??'])
         pot = state.get('pot', 0)
         board = state.get('community_cards', [])
@@ -1037,11 +1050,13 @@ ACTION_DELAY = 2.0
         self.log(f"\n[{model} {elapsed:.1f}s] {cards} | Board: {board} | Pot: ${pot}")
         self.log(f"=> {action.upper()}" + (f" ${amount}" if amount and amount > 0 else ""))
         if reasoning:
-            self.log(reasoning)  # Show full reasoning
+            self.log(reasoning)
         
-        # Update overlay - must be called from main thread
+        # Update overlay
+        self.log("DEBUG: Updating overlay...")
         decision = {'action': action, 'amount': amount, 'reasoning': reasoning}
         self.update_game_state(state, decision)
+        self.log("DEBUG: Overlay updated")
         
         # Update state display
         self.state_text.delete("1.0", "end")
@@ -1053,6 +1068,8 @@ ACTION_DELAY = 2.0
         screenshot = pyautogui.screenshot(region=config.TABLE_REGION)
         self.last_screenshot = screenshot
         self.show_preview(screenshot, self.debug_canvas)
+        
+        self.log("DEBUG: _display_advice complete")
     
     def validate_with_kiro(self):
         """Validate current table state with Kiro CLI"""

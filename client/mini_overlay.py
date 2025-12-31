@@ -13,39 +13,33 @@ class MiniOverlay:
         self.visible = True
         
         # Window properties
-        self.window.geometry("400x380")
-        self.window.attributes('-topmost', True)  # Always on top
-        self.window.attributes('-alpha', 0.90)  # Slightly more opaque
-        self.window.overrideredirect(True)  # No title bar or buttons
+        self.window.geometry("1000x300")  # 2.5x wider, shorter
+        self.window.attributes('-topmost', True)
+        self.window.attributes('-alpha', 0.90)
+        self.window.overrideredirect(True)
         
-        # Prevent closing via window manager
+        # Prevent closing
         self.window.protocol("WM_DELETE_WINDOW", self.toggle_visibility)
         
-        # Make draggable (entire window)
+        # Make draggable
         self.window.bind('<Button-1>', self.start_drag)
         self.window.bind('<B1-Motion>', self.on_drag)
         
         self.create_ui()
         
     def create_ui(self):
-        # Main frame with dark background
-        main_frame = tk.Frame(self.window, bg='#2b2b2b', padx=10, pady=10)
+        # Main frame
+        main_frame = tk.Frame(self.window, bg='#2b2b2b', padx=15, pady=10)
         main_frame.pack(fill='both', expand=True)
         
-        # Header
-        header = tk.Label(main_frame, text="OnyxPoker", 
-                         font=('Arial', 14, 'bold'), 
-                         bg='#2b2b2b', fg='#00ff00')
-        header.pack(pady=(0, 5))
-        
-        tk.Frame(main_frame, height=2, bg='#555555').pack(fill='x', pady=5)
+        # NO HEADER - just info
         
         # Table info
         info_frame = tk.Frame(main_frame, bg='#2b2b2b')
         info_frame.pack(fill='x', pady=5)
         
         self.pot_label = tk.Label(info_frame, text="Pot: $--", 
-                                 font=('Courier', 11, 'bold'), 
+                                 font=('Courier', 12, 'bold'), 
                                  bg='#2b2b2b', fg='#ffff00', anchor='w')
         self.pot_label.pack(fill='x')
         
