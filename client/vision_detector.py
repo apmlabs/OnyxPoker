@@ -32,11 +32,16 @@ class VisionDetector:
         """Analyze poker table screenshot with AI vision"""
         import time
         
+        timings = {}
+        
         # Encode image
+        t = time.time()
         with open(screenshot_path, 'rb') as f:
             image_data = base64.b64encode(f.read()).decode('utf-8')
+        timings['encode'] = time.time() - t
         
         # Build prompt
+        t = time.time()
         if include_decision:
             prompt = """Analyze this poker screenshot. Return JSON only:
 
@@ -68,10 +73,10 @@ Use null if you can't see something. Cards format: As=Ace spades, Kh=King hearts
 }
 
 Use null if you can't see something. Cards format: As=Ace spades, Kh=King hearts."""
-
-        api_start = time.time()
+        timings['prompt'] = time.time() - t
         
         # Call AI model
+        t = time.time()
         response = self.client.chat.completions.create(
             model=self.model,
             messages=[{
@@ -83,8 +88,7 @@ Use null if you can't see something. Cards format: As=Ace spades, Kh=King hearts
             }],
             max_completion_tokens=50000
         )
-        
-        api_elapsed = time.time() - api_start
+        timings['api'] = time.time() - t
         
         if not response.choices:
             raise ValueError("No response from API")
@@ -98,7 +102,8 @@ Use null if you can't see something. Cards format: As=Ace spades, Kh=King hearts
         if not result_text:
             raise ValueError("Empty response")
         
-        # Remove markdown if present
+        # Parse JSON
+        t = time.time()
         result_text = result_text.strip()
         if result_text.startswith('```'):
             result_text = result_text.split('```')[1]
@@ -110,9 +115,10 @@ Use null if you can't see something. Cards format: As=Ace spades, Kh=King hearts
             result = json.loads(result_text)
         except json.JSONDecodeError as e:
             raise ValueError(f"Invalid JSON: {e}")
+        timings['parse'] = time.time() - t
         
         result['confidence'] = 0.95
-        result['api_time'] = api_elapsed
+        result['timings'] = timings
         result['model'] = self.model
         
         return result

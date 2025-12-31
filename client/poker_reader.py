@@ -25,19 +25,30 @@ class PokerScreenReader:
         """Parse complete game state using AI vision"""
         import time
         
-        start = time.time()
-        img = pyautogui.screenshot(region=config.TABLE_REGION)
+        timings = {}
         
+        t = time.time()
+        img = pyautogui.screenshot(region=config.TABLE_REGION)
+        timings['screenshot'] = time.time() - t
+        
+        t = time.time()
         with tempfile.NamedTemporaryFile(suffix='.png', delete=False) as f:
             img.save(f.name)
             temp_path = f.name
+        timings['save'] = time.time() - t
         
         try:
+            t = time.time()
             result = self.vision.detect_poker_elements(temp_path, include_decision=include_decision)
+            timings['vision'] = time.time() - t
             
             if not result:
                 self.log("No result from AI", "ERROR")
                 return None
+            
+            # Merge timings
+            if 'timings' in result:
+                timings.update(result['timings'])
             
             # Build state with null safety
             state = {
@@ -51,7 +62,7 @@ class PokerScreenReader:
                 'actions': result.get('available_actions', []),
                 'button_positions': result.get('button_positions', {}),
                 'confidence': result.get('confidence', 0.0) if result.get('confidence') is not None else 0.0,
-                'api_time': result.get('api_time', 0),
+                'timings': timings,
                 'model': result.get('model', MODEL)
             }
             
@@ -60,8 +71,9 @@ class PokerScreenReader:
                 state['recommended_amount'] = result.get('recommended_amount', 0) if result.get('recommended_amount') is not None else 0
                 state['reasoning'] = result.get('reasoning', '')
             
-            elapsed = time.time() - start
-            self.log(f"[{MODEL}] {elapsed:.1f}s total")
+            # Log timing breakdown
+            total = sum(timings.values())
+            self.log(f"Timing: screenshot={timings.get('screenshot', 0):.2f}s save={timings.get('save', 0):.2f}s encode={timings.get('encode', 0):.2f}s api={timings.get('api', 0):.1f}s parse={timings.get('parse', 0):.2f}s total={total:.1f}s")
             
             return state
             
