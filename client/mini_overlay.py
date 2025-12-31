@@ -107,72 +107,78 @@ class MiniOverlay:
         
     def update_game_state(self, state=None, decision=None, cards=None, pot=None, stack=None, reasoning=None):
         """Update overlay with game state - unified method"""
-        from datetime import datetime
-        
-        # If state dict provided, extract values
-        if state:
-            cards = state.get('hero_cards', ['??', '??'])
-            pot = state.get('pot', 0)
-            board = state.get('community_cards', [])
-            stack = state.get('hero_stack', 0)
-            if stack == 0:
-                stacks = state.get('stacks', [])
-                stack = stacks[2] if len(stacks) > 2 else 0
-            confidence = state.get('confidence', 0.0)
-        
-        # Update pot
-        if pot is not None:
-            self.pot_label.config(text=f"Pot: ${pot}")
-        
-        # Update cards
-        if cards:
-            cards_str = ' '.join(cards) if isinstance(cards, list) else str(cards)
-            self.cards_label.config(text=f"Cards: {cards_str}")
-        
-        # Update board
-        if state and 'community_cards' in state:
-            board = state['community_cards']
-            if board:
-                board_str = ' '.join(board)
-                self.board_label.config(text=f"Board: {board_str}")
-            else:
-                self.board_label.config(text="Board: --")
-        
-        # Update stack
-        if stack is not None:
-            self.stack_label.config(text=f"Stack: ${stack}")
-        
-        # Update decision
-        if decision:
-            if isinstance(decision, dict):
-                action = decision.get('action', '--').upper()
-                amount = decision.get('amount', 0)
-                if amount and amount > 0:
-                    decision_text = f"{action} ${amount}"
+        try:
+            from datetime import datetime
+            
+            # If state dict provided, extract values
+            if state:
+                cards = state.get('hero_cards', ['??', '??'])
+                pot = state.get('pot', 0)
+                board = state.get('community_cards', [])
+                stack = state.get('hero_stack', 0)
+                if stack == 0:
+                    stacks = state.get('stacks', [])
+                    stack = stacks[2] if stacks and len(stacks) > 2 else 0
+                confidence = state.get('confidence', 0.0)
+            
+            # Update pot
+            if pot is not None:
+                self.pot_label.config(text=f"Pot: ${pot}")
+            
+            # Update cards
+            if cards:
+                cards_str = ' '.join(cards) if isinstance(cards, list) else str(cards)
+                self.cards_label.config(text=f"Cards: {cards_str}")
+            
+            # Update board
+            if state and 'community_cards' in state:
+                board = state['community_cards']
+                if board:
+                    board_str = ' '.join(board)
+                    self.board_label.config(text=f"Board: {board_str}")
                 else:
-                    decision_text = f"{action}"
-                self.decision_label.config(text=decision_text, fg='#00ffff')
-                
-                reasoning = decision.get('reasoning', 'No reasoning')
-            else:
-                # decision is a string like "RAISE $60"
-                self.decision_label.config(text=f"{decision}", fg='#00ffff')
-        
-        # Update reasoning
-        if reasoning:
-            if len(reasoning) > 150:
-                reasoning = reasoning[:147] + "..."
-            self.reasoning_label.config(text=reasoning)
-        
-        # Update confidence
-        if state and 'confidence' in state:
-            conf = state['confidence']
-            conf_color = '#00ff00' if conf > 0.9 else '#ffff00' if conf > 0.7 else '#ff8800'
-            self.confidence_label.config(text=f"Confidence: {conf:.0%}", fg=conf_color)
-        
-        # Update timestamp
-        now = datetime.now().strftime("%H:%M:%S")
-        self.timestamp_label.config(text=now)
+                    self.board_label.config(text="Board: --")
+            
+            # Update stack
+            if stack is not None:
+                self.stack_label.config(text=f"Stack: ${stack}")
+            
+            # Update decision
+            if decision:
+                if isinstance(decision, dict):
+                    action = decision.get('action', '--').upper()
+                    amount = decision.get('amount', 0)
+                    if amount and amount > 0:
+                        decision_text = f"{action} ${amount}"
+                    else:
+                        decision_text = f"{action}"
+                    self.decision_label.config(text=decision_text, fg='#00ffff')
+                    
+                    reasoning = decision.get('reasoning', 'No reasoning')
+                else:
+                    # decision is a string
+                    self.decision_label.config(text=f"{decision}", fg='#00ffff')
+            
+            # Update reasoning
+            if reasoning:
+                if len(reasoning) > 150:
+                    reasoning = reasoning[:147] + "..."
+                self.reasoning_label.config(text=reasoning)
+            
+            # Update confidence
+            if state and 'confidence' in state:
+                conf = state['confidence']
+                conf_color = '#00ff00' if conf > 0.9 else '#ffff00' if conf > 0.7 else '#ff8800'
+                self.confidence_label.config(text=f"Confidence: {conf:.0%}", fg=conf_color)
+            
+            # Update timestamp
+            now = datetime.now().strftime("%H:%M:%S")
+            self.timestamp_label.config(text=now)
+            
+        except Exception as e:
+            # Fail silently but log to parent
+            if hasattr(self, 'parent') and hasattr(self.parent, 'log'):
+                self.parent.log(f"Overlay update error: {e}", "ERROR")
     
     def update_status(self, status):
         """Update status message"""
