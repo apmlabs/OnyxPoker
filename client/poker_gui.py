@@ -719,16 +719,15 @@ class OnyxPokerGUI:
             self.mini_overlay.set_next_step("scan_done")
     
     def auto_detect(self):
-        """Capture active window and detect elements using GPT-5-mini"""
-        # Immediate feedback with explanation
-        self.calib_status.config(text="CALIBRATION: Finding poker table boundaries...", foreground="blue")
-        self.log("CALIBRATION STARTED")
-        self.log("What calibration does:")
-        self.log("   1. Captures the active poker window")
-        self.log("   2. Uses GPT-5-mini to find buttons, pot, cards")
-        self.log("   3. Saves table region for future screenshots")
-        self.log("   4. Auto-saves configuration (no manual save needed)")
-        self.log("")
+        """
+        Calibration: Saves poker window coordinates (TABLE_REGION) to config.py
+        This tells the bot which area to screenshot for F9 analysis.
+        
+        Note: Button positions are detected dynamically by AI each time,
+        so calibration only needs to find the window boundaries.
+        """
+        self.calib_status.config(text="Calibrating...", foreground="blue")
+        self.log("F8: Calibration started - detecting poker table boundaries")
         
         if hasattr(self, 'mini_overlay') and self.mini_overlay:
             self.mini_overlay.update_status("Calibrating...")
@@ -741,8 +740,7 @@ class OnyxPokerGUI:
             from vision_detector import VisionDetector
             
             # Step 1: Get active window
-            self.calib_status.config(text="Step 1/4: Capturing active window...", foreground="blue")
-            self.log("Step 1: Capturing currently active window...")
+            self.log("Step 1/4: Capturing active window...")
             self.root.update()
             
             active_window = gw.getActiveWindow()
@@ -762,39 +760,32 @@ class OnyxPokerGUI:
                 active_window.height
             )
             
-            # Step 2: Capture full screenshot
-            self.calib_status.config(text="Step 2/4: Taking full window screenshot...", foreground="blue")
-            self.log("Step 2: Taking full window screenshot...")
+            # Step 2: Capture screenshot
+            self.log("Step 2/4: Screenshot...")
             if hasattr(self, 'mini_overlay') and self.mini_overlay:
                 self.mini_overlay.update_status("Screenshot...")
             self.root.update()
             
             img = pyautogui.screenshot(region=window_region)
-            self.log(f"✓ Screenshot captured: {img.size[0]}x{img.size[1]} pixels")
             
-            # Step 3: GPT-5-mini analysis
-            self.calib_status.config(text="Step 3/4: GPT-5-mini analyzing poker elements...", foreground="blue")
-            self.log("Step 3: GPT-5-mini analyzing poker table...")
-            self.log("   - Looking for fold/call/raise buttons")
-            self.log("   - Finding pot area")
-            self.log("   - Detecting card positions")
-            self.log("   - This may take 5-10 seconds...")
+            # Step 3: AI analysis
+            self.log("Step 3/4: AI analyzing table (5-10s)...")
             if hasattr(self, 'mini_overlay') and self.mini_overlay:
-                self.mini_overlay.update_status("GPT-5-mini analyzing...")
+                self.mini_overlay.update_status("AI analyzing...")
             self.root.update()
             
-            # Save to temp file for GPT-5-mini
+            # Save to temp file
             with tempfile.NamedTemporaryFile(suffix='.png', delete=False) as f:
                 img.save(f.name)
                 temp_path = f.name
             
             try:
-                # Use GPT-5-mini to detect elements
+                # Use AI to detect elements
                 vision = VisionDetector(logger=self.log)
                 result = vision.detect_poker_elements(temp_path, include_decision=False)
                 
                 if not result:
-                    self.log("GPT-5-mini returned empty result", "ERROR")
+                    self.log("AI returned empty result", "ERROR")
                     return
                 
                 self.detected_elements = {
@@ -825,23 +816,9 @@ class OnyxPokerGUI:
                                             foreground="green" if conf > 0.7 else "orange")
                 
                 # Success feedback
-                self.calib_status.config(text="CALIBRATION COMPLETE - Ready to use!", foreground="green")
-                self.log("CALIBRATION COMPLETE!")
-                self.log("Results:")
-                self.log(f"   - Window region: {window_region}")
-                button_pos = result.get('button_positions', {})
-                if button_pos:
-                    self.log(f"   - Buttons found: {len(button_pos)}")
-                self.log(f"   - Confidence: {conf:.1%}")
-                if result.get('pot'):
-                    self.log(f"   - Pot detected: ${result.get('pot')}")
-                if result.get('hero_cards'):
-                    self.log(f"   - Cards detected: {result.get('hero_cards')}")
-                self.log("")
-                self.log("READY TO USE:")
-                self.log("   - Press F9 to get AI advice")
-                self.log("   - Press F10 to start auto-bot")
-                self.log("   - Configuration saved automatically!")
+                self.calib_status.config(text="Calibration complete!", foreground="green")
+                self.log(f"Step 4/4: Saved! Window region: {window_region}, Confidence: {conf:.1%}")
+                self.log("Ready - Press F9 for advice")
                 
                 # Update overlay
                 if hasattr(self, 'mini_overlay') and self.mini_overlay:

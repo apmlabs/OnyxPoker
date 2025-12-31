@@ -25,30 +25,30 @@ class PokerScreenReader:
         """Parse complete game state using AI vision"""
         import time
         
-        timings = {}
+        t_start = time.time()
         
+        # Step 1: Screenshot
         t = time.time()
         img = pyautogui.screenshot(region=config.TABLE_REGION)
-        timings['screenshot'] = time.time() - t
+        t_screenshot = time.time() - t
         
+        # Step 2: Save to temp file
         t = time.time()
         with tempfile.NamedTemporaryFile(suffix='.png', delete=False) as f:
             img.save(f.name)
             temp_path = f.name
-        timings['save'] = time.time() - t
+        t_save = time.time() - t
         
         try:
-            t = time.time()
+            # Step 3: AI vision (includes encode, api, parse)
             result = self.vision.detect_poker_elements(temp_path, include_decision=include_decision)
-            timings['vision'] = time.time() - t
             
             if not result:
                 self.log("No result from AI", "ERROR")
                 return None
             
-            # Merge timings
-            if 'timings' in result:
-                timings.update(result['timings'])
+            # Get AI timings
+            ai_timings = result.get('timings', {})
             
             # Build state with null safety
             state = {
@@ -62,7 +62,6 @@ class PokerScreenReader:
                 'actions': result.get('available_actions', []),
                 'button_positions': result.get('button_positions', {}),
                 'confidence': result.get('confidence', 0.0) if result.get('confidence') is not None else 0.0,
-                'timings': timings,
                 'model': result.get('model', MODEL)
             }
             
@@ -71,9 +70,11 @@ class PokerScreenReader:
                 state['recommended_amount'] = result.get('recommended_amount', 0) if result.get('recommended_amount') is not None else 0
                 state['reasoning'] = result.get('reasoning', '')
             
+            # Calculate total time
+            t_total = time.time() - t_start
+            
             # Log timing breakdown
-            total = sum(timings.values())
-            self.log(f"Timing: screenshot={timings.get('screenshot', 0):.2f}s save={timings.get('save', 0):.2f}s encode={timings.get('encode', 0):.2f}s api={timings.get('api', 0):.1f}s parse={timings.get('parse', 0):.2f}s total={total:.1f}s")
+            self.log(f"Timing: screenshot={t_screenshot:.2f}s save={t_save:.2f}s encode={ai_timings.get('encode', 0):.2f}s api={ai_timings.get('api', 0):.1f}s parse={ai_timings.get('parse', 0):.2f}s total={t_total:.1f}s")
             
             return state
             

@@ -45,17 +45,9 @@ class HotkeyManager:
             
             # F12 - Show/Hide main window
             keyboard.add_hotkey('f12', self.on_f12_toggle_window)
-            print("DEBUG: F12 registered")
             
             self.registered = True
-            self.parent.log("Hotkeys registered:")
-            self.parent.log("   F5 = Test OCR (Debug)")
-            self.parent.log("   F6 = Toggle Mini Overlay")
-            self.parent.log("   F8 = Capture & Detect (Calibration)")
-            self.parent.log("   F9 = Get Advice (one-time)")
-            self.parent.log("   F10 = Start/Stop Bot (auto mode)")
-            self.parent.log("   F11 = Emergency Stop")
-            self.parent.log("   F12 = Toggle Main Window")
+            self.parent.log("Hotkeys registered (F5-F12) - see Help tab for details")
             
         except Exception as e:
             self.parent.log(f"Could not register hotkeys: {e}", "WARNING")
