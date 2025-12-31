@@ -10,7 +10,7 @@ from typing import Dict, Any, Optional
 from openai import OpenAI
 
 # Model configuration - change here to switch models
-MODEL = "gpt-5-mini"  # Options: gpt-5-mini, gpt-5.2, gpt-4o
+MODEL = "gpt-5.2"  # Options: gpt-5-mini, gpt-5.2, gpt-4o
 
 class VisionDetector:
     def __init__(self, api_key: Optional[str] = None, logger=None):
