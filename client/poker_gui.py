@@ -1003,83 +1003,73 @@ ACTION_DELAY = 2.0
             messagebox.showerror("Error", str(e))
     
     def get_advice(self):
-        """F9 - Get one-time advice from GPT-5-mini"""
+        """F9 - Get one-time advice (threaded to keep GUI responsive)"""
+        # Prevent multiple simultaneous calls
+        if hasattr(self, '_analyzing') and self._analyzing:
+            return
+        
+        self._analyzing = True
+        
+        # Immediate feedback
+        if hasattr(self, 'mini_overlay') and self.mini_overlay:
+            self.mini_overlay.update_status("Analyzing...")
+        self.root.update()
+        
+        # Run in background thread
+        import threading
+        thread = threading.Thread(target=self._get_advice_thread, daemon=True)
+        thread.start()
+    
+    def _get_advice_thread(self):
+        """Background analysis (keeps GUI responsive)"""
         import time
-        start_time = time.time()
+        start = time.time()
         
         try:
-            # IMMEDIATE feedback - show analyzing status right away
-            self.log("Getting advice...")
-            if hasattr(self, 'mini_overlay') and self.mini_overlay:
-                self.mini_overlay.update_status("Analyzing...")
-            self.root.update()  # Force GUI update
-            
-            # Progress update
-            self.log("Capturing screenshot...")
-            if hasattr(self, 'mini_overlay') and self.mini_overlay:
-                self.mini_overlay.update_status("Capturing screenshot...")
-            self.root.update()
-            
-            reader = PokerScreenReader(logger=self.log)
-            
-            # Progress update
-            self.log("Calling GPT-5-mini Vision API...")
-            if hasattr(self, 'mini_overlay') and self.mini_overlay:
-                self.mini_overlay.update_status("GPT-5-mini analyzing...")
-            self.root.update()
-            
-            # Get state with decision from GPT-5-mini
+            reader = PokerScreenReader(logger=None)
             state = reader.parse_game_state(include_decision=True)
             
             if not state:
-                self.log("No response from GPT-5-mini", "ERROR")
-                if hasattr(self, 'mini_overlay') and self.mini_overlay:
-                    self.mini_overlay.update_status("No response")
+                self.root.after(0, lambda: self.log("ERROR: No response"))
                 return
             
-            elapsed = time.time() - start_time
-            self.log(f"Analysis complete in {elapsed:.1f}s")
+            elapsed = time.time() - start
+            self.root.after(0, lambda: self._display_advice(state, elapsed))
             
-            # Display in activity log
-            cards = state.get('hero_cards', ['??', '??'])
-            pot = state.get('pot', 0)
-            board = state.get('community_cards', [])
-            action = state.get('recommended_action', 'fold')
-            amount = state.get('recommended_amount', 0)
-            reasoning = state.get('reasoning', 'No reasoning')
-            confidence = state.get('confidence', 0.0)
-            
-            self.log(f"\nCurrent Hand")
-            self.log(f"Cards: {cards}, Board: {board}")
-            self.log(f"Pot: ${pot}, Confidence: {confidence:.0%}")
-            self.log(f"Recommended: {action.upper()}" + (f" ${amount}" if amount and amount > 0 else ""))
-            self.log(f"{reasoning}")
-            
-            # Update game state display and overlay (unified)
-            decision = {
-                'action': action,
-                'amount': amount,
-                'reasoning': reasoning
-            }
-            
-            self.update_game_state(state, decision)
-            
-            # Update state display
-            self.state_text.delete("1.0", "end")
-            self.state_text.insert("1.0", json.dumps(state, indent=2))
-            
-            # Show screenshot in Debug tab
-            import pyautogui
-            import config
-            screenshot = pyautogui.screenshot(region=config.TABLE_REGION)
-            self.last_screenshot = screenshot
-            self.show_preview(screenshot, self.debug_canvas)
-            
-            self.log("Screenshot shown in Debug tab")
         except Exception as e:
-            self.log(f"Capture error: {e}", "ERROR")
-            if hasattr(self, 'mini_overlay') and self.mini_overlay:
-                self.mini_overlay.update_status("Error")
+            self.root.after(0, lambda: self.log(f"ERROR: {e}"))
+        finally:
+            self._analyzing = False
+    
+    def _display_advice(self, state, elapsed):
+        """Display results (main thread)"""
+        cards = state.get('hero_cards', ['??', '??'])
+        pot = state.get('pot', 0)
+        board = state.get('community_cards', [])
+        action = state.get('recommended_action', 'fold')
+        amount = state.get('recommended_amount', 0)
+        reasoning = state.get('reasoning', '')
+        
+        # Clean log
+        self.log(f"\n[{elapsed:.1f}s] {cards} | Board: {board} | Pot: ${pot}")
+        self.log(f"=> {action.upper()}" + (f" ${amount}" if amount and amount > 0 else ""))
+        if reasoning:
+            self.log(f"{reasoning[:200]}")  # Limit reasoning length
+        
+        # Update overlay
+        decision = {'action': action, 'amount': amount, 'reasoning': reasoning}
+        self.update_game_state(state, decision)
+        
+        # Update state display
+        self.state_text.delete("1.0", "end")
+        self.state_text.insert("1.0", json.dumps(state, indent=2))
+        
+        # Show screenshot in Debug tab
+        import pyautogui
+        import config
+        screenshot = pyautogui.screenshot(region=config.TABLE_REGION)
+        self.last_screenshot = screenshot
+        self.show_preview(screenshot, self.debug_canvas)
     
     def validate_with_kiro(self):
         """Validate current table state with Kiro CLI"""
