@@ -455,7 +455,7 @@ class OnyxPokerGUI:
             try:
                 self.mini_overlay.update_game_state(state=state, decision=decision)
             except Exception as e:
-                self.log(f"ERROR: Overlay update failed: {e}", "ERROR")
+                self.log(f"Overlay update failed: {e}", "ERROR")
                 import traceback
                 self.log(traceback.format_exc(), "ERROR")
         
@@ -1032,9 +1032,9 @@ ACTION_DELAY = 2.0
             state = reader.parse_game_state(include_decision=True)
             
             if not state:
-                self.log("ERROR: No response from GPT-5-mini", "ERROR")
+                self.log("No response from GPT-5-mini", "ERROR")
                 if hasattr(self, 'mini_overlay') and self.mini_overlay:
-                    self.mini_overlay.update_status("ERROR: No response")
+                    self.mini_overlay.update_status("No response")
                 return
             
             elapsed = time.time() - start_time

@@ -123,7 +123,7 @@ Use null if you can't see something. Cards format: As=Ace spades, Kh=King hearts
         parse_start = time.time()
         
         if not response.choices:
-            self.log(f"ERROR: No choices in API response", "ERROR")
+            self.log(f"No choices in API response", "ERROR")
             raise ValueError("No choices in API response")
         
         choice = response.choices[0]
@@ -132,13 +132,13 @@ Use null if you can't see something. Cards format: As=Ace spades, Kh=King hearts
         result_text = choice.message.content
         
         if choice.finish_reason == 'length':
-            self.log(f"ERROR: Response truncated due to token limit!", "ERROR")
+            self.log(f"Response truncated due to token limit!", "ERROR")
             self.log(f"   Used {response.usage.completion_tokens} completion tokens", "ERROR")
             self.log(f"   Try increasing max_completion_tokens", "ERROR")
             raise ValueError(f"Response truncated due to token limit. Used {response.usage.completion_tokens} tokens. Try shorter prompt or increase max_completion_tokens.")
         
         if not result_text:
-            self.log(f"ERROR: Empty response content", "ERROR")
+            self.log(f"Empty response content", "ERROR")
             self.log(f"   Finish reason: {choice.finish_reason}", "ERROR")
             raise ValueError(f"Empty response. Finish reason: {choice.finish_reason}")
         
@@ -147,7 +147,7 @@ Use null if you can't see something. Cards format: As=Ace spades, Kh=King hearts
         
         # Check for refusal
         if any(phrase in result_text.lower() for phrase in ["i cannot", "i'm unable", "i can't", "sorry"]):
-            self.log(f"WARNING: GPT-5-mini appears to be refusing the request", "WARNING")
+            self.log(f"GPT-5-mini appears to be refusing the request", "WARNING")
             self.log(f"   Response: {result_text[:200]}...", "WARNING")
         
         # Remove markdown code blocks if present
@@ -161,7 +161,7 @@ Use null if you can't see something. Cards format: As=Ace spades, Kh=King hearts
             result = json.loads(result_text)
             self.log(f"JSON parsed successfully")
         except json.JSONDecodeError as e:
-            self.log(f"ERROR: Invalid JSON response", "ERROR")
+            self.log(f"Invalid JSON response", "ERROR")
             self.log(f"   JSON error: {e}", "ERROR")
             self.log(f"   Response preview: {result_text[:200]}...", "ERROR")
             raise ValueError(f"Invalid JSON response: {e}. Response: {result_text[:200]}")

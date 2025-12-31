@@ -61,7 +61,7 @@ class PokerScreenReader:
             convert_start = time.time()
             
             if not result:
-                self.log("ERROR: GPT-5-mini returned no result", "ERROR")
+                self.log("GPT-5-mini returned no result", "ERROR")
                 return None
             
             state = {
