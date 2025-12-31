@@ -33,7 +33,7 @@ class MiniOverlay:
         main_frame.pack(fill='both', expand=True)
         
         # Header
-        header = tk.Label(main_frame, text="🎰 OnyxPoker", 
+        header = tk.Label(main_frame, text="POKER OnyxPoker", 
                          font=('Arial', 14, 'bold'), 
                          bg='#2b2b2b', fg='#00ff00')
         header.pack(pady=(0, 5))
@@ -70,7 +70,7 @@ class MiniOverlay:
         decision_frame = tk.Frame(main_frame, bg='#2b2b2b')
         decision_frame.pack(fill='x', pady=5)
         
-        self.decision_label = tk.Label(decision_frame, text="💡 --", 
+        self.decision_label = tk.Label(decision_frame, text="BULB --", 
                                        font=('Arial', 16, 'bold'), 
                                        bg='#2b2b2b', fg='#00ffff', anchor='w')
         self.decision_label.pack(fill='x')
@@ -154,15 +154,15 @@ class MiniOverlay:
                 action = decision.get('action', '--').upper()
                 amount = decision.get('amount', 0)
                 if amount and amount > 0:
-                    decision_text = f"💡 {action} ${amount}"
+                    decision_text = f"BULB {action} ${amount}"
                 else:
-                    decision_text = f"💡 {action}"
+                    decision_text = f"BULB {action}"
                 self.decision_label.config(text=decision_text, fg='#00ffff')
                 
                 reasoning = decision.get('reasoning', 'No reasoning')
             else:
                 # decision is a string like "RAISE $60"
-                self.decision_label.config(text=f"💡 {decision}", fg='#00ffff')
+                self.decision_label.config(text=f"BULB {decision}", fg='#00ffff')
         
         # Update reasoning
         if reasoning:
@@ -198,25 +198,25 @@ class MiniOverlay:
     def set_next_step(self, step):
         """Update overlay with next step guidance"""
         if step == "calibrate":
-            self.decision_label.config(text="📋 Setup Needed", fg='#ffaa00')
+            self.decision_label.config(text="CLIPBOARD Setup Needed", fg='#ffaa00')
             self.reasoning_label.config(text="Press F8 to calibrate\n(Focus poker window first)")
             self.pot_label.config(text="Step 1: Focus poker window")
             self.cards_label.config(text="Step 2: Press F8")
             self.board_label.config(text="Step 3: Save config")
         elif step == "test":
-            self.decision_label.config(text="✅ Calibrated!", fg='#00ff00')
+            self.decision_label.config(text="SUCCESS Calibrated!", fg='#00ff00')
             self.reasoning_label.config(text="Press F5 to test OCR\nOr F9 to get advice")
             self.pot_label.config(text="Calibration saved!")
             self.cards_label.config(text="Test: F5")
             self.board_label.config(text="Advice: F9")
         elif step == "ready":
-            self.decision_label.config(text="✅ Ready!", fg='#00ff00')
+            self.decision_label.config(text="SUCCESS Ready!", fg='#00ff00')
             self.reasoning_label.config(text="F9: Get advice (one-time)\nF10: Start bot (auto mode)")
             self.pot_label.config(text="All set!")
             self.cards_label.config(text="F9: Advice")
             self.board_label.config(text="F10: Auto bot")
         elif step == "playing":
-            self.decision_label.config(text="🎮 Playing", fg='#00ffff')
+            self.decision_label.config(text="GAME Playing", fg='#00ffff')
             self.reasoning_label.config(text="Bot is running...\nF11: Emergency stop")
             self.pot_label.config(text="Bot active")
             self.cards_label.config(text="F9: Quick advice")

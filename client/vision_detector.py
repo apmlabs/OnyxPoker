@@ -103,7 +103,7 @@ Use null if you can't see something. Cards format: As=Ace spades, Kh=King hearts
                     ]
                 }
             ],
-            max_completion_tokens=2000  # Increased from 1000
+            max_completion_tokens=50000  # GPT-5-mini supports up to 128,000
         )
         
         api_elapsed = time.time() - api_start

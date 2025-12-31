@@ -22,14 +22,14 @@ class OnyxPokerBot:
         self.execution = execution
         self.reader = PokerScreenReader()
         
-        print(f"🎰 OnyxPoker Bot initialized")
+        print(f"POKER OnyxPoker Bot initialized")
         print(f"   Execution: {execution}")
     
     def run(self, max_hands: Optional[int] = None):
         """Main bot loop"""
         hands_played = 0
         
-        print("\n⏳ Waiting for your turn...")
+        print("\nWAIT Waiting for your turn...")
         
         try:
             while max_hands is None or hands_played < max_hands:
@@ -43,7 +43,7 @@ class OnyxPokerBot:
                 
                 # Display state
                 print(f"\n{'='*50}")
-                print(f"🃏 Hand {hands_played + 1}")
+                print(f"CARDS Hand {hands_played + 1}")
                 print(f"{'='*50}")
                 print(f"Cards: {state.get('hero_cards', ['??', '??'])}")
                 print(f"Board: {state.get('community_cards', [])}")
@@ -56,17 +56,17 @@ class OnyxPokerBot:
                 amount = state.get('recommended_amount', 0)
                 reasoning = state.get('reasoning', 'No reasoning provided')
                 
-                print(f"\n💡 Recommended: {action.upper()}", end='')
+                print(f"\nBULB Recommended: {action.upper()}", end='')
                 if amount:
                     print(f" ${amount}", end='')
-                print(f"\n📝 Reasoning: {reasoning}")
+                print(f"\nNOTE Reasoning: {reasoning}")
                 
                 # Execute or display
                 if self.execution == 'auto':
                     self.execute_action(state)
-                    print("✅ Action executed")
+                    print("SUCCESS Action executed")
                 else:
-                    print("ℹ️  [ADVICE MODE - No action taken]")
+                    print("INFO  [ADVICE MODE - No action taken]")
                 
                 hands_played += 1
                 time.sleep(2)  # Wait before next check

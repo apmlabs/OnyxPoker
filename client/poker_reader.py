@@ -57,26 +57,31 @@ class PokerScreenReader:
             gpt4o_time = time.time() - gpt4o_start
             print(f"[PERF] GPT-5-mini total: {gpt4o_time:.3f}s (API call is 95% of this)")
             
-            # Timing: Convert to expected format
+            # Timing: Convert to expected format with null safety
             convert_start = time.time()
+            
+            if not result:
+                self.log("ERROR: GPT-5-mini returned no result", "ERROR")
+                return None
+            
             state = {
                 'hero_cards': result.get('hero_cards', ['??', '??']),
                 'community_cards': result.get('community_cards', []),
-                'pot': result.get('pot', 0),
-                'hero_stack': result.get('hero_stack', 0),
+                'pot': result.get('pot', 0) if result.get('pot') is not None else 0,
+                'hero_stack': result.get('hero_stack', 0) if result.get('hero_stack') is not None else 0,
                 'stacks': result.get('opponent_stacks', []),
-                'to_call': result.get('to_call', 0),
-                'min_raise': result.get('min_raise', 0),
+                'to_call': result.get('to_call', 0) if result.get('to_call') is not None else 0,
+                'min_raise': result.get('min_raise', 0) if result.get('min_raise') is not None else 0,
                 'actions': result.get('available_actions', []),
                 'button_positions': result.get('button_positions', {}),
-                'confidence': result.get('confidence', 0.0)
+                'confidence': result.get('confidence', 0.0) if result.get('confidence') is not None else 0.0
             }
             
             # Add decision if requested
             if include_decision:
-                state['recommended_action'] = result.get('recommended_action')
-                state['recommended_amount'] = result.get('recommended_amount')
-                state['reasoning'] = result.get('reasoning')
+                state['recommended_action'] = result.get('recommended_action', 'fold')
+                state['recommended_amount'] = result.get('recommended_amount', 0) if result.get('recommended_amount') is not None else 0
+                state['reasoning'] = result.get('reasoning', 'No reasoning provided')
             
             convert_time = time.time() - convert_start
             print(f"[PERF] Convert format: {convert_time:.3f}s")

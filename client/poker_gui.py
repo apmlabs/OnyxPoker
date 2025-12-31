@@ -116,7 +116,7 @@ class OnyxPokerGUI:
             # Create mini overlay
             self.mini_overlay = MiniOverlay(self)
             self.mini_overlay.show()
-            self.log("✅ Mini overlay created")
+            self.log("SUCCESS Mini overlay created")
             
             # Register hotkeys
             self.hotkey_manager = HotkeyManager(self)
@@ -125,16 +125,16 @@ class OnyxPokerGUI:
             # Create system tray icon
             self.system_tray = SystemTrayIcon(self)
             self.system_tray.run()
-            self.log("✅ System tray icon created")
+            self.log("SUCCESS System tray icon created")
             
         except Exception as e:
-            self.log(f"⚠️ Could not initialize advanced features: {e}", "WARNING")
-            self.log("💡 Some features may require 'pip install keyboard pystray'", "INFO")
+            self.log(f"WARNING Could not initialize advanced features: {e}", "WARNING")
+            self.log("BULB Some features may require 'pip install keyboard pystray'", "INFO")
         
     def create_control_tab(self):
         """Main control panel"""
         tab = ttk.Frame(self.notebook)
-        self.notebook.add(tab, text="🎮 Control Panel")
+        self.notebook.add(tab, text="GAME Control Panel")
         
         # Settings
         settings = ttk.LabelFrame(tab, text="Bot Settings", padding=10)
@@ -161,8 +161,8 @@ class OnyxPokerGUI:
         self.stop_btn = ttk.Button(controls, text="⏹ Stop Bot", command=self.stop_bot, width=15, state="disabled")
         self.stop_btn.pack(side="left", padx=5)
         
-        ttk.Button(controls, text="🔧 Test Connection", command=self.test_connection, width=15).pack(side="left", padx=5)
-        ttk.Button(controls, text="📸 Test OCR", command=self.test_ocr, width=15).pack(side="left", padx=5)
+        ttk.Button(controls, text="WRENCH Test Connection", command=self.test_connection, width=15).pack(side="left", padx=5)
+        ttk.Button(controls, text="CAMERA Test OCR", command=self.test_ocr, width=15).pack(side="left", padx=5)
         
         # Status
         status = ttk.LabelFrame(tab, text="Status", padding=10)
@@ -220,14 +220,14 @@ class OnyxPokerGUI:
         
         log_buttons = ttk.Frame(log_frame)
         log_buttons.pack(anchor="e", pady=5)
-        ttk.Button(log_buttons, text="📋 Copy Logs", command=self.copy_logs).pack(side="left", padx=5)
-        ttk.Button(log_buttons, text="💾 Save Logs", command=self.save_logs).pack(side="left", padx=5)
+        ttk.Button(log_buttons, text="CLIPBOARD Copy Logs", command=self.copy_logs).pack(side="left", padx=5)
+        ttk.Button(log_buttons, text="DISK Save Logs", command=self.save_logs).pack(side="left", padx=5)
         ttk.Button(log_buttons, text="Clear Log", command=self.clear_log).pack(side="left", padx=5)
         
     def create_calibration_tab(self):
         """Calibration wizard tab"""
         tab = ttk.Frame(self.notebook)
-        self.notebook.add(tab, text="🔧 Calibration")
+        self.notebook.add(tab, text="WRENCH Calibration")
         
         # Instructions
         instructions = ttk.LabelFrame(tab, text="📖 Calibration Instructions", padding=10)
@@ -236,18 +236,18 @@ class OnyxPokerGUI:
         inst_text = tk.Text(instructions, height=8, wrap="word", font=("Arial", 9), bg="#fffacd")
         inst_text.pack(fill="x")
         inst_text.insert("1.0",
-            "🎯 WHAT CALIBRATION DOES:\n"
+            "TARGET WHAT CALIBRATION DOES:\n"
             "• Captures your poker window boundaries (full screenshot area)\n"
             "• Uses GPT-5-mini AI to find buttons, pot, and card positions\n"
             "• Saves table region so bot knows where to look\n"
             "• Auto-saves configuration (no manual save needed)\n\n"
-            "📋 STEPS:\n"
+            "CLIPBOARD STEPS:\n"
             "1. Open PokerStars and sit at a table (any table works)\n"
             "2. Click on poker window to make it the active window\n"
             "3. Press F8 - bot will capture FULL window and analyze with AI\n"
             "4. Review results below - should show detected elements\n"
             "5. Done! Configuration saves automatically\n\n"
-            "💡 F8 captures the ENTIRE active window, not just a small region"
+            "BULB F8 captures the ENTIRE active window, not just a small region"
         )
         inst_text.config(state="disabled")
         
@@ -273,14 +273,14 @@ class OnyxPokerGUI:
         info_frame = ttk.Frame(step3)
         info_frame.pack(fill="x", pady=5)
         
-        info_label = ttk.Label(info_frame, text="ℹ️ Configuration saves automatically after F8 - no manual save needed!", 
+        info_label = ttk.Label(info_frame, text="INFO Configuration saves automatically after F8 - no manual save needed!", 
                               foreground="green", font=("Arial", 9, "italic"))
         info_label.pack()
         
     def create_debug_tab(self):
         """Debug and analysis tab"""
         tab = ttk.Frame(self.notebook)
-        self.notebook.add(tab, text="🐛 Debug")
+        self.notebook.add(tab, text="BUG Debug")
         
         # Description
         desc = ttk.LabelFrame(tab, text="About Debug Tab", padding=10)
@@ -304,7 +304,7 @@ class OnyxPokerGUI:
         self.debug_canvas.pack(fill="both", expand=True)
         
         # Kiro Validation Panel
-        kiro_frame = ttk.LabelFrame(tab, text="🤖 Kiro CLI Validation", padding=10)
+        kiro_frame = ttk.LabelFrame(tab, text="ROBOT Kiro CLI Validation", padding=10)
         kiro_frame.pack(fill="x", padx=10, pady=5)
         
         ttk.Button(kiro_frame, text="✓ Validate State", command=self.validate_with_kiro).pack(side="left", padx=5)
@@ -314,7 +314,7 @@ class OnyxPokerGUI:
         self.kiro_status.pack(side="left", padx=10)
         
         # Card Validation Panel (NEW)
-        card_val_frame = ttk.LabelFrame(tab, text="🎴 Card Validation & Learning", padding=10)
+        card_val_frame = ttk.LabelFrame(tab, text="CARD Card Validation & Learning", padding=10)
         card_val_frame.pack(fill="x", padx=10, pady=5)
         
         ttk.Label(card_val_frame, text="Detected Cards:", font=("Arial", 9, "bold")).pack(anchor="w")
@@ -339,7 +339,7 @@ class OnyxPokerGUI:
         self.ocr_text = scrolledtext.ScrolledText(ocr_frame, height=8, wrap="word", font=("Courier", 9))
         self.ocr_text.pack(fill="both", expand=True)
         
-        ttk.Button(ocr_frame, text="📋 Copy OCR", command=self.copy_ocr).pack(anchor="e", pady=2)
+        ttk.Button(ocr_frame, text="CLIPBOARD Copy OCR", command=self.copy_ocr).pack(anchor="e", pady=2)
         
         # Raw State
         state_frame = ttk.LabelFrame(tab, text="Raw Game State (JSON)", padding=10)
@@ -348,7 +348,7 @@ class OnyxPokerGUI:
         self.state_text = scrolledtext.ScrolledText(state_frame, height=6, wrap="word", font=("Courier", 9))
         self.state_text.pack(fill="both", expand=True)
         
-        ttk.Button(state_frame, text="📋 Copy State", command=self.copy_state).pack(anchor="e", pady=2)
+        ttk.Button(state_frame, text="CLIPBOARD Copy State", command=self.copy_state).pack(anchor="e", pady=2)
         
     # Logging
     def log(self, message, level="INFO"):
@@ -465,13 +465,13 @@ class OnyxPokerGUI:
         try:
             client = OnyxPokerClient()
             if client.test_connection():
-                self.log("✅ Connected!", "SUCCESS")
+                self.log("SUCCESS Connected!", "SUCCESS")
                 messagebox.showinfo("Success", "Server connected!")
             else:
-                self.log("❌ Failed", "ERROR")
+                self.log("ERROR Failed", "ERROR")
                 messagebox.showerror("Error", "Cannot connect")
         except Exception as e:
-            self.log(f"❌ Error: {e}", "ERROR")
+            self.log(f"ERROR Error: {e}", "ERROR")
             messagebox.showerror("Error", str(e))
             
     def test_ocr(self):
@@ -491,7 +491,7 @@ class OnyxPokerGUI:
             
             messagebox.showinfo("OCR Test", f"Pot: ${state['pot']}\nCheck Debug tab for details")
         except Exception as e:
-            self.log(f"❌ OCR error: {e}", "ERROR")
+            self.log(f"ERROR OCR error: {e}", "ERROR")
             messagebox.showerror("Error", str(e))
             
     def start_bot(self):
@@ -526,7 +526,7 @@ class OnyxPokerGUI:
             reader = bot.reader
             hands = 0
             
-            self.log(f"🎰 Bot started: {execution} mode")
+            self.log(f"POKER Bot started: {execution} mode")
             
             while self.running and (max_hands is None or hands < max_hands):
                 # Get game state with GPT-5-mini decision
@@ -546,10 +546,10 @@ class OnyxPokerGUI:
                 amount = state.get('recommended_amount', 0)
                 reasoning = state.get('reasoning', 'No reasoning')
                 
-                self.log(f"\n🃏 Hand {hands+1}")
+                self.log(f"\nCARDS Hand {hands+1}")
                 self.log(f"Cards: {cards}, Pot: ${pot}")
-                self.log(f"💡 Recommended: {action.upper()}" + (f" ${amount}" if amount else ""))
-                self.log(f"📝 {reasoning[:80]}...")
+                self.log(f"BULB Recommended: {action.upper()}" + (f" ${amount}" if amount else ""))
+                self.log(f"NOTE {reasoning[:80]}...")
                 
                 # Update GUI
                 self.root.after(0, self.update_game_state, state, {
@@ -562,20 +562,20 @@ class OnyxPokerGUI:
                 # Execute or just advise
                 if execution == 'auto':
                     bot.execute_action(state)
-                    self.log(f"✅ Executed: {action}")
+                    self.log(f"SUCCESS Executed: {action}")
                 else:
-                    self.log(f"ℹ️  Advice only - no action taken")
+                    self.log(f"INFO  Advice only - no action taken")
                 
                 hands += 1
                 import time
                 time.sleep(2)  # Wait before next check
                 
-            self.log(f"✅ Finished: {hands} hands")
+            self.log(f"SUCCESS Finished: {hands} hands")
             self.root.after(0, self.update_status, "Finished", hands)
             
         except Exception as e:
             import traceback
-            self.log(f"❌ Error: {e}", "ERROR")
+            self.log(f"ERROR Error: {e}", "ERROR")
             self.log(traceback.format_exc(), "ERROR")
             self.root.after(0, messagebox.showerror, "Error", str(e))
         finally:
@@ -589,13 +589,13 @@ class OnyxPokerGUI:
         self.notebook.add(tab, text="❓ Help")
         
         # Setup Guide
-        guide = ttk.LabelFrame(tab, text="📋 Setup Guide", padding=10)
+        guide = ttk.LabelFrame(tab, text="CLIPBOARD Setup Guide", padding=10)
         guide.pack(fill="x", padx=10, pady=5)
         
         guide_text = tk.Text(guide, height=8, wrap="word", font=("Arial", 9), bg="#f0f0f0")
         guide_text.pack(fill="x")
         guide_text.insert("1.0", 
-            "🎯 First Time Setup:\n"
+            "TARGET First Time Setup:\n"
             "1. Press F7 to open Calibration tab\n"
             "2. Click 'Scan Windows' → Select your poker window\n"
             "3. Press F12 to hide this window (poker table visible)\n"
@@ -603,12 +603,12 @@ class OnyxPokerGUI:
             "5. Review preview → Click 'Save Configuration'\n"
             "6. Press F8 to test OCR (optional)\n"
             "7. Press F9 anytime to get AI advice!\n\n"
-            "💡 The mini overlay will guide you through each step"
+            "BULB The mini overlay will guide you through each step"
         )
         guide_text.config(state="disabled")
         
         # Hotkeys Info
-        hotkeys = ttk.LabelFrame(tab, text="⌨️ Global Hotkeys", padding=10)
+        hotkeys = ttk.LabelFrame(tab, text="KEYBOARD Global Hotkeys", padding=10)
         hotkeys.pack(fill="x", padx=10, pady=5)
         
         hotkeys_text = tk.Text(hotkeys, height=9, wrap="word", font=("Courier", 9), bg="#e8f4f8")
@@ -622,12 +622,12 @@ class OnyxPokerGUI:
             "F10      - Start/Stop Bot (toggle automation on/off)\n"
             "F11      - Emergency Stop (immediately stop bot, show main window)\n"
             "F12      - Toggle Main Window (show/hide this window)\n\n"
-            "💡 All hotkeys work globally, even when PokerStars is focused!"
+            "BULB All hotkeys work globally, even when PokerStars is focused!"
         )
         hotkeys_text.config(state="disabled")
         
         # Tips
-        tips = ttk.LabelFrame(tab, text="💡 Tips & Tricks", padding=10)
+        tips = ttk.LabelFrame(tab, text="BULB Tips & Tricks", padding=10)
         tips.pack(fill="x", padx=10, pady=5)
         
         tips_text = tk.Text(tips, height=6, wrap="word", font=("Arial", 9), bg="#fffacd")
@@ -647,7 +647,7 @@ class OnyxPokerGUI:
         """Capture the window that was active before clicking this button"""
         self.window_list.delete(0, tk.END)
         self.calib_status.config(text="Waiting...", foreground="blue")
-        self.log("🔍 Click on your poker window in 3 seconds...")
+        self.log("SEARCH Click on your poker window in 3 seconds...")
         self.root.update()
         
         # Give user 3 seconds to click on poker window
@@ -663,9 +663,9 @@ class OnyxPokerGUI:
             active_window = gw.getActiveWindow()
             
             if not active_window or not active_window.title:
-                self.calib_status.config(text="❌ No active window", foreground="red")
-                self.log("❌ No active window detected")
-                self.log("💡 Make sure you clicked on poker window during countdown")
+                self.calib_status.config(text="ERROR No active window", foreground="red")
+                self.log("ERROR No active window detected")
+                self.log("BULB Make sure you clicked on poker window during countdown")
                 messagebox.showwarning("No Active Window", "No window was focused during countdown.\nTry again and click on your poker window.")
                 return
             
@@ -688,15 +688,15 @@ class OnyxPokerGUI:
             self.selected_window = self.windows[0]
             
             self.calib_status.config(text=f"✓ Ready: {active_window.title}", foreground="green")
-            self.log("💡 Press F12 to hide this window, then F8 to capture")
+            self.log("BULB Press F12 to hide this window, then F8 to capture")
             
             # Update overlay
             if hasattr(self, 'mini_overlay') and self.mini_overlay:
                 self.mini_overlay.set_next_step("scan_done")
                 
         except Exception as e:
-            self.calib_status.config(text=f"❌ Error: {e}", foreground="red")
-            self.log(f"❌ Error getting active window: {e}", "ERROR")
+            self.calib_status.config(text=f"ERROR Error: {e}", foreground="red")
+            self.log(f"ERROR Error getting active window: {e}", "ERROR")
     
     def select_window(self):
         sel = self.window_list.curselection()
@@ -709,7 +709,7 @@ class OnyxPokerGUI:
         
         self.calib_status.config(text=f"✓ Selected: {window_title}", foreground="green")
         self.log(f"✓ Window selected: {window_title}")
-        self.log("💡 Next steps:")
+        self.log("BULB Next steps:")
         self.log("   1. Press F12 to hide this window")
         self.log("   2. Press F8 to capture poker table")
         self.log("   3. Press F12 again to see results")
@@ -721,9 +721,9 @@ class OnyxPokerGUI:
     def auto_detect(self):
         """Capture active window and detect elements using GPT-5-mini"""
         # Immediate feedback with explanation
-        self.calib_status.config(text="🎯 CALIBRATION: Finding poker table boundaries...", foreground="blue")
-        self.log("🎯 CALIBRATION STARTED")
-        self.log("📋 What calibration does:")
+        self.calib_status.config(text="TARGET CALIBRATION: Finding poker table boundaries...", foreground="blue")
+        self.log("TARGET CALIBRATION STARTED")
+        self.log("CLIPBOARD What calibration does:")
         self.log("   1. Captures the active poker window")
         self.log("   2. Uses GPT-5-mini to find buttons, pot, cards")
         self.log("   3. Saves table region for future screenshots")
@@ -731,7 +731,7 @@ class OnyxPokerGUI:
         self.log("")
         
         if hasattr(self, 'mini_overlay') and self.mini_overlay:
-            self.mini_overlay.update_status("🎯 Calibrating...")
+            self.mini_overlay.update_status("TARGET Calibrating...")
         self.root.update()
         
         try:
@@ -741,14 +741,14 @@ class OnyxPokerGUI:
             from vision_detector import VisionDetector
             
             # Step 1: Get active window
-            self.calib_status.config(text="📸 Step 1/4: Capturing active window...", foreground="blue")
-            self.log("📸 Step 1: Capturing currently active window...")
+            self.calib_status.config(text="CAMERA Step 1/4: Capturing active window...", foreground="blue")
+            self.log("CAMERA Step 1: Capturing currently active window...")
             self.root.update()
             
             active_window = gw.getActiveWindow()
             if not active_window or not active_window.title:
-                self.log("❌ No active window detected", "ERROR")
-                self.calib_status.config(text="❌ No active window", foreground="red")
+                self.log("ERROR No active window detected", "ERROR")
+                self.calib_status.config(text="ERROR No active window", foreground="red")
                 return
             
             self.log(f"✓ Found window: '{active_window.title}'")
@@ -763,24 +763,24 @@ class OnyxPokerGUI:
             )
             
             # Step 2: Capture full screenshot
-            self.calib_status.config(text="📷 Step 2/4: Taking full window screenshot...", foreground="blue")
-            self.log("📷 Step 2: Taking full window screenshot...")
+            self.calib_status.config(text="PHOTO Step 2/4: Taking full window screenshot...", foreground="blue")
+            self.log("PHOTO Step 2: Taking full window screenshot...")
             if hasattr(self, 'mini_overlay') and self.mini_overlay:
-                self.mini_overlay.update_status("📷 Screenshot...")
+                self.mini_overlay.update_status("PHOTO Screenshot...")
             self.root.update()
             
             img = pyautogui.screenshot(region=window_region)
             self.log(f"✓ Screenshot captured: {img.size[0]}x{img.size[1]} pixels")
             
             # Step 3: GPT-5-mini analysis
-            self.calib_status.config(text="🧠 Step 3/4: GPT-5-mini analyzing poker elements...", foreground="blue")
-            self.log("🧠 Step 3: GPT-5-mini analyzing poker table...")
+            self.calib_status.config(text="BRAIN Step 3/4: GPT-5-mini analyzing poker elements...", foreground="blue")
+            self.log("BRAIN Step 3: GPT-5-mini analyzing poker table...")
             self.log("   - Looking for fold/call/raise buttons")
             self.log("   - Finding pot area")
             self.log("   - Detecting card positions")
             self.log("   - This may take 5-10 seconds...")
             if hasattr(self, 'mini_overlay') and self.mini_overlay:
-                self.mini_overlay.update_status("🧠 GPT-5-mini analyzing...")
+                self.mini_overlay.update_status("BRAIN GPT-5-mini analyzing...")
             self.root.update()
             
             # Save to temp file for GPT-5-mini
@@ -794,7 +794,7 @@ class OnyxPokerGUI:
                 result = vision.detect_poker_elements(temp_path, include_decision=False)
                 
                 if not result:
-                    self.log("❌ GPT-5-mini returned empty result", "ERROR")
+                    self.log("ERROR GPT-5-mini returned empty result", "ERROR")
                     return
                 
                 self.detected_elements = {
@@ -807,10 +807,10 @@ class OnyxPokerGUI:
                 }
                 
                 # Step 4: Save automatically
-                self.calib_status.config(text="💾 Step 4/4: Auto-saving configuration...", foreground="blue")
-                self.log("💾 Step 4: Auto-saving configuration...")
+                self.calib_status.config(text="DISK Step 4/4: Auto-saving configuration...", foreground="blue")
+                self.log("DISK Step 4: Auto-saving configuration...")
                 if hasattr(self, 'mini_overlay') and self.mini_overlay:
-                    self.mini_overlay.update_status("💾 Auto-saving...")
+                    self.mini_overlay.update_status("DISK Auto-saving...")
                 self.root.update()
                 
                 # Auto-save (no manual button click needed)
@@ -825,9 +825,9 @@ class OnyxPokerGUI:
                                             foreground="green" if conf > 0.7 else "orange")
                 
                 # Success feedback
-                self.calib_status.config(text="✅ CALIBRATION COMPLETE - Ready to use!", foreground="green")
-                self.log("✅ CALIBRATION COMPLETE!")
-                self.log("📊 Results:")
+                self.calib_status.config(text="SUCCESS CALIBRATION COMPLETE - Ready to use!", foreground="green")
+                self.log("SUCCESS CALIBRATION COMPLETE!")
+                self.log("CHART Results:")
                 self.log(f"   - Window region: {window_region}")
                 self.log(f"   - Buttons found: {len(result.get('button_positions', {}))}")
                 self.log(f"   - Confidence: {conf:.1%}")
@@ -836,7 +836,7 @@ class OnyxPokerGUI:
                 if result.get('hero_cards'):
                     self.log(f"   - Cards detected: {result.get('hero_cards')}")
                 self.log("")
-                self.log("🎮 READY TO USE:")
+                self.log("GAME READY TO USE:")
                 self.log("   - Press F9 to get AI advice")
                 self.log("   - Press F10 to start auto-bot")
                 self.log("   - Configuration saved automatically!")
@@ -856,18 +856,18 @@ class OnyxPokerGUI:
             self.notebook.select(1)  # Switch to calibration tab
         
         except Exception as e:
-            self.calib_status.config(text=f"❌ Calibration failed: {e}", foreground="red")
-            self.log(f"❌ Calibration error: {e}", "ERROR")
-            self.log("💡 Try again: Make sure poker window is visible and active")
+            self.calib_status.config(text=f"ERROR Calibration failed: {e}", foreground="red")
+            self.log(f"ERROR Calibration error: {e}", "ERROR")
+            self.log("BULB Try again: Make sure poker window is visible and active")
     
     def auto_save_calibration(self):
         """Auto-save calibration without user clicking save button"""
         if not self.detected_elements:
-            self.log("❌ No detection data to save", "ERROR")
+            self.log("ERROR No detection data to save", "ERROR")
             return
         
         if 'window_region' not in self.detected_elements:
-            self.log("❌ No window region detected", "ERROR")
+            self.log("ERROR No window region detected", "ERROR")
             return
         
         try:
@@ -911,15 +911,15 @@ ACTION_DELAY = 2.0
             with open('config.py', 'w') as f:
                 f.write(content)
             
-            self.log("✅ Configuration auto-saved to config.py", "SUCCESS")
-            self.log("💡 No manual save needed - calibration complete!")
+            self.log("SUCCESS Configuration auto-saved to config.py", "SUCCESS")
+            self.log("BULB No manual save needed - calibration complete!")
             
             # Update overlay to ready state
             if hasattr(self, 'mini_overlay') and self.mini_overlay:
                 self.mini_overlay.set_next_step("ready")
         
         except Exception as e:
-            self.log(f"❌ Auto-save failed: {e}", "ERROR")
+            self.log(f"ERROR Auto-save failed: {e}", "ERROR")
     
     def save_calibration(self):
         if not self.detected_elements:
@@ -959,8 +959,8 @@ ACTION_DELAY = 2.0
                 f.write(content)
             
             messagebox.showinfo("Success", "Configuration saved!")
-            self.log("✅ Calibration saved to config.py", "SUCCESS")
-            self.log("💡 Next: Press F8 to test OCR, or F9 to analyze a hand")
+            self.log("SUCCESS Calibration saved to config.py", "SUCCESS")
+            self.log("BULB Next: Press F8 to test OCR, or F9 to analyze a hand")
             self.log("   Calibration complete! Bot is ready to use.")
             
             # Update overlay
@@ -999,7 +999,7 @@ ACTION_DELAY = 2.0
             self.ocr_text.insert("end", f"Board: {state['community_cards']}\n")
             
         except Exception as e:
-            self.log(f"❌ Capture error: {e}", "ERROR")
+            self.log(f"ERROR Capture error: {e}", "ERROR")
             messagebox.showerror("Error", str(e))
     
     def get_advice(self):
@@ -1008,26 +1008,37 @@ ACTION_DELAY = 2.0
         start_time = time.time()
         
         try:
-            # Immediate feedback
-            self.log("💡 Getting advice...")
-            self.log("📸 Capturing screenshot...")
+            # IMMEDIATE feedback - show analyzing status right away
+            self.log("Getting advice...")
             if hasattr(self, 'mini_overlay') and self.mini_overlay:
-                self.mini_overlay.update_status("🔍 Analyzing...")
-            self.root.update()
-            
-            reader = PokerScreenReader()
+                self.mini_overlay.update_status("Analyzing...")
+            self.root.update()  # Force GUI update
             
             # Progress update
-            self.log("🤖 Calling GPT-5-mini Vision API...")
+            self.log("Capturing screenshot...")
             if hasattr(self, 'mini_overlay') and self.mini_overlay:
-                self.mini_overlay.update_status("🤖 GPT-5-mini analyzing...")
+                self.mini_overlay.update_status("Capturing screenshot...")
+            self.root.update()
+            
+            reader = PokerScreenReader(logger=self.log)
+            
+            # Progress update
+            self.log("Calling GPT-5-mini Vision API...")
+            if hasattr(self, 'mini_overlay') and self.mini_overlay:
+                self.mini_overlay.update_status("GPT-5-mini analyzing...")
             self.root.update()
             
             # Get state with decision from GPT-5-mini
             state = reader.parse_game_state(include_decision=True)
             
+            if not state:
+                self.log("ERROR: No response from GPT-5-mini", "ERROR")
+                if hasattr(self, 'mini_overlay') and self.mini_overlay:
+                    self.mini_overlay.update_status("ERROR: No response")
+                return
+            
             elapsed = time.time() - start_time
-            self.log(f"✓ Analysis complete in {elapsed:.1f}s")
+            self.log(f"Analysis complete in {elapsed:.1f}s")
             
             # Display in activity log
             cards = state.get('hero_cards', ['??', '??'])
@@ -1038,14 +1049,11 @@ ACTION_DELAY = 2.0
             reasoning = state.get('reasoning', 'No reasoning')
             confidence = state.get('confidence', 0.0)
             
-            self.log(f"\n🃏 Current Hand")
+            self.log(f"\nCurrent Hand")
             self.log(f"Cards: {cards}, Board: {board}")
             self.log(f"Pot: ${pot}, Confidence: {confidence:.0%}")
-            self.log(f"💡 Recommended: {action.upper()}" + (f" ${amount}" if amount else ""))
-            self.log(f"📝 {reasoning}")
-            
-            # Debug: Log full state
-            self.log(f"DEBUG: Full state: {json.dumps(state, indent=2)}")
+            self.log(f"Recommended: {action.upper()}" + (f" ${amount}" if amount and amount > 0 else ""))
+            self.log(f"{reasoning}")
             
             # Update game state display and overlay (unified)
             decision = {
@@ -1067,16 +1075,16 @@ ACTION_DELAY = 2.0
             self.last_screenshot = screenshot
             self.show_preview(screenshot, self.debug_canvas)
             
-            self.log("📸 Screenshot shown in Debug tab")
+            self.log("CAMERA Screenshot shown in Debug tab")
         except Exception as e:
-            self.log(f"❌ Capture error: {e}", "ERROR")
+            self.log(f"ERROR Capture error: {e}", "ERROR")
             if hasattr(self, 'mini_overlay') and self.mini_overlay:
-                self.mini_overlay.update_status("❌ Error")
+                self.mini_overlay.update_status("ERROR Error")
     
     def validate_with_kiro(self):
         """Validate current table state with Kiro CLI"""
         if not self.last_state:
-            messagebox.showwarning("No State", "Please capture a screenshot first using '📸 Capture Now' button")
+            messagebox.showwarning("No State", "Please capture a screenshot first using 'CAMERA Capture Now' button")
             return
         
         # Create progress window (centered)
@@ -1095,7 +1103,7 @@ ACTION_DELAY = 2.0
         progress.transient(self.root)
         progress.grab_set()
         
-        ttk.Label(progress, text="🤖 Validating with Kiro CLI...", font=("Arial", 12, "bold")).pack(pady=10)
+        ttk.Label(progress, text="ROBOT Validating with Kiro CLI...", font=("Arial", 12, "bold")).pack(pady=10)
         ttk.Label(progress, text="This may take 15-180 seconds", font=("Arial", 10)).pack(pady=5)
         ttk.Label(progress, text="Kiro is loading and analyzing the poker state", font=("Arial", 9)).pack(pady=5)
         
@@ -1106,8 +1114,8 @@ ACTION_DELAY = 2.0
         status_label = ttk.Label(progress, text="Please wait...", font=("Arial", 9), foreground="blue")
         status_label.pack(pady=5)
         
-        self.log("🤖 Validating state with Kiro CLI (this may take up to 3 minutes)...")
-        self.kiro_status.config(text="⏳ Validating...", foreground="orange")
+        self.log("ROBOT Validating state with Kiro CLI (this may take up to 3 minutes)...")
+        self.kiro_status.config(text="WAIT Validating...", foreground="orange")
         self.root.update()
         
         def run_validation():
@@ -1135,21 +1143,21 @@ ACTION_DELAY = 2.0
                 # Log full interpretation to Activity Log
                 interpretation = result.get('interpretation', 'No interpretation')
                 self.log("=" * 50)
-                self.log("🤖 KIRO VALIDATION RESULT")
+                self.log("ROBOT KIRO VALIDATION RESULT")
                 self.log("=" * 50)
                 
                 if result.get('understood', False):
                     conf = result.get('confidence', 0)
                     self.kiro_status.config(text=f"✓ Valid (conf: {conf:.2f})", foreground="green")
-                    self.log(f"✅ Status: VALID (confidence: {conf:.2f})")
+                    self.log(f"SUCCESS Status: VALID (confidence: {conf:.2f})")
                 else:
                     self.kiro_status.config(text="✗ Invalid", foreground="red")
                     concerns = result.get('concerns', ['Unknown issue'])
-                    self.log(f"⚠️ Status: INVALID")
-                    self.log(f"⚠️ Concerns: {', '.join(concerns)}")
+                    self.log(f"WARNING Status: INVALID")
+                    self.log(f"WARNING Concerns: {', '.join(concerns)}")
                 
                 # Log full interpretation (line by line for readability)
-                self.log("📝 Kiro's Analysis:")
+                self.log("NOTE Kiro's Analysis:")
                 for line in interpretation.split('\n'):
                     if line.strip():
                         self.log(f"   {line.strip()}")
@@ -1175,7 +1183,7 @@ ACTION_DELAY = 2.0
                 header_frame = ttk.Frame(popup)
                 header_frame.pack(fill="x", padx=10, pady=10)
                 
-                status_text = "✅ VALID" if result.get('understood', False) else "⚠️ INVALID"
+                status_text = "SUCCESS VALID" if result.get('understood', False) else "WARNING INVALID"
                 status_color = "green" if result.get('understood', False) else "red"
                 ttk.Label(header_frame, text=status_text, font=("Arial", 14, "bold"), 
                          foreground=status_color).pack()
@@ -1205,13 +1213,13 @@ ACTION_DELAY = 2.0
                     popup.update()
                     messagebox.showinfo("Copied", "Validation result copied to clipboard!", parent=popup)
                 
-                ttk.Button(btn_frame, text="📋 Copy to Clipboard", command=copy_result).pack(side="left", padx=5)
+                ttk.Button(btn_frame, text="CLIPBOARD Copy to Clipboard", command=copy_result).pack(side="left", padx=5)
                 ttk.Button(btn_frame, text="Close", command=popup.destroy).pack(side="right", padx=5)
             except Exception as e:
                 progress.after(0, lambda: progress_bar.stop())
                 progress.after(0, lambda: progress.destroy())
                 self.kiro_status.config(text="✗ Error", foreground="red")
-                self.log(f"❌ Validation error: {e}", "ERROR")
+                self.log(f"ERROR Validation error: {e}", "ERROR")
                 messagebox.showerror("Error", f"Validation failed:\n{str(e)}\n\nMake sure server is running and accessible.")
         
         # Run in thread to keep UI responsive
@@ -1230,8 +1238,8 @@ ACTION_DELAY = 2.0
             messagebox.showinfo("Unknown Cards", "Cards were not detected. Please use 'Wrong - Let Me Fix' to teach the system.")
             return
         
-        self.card_validation_status.config(text="✅ Cards confirmed correct", foreground="green")
-        self.log(f"✅ User confirmed cards: {cards}", "SUCCESS")
+        self.card_validation_status.config(text="SUCCESS Cards confirmed correct", foreground="green")
+        self.log(f"SUCCESS User confirmed cards: {cards}", "SUCCESS")
     
     def open_card_correction(self):
         """Open dialog to correct detected cards and save real templates"""
@@ -1284,7 +1292,7 @@ ACTION_DELAY = 2.0
             card1 = rank1_var.get() + suit_map[suit1_var.get()]
             card2 = rank2_var.get() + suit_map[suit2_var.get()]
             
-            self.log(f"📝 User corrected cards to: {card1}, {card2}")
+            self.log(f"NOTE User corrected cards to: {card1}, {card2}")
             
             # Capture and save real card images
             try:
@@ -1304,17 +1312,17 @@ ACTION_DELAY = 2.0
                     
                     # Save as real template
                     matcher.save_real_card(img_cv, card_name)
-                    self.log(f"✅ Saved real template for {card_name}")
+                    self.log(f"SUCCESS Saved real template for {card_name}")
                 
-                self.card_validation_status.config(text=f"✅ Learned: {card1}, {card2}", foreground="green")
+                self.card_validation_status.config(text=f"SUCCESS Learned: {card1}, {card2}", foreground="green")
                 messagebox.showinfo("Success", f"Saved real card templates!\n\n{card1}, {card2}\n\nNext time these cards appear, recognition will be more accurate.")
                 dialog.destroy()
                 
             except Exception as e:
-                self.log(f"❌ Error saving cards: {e}", "ERROR")
+                self.log(f"ERROR Error saving cards: {e}", "ERROR")
                 messagebox.showerror("Error", f"Failed to save cards:\n{str(e)}")
         
-        ttk.Button(dialog, text="💾 Save & Learn", command=save_correction).pack(pady=20)
+        ttk.Button(dialog, text="DISK Save & Learn", command=save_correction).pack(pady=20)
         ttk.Button(dialog, text="Cancel", command=dialog.destroy).pack(pady=5)
     
     def validate_ui_with_kiro(self):
@@ -1329,8 +1337,8 @@ ACTION_DELAY = 2.0
                 "5. Then come back here to validate")
             return
         
-        self.log("🤖 Validating UI with Kiro CLI (this may take up to 3 minutes)...")
-        self.kiro_status.config(text="⏳ Validating...", foreground="orange")
+        self.log("ROBOT Validating UI with Kiro CLI (this may take up to 3 minutes)...")
+        self.kiro_status.config(text="WAIT Validating...", foreground="orange")
         self.root.update()
         
         try:
@@ -1340,15 +1348,15 @@ ACTION_DELAY = 2.0
             
             if result['valid']:
                 self.kiro_status.config(text="✓ UI Valid", foreground="green")
-                self.log("✅ Kiro validated UI layout", "SUCCESS")
+                self.log("SUCCESS Kiro validated UI layout", "SUCCESS")
             else:
                 self.kiro_status.config(text="✗ UI Invalid", foreground="red")
-                self.log(f"⚠️ UI concerns: {result['concerns']}", "WARNING")
+                self.log(f"WARNING UI concerns: {result['concerns']}", "WARNING")
             
             messagebox.showinfo("UI Validation", result['response'])
         except Exception as e:
             self.kiro_status.config(text="✗ Error", foreground="red")
-            self.log(f"❌ Validation error: {e}", "ERROR")
+            self.log(f"ERROR Validation error: {e}", "ERROR")
             messagebox.showerror("Error", f"Validation failed:\n{str(e)}\n\nMake sure Kiro CLI is installed and accessible.")
     
     def show_preview(self, img, canvas):

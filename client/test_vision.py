@@ -12,17 +12,17 @@ def test_vision(screenshot_path):
     
     # Check file exists
     if not os.path.exists(screenshot_path):
-        print(f"❌ File not found: {screenshot_path}")
+        print(f"ERROR File not found: {screenshot_path}")
         return
     
     # Check API key
     api_key = os.getenv('OPENAI_API_KEY')
     if not api_key:
-        print("❌ OPENAI_API_KEY not set in environment")
+        print("ERROR OPENAI_API_KEY not set in environment")
         print("   Set it with: export OPENAI_API_KEY='your-key-here'")
         return
     
-    print(f"🔍 Analyzing: {screenshot_path}")
+    print(f"SEARCH Analyzing: {screenshot_path}")
     print(f"🔑 API Key: {api_key[:10]}...")
     print()
     
@@ -30,11 +30,11 @@ def test_vision(screenshot_path):
     detector = VisionDetector(api_key=api_key)
     
     # Analyze
-    print("⏳ Calling GPT-5-mini...")
+    print("WAIT Calling GPT-5-mini...")
     result = detector.detect_poker_elements(screenshot_path)
     
     # Display results
-    print("\n✅ Detection Results:")
+    print("\nSUCCESS Detection Results:")
     print("=" * 60)
     print(f"Hero Cards:       {result.get('hero_cards', '??')}")
     print(f"Community Cards:  {result.get('community_cards', [])}")

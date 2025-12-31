@@ -48,7 +48,7 @@ class HotkeyManager:
             print("DEBUG: F12 registered")
             
             self.registered = True
-            self.parent.log("✅ Hotkeys registered:")
+            self.parent.log("SUCCESS Hotkeys registered:")
             self.parent.log("   F5 = Test OCR (Debug)")
             self.parent.log("   F6 = Toggle Mini Overlay")
             self.parent.log("   F8 = Capture & Detect (Calibration)")
@@ -58,8 +58,8 @@ class HotkeyManager:
             self.parent.log("   F12 = Toggle Main Window")
             
         except Exception as e:
-            self.parent.log(f"⚠️ Could not register hotkeys: {e}", "WARNING")
-            self.parent.log("💡 Try running as administrator for global hotkeys", "INFO")
+            self.parent.log(f"WARNING Could not register hotkeys: {e}", "WARNING")
+            self.parent.log("BULB Try running as administrator for global hotkeys", "INFO")
     
     def unregister_hotkeys(self):
         """Unregister all hotkeys"""
@@ -82,28 +82,28 @@ class HotkeyManager:
     def on_f5_test_ocr(self):
         """F5 - Test OCR (Debug)"""
         try:
-            self.parent.log("🔥 F5 pressed - Testing OCR...")
+            self.parent.log("FIRE F5 pressed - Testing OCR...")
             self.parent.root.after(0, self.parent.capture_debug)
             self.parent.root.after(100, self.parent.root.deiconify)
             self.parent.root.after(100, self.parent.root.lift)
             self.parent.root.after(200, lambda: self.parent.notebook.select(2))
         except Exception as e:
-            self.parent.log(f"❌ F5 error: {e}", "ERROR")
+            self.parent.log(f"ERROR F5 error: {e}", "ERROR")
     
     def on_f6_toggle_overlay(self):
         """F6 - Toggle mini overlay"""
         try:
             if hasattr(self.parent, 'mini_overlay') and self.parent.mini_overlay:
-                self.parent.log("🔥 F6 pressed - Toggling mini overlay...")
+                self.parent.log("FIRE F6 pressed - Toggling mini overlay...")
                 self.parent.root.after(0, self.parent.mini_overlay.toggle_visibility)
         except Exception as e:
-            self.parent.log(f"❌ F6 error: {e}", "ERROR")
+            self.parent.log(f"ERROR F6 error: {e}", "ERROR")
     
     def on_f9_advice(self):
         """F9 - Get advice (one-time analysis)"""
         try:
             print("DEBUG: F9 hotkey method called!")
-            self.parent.log("🔥 F9 pressed - Getting advice...")
+            self.parent.log("FIRE F9 pressed - Getting advice...")
             
             # Capture and analyze with decision
             self.parent.root.after(0, self.parent.get_advice)
@@ -114,19 +114,19 @@ class HotkeyManager:
                 
         except Exception as e:
             print(f"DEBUG: F9 error: {e}")
-            self.parent.log(f"❌ F9 error: {e}", "ERROR")
+            self.parent.log(f"ERROR F9 error: {e}", "ERROR")
     
     def on_f10_toggle_bot(self):
         """F10 - Start/Stop bot (auto mode)"""
         try:
             if self.parent.running:
-                self.parent.log("🔥 F10 pressed - Stopping bot...")
+                self.parent.log("FIRE F10 pressed - Stopping bot...")
                 self.parent.root.after(0, self.parent.stop_bot)
             else:
-                self.parent.log("🔥 F10 pressed - Starting bot...")
+                self.parent.log("FIRE F10 pressed - Starting bot...")
                 self.parent.root.after(0, self.parent.start_bot)
         except Exception as e:
-            self.parent.log(f"❌ F10 error: {e}", "ERROR")
+            self.parent.log(f"ERROR F10 error: {e}", "ERROR")
     
     def on_f11_emergency(self):
         """F11 - Emergency stop"""
@@ -139,27 +139,27 @@ class HotkeyManager:
             self.parent.root.after(100, self.parent.root.lift)
             
         except Exception as e:
-            self.parent.log(f"❌ F11 error: {e}", "ERROR")
+            self.parent.log(f"ERROR F11 error: {e}", "ERROR")
     
     def on_f12_toggle_window(self):
         """F12 - Show/Hide main window"""
         try:
             if self.parent.root.state() == 'withdrawn' or self.parent.root.state() == 'iconic':
-                self.parent.log("🔥 F12 pressed - Showing main window...")
+                self.parent.log("FIRE F12 pressed - Showing main window...")
                 self.parent.root.after(0, self.parent.root.deiconify)
                 self.parent.root.after(0, self.parent.root.lift)
             else:
-                self.parent.log("🔥 F12 pressed - Hiding main window...")
+                self.parent.log("FIRE F12 pressed - Hiding main window...")
                 self.parent.root.after(0, self.parent.root.withdraw)
         except Exception as e:
-            self.parent.log(f"❌ F12 error: {e}", "ERROR")
+            self.parent.log(f"ERROR F12 error: {e}", "ERROR")
     
     def on_f8_calibrate(self):
         """F8 - Capture & detect (calibration)"""
         try:
             print("DEBUG: F8 hotkey method called!")
-            self.parent.log("🔥 F8 pressed - Capturing and detecting...")
+            self.parent.log("FIRE F8 pressed - Capturing and detecting...")
             self.parent.root.after(0, self.parent.auto_detect)
         except Exception as e:
             print(f"DEBUG: F8 error: {e}")
-            self.parent.log(f"❌ F8 error: {e}", "ERROR")
+            self.parent.log(f"ERROR F8 error: {e}", "ERROR")

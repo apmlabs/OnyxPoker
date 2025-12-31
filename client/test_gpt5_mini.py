@@ -12,7 +12,7 @@ def test_gpt5_mini_text():
     
     api_key = os.getenv('OPENAI_API_KEY')
     if not api_key:
-        print("❌ OPENAI_API_KEY not found")
+        print("ERROR OPENAI_API_KEY not found")
         return
     
     print(f"✓ API Key found: {api_key[:10]}...")
@@ -41,7 +41,7 @@ def test_gpt5_mini_text():
         return True
         
     except Exception as e:
-        print(f"❌ Error: {e}")
+        print(f"ERROR Error: {e}")
         return False
 
 def test_gpt5_mini_vision():
@@ -90,11 +90,11 @@ def test_gpt5_mini_vision():
         return True
         
     except Exception as e:
-        print(f"❌ Vision error: {e}")
+        print(f"ERROR Vision error: {e}")
         return False
 
 if __name__ == "__main__":
-    print("🔍 GPT-5-mini Debugging Test")
+    print("SEARCH GPT-5-mini Debugging Test")
     print("=" * 50)
     
     # Test 1: Text only
@@ -103,17 +103,17 @@ if __name__ == "__main__":
     # Test 2: Vision
     vision_ok = test_gpt5_mini_vision()
     
-    print("\n📊 Results:")
-    print(f"  Text API: {'✅ Working' if text_ok else '❌ Failed'}")
-    print(f"  Vision API: {'✅ Working' if vision_ok else '❌ Failed'}")
+    print("\nCHART Results:")
+    print(f"  Text API: {'SUCCESS Working' if text_ok else 'ERROR Failed'}")
+    print(f"  Vision API: {'SUCCESS Working' if vision_ok else 'ERROR Failed'}")
     
     if not text_ok:
-        print("\n💡 Suggestions:")
+        print("\nBULB Suggestions:")
         print("  - Check OPENAI_API_KEY is valid")
         print("  - Check you have access to gpt-5-mini model")
         print("  - Try gpt-4o-mini instead")
     
     if text_ok and not vision_ok:
-        print("\n💡 Vision Issue:")
+        print("\nBULB Vision Issue:")
         print("  - GPT-5-mini might not support vision")
         print("  - Try gpt-4o for vision tasks")
