@@ -76,9 +76,9 @@ class OnyxPokerBot:
     
     def is_hero_turn(self, state: Dict[str, Any]) -> bool:
         """Check if it's hero's turn"""
-        actions = state.get('actions', [])
+        actions = state.get('actions')
         # If we have available actions, it's our turn
-        return len(actions) > 0
+        return actions and len(actions) > 0
     
     def execute_action(self, state: Dict[str, Any]):
         """Execute poker action using GPT-5-mini detected button positions"""
