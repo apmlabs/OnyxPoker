@@ -1010,6 +1010,7 @@ ACTION_DELAY = 2.0
         """F9 - Get one-time advice (threaded to keep GUI responsive)"""
         # Prevent multiple simultaneous calls
         if hasattr(self, '_analyzing') and self._analyzing:
+            self.log("Already analyzing - ignoring duplicate F9 press")
             return
         
         self._analyzing = True
@@ -1059,7 +1060,7 @@ ACTION_DELAY = 2.0
         self.log(f"\n[{model} {elapsed:.1f}s] {cards} | Board: {board} | Pot: ${pot}")
         self.log(f"=> {action.upper()}" + (f" ${amount}" if amount and amount > 0 else ""))
         if reasoning:
-            self.log(f"{reasoning[:150]}")
+            self.log(reasoning)  # Show full reasoning
         
         # Update overlay - must be called from main thread
         decision = {'action': action, 'amount': amount, 'reasoning': reasoning}
