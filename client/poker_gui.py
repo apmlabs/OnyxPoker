@@ -829,7 +829,9 @@ class OnyxPokerGUI:
                 self.log("CALIBRATION COMPLETE!")
                 self.log("Results:")
                 self.log(f"   - Window region: {window_region}")
-                self.log(f"   - Buttons found: {len(result.get('button_positions', {}))}")
+                button_pos = result.get('button_positions', {})
+                if button_pos:
+                    self.log(f"   - Buttons found: {len(button_pos)}")
                 self.log(f"   - Confidence: {conf:.1%}")
                 if result.get('pot'):
                     self.log(f"   - Pot detected: ${result.get('pot')}")
