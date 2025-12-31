@@ -425,14 +425,18 @@ class OnyxPokerGUI:
         cards = ', '.join(state.get('hero_cards', ['??', '??']))
         self.cards_label.config(text=cards)
         
-        board = ', '.join(state.get('community_cards', [])) or "None"
+        board_cards = state.get('community_cards', [])
+        if board_cards and isinstance(board_cards, list):
+            board = ', '.join(board_cards)
+        else:
+            board = "None"
         self.board_label.config(text=board)
         
         pot = state.get('pot', 0)
         self.pot_label.config(text=f"${pot}")
         
         stacks = state.get('stacks', [])
-        stack = stacks[2] if len(stacks) > 2 else 0
+        stack = stacks[2] if stacks and len(stacks) > 2 else 0
         self.stack_label.config(text=f"${stack}")
         
         if decision:
