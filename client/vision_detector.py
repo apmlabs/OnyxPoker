@@ -1,6 +1,6 @@
 """
-GPT-5-mini Vision-Based Poker Table Detection
-Uses GPT-5-mini multimodal model for poker table analysis
+Vision-Based Poker Table Detection
+Configurable AI model for poker table analysis
 """
 
 import os
@@ -9,40 +9,34 @@ import json
 from typing import Dict, Any, Optional
 from openai import OpenAI
 
+# Model configuration - change here to switch models
+MODEL = "gpt-5-mini"  # Options: gpt-5-mini, gpt-5.2, gpt-4o
+
 class VisionDetector:
     def __init__(self, api_key: Optional[str] = None, logger=None):
-        """Initialize GPT-5-mini vision detector"""
+        """Initialize vision detector"""
         self.api_key = api_key or os.getenv('OPENAI_API_KEY')
         if not self.api_key:
             raise ValueError("OPENAI_API_KEY not found in environment")
         
         self.client = OpenAI(api_key=self.api_key)
-        self.logger = logger  # GUI logger function
+        self.logger = logger
+        self.model = MODEL
     
     def log(self, message: str, level: str = "INFO"):
-        """Log to GUI if logger provided, otherwise print"""
+        """Log to GUI only"""
         if self.logger:
             self.logger(message, level)
-        else:
-            print(f"[{level}] {message}")
     
     def detect_poker_elements(self, screenshot_path: str, include_decision: bool = False) -> Dict[str, Any]:
-        """
-        Analyze poker table screenshot with GPT-5-mini
-        """
+        """Analyze poker table screenshot with AI vision"""
         import time
-        start_time = time.time()
         
         # Encode image
-        encode_start = time.time()
         with open(screenshot_path, 'rb') as f:
             image_data = base64.b64encode(f.read()).decode('utf-8')
-        encode_time = time.time() - encode_start
         
-        # Short console log for HTTP requests only
-        print(f"[API] GPT-5-mini request: {len(image_data)} bytes")
-        
-        # Build prompt (shorter for token efficiency)
+        # Build prompt
         if include_decision:
             prompt = """Analyze this poker screenshot. Return JSON only:
 
@@ -77,9 +71,9 @@ Use null if you can't see something. Cards format: As=Ace spades, Kh=King hearts
 
         api_start = time.time()
         
-        # Call GPT-5-mini
+        # Call AI model
         response = self.client.chat.completions.create(
-            model="gpt-5-mini",
+            model=self.model,
             messages=[{
                 "role": "user",
                 "content": [
@@ -91,7 +85,6 @@ Use null if you can't see something. Cards format: As=Ace spades, Kh=King hearts
         )
         
         api_elapsed = time.time() - api_start
-        print(f"[API] {api_elapsed:.1f}s, {response.usage.total_tokens} tokens")
         
         if not response.choices:
             raise ValueError("No response from API")
@@ -100,22 +93,13 @@ Use null if you can't see something. Cards format: As=Ace spades, Kh=King hearts
         result_text = choice.message.content
         
         if choice.finish_reason == 'length':
-            raise ValueError("Response truncated - increase max_completion_tokens")
+            raise ValueError("Response truncated")
         
         if not result_text:
-            self.log(f"Empty response content", "ERROR")
-            self.log(f"   Finish reason: {choice.finish_reason}", "ERROR")
-            raise ValueError(f"Empty response. Finish reason: {choice.finish_reason}")
+            raise ValueError("Empty response")
         
+        # Remove markdown if present
         result_text = result_text.strip()
-        self.log(f"   Response length: {len(result_text)} chars")
-        
-        # Check for refusal
-        if any(phrase in result_text.lower() for phrase in ["i cannot", "i'm unable", "i can't", "sorry"]):
-            self.log(f"GPT-5-mini appears to be refusing the request", "WARNING")
-            self.log(f"   Response: {result_text[:200]}...", "WARNING")
-        
-        # Remove markdown code blocks if present
         if result_text.startswith('```'):
             result_text = result_text.split('```')[1]
             if result_text.startswith('json'):
@@ -124,19 +108,12 @@ Use null if you can't see something. Cards format: As=Ace spades, Kh=King hearts
         
         try:
             result = json.loads(result_text)
-            self.log(f"JSON parsed successfully")
         except json.JSONDecodeError as e:
-            self.log(f"Invalid JSON response", "ERROR")
-            self.log(f"   JSON error: {e}", "ERROR")
-            self.log(f"   Response preview: {result_text[:200]}...", "ERROR")
-            raise ValueError(f"Invalid JSON response: {e}. Response: {result_text[:200]}")
+            raise ValueError(f"Invalid JSON: {e}")
         
-        parse_time = time.time() - parse_start
-        
-        # Add confidence (GPT-5-mini doesn't provide this, so we estimate)
         result['confidence'] = 0.95
-        
-        total_elapsed = time.time() - start_time
+        result['api_time'] = api_elapsed
+        result['model'] = self.model
         
         return result
     

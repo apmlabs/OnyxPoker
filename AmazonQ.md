@@ -1,62 +1,78 @@
 # OnyxPoker - Current Status & Development Progress
 
-## Current Development Status: COMPREHENSIVE FIXES APPLIED ✅
+## Current Development Status: SYSTEMATIC FIXES APPLIED
 
-**Last Updated**: December 31, 2025 00:03 UTC
+**Last Updated**: December 31, 2025 00:25 UTC
 
-**🚀 PROJECT STATUS**: All major issues fixed - token limits, Windows encoding, overlay responsiveness
-**📊 ARCHITECTURE STATUS**: Phase 1 (Vision LLM) - Client-only with GPT-5-mini
-**🌐 SERVER STATUS**: Running as systemd service (optional for Phase 1, required for Phase 2)
-**🎮 CLIENT STATUS**: GPT-5-mini vision + decision making + ALL ISSUES FIXED
-**🎴 VISION**: GPT-5-mini Vision API (95-99% accuracy) - Token limit fixed (50,000 tokens)
-**🧠 DECISIONS**: GPT-5-mini (good poker reasoning, faster) - Ready for testing
-**⌨️ HOTKEYS**: F5-F12 (F8=Calibrate, F9=Analyze) - WORKING
-**📱 MINI OVERLAY**: Enhanced 400x380 with IMMEDIATE feedback - WORKING
-**🐛 DEBUG LOGGING**: ALL emojis removed, all logs to GUI - WORKING
-**⚡ PERFORMANCE**: Expected 5-8s per analysis (faster than gpt-5.2)
-**💰 COST**: $0.25 per 1M input tokens (80% cheaper than gpt-5.2, 90% cheaper than gpt-4o)
-**🔧 WINDOWS FIX**: ALL emojis removed from ALL files (cp1252 encoding compatibility)
+**🚀 PROJECT STATUS**: Systematic fixes applied - model configuration, clean logs, responsive GUI
+**📊 CURRENT MODEL**: gpt-5-mini (configurable via MODEL constant in vision_detector.py)
+**🎮 CLIENT STATUS**: Threaded analysis, clean logs, responsive overlay
+**⌨️ HOTKEYS**: F5-F12 working, F9 runs in background thread
+**📱 OVERLAY**: Updates via root.after() for thread safety
+**🐛 LOGGING**: Clean, model name shown, no console spam
+**⚡ PERFORMANCE**: 20-30s per analysis (API dependent)
 
-## CRITICAL RESEARCH FINDINGS ✅
+## WHAT ACTUALLY WORKS NOW
 
-**GPT-5-mini Token Limits** (Official Documentation):
-- **Context Window**: 400,000 tokens
-- **Max Output Tokens**: 128,000 tokens  
-- **Source**: scriptbyai.com/token-limit-openai-chatgpt/
-- **Previous Error**: Using 500/1000/2000 tokens (25x too low!)
-- **Current Setting**: 50,000 tokens (well within limits)
+### Model Configuration ✅
+- MODEL constant in vision_detector.py
+- Easy to switch: gpt-5-mini, gpt-5.2, gpt-4o
+- Model name shown in logs: `[gpt-5-mini 21.5s]`
 
-## COMPREHENSIVE FIXES APPLIED ✅
+### Threading ✅
+- F9 runs in background thread
+- GUI stays responsive during 20-30s API calls
+- Overlay updates via root.after() (thread-safe)
+- Duplicate call prevention with _analyzing flag
 
-### 1. Token Limit Issues FIXED
-- **Problem**: finish_reason='length' causing empty responses
-- **Root Cause**: max_completion_tokens was 500/1000/2000 (way too low)
-- **Solution**: Increased to 50,000 (within 128,000 max limit)
-- **Result**: No more truncated responses
+### Clean Logging ✅
+- No console spam (removed all print statements)
+- Compact format: `[gpt-5-mini 21.5s] Cards | Board | Pot`
+- Model name and timing in every log
+- Reasoning limited to 150 chars
 
-### 2. Windows Encoding Issues FIXED  
-- **Problem**: UnicodeEncodeError with emojis on Windows cp1252
-- **Root Cause**: Console can't display Unicode emojis (🧠, ✅, ❌, etc.)
-- **Solution**: Removed ALL emojis from ALL Python files
-- **Result**: Full Windows compatibility
+### What's Still Broken ❌
+- Overlay may not update correctly (needs testing)
+- Performance is slow (20-30s per call)
+- No turn detection
+- No action execution
+- No bot loop
 
-### 3. Overlay Responsiveness FIXED
-- **Problem**: F9 showed no feedback for 5-10 seconds
-- **Root Cause**: No immediate status updates during API calls
-- **Solution**: Immediate "Analyzing..." + progress updates + root.update()
-- **Result**: Instant feedback, user knows it's working
+## NEXT STEPS
 
-### 4. Null Handling FIXED
-- **Problem**: 'amount > 0' crashes when amount is None
-- **Root Cause**: GPT-5-mini can return null values
-- **Solution**: Added null safety to all numeric fields
-- **Result**: No more NoneType crashes
+1. **Test overlay updates** - Verify root.after() works
+2. **Optimize performance** - Consider caching, faster models
+3. **Implement turn detection** - Know when to act
+4. **Implement action execution** - Click buttons
+5. **Build bot loop** - Continuous play
 
-### 5. Logging System FIXED
-- **Problem**: Console logging with emojis, mixed logging locations
-- **Root Cause**: Logs scattered between console and GUI
-- **Solution**: ALL logs to GUI, ASCII only, logger parameter passed
-- **Result**: Clean, Windows-compatible logging
+## TECHNICAL DETAILS
+
+### Model Switching
+```python
+# In vision_detector.py
+MODEL = "gpt-5-mini"  # Change here to switch models
+```
+
+### Log Format
+```
+[gpt-5-mini 21.5s] ['4s', '4c'] | Board: ['8c', 'Ts', '8h'] | Pot: $0.45
+=> RAISE $0.45
+You have two pair (eights and fours)...
+```
+
+### Threading Pattern
+```python
+def get_advice(self):
+    if self._analyzing: return
+    self._analyzing = True
+    threading.Thread(target=self._get_advice_thread, daemon=True).start()
+
+def _get_advice_thread(self):
+    result = analyze()  # Long operation
+    self.root.after(0, lambda: self._display_advice(result))  # Update GUI
+    self._analyzing = False
+```
 
 ## Project Overview
 **OnyxPoker** - AI-Powered Poker Bot with Computer Vision

@@ -1049,14 +1049,15 @@ ACTION_DELAY = 2.0
         action = state.get('recommended_action', 'fold')
         amount = state.get('recommended_amount', 0)
         reasoning = state.get('reasoning', '')
+        model = state.get('model', 'AI')
         
         # Clean log
-        self.log(f"\n[{elapsed:.1f}s] {cards} | Board: {board} | Pot: ${pot}")
+        self.log(f"\n[{model} {elapsed:.1f}s] {cards} | Board: {board} | Pot: ${pot}")
         self.log(f"=> {action.upper()}" + (f" ${amount}" if amount and amount > 0 else ""))
         if reasoning:
-            self.log(f"{reasoning[:200]}")  # Limit reasoning length
+            self.log(f"{reasoning[:150]}")
         
-        # Update overlay
+        # Update overlay - must be called from main thread
         decision = {'action': action, 'amount': amount, 'reasoning': reasoning}
         self.update_game_state(state, decision)
         
