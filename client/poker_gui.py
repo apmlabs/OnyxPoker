@@ -888,10 +888,12 @@ TABLE_REGION = ({x}, {y}, {w}, {h})
 BUTTON_REGIONS = {{'''
             
             # Add detected button positions
-            for name, pos in self.detected_elements.get('button_regions', {}).items():
-                if isinstance(pos, list) and len(pos) >= 2:
-                    bx, by = pos[0], pos[1]
-                    content += f'\n    "{name}": ({bx}, {by}, 100, 40),  # GPT-5-mini detected'
+            button_regions = self.detected_elements.get('button_regions', {})
+            if button_regions and isinstance(button_regions, dict):
+                for name, pos in button_regions.items():
+                    if isinstance(pos, list) and len(pos) >= 2:
+                        bx, by = pos[0], pos[1]
+                        content += f'\n    "{name}": ({bx}, {by}, 100, 40),  # AI detected'
             
             content += '''
 }
@@ -1026,7 +1028,7 @@ ACTION_DELAY = 2.0
         start = time.time()
         
         try:
-            reader = PokerScreenReader(logger=None)
+            reader = PokerScreenReader(logger=self.log)  # Pass logger for timing info
             state = reader.parse_game_state(include_decision=True)
             
             if not state:
