@@ -208,29 +208,46 @@ class HelperBar:
         thread = threading.Thread(target=self._analyze_thread, daemon=True)
         thread.start()
 
-    def _analyze_thread(self):
-        """Background analysis"""
+    def _analyze_thread(self, test_image_path=None):
+        """Background analysis. If test_image_path provided, use that instead of screenshot."""
         import time
+        from datetime import datetime
         start = time.time()
 
         try:
-            # Get active window (no calibration needed!)
-            active = gw.getActiveWindow()
-            if not active:
-                self.root.after(0, lambda: self.log("No active window", "ERROR"))
-                return
+            if test_image_path:
+                # Test mode - use existing image
+                from PIL import Image
+                img = Image.open(test_image_path)
+                temp_path = test_image_path
+                self.root.after(0, lambda: self.log(f"Test: {os.path.basename(test_image_path)}", "DEBUG"))
+                delete_temp = False
+            else:
+                # Live mode - screenshot active window
+                active = gw.getActiveWindow()
+                if not active:
+                    self.root.after(0, lambda: self.log("No active window", "ERROR"))
+                    return
 
-            # Screenshot active window directly
-            region = (active.left, active.top, active.width, active.height)
-            self.root.after(0, lambda: self.log(f"Window: {active.title[:40]}...", "DEBUG"))
+                region = (active.left, active.top, active.width, active.height)
+                self.root.after(0, lambda: self.log(f"Window: {active.title[:40]}...", "DEBUG"))
 
-            img = pyautogui.screenshot(region=region)
-            self.last_screenshot = img
+                img = pyautogui.screenshot(region=region)
+                self.last_screenshot = img
 
-            # Save temp file for API
-            with tempfile.NamedTemporaryFile(suffix='.png', delete=False) as f:
-                img.save(f.name)
-                temp_path = f.name
+                # Save to screenshots folder for future testing
+                screenshots_dir = os.path.join(os.path.dirname(__file__), 'screenshots')
+                os.makedirs(screenshots_dir, exist_ok=True)
+                timestamp = datetime.now().strftime('%Y%m%d_%H%M%S')
+                saved_path = os.path.join(screenshots_dir, f'{timestamp}.png')
+                img.save(saved_path)
+                self.root.after(0, lambda p=saved_path: self.log(f"Saved: {os.path.basename(p)}", "DEBUG"))
+
+                # Also save temp for API
+                with tempfile.NamedTemporaryFile(suffix='.png', delete=False) as f:
+                    img.save(f.name)
+                    temp_path = f.name
+                delete_temp = True
 
             try:
                 # AI analysis
@@ -245,7 +262,10 @@ class HelperBar:
                 self.root.after(0, lambda: self._display_result(result, elapsed, img))
 
             finally:
-                os.unlink(temp_path)
+                if delete_temp:
+                    os.unlink(temp_path)
+
+        except Exception as e:
 
         except Exception as e:
             import traceback
