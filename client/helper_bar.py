@@ -19,6 +19,7 @@ import sys
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 
 from vision_detector import VisionDetector, MODEL
+from poker_reader import PokerScreenReader
 
 
 class HelperBar:
