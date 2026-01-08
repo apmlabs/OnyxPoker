@@ -15,9 +15,15 @@ import keyboard
 import os
 import sys
 import tempfile
+import json
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 from vision_detector import VisionDetector, MODEL
+
+# Session log file
+LOG_DIR = os.path.join(os.path.dirname(__file__), 'logs')
+os.makedirs(LOG_DIR, exist_ok=True)
+SESSION_LOG = os.path.join(LOG_DIR, f"session_{datetime.now().strftime('%Y%m%d_%H%M%S')}.jsonl")
 
 
 class HelperBar:
@@ -290,6 +296,22 @@ class HelperBar:
         reasoning = result.get('reasoning') or ''
         position = result.get('hero_position') or '?'
         confidence = result.get('confidence', 0.95) or 0.95
+
+        # Save to session log (JSONL format)
+        log_entry = {
+            'timestamp': datetime.now().isoformat(),
+            'hero_cards': cards,
+            'board': board,
+            'pot': pot,
+            'position': position,
+            'action': action,
+            'amount': amount,
+            'reasoning': reasoning,
+            'confidence': confidence,
+            'elapsed': elapsed
+        }
+        with open(SESSION_LOG, 'a') as f:
+            f.write(json.dumps(log_entry) + '\n')
 
         # Log result
         cards_str = ' '.join(cards) if cards else '--'
