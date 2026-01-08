@@ -63,6 +63,7 @@ Rules:
 - confidence: 0.0-1.0 how confident you are in the recommendation
 
 Strategy rules:
+- CRITICAL: Hero's hand = ONLY the two cards at bottom. Board cards are shared. Hero needs a card matching the board to have a pair/trips
 - With sets or better, BET/RAISE for value - do not check strong hands
 - Raise strong suited broadways (KQs, QJs, AJs) vs limpers when in position
 - CRITICAL: Check suit matches! Hero spades + board hearts = NO flush draw. Only count flush draw if hero's suit appears on board
