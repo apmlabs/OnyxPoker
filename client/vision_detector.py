@@ -49,11 +49,11 @@ Return ONLY valid JSON:
   "pot": 0.15,
   "hero_stack": 5.00,
   "to_call": 0.02,
-  "hero_position": "UTG",
+  "position": "UTG",
   "num_players": 6,
   "players_in_hand": 3,
   "is_hero_turn": true,
-  "recommended_action": "fold",
+  "action": "fold",
   "amount": 0,
   "max_call": null,
   "reasoning": "Detailed explanation here",
@@ -65,9 +65,9 @@ Rules:
 - community_cards: Cards in CENTER of table. Empty [] if preflop
 - pot/hero_stack/to_call: Read EXACT amounts including decimals (e.g. 0.05 not 5). Look at currency symbol and decimal point carefully
 - to_call: Amount on CALL button, 0 if CHECK available, null if no action buttons
-- hero_position: CRITICAL - Find the dealer button (D chip) first. Count seats clockwise: BTN=dealer button on hero, SB=1 seat clockwise, BB=2 seats clockwise, UTG=3 seats clockwise, MP=4 seats clockwise, CO=5 seats clockwise. In 6-max, there are exactly 6 positions. NEVER guess - count the exact seats from the dealer button.
+- position: MUST be UTG, MP, CO, BTN, SB, or BB. Find dealer button (D chip), count clockwise seats.
 - is_hero_turn: Look at BOTTOM RIGHT corner. TRUE only if you see LARGE RED rectangular buttons with white text like "Fold" "Call €X" "Raise To €X" or "Check" "Bet €X". These buttons are ~150px wide and bright red. FALSE if you only see small gray/white checkboxes with text like "Check", "Check/Fold", "Call Any", "Fold" - those are pre-select options, NOT action buttons.
-- recommended_action: What hero SHOULD do. When is_hero_turn=FALSE, recommend what to do IF action gets to hero (e.g. "raise" on BTN with K9o preflop means open-raise if folded to). NEVER recommend fold when checking is free!
+- action: What hero SHOULD do. When is_hero_turn=FALSE, recommend what to do IF action gets to hero (e.g. "raise" on BTN with K9o preflop means open-raise if folded to). NEVER recommend fold when checking is free!
 - max_call: When is_hero_turn=FALSE, set max amount to call if someone raises ahead. Example: K9o on BTN preflop → action="raise", max_call=0.06 (call up to 3bb if someone opens). Use 0.0 only for trash hands that should fold to any raise.
 - reasoning: 2-3 sentences explaining the decision
 - confidence: 0.0-1.0 how confident you are in the recommendation
