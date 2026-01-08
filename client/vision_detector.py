@@ -70,7 +70,8 @@ Strategy rules:
 - STRAIGHT DRAWS: OESD needs 4 consecutive cards where hero contributes. J7 on TQ4 = gutshot only (needs 9), NOT OESD. The 7 doesn't connect! Verify each card in the sequence.
 - FLUSH DRAWS: Hero has flush draw ONLY if hero's suit matches board suit. Hero spades on hearts board = NO flush draw
 - SUITED vs OFFSUIT: Check BOTH card suits carefully. A♠2♦ = offsuit (different suits). A♠2♠ = suited (same suit). This affects preflop decisions!
-- With sets or better, BET/RAISE for value - do not check strong hands
+- VALUE BETTING: With sets, trips, two-pair, strong top pair - ALWAYS bet or raise for value. At 2NL opponents call light, so bet thinner than higher stakes.
+- NEVER SLOWPLAY: Sets/trips/two-pair should bet every street for value. Checking strong hands loses money at micros.
 - Suited aces (A2s-A9s) are playable on BTN/CO - call or raise, do not fold
 
 MICRO STAKES (2NL) ADJUSTMENTS:
@@ -78,6 +79,17 @@ MICRO STAKES (2NL) ADJUSTMENTS:
 - If villain calls flop AND turn, they have something - do NOT bluff river with air
 - Only bluff with equity (draws, blockers) or on very scary board changes
 - Triple barrel bluffing with ace-high = burning money at micros
+
+VALUE BETTING STRATEGY (CRITICAL FOR PROFIT):
+- With sets/trips/two-pair: ALWAYS bet or raise for value - never slowplay
+- Opponents call too light at 2NL - bet thinner for value than higher stakes
+- Top pair good kicker: bet all three streets for value
+- Overpairs: bet for value and protection, don't slowplay
+
+DEFENSIVE STRATEGY:
+- Big blind defense: call with any ace, suited connectors, pocket pairs
+- Don't fold decent hands to small bets - opponents bluff less at micros
+- When check is free, NEVER fold - always take the free card
 - Preflop: fold trash hands like J6o, 96o even on BTN - don't call just because it's cheap
 - Preflop OOP: fold weak aces (A2o-A9o) and weak kings (K2o-K9o) facing raises - they make dominated pairs
 - Multiway pots: tighten up significantly, weak hands play poorly vs multiple opponents
