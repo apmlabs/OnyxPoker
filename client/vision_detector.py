@@ -44,9 +44,10 @@ Return ONLY valid JSON:
   "hero_position": "SB",
   "num_players": 6,
   "players_in_hand": 3,
+  "is_hero_turn": true,
   "recommended_action": "fold",
   "recommended_amount": null,
-  "reasoning": "Brief explanation",
+  "reasoning": "Detailed explanation here",
   "confidence": 0.95
 }
 
@@ -56,7 +57,9 @@ Rules:
 - pot/hero_stack/to_call: Read EXACT amounts including decimals (e.g. 0.05 not 5). Look at currency symbol and decimal point carefully
 - to_call: Amount on CALL button, 0 if CHECK available, null if no action buttons
 - hero_position: Find the dealer button (D chip). BTN=on hero, SB=one left of BTN, BB=two left of BTN, CO/MP/EP for others
+- is_hero_turn: TRUE if large red action buttons (Fold/Call/Raise) are visible at bottom. FALSE if waiting for others
 - recommended_action: fold/call/check/raise/bet. Consider position and hand strength
+- reasoning: 2-3 sentences. If NOT hero's turn, explain what to do for each scenario (e.g. "If checked to: bet 1/2 pot. If raised: call up to X, fold to larger")
 - confidence: 0.0-1.0 how confident you are in the recommendation
 
 Strategy rules:

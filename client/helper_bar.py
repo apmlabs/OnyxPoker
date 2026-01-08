@@ -115,8 +115,8 @@ class HelperBar:
         self.log_text.tag_configure('ERROR', foreground='#ff4444')
         self.log_text.tag_configure('DECISION', foreground='#00ffff', font=('Courier', 10, 'bold'))
 
-        # === RIGHT: Last Result (300px) ===
-        right = tk.Frame(main, bg='#2d2d2d', width=300)
+        # === RIGHT: Last Result (400px) ===
+        right = tk.Frame(main, bg='#2d2d2d', width=400)
         right.pack(side='right', fill='y', padx=2, pady=2)
         right.pack_propagate(False)
 
@@ -124,7 +124,7 @@ class HelperBar:
                 bg='#2d2d2d', fg='#888').pack(pady=3)
 
         # Screenshot thumbnail
-        self.thumb_canvas = tk.Canvas(right, width=280, height=80, bg='#111', highlightthickness=0)
+        self.thumb_canvas = tk.Canvas(right, width=380, height=70, bg='#111', highlightthickness=0)
         self.thumb_canvas.pack(pady=2)
 
         # Game state
@@ -150,9 +150,10 @@ class HelperBar:
                                       bg='#2d2d2d', fg='#00ffff')
         self.decision_label.pack(pady=2)
 
-        self.reasoning_label = tk.Label(right, text="Press F9 for advice", font=('Arial', 8),
-                                       bg='#2d2d2d', fg='#aaa', wraplength=280, justify='left')
-        self.reasoning_label.pack(pady=2)
+        # Reasoning - larger font, bright color, full text
+        self.reasoning_label = tk.Label(right, text="Press F9 for advice", font=('Arial', 11),
+                                       bg='#2d2d2d', fg='#00ff00', wraplength=380, justify='left')
+        self.reasoning_label.pack(pady=2, fill='x', padx=5)
 
         # Confidence & time
         meta_frame = tk.Frame(right, bg='#2d2d2d')
@@ -308,6 +309,7 @@ class HelperBar:
             'board': board,
             'pot': pot,
             'position': position,
+            'is_hero_turn': result.get('is_hero_turn', True),
             'action': action,
             'amount': amount,
             'reasoning': reasoning,
@@ -338,8 +340,13 @@ class HelperBar:
         self.board_label.config(text=f"Board: {board_str}")
         self.pot_label.config(text=f"Pot: ${pot}")
 
-        self.decision_label.config(text=decision_str.replace("=> ", ""))
-        self.reasoning_label.config(text=reasoning[:100] + "..." if len(reasoning) > 100 else reasoning)
+        # Check if hero's turn
+        is_hero_turn = result.get('is_hero_turn', True)
+        turn_indicator = "" if is_hero_turn else "[WAITING] "
+        
+        self.decision_label.config(text=turn_indicator + decision_str.replace("=> ", ""))
+        # Show full reasoning, no truncation
+        self.reasoning_label.config(text=reasoning)
 
         conf_color = '#00ff00' if confidence > 0.9 else '#ffff00' if confidence > 0.7 else '#ff8800'
         self.conf_label.config(text=f"Conf: {confidence:.0%}", fg=conf_color)
@@ -353,10 +360,10 @@ class HelperBar:
         try:
             # Resize to fit canvas
             thumb = img.copy()
-            thumb.thumbnail((280, 80), Image.Resampling.LANCZOS)
+            thumb.thumbnail((380, 70), Image.Resampling.LANCZOS)
             self._thumb_photo = ImageTk.PhotoImage(thumb)
             self.thumb_canvas.delete("all")
-            self.thumb_canvas.create_image(140, 40, image=self._thumb_photo)
+            self.thumb_canvas.create_image(190, 35, image=self._thumb_photo)
         except Exception as e:
             self.log(f"Thumbnail error: {e}", "DEBUG")
 
