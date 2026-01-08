@@ -8,12 +8,13 @@ import sys
 import json
 from vision_detector import VisionDetector
 
-def test_screenshot(path):
-    print(f"\n{'='*60}")
-    print(f"Testing: {os.path.basename(path)}")
-    print('='*60)
+def test_screenshot(path, index=None, total=None):
+    prefix = f"[{index}/{total}] " if index else ""
+    print(f"\n{prefix}Testing: {os.path.basename(path)}")
+    print("-" * 50)
     
     detector = VisionDetector()
+    print("  Calling GPT-5.2 API...")
     try:
         result = detector.detect_poker_elements(path, include_decision=True)
         
@@ -53,9 +54,9 @@ def main():
             print(f"No screenshots found in {screenshots_dir}")
             return
         
-        print(f"Found {len(files)} screenshots")
-        for f in files:
-            test_screenshot(os.path.join(screenshots_dir, f))
+        print(f"Found {len(files)} screenshots\n")
+        for i, f in enumerate(files, 1):
+            test_screenshot(os.path.join(screenshots_dir, f), i, len(files))
 
 if __name__ == '__main__':
     main()
