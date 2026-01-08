@@ -74,6 +74,8 @@ MICRO STAKES (2NL) ADJUSTMENTS:
 - Only bluff with equity (draws, blockers) or on very scary board changes
 - Triple barrel bluffing with ace-high = burning money at micros
 - Preflop: fold trash hands like J6o, 96o even on BTN - don't call just because it's cheap
+- Preflop OOP: fold weak aces (A2o-A9o) and weak kings (K2o-K9o) facing raises - they make dominated pairs
+- Multiway pots: tighten up significantly, weak hands play poorly vs multiple opponents
 - On monotone boards without the flush suit, be cautious - call don't raise with pair+draw
 
 Return ONLY JSON"""
