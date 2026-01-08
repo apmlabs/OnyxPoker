@@ -1,10 +1,10 @@
 # OnyxPoker - Status Tracking
 
-**Last Updated**: January 8, 2026 01:35 UTC
+**Last Updated**: January 8, 2026 12:05 UTC
 
-## Current Status: READY FOR TESTING
+## Current Status: KIRO SERVER INTEGRATION COMPLETE
 
-The advice system is implemented. Next step is testing on real poker tables.
+Added Kiro analysis server for remote screenshot analysis. User can now send screenshots from Windows to Linux server for AI analysis.
 
 ## What Works
 
@@ -34,6 +34,13 @@ Then: Focus poker window → Press F9 → See advice in helper bar
 4. **Measure speed** - Target <10s per analysis
 
 ## Session Log
+
+### Session 13 (January 8, 2026)
+- Added screenshot saving to helper_bar.py (auto-saves to client/screenshots/)
+- Created test_screenshots.py for offline testing
+- Built Kiro analysis server (Flask app on port 5001)
+- Added send_to_kiro.py client script
+- User can now send screenshots from Windows to Linux server for analysis
 
 ### Session 12 (January 8, 2026)
 - Restored agent files deleted in previous session
@@ -65,7 +72,10 @@ Then: Focus poker window → Press F9 → See advice in helper bar
 client/
   helper_bar.py      # Main UI
   vision_detector.py # GPT-5.2 API
+  test_screenshots.py # Offline testing
+  send_to_kiro.py    # Send to server
   requirements.txt
-server/              # Placeholder for future
+server/              # Kiro analysis server
+  kiro_analyze.py    # Flask endpoint
 docs/                # API.md, DEPLOYMENT.md
 ```

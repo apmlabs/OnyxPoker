@@ -61,6 +61,10 @@ onyxpoker/
 ### What Works
 - `helper_bar.py` - Wide bar UI docked to bottom, screenshots active window on F9
 - `vision_detector.py` - GPT-5.2 API for card/board/pot detection + decisions
+- Screenshot saving - Auto-saves to client/screenshots/ folder
+- Test mode - test_screenshots.py for offline testing
+- Kiro server - Flask app on port 5001 for remote analysis
+- send_to_kiro.py - Client script to send screenshots to server
 - Hotkeys: F9=Advice, F10=Bot loop, F11=Stop, F12=Hide
 - No calibration needed - F9 screenshots whatever window is active
 
