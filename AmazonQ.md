@@ -1,10 +1,10 @@
 # OnyxPoker - Status Tracking
 
-**Last Updated**: January 8, 2026 12:05 UTC
+**Last Updated**: January 8, 2026 13:02 UTC
 
-## Current Status: KIRO SERVER INTEGRATION COMPLETE
+## Current Status: LIVE TESTING COMPLETE
 
-Added Kiro analysis server for remote screenshot analysis. User can now send screenshots from Windows to Linux server for AI analysis.
+Successfully tested on PokerStars play money tables. Detection working at 100% accuracy. Added session logging for analysis.
 
 ## What Works
 
@@ -40,6 +40,11 @@ Then: Focus poker window → Press F9 → See advice in helper bar
 - Created test_screenshots.py for offline testing
 - Built Kiro analysis server (Flask app on port 5001)
 - Added send_to_kiro.py client script
+- Fixed AWS security group (opened port 5001)
+- Fixed confidence NameError bug in helper_bar.py
+- Added session logging (JSONL format) to client/logs/
+- Added send_logs.py to upload logs for analysis
+- Analyzed 33 live screenshots - 100% detection accuracy
 - User can now send screenshots from Windows to Linux server for analysis
 
 ### Session 12 (January 8, 2026)
@@ -73,8 +78,11 @@ client/
   helper_bar.py      # Main UI
   vision_detector.py # GPT-5.2 API
   test_screenshots.py # Offline testing
-  send_to_kiro.py    # Send to server
+  send_to_kiro.py    # Send screenshots to server
+  send_logs.py       # Send session logs to server
   requirements.txt
+  screenshots/       # Auto-saved screenshots
+  logs/              # Session logs (JSONL)
 server/              # Kiro analysis server
   kiro_analyze.py    # Flask endpoint
 docs/                # API.md, DEPLOYMENT.md
