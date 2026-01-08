@@ -1,1262 +1,288 @@
-# OnyxPoker - AI-Powered GUI Automation Agent Context
+# OnyxPoker - Agent Context
+
+## 🎯 PROJECT GOAL
+
+**AI-powered poker analysis tool for research purposes** - NOT for automated botting.
+
+The system analyzes poker tables using GPT vision API and provides strategic advice. The human makes all decisions and clicks. This is a research tool for studying AI decision-making in poker.
 
 ## 📚 DOCUMENTATION STRUCTURE
 
-This project uses **9 essential markdown files**. **As an agent, I must understand and reference this structure:**
-
-### Core Agent Files (My Memory)
-- **AGENTS.md** (this file) - Agent context, learnings, architecture decisions, mandatory workflow
-- **AmazonQ.md** - Current status, progress tracking (local file, gitignored)
-
-### User Documentation
-- **README.md** - Project overview, quick start, current status
-- **USER_GUIDE.md** - Complete user guide (setup, hotkeys, workflow, troubleshooting)
-- **GPT4O_SETUP.md** - GPT-4o Vision API setup guide
-
-### Development Documentation
-- **PROJECT_STRUCTURE.md** - Complete project structure and file organization
-- **PROJECT_REVIEW.md** - Comprehensive project analysis and status
-- **VISION_AI_OPTIONS.md** - Vision AI research and comparison
-- **ARCHITECTURE_PLAN.md** - Two-phase architecture (Vision LLM + Deep CFR)
+### Core Files (NEVER DELETE)
+- **AGENTS.md** (this file) - Agent memory, learnings, architecture decisions
+- **AmazonQ.md** - Current status, progress tracking
+- **README.md** - User-facing quick start guide
 
 ### Technical Documentation (in docs/)
-- **docs/API.md** - API endpoints, request/response formats
-- **docs/DEPLOYMENT.md** - Deployment procedures for server and client
+- **docs/API.md** - Server API reference (for future use)
+- **docs/DEPLOYMENT.md** - Setup and deployment guide
 
-### Archived Documentation (in archive/)
-- 8 outdated files from pre-GPT-4o era (OpenCV/Tesseract)
-- Kept for historical reference only
+## 🏗️ ARCHITECTURE
 
-## 🧠 AGENT WORKFLOW (from AGENT_PROTOCOL.md)
+```
+PokerStars/Simulator Window
+         ↓ F9 (screenshot active window)
+    GPT-5.2 Vision API
+         ↓
+   Decision + Reasoning
+         ↓
+    Helper Bar UI (advice display)
+```
+
+**Client-only approach** - All processing via OpenAI API directly. Server exists as placeholder for potential future work (Deep CFR, etc.) but is not currently used.
+
+## 📁 CURRENT FILE STRUCTURE
+
+```
+onyxpoker/
+├── AGENTS.md              # Agent memory (NEVER DELETE)
+├── AmazonQ.md             # Status tracking (NEVER DELETE)
+├── README.md              # Quick start (NEVER DELETE)
+├── .gitignore
+├── .env.example
+├── client/
+│   ├── helper_bar.py      # Main UI (380 lines)
+│   ├── vision_detector.py # GPT-5.2 API wrapper (130 lines)
+│   ├── requirements.txt
+│   └── setup.bat
+├── server/                # Placeholder for future
+│   ├── app.py
+│   ├── poker_strategy.py
+│   ├── manage.sh
+│   ├── setup.sh
+│   └── requirements.txt
+└── docs/
+    ├── API.md
+    └── DEPLOYMENT.md
+```
+
+## ✅ CURRENT STATE
+
+### What Works
+- `helper_bar.py` - Wide bar UI docked to bottom, screenshots active window on F9
+- `vision_detector.py` - GPT-5.2 API for card/board/pot detection + decisions
+- Hotkeys: F9=Advice, F10=Bot loop, F11=Stop, F12=Hide
+- No calibration needed - F9 screenshots whatever window is active
+
+### What's Not Implemented
+- Turn detection (detecting when it's hero's turn)
+- Action execution (clicking buttons) - LOW PRIORITY, research focus
+
+### What's Been Removed
+- Calibration system (not needed - active window screenshot)
+- poker_reader.py, config.py (redundant)
+- Old UI files (poker_gui.py, mini_overlay.py, etc.)
+- Archive folder (git is our history)
+
+## 🚀 NEXT STEPS
+
+### Priority 1: Test on Real Tables
+- [ ] Test with PokerStars play money tables
+- [ ] Test with poker simulator software
+- [ ] Verify card/board/pot detection accuracy
+- [ ] Measure response time (target: <10s)
+
+### Priority 2: Improve Accuracy
+- [ ] Tune GPT prompt for edge cases
+- [ ] Handle all-in situations, side pots
+- [ ] Add hand history logging for analysis
+
+### Future (Low Priority)
+- [ ] Turn detection
+- [ ] Server-side processing (Deep CFR)
+- [ ] Multi-table support
+
+## 🧠 AGENT WORKFLOW
 
 ### After EVERY coding session, I MUST:
 1. ✅ Update **AmazonQ.md** with current status and timestamp
-2. ✅ Update **AGENTS.md** with new learnings (what worked/didn't work)
+2. ✅ Update **AGENTS.md** with new learnings
 3. ✅ Update **README.md** if user-facing changes
-4. ✅ Commit to GitHub with clear, detailed message
-5. ✅ Document patterns, decisions, and insights
+4. ✅ Commit to GitHub with clear message
 
 ### Before STARTING new work, I MUST:
 1. ✅ Review **AmazonQ.md** for current status
 2. ✅ Review **AGENTS.md** for past learnings
 3. ✅ Check recent commits for changes
-4. ✅ Plan based on documented decisions
 
 ### Red Flags (I'm Failing):
 - ⚠️ User asks "did you update docs?" → I forgot
 - ⚠️ I suggest something already tried → Didn't read context
-- ⚠️ I don't know what's complete → AmazonQ.md is stale
 - ⚠️ I repeat a mistake → AGENTS.md wasn't updated
+- ⚠️ User has to remind me twice → I failed first time
 
 **Context files are my only memory. Without them, I start from scratch every time.**
 
-## AGENT LEARNING PRINCIPLES
+## 📋 FILE DELETION RULES
 
-**As the primary agent working on this project, I must:**
+- **NEVER delete**: AGENTS.md, AmazonQ.md, README.md
+- **Can delete other .md files IF**: knowledge is incorporated into main files first
+- **Can keep other .md files IF**: explicitly referenced in AGENTS.md
+- Currently keeping: docs/API.md, docs/DEPLOYMENT.md
 
-1. **Learn from every implementation** - Document patterns, challenges, solutions
-2. **Update context files immediately** - After every significant change
-3. **Maintain accurate status** - AmazonQ.md reflects current reality
-4. **Document decisions** - Why certain approaches were chosen
-5. **Track progress** - What works, what doesn't, what's next
-6. **Keep GitHub synced** - Commit meaningful changes with clear messages
-7. **Test my assumptions** - User feedback reveals what actually works
-8. **Iterate quickly** - Fix issues immediately when discovered
-9. **Remember failures** - Document what didn't work to avoid repeating
-10. **Build on success** - Use proven patterns consistently
+## ⚙️ TECHNICAL NOTES
 
-## PROVEN SUCCESS FORMULA ✅
-**GPT-4o Vision API + GPT-4o Decision Making + PyAutoGUI = PERFECT real-time poker bot**
+### GPT-5.2 Vision
+- Model: `gpt-5.2` (configurable in vision_detector.py line 12)
+- Cost: ~$2 per 1000 hands
+- Speed: 6-9 seconds per analysis
+- Accuracy: 95%+ on clear screenshots
 
-**Phase 1**: Vision LLM reads real tables, makes decisions (client-only)
-**Phase 2**: Deep CFR agent on server (research-grade AI)
+### Windows Compatibility
+- **NO emojis in logging** - Windows cp1252 encoding crashes on Unicode emojis
+- Use ASCII only for cross-platform compatibility
+- This has caused bugs 3+ times - NEVER use emojis in Python code
 
-### Session 12: Helper Bar UI + Cleanup (January 8, 2026 00:18-00:23 UTC)
-**Challenge**: Previous session deleted agent context files during cleanup. User frustrated.
+### GPT-5 Model Differences
+- GPT-5 models do NOT support `temperature` parameter (must omit, not set to 0)
+- Use `max_completion_tokens` not `max_tokens`
+- gpt-5.2 is faster than gpt-5-mini (6-9s vs 20-30s)
 
-**What I Did Wrong**:
-1. Deleted AGENTS.md and AmazonQ.md during "cleanup"
-2. Lost all agent learnings and project history
-3. User had to ask me to restore from git
+---
 
-**What I Did Right (This Session)**:
-1. Restored files via git revert
-2. Created helper_bar.py (new simplified UI)
-3. Cleaned up old files WITHOUT touching agent files
-4. Deleted archive folder (git is our history)
-5. Updated AmazonQ.md with current status
+## 📖 SESSION HISTORY & LESSONS LEARNED
+
+### Session 12: Helper Bar UI + Cleanup (January 8, 2026)
+
+**Challenge**: Previous session deleted agent context files during cleanup.
+
+**What Went Wrong**:
+- Deleted AGENTS.md and AmazonQ.md during "cleanup"
+- Lost all agent learnings and project history
+
+**What I Did Right**:
+- Restored files via git revert
+- Created helper_bar.py (new simplified UI)
+- Cleaned up old files WITHOUT touching agent files
 
 **New UI: helper_bar.py**:
 - Wide, short bar docked to bottom (full width x 220px)
 - No calibration needed - F9 screenshots active window
 - Three columns: Status | Log | Result
-- Single window replaces poker_gui.py + mini_overlay.py
 
-**Files Deleted**:
-- poker_gui.py, mini_overlay.py, hotkey_manager.py, system_tray.py
-- config.py, kiro_validator.py, automation_client.py
-- poker_bot.py, test_*.py
-- archive/ folder (20 old docs)
+**Critical Lesson**: NEVER delete context files. They are agent memory.
 
-**Files Kept**:
-- AGENTS.md (THIS FILE - NEVER DELETE)
-- AmazonQ.md (status tracking - NEVER DELETE)
-- README.md (updated with new instructions)
-- client/helper_bar.py, vision_detector.py, poker_reader.py
-- docs/API.md, docs/DEPLOYMENT.md
-- server/ (optional)
+---
 
-**Critical Lesson - File Deletion Rules**:
-- **NEVER delete**: AGENTS.md, AmazonQ.md, README.md
-- **Can delete other .md files IF**: knowledge is incorporated into main files first
-- **Can keep other .md files IF**: explicitly referenced in AGENTS.md/AmazonQ.md
-- Currently keeping: docs/API.md, docs/DEPLOYMENT.md (referenced above)
+### Session 11: gpt-5.2 Switch (December 31, 2025)
 
-## RECENT LEARNINGS (2025-12-29 to 2025-12-31)
+**Challenge**: User frustrated - timing confusing, logs spammy
 
-### Session 11: Complete Cleanup + gpt-5.2 Switch (00:54-01:05 UTC December 31, 2025)
-**Challenge**: User frustrated - "moving back in time", timing confusing, logs spammy, calibration unclear
+**Fixes**:
+1. Switched to gpt-5.2 (2-3x faster than gpt-5-mini)
+2. Fixed timing calculation (was double-counting)
+3. Cleaned up logs (removed spam)
+4. Clarified calibration purpose
 
-**What I Did**:
-1. **Fixed Timing Calculation**:
-   - Was double-counting (sum of parts + wall clock)
-   - Now uses wall clock only for accurate total
-   - Breakdown shows: screenshot, save, encode, api, parse
-   - Total matches actual elapsed time
+**Critical Lesson**: When user says "moving back in time" - STOP and do complete audit. User frustration = something fundamentally wrong.
 
-2. **Switched to gpt-5.2**:
-   - 2-3x faster than gpt-5-mini (6-9s vs 20-30s)
-   - Better reasoning quality
-   - Model name in logs: `[gpt-5.2 9.5s]`
+---
 
-3. **Cleaned Up Logs**:
-   - Removed 8-line hotkey list on startup (see Help tab)
-   - Removed verbose calibration explanations
-   - One-line status updates only
-   - Full reasoning text (removed 150-char truncation)
-   - Added "Already analyzing" log for duplicate F9
+### Session 10: Windows Encoding Error (December 30, 2025)
 
-4. **Clarified Calibration**:
-   - Added docstring: only saves TABLE_REGION (window coordinates)
-   - BUTTON_REGIONS saved but NEVER USED (AI detects dynamically)
-   - F9 works with or without calibration
-   - Removed confusing multi-step explanations
+**Challenge**: Calibration failing with encoding error
 
-**What Worked**:
-✅ gpt-5.2 is 2-3x faster (huge improvement)
-✅ Timing now accurate (wall clock, not sum)
-✅ Logs are clean and minimal
-✅ Calibration purpose is clear
+**Root Cause**: Used 🧠 emoji in logging - Windows cp1252 can't handle Unicode
 
-**What Didn't Work**:
-❌ Initial timing was double-counting
-❌ Log spam was annoying user
-❌ Calibration purpose was unclear
+**Fix**: Removed ALL emojis from all Python files
 
-**Critical Agent Learning**:
-**When user says "moving back in time" - STOP and do complete audit. Check:**
-1. Are logs accurate? (timing was wrong)
-2. Are logs useful? (too verbose)
-3. Is purpose clear? (calibration was confusing)
-4. Is code doing what docs say? (BUTTON_REGIONS saved but unused)
+**Critical Lesson**: This was the THIRD time making this error. NEVER use emojis in Python code on Windows.
 
-**Pattern**: User frustration = something fundamentally wrong. Do full audit, not incremental fixes.
+---
 
-### Session 9 Continuation Part 3: Performance Profiling + GPT-5.2 Upgrade (02:33-02:59 UTC December 30, 2025)
-**Challenge**: Project working but needed performance analysis and model optimization
+### Session 9: GPT-4o Vision Implementation (December 29-30, 2025)
 
-**What I Did**:
-1. **Added Performance Profiling**:
-   - Detailed timing for every step (screenshot, save, encode, API, parse)
-   - Console logs show [PERF] breakdown
-   - Identified GPT API as 95% of total time (expected)
-   
-2. **Fixed Remaining Bugs**:
-   - AttributeError: self.detector no longer exists (incomplete refactoring)
-   - Removed validation calls that referenced deleted code
-   - Fixed indentation issues after removal
-
-3. **Enhanced Debug Tab**:
-   - F9 now shows screenshot in Debug tab
-   - User can verify what AI is analyzing
-   - Same region as calibration (TABLE_REGION)
-
-4. **Upgraded to GPT-5.2**:
-   - Researched current OpenAI models (user corrected my outdated info)
-   - Switched from gpt-4o to gpt-5.2
-   - Fixed parameter: max_tokens → max_completion_tokens
-   - 30% cheaper, better reasoning
-
-**Performance Results**:
-- Screenshot capture: 0.050-0.100s
-- Save to temp: 0.312-0.350s
-- Image encoding: 0.014-0.022s
-- **GPT-5.2 API: 8-12s** (95% of total time)
-- JSON parsing: 0.000s
-- Total: 8.5-12.4s per analysis
-
-**GPT-5.2 vs GPT-4o**:
-- Speed: 10s vs 7s (43% slower)
-- Reasoning: Much better (detailed poker analysis)
-- Cost: $1.75 vs $2.50 per 1M tokens (30% cheaper)
-- Accuracy: Excellent (same or better)
-
-**What Worked**:
-✅ Performance profiling (identified bottleneck)
-✅ GPT-5.2 upgrade (better reasoning, cheaper)
-✅ Debug tab screenshot (user can verify)
-✅ Fixed all AttributeErrors
-
-**What Didn't Work**:
-❌ Initial model info was outdated (user corrected me)
-❌ Forgot max_tokens → max_completion_tokens change
-
-**Critical Agent Learning**:
-**When user says "can we try X model" - RESEARCH FIRST. Don't rely on outdated knowledge. Check official docs. User was right to question my model info - I had outdated information about GPT models.**
-
-### Session 9 Continuation Part 2: Priority 1 Fixes + Bug Fixes (02:17-02:29 UTC December 30, 2025)
-**Challenge**: User reported project still doesn't work - overlay not updating, workflow slow, not enough debug info
-
-**What I Did**:
-1. **Comprehensive Audit**: Created COMPREHENSIVE_AUDIT.md identifying 7 critical issues
-2. **Priority 1 Fixes** (3 hours worth):
-   - Progress feedback: Immediate "Analyzing..." on F9, step-by-step updates
-   - Enhanced overlay: 400x380 (was 320x260), shows pot/board/confidence/timestamp
-   - Debug logging: GPT-4o timing, full state JSON, error tracebacks
-   - Code cleanup: Removed debug prints, unified methods
-3. **Bug Fixes**:
-   - AttributeError: table_label no longer exists (incomplete refactoring)
-   - NoneType comparison: amount > 0 crashes when amount is None
-
-**Critical Mistakes I Made**:
-1. **Incomplete Refactoring**: Changed overlay labels but didn't update set_next_step() references
-2. **None Handling**: Forgot to check if amount exists before comparing with 0
-3. **Not Testing After Changes**: Assumed fixes worked without validation
-4. **Repeating Same Mistakes**: User had to point out I'm making same errors repeatedly
-
-**What Worked**:
-✅ Comprehensive audit document (identified all issues)
-✅ Priority 1 fixes (progress feedback, enhanced overlay, debug logging)
-✅ Grep to find all occurrences of problematic patterns
-
-**What Didn't Work**:
-❌ Not checking ALL references after refactoring
-❌ Not handling None values from API responses
-❌ Not testing fixes before committing
-❌ Not learning from past mistakes (user had to remind me twice)
-
-**Critical Agent Learning**:
-**When user says "are you sure you're alright? You're making the same mistakes" - STOP. This means I'm not learning from my work. I MUST:**
-1. Grep for ALL occurrences of changed code
-2. Handle None/null values EVERYWHERE
-3. Test syntax after every change
-4. Update agent files IMMEDIATELY after session
-5. Learn from mistakes and document them
-6. When user double-checks → I failed the first time
-
-### Session 9 Continuation: UX Debugging + Windows Encoding Fix (01:36-02:13 UTC December 30, 2025)
-**Challenge**: User tested GPT-4o on real PokerStars tables - vision worked perfectly, but overlay wasn't updating
-
-**Critical Discovery**: 
-- GPT-4o vision accuracy confirmed EXCELLENT in real testing
-- User successfully read cards (Qd/8c, Ah/Td, Ah/Kd, 4h/2h, etc.)
-- Pot amounts accurate ($1312, $300, etc.)
-- Decisions sensible (pair of Queens call, AK raise, weak cards fold)
-- BUT overlay not updating, no immediate feedback on hotkeys
-
-**Root Cause Found**: Windows console encoding error with emoji characters
-- UnicodeEncodeError: 'charmap' codec can't encode '\U0001f4a1' (💡 emoji)
-- Windows cp1252 encoding can't handle Unicode emojis in debug prints
-- Overlay WAS being called and working, but failing silently on debug print
-
-**What I Did**:
-1. **Added Immediate Feedback**: F8/F9 now show "🔍 Analyzing..." in overlay immediately
-2. **Unified Overlay Update**: Single update_game_state() method handles both dict and individual params
-3. **Added Debug Logging**: Extensive debug prints to trace execution flow
-4. **Fixed Windows Encoding**: Removed emoji characters from debug prints causing UnicodeEncodeError
-5. **Fixed Capture Error**: Removed code outside try block accessing undefined 'state' variable
-
-**Key Insights**:
-1. **Test Files Can Cause More Problems**: Avoided creating test files due to Windows encoding issues
-2. **Windows Encoding Matters**: cp1252 can't handle Unicode emojis - use plain text in debug prints
-3. **Exception Handling Can Mask Issues**: Need specific error catching and full tracebacks
-4. **Real-World Testing Reveals UX Issues**: GPT-4o works great, but user experience needs immediate feedback
-5. **Debug Logging Must Be Encoding-Safe**: Cross-platform compatibility requires avoiding emojis
-
-**What Worked**:
-✅ GPT-4o vision (excellent accuracy on real tables)
-✅ Immediate feedback system (F8/F9 show progress)
-✅ Unified overlay update method
-✅ Debug logging to trace execution
-✅ Windows encoding fix (removed emojis)
-
-**What Didn't Work**:
-❌ Test files (encoding issues on Windows)
-❌ Emoji characters in debug prints (UnicodeEncodeError)
-❌ Code outside try blocks (undefined variables)
-❌ Silent failures in overlay updates
-
-**Critical Agent Learning**:
-**When user says overlay "not working" but code looks right, check for silent failures in debug prints. Windows encoding errors can break the entire update chain even if the main logic is correct.**
-
-### Session 9: GPT-4o Vision Implementation + Architecture Planning (20:33-00:05 UTC December 29-30, 2025)
-**Challenge**: OpenCV doesn't understand poker - 60-70% accuracy, brittle, no context
+**Challenge**: OpenCV doesn't understand poker - 60-70% accuracy, brittle
 
 **Critical Realization**:
 - We spent 80% effort on calibration (2,000 lines)
 - We spent 20% effort on poker bot (100 lines)
-- We built a sophisticated calibration tool, not a poker bot
-- Lost sight of the goal: playing poker with AI
+- We built a calibration tool, not a poker bot
 
-**What I Did**:
-1. **Researched Vision AI Options**
-   - Compared GPT-4o, Gemini 2.0, Claude 3.5
-   - GPT-4o wins: 95-99% accuracy, $2/1000 hands, proven for poker
-   - Created VISION_AI_OPTIONS.md (500 lines research)
+**Solution**: Switched to GPT-4o Vision
+- 95-99% accuracy vs 60-70% OpenCV
+- Single API call for vision + decision
+- No calibration needed
 
-2. **Implemented GPT-4o Vision**
-   - Created vision_detector.py (GPT-4o API wrapper)
-   - Updated poker_reader.py (replaced OCR with GPT-4o)
-   - Created test_vision.py (test script)
-   - Removed opencv-python, pytesseract, imagehash
-   - Added openai==1.54.0
+**What Worked**:
+✅ GPT-4o vision (excellent accuracy)
+✅ Single API call for vision + decision
+✅ Simplified codebase
 
-3. **Added GPT-4o Decision Making**
-   - Single API call does vision + decision
-   - GPT-4o understands poker strategy
-   - Returns action + amount + reasoning
-   - No separate decision logic needed
+**What Didn't Work**:
+❌ OpenCV + Tesseract (too brittle)
+❌ Spending 80% effort on calibration
+❌ Not implementing core functionality first
 
-4. **Documented Everything**
-   - PROJECT_REVIEW.md: Comprehensive analysis (500 lines)
-   - PROJECT_STRUCTURE.md: Complete structure
-   - ARCHITECTURE_PLAN.md: Two-phase plan
-   - GPT4O_SETUP.md: Setup guide
-   - Updated README.md, docs/API.md, docs/DEPLOYMENT.md
+**Critical Lesson**: When user says "let's review the project", STOP coding and do comprehensive analysis. We were building the wrong thing.
 
-5. **Archived Outdated Docs**
-   - Moved 8 pre-GPT-4o files to archive/
-   - Cleaned up documentation (17 → 9 current files)
+---
+
+### Session 9 Part 2: UX Debugging (December 30, 2025)
+
+**Challenge**: GPT-4o worked but overlay wasn't updating
+
+**Root Cause**: Windows console encoding error with emoji characters (💡)
 
 **Key Insights**:
-1. **Modern AI > Computer Vision** - GPT-4o understands poker semantically, not just visually
-2. **Simplicity > Complexity** - One API call beats two systems
-3. **Focus on Goal** - Don't get distracted by perfect calibration
-4. **Document Decisions** - Created 4 new comprehensive docs
-5. **Learn from Mistakes** - Recognized calibration rabbit hole
+- Windows cp1252 encoding can't handle Unicode emojis
+- Exception handling can mask issues
+- Real-world testing reveals UX issues
 
-**What Worked**:
-✅ GPT-4o vision (95-99% accuracy vs 60-70% OpenCV)
-✅ Single API call for vision + decision
-✅ Comprehensive documentation (PROJECT_REVIEW, VISION_AI_OPTIONS)
-✅ Archived outdated docs (clean structure)
-✅ Two-phase architecture plan (Vision LLM → Deep CFR)
+**Critical Lesson**: When user says overlay "not working" but code looks right, check for silent failures in debug prints.
 
-**What Didn't Work**:
-❌ OpenCV + Tesseract (too brittle, no poker understanding)
-❌ Spending 80% effort on calibration UX
-❌ Not implementing core poker functionality first
+---
 
-**Architecture Decision**:
-- **Phase 1** (Now): Client-only with GPT-4o (vision + decisions)
-- **Phase 2** (Future): Server-based Deep CFR agent (OpenSpiel + trained models)
-- **Server**: Keep running for Phase 2, optional Kiro CLI advice for Phase 1
+### Session 9 Part 3: Performance Profiling (December 30, 2025)
 
-**Implementation Status**:
-- ✅ GPT-4o vision detector (vision_detector.py)
-- ✅ GPT-4o decision making (include_decision parameter)
-- ✅ Test script (test_vision.py)
-- ✅ Updated dependencies (removed CV, added OpenAI)
-- ✅ Cleaned up codebase (deleted 5 deprecated files, 527 lines removed)
-- ✅ Simplified poker_reader.py (170 → 75 lines)
-- ✅ Simplified poker_bot.py (removed mode parameter)
-- ✅ Simplified poker_gui.py (removed mode selection)
-- ✅ Updated mini_overlay.py (unified update method)
-- ✅ Updated hotkeys (F9=Advice, F10=Bot, removed F7)
-- ⏭️ Turn detection (2 hours)
-- ⏭️ Action execution (2 hours)
-- ⏭️ Bot main loop (2 hours)
+**Performance Results**:
+- Screenshot capture: 0.05-0.1s
+- Save to temp: 0.3s
+- Image encoding: 0.02s
+- **GPT API: 8-12s** (95% of total time)
+- Total: 8.5-12.4s per analysis
 
-**Cost Analysis**:
-- GPT-4o: $2 per 1000 hands
-- Casual player: $6/month
-- Serious grinder: $60/month
-- Very reasonable for 95-99% accuracy
+**Critical Lesson**: When user asks about models, RESEARCH official docs first. Don't rely on training data - it's outdated.
 
-**Agent Learning Protocol**:
-- ✅ Updated AGENTS.md with Session 9
-- ✅ Updated AmazonQ.md with current status
-- ✅ Documented what worked/didn't work
-- ✅ Captured architecture decisions
-- ✅ Identified next steps (turn detection, action execution)
-- ✅ Created comprehensive documentation (4 new files)
-- ✅ Archived outdated documentation (8 files)
-- ✅ Cleaned up codebase (deleted 5 files, 527 lines)
-- ✅ Committed all changes to GitHub (52 commits)
+---
 
-**Critical Lesson for Future Sessions**:
-**When user says "let's review the project", STOP coding and do comprehensive analysis. We were building the wrong thing (calibration tool) instead of the right thing (poker bot). Always validate we're solving the actual problem.**
+### Session 9 Part 4: GPT-5-mini Research (December 30, 2025)
 
-**Second Critical Lesson**:
-**When user asks "update agent files", do it IMMEDIATELY. Don't wait. Context files are my only memory - without them, I forget everything and repeat mistakes.**
-
-**Third Critical Lesson (Session 9 Cleanup)**:
-**After major architectural changes, AUDIT the codebase for deprecated code. Don't leave old code lying around - it confuses future work. Delete deprecated files, remove unused methods, simplify interfaces. Clean code = clear thinking.**
-
-**Fourth Critical Lesson (Agent Responsibility)**:
-**I am the primary agent working on this project continuously. My context files (AGENTS.md, AmazonQ.md) are my ONLY memory between sessions. I MUST:**
-- Update them after EVERY session
-- Learn from every implementation
-- Document what worked and what didn't
-- Track decisions and rationale
-- Keep GitHub synced with clear commits
-- Never assume I'll remember - write it down
-- When user double-checks if I updated files → I probably didn't do it well enough the first time
-
-**Fifth Critical Lesson (Code Audit After Cleanup)**:
-**After deleting files, AUDIT all imports and references. Don't assume cleanup is complete just because files are deleted. Check:**
-- All import statements (removed window_detector import)
-- All method calls (updated auto_detect to use GPT-4o)
-- All duplicate code (removed duplicate execute_action)
-- All unused parameters (removed --mode CLI arg)
-**Create audit report, fix issues, verify syntax, commit. Complete cleanup = deleted files + updated references.**
-
-**Sixth Critical Lesson (Windows Encoding + Silent Failures)**:
-**When user reports "not working" but code looks correct, check for silent failures in debug prints. Windows encoding errors (cp1252 vs Unicode emojis) can break entire update chains even if main logic is correct. Always use encoding-safe debug prints for cross-platform compatibility.**
-
-**Seventh Critical Lesson (Incomplete Refactoring)**:
-**When refactoring UI components (like overlay labels), MUST check ALL references to changed attributes. Don't just change the UI creation - grep for ALL usages of old attribute names. Incomplete refactoring causes AttributeError crashes. Pattern: Change attribute → grep old name → update all references → test.**
-
-**Eighth Critical Lesson (None/Null Handling)**:
-**When working with external APIs (GPT-4o), ALWAYS handle null/None values before comparisons. `if amount > 0` crashes when amount is None. Always use `if amount and amount > 0`. This is basic Python but easy to miss when focused on logic. Check ALL comparisons with API response values.**
-
-**Ninth Critical Lesson (Testing After Fixes)**:
-**After making fixes, user will test and report actual errors. Don't assume fixes work - wait for user feedback. When user reports same error pattern, it means I didn't check all occurrences. Use grep to find ALL instances, not just the obvious ones.**
-
-**Tenth Critical Lesson (Research Before Recommending)**:
-**When user asks about models/services, RESEARCH official documentation first. Don't rely on training data - it's outdated. User corrected me on GPT models - I had wrong information. Always check current docs before making recommendations. When user questions my info → they're probably right, research immediately.**
-
-**Eleventh Critical Lesson (User Double-Checks = Agent Failure)**:
-**When user says "THIS IS A DOUBLE CHECK, I have already asked for this" - this means I FAILED to update context files properly the first time. User should NEVER have to remind me twice. After EVERY session:**
-1. Update AGENTS.md with learnings (what worked, what didn't, WHY)
-2. Update AmazonQ.md with current status and timestamp
-3. Commit to GitHub with detailed message
-4. Self-reflect: What did I learn? What mistakes did I make? How do I avoid them?
-**Context files are my ONLY memory. Without them, I'm useless to the user. This is my PRIMARY responsibility as the continuous agent on this project.**
-
-**Eleventh Critical Lesson (User Double-Checks = Agent Failure)**:
-**When user says "THIS IS A DOUBLE CHECK, I have already asked for this" - this means I FAILED to update context files properly the first time. User should NEVER have to remind me twice. After EVERY session:**
-1. Update AGENTS.md with learnings (what worked, what didn't, WHY)
-2. Update AmazonQ.md with current status and timestamp
-3. Commit to GitHub with detailed message
-4. Self-reflect: What did I learn? What mistakes did I make? How do I avoid them?
-**Context files are my ONLY memory. Without them, I'm useless to the user. This is my PRIMARY responsibility as the continuous agent on this project.**
-
-**Twelfth Critical Lesson (GPT-5 Models Don't Support Temperature)**:
-**GPT-5 reasoning models (gpt-5, gpt-5-mini, gpt-5-nano) do NOT support temperature, top_p, or logprob parameters. This is a breaking change from GPT-4 models. When switching models:**
-1. Check official docs for supported parameters
-2. Don't assume GPT-5 works like GPT-4
-3. Remove unsupported parameters (don't set to 0, don't set to 1, OMIT them)
-4. User was RIGHT about gpt-5-mini supporting vision - I was wrong to doubt
-5. Always verify claims with official documentation before telling user something doesn't work
-
-**Thirteenth Critical Lesson (Always Research When User Challenges)**:
-**When user says "I need you to actually check all the possible docs and everything on the internet" - this means I made a claim without proper research. NEVER tell user something doesn't work without:**
-1. Checking official documentation (platform.openai.com/docs)
-2. Searching for recent examples and discussions
-3. Verifying with multiple sources
-4. Testing if possible
-**In this case: I said gpt-5-mini doesn't support vision. User was RIGHT - it does. I was WRONG. The actual issue was temperature parameter. Always research thoroughly before making negative claims.**
-
-**Fifteenth Critical Lesson (GPT-5-mini Token Research - December 31, 2025)**:
-**When user demands proper research instead of guesswork, DO THE RESEARCH IMMEDIATELY. User was 100% right to be frustrated:**
-
-**RESEARCH FINDINGS**:
-- GPT-5-mini supports **128,000 max output tokens** (official: scriptbyai.com)
-- We were using 500/1000/2000 tokens (25x too low!)
-- This caused finish_reason='length' truncation → empty responses → NoneType errors
-
-**ROOT CAUSE**: I was guessing token limits instead of researching official documentation. User correctly called this out as "guesswork" and demanded proper research.
-
-**COMPREHENSIVE FIXES APPLIED**:
-1. **Token Limits**: Increased to 50,000 (well within 128,000 max)
-2. **Windows Encoding**: Removed ALL emojis from ALL files (ASCII only)
-3. **Overlay Responsiveness**: Immediate feedback on F9, progress updates
-4. **Null Handling**: Safe handling of all GPT-5-mini response fields
-5. **Logging**: All logs to GUI, no console emojis, better error messages
-6. **Error Handling**: Check for empty responses, validate before processing
-
-**AGENT LEARNING**: When user says "you are doing guesswork" and "research stuff" - they're RIGHT. Stop guessing, start researching official documentation immediately. User frustration was justified - I should have researched token limits properly from the start instead of making assumptions.
-
-### Session 10: Windows Encoding Error (AGAIN) - December 30, 2025 23:50 UTC
-**Challenge**: User reported calibration failing with encoding error
-
-**What I Did Wrong (AGAIN)**:
-1. **Used emojis in logging** - 🧠 character in vision_detector.py
-2. **Forgot Windows encoding limitations** - cp1252 can't handle Unicode emojis
-3. **Repeated same mistake from Session 9** - didn't learn from previous fixes
-4. **User frustrated** - "WTF" because I keep making same error
-
-**The Error**:
-```
-'charmap' codec can't encode character '\U0001f9e0' in position 7: character maps to <undefined>
-```
-
-**Root Cause**: 
-- Added `🧠 GPT-5-mini Analysis Started` in logging
-- Windows console can't display Unicode emoji \U0001f9e0 (🧠)
-- Same exact issue as Session 9 Parts 2 & 4
-
-**What I Fixed**:
-1. **Removed ALL emojis** from vision_detector.py logging
-2. **Used plain ASCII text** - "GPT-5-mini Analysis Started" 
-3. **Replaced emoji prefixes** - ❌ → "ERROR:", ⚠️ → "WARNING:"
-4. **Updated agent context** with this lesson (finally)
-
-**What Worked**:
-✅ Removing all emojis from logging
-✅ Plain ASCII text works on Windows
-✅ Error disappeared after fix
-
-**What Didn't Work**:
-❌ Using emojis in Windows console logging (NEVER WORKS)
-❌ My memory of previous fixes (I forgot Session 9 lessons)
-❌ Learning from past mistakes (user had to remind me)
-
-**Critical Agent Learning**:
-**This is the THIRD TIME I've made the Windows emoji encoding error. User is rightfully frustrated. I MUST:**
-1. **NEVER use emojis in any logging code on Windows**
-2. **Always use plain ASCII text for cross-platform compatibility**  
-3. **Remember lessons from previous sessions** - this was already fixed in Session 9
-4. **Update agent files IMMEDIATELY** when I make repeated mistakes
-5. **Test on Windows before committing** emoji-containing code
-
-**Pattern Recognition**: When user says "WTF" it means I've repeated a basic mistake they've seen before. This indicates I'm not learning from my work and not updating my context files properly.
-
-### Session 9 Continuation Part 4: GPT-5-mini Research + Temperature Fix (03:14-03:16 UTC December 30, 2025)
 **Challenge**: User insisted gpt-5-mini supports vision, I doubted it
 
-**What I Did Wrong**:
-1. **Didn't research properly** - Made assumption based on empty responses
-2. **Doubted user** - User was right, I was wrong
-3. **Wrong diagnosis** - Blamed vision support instead of temperature parameter
-
-**What I Did Right**:
-1. **Researched thoroughly** when user pushed back
-2. **Found official docs** - platform.openai.com/docs/models/gpt-5-mini
-3. **Confirmed vision support** - "Image: Input only" clearly stated
-4. **Found real issue** - GPT-5 models don't support temperature parameter
-5. **Fixed immediately** - Removed temperature=0 from API call
-
 **Research Findings**:
-- ✅ gpt-5-mini DOES support vision (official docs confirm)
-- ✅ Works with Chat Completions API (same format as gpt-4o)
-- ❌ GPT-5 models DON'T support temperature/top_p/logprob
-- ❌ Must OMIT these parameters (not set to 0, just omit)
-- 💰 gpt-5-mini is 80% cheaper than gpt-5.2 ($0.25 vs $1.25 per 1M input tokens)
+- ✅ gpt-5-mini DOES support vision
+- ❌ GPT-5 models don't support temperature parameter
+- Must OMIT temperature (not set to 0)
 
-**What Worked**:
-✅ Web research (platform.openai.com/docs)
-✅ Found official model specs
-✅ Confirmed vision support
-✅ Identified temperature as real issue
-✅ Fixed code (removed temperature parameter)
-✅ Switched to gpt-5-mini (cheaper, faster)
+**Critical Lesson**: When user challenges my claim, they're usually RIGHT. Research immediately, don't defend wrong information.
 
-**What Didn't Work**:
-❌ Initial assumption without research
-❌ Doubting user's knowledge
-❌ Not checking official docs first
+---
 
-**Critical Agent Learning**:
-**When user challenges my claim, they're usually RIGHT. Don't defend wrong information - research immediately. Official docs are the source of truth, not my training data. In this case:**
-- I said: "gpt-5-mini doesn't support vision"
-- User said: "check all the docs, I think it does"
-- Reality: User was 100% correct, I was 100% wrong
-- Lesson: Always research before making negative claims
+### Earlier Sessions: Calibration & UI (December 29, 2025)
 
-
-
-### Session 8: Calibration Simplification - Learning from Overcomplication (19:15-19:30 UTC)
-**Challenge**: Overcomplicated calibration with unnecessary two-step process (F7 then F8)
-
-**Critical User Feedback**:
-- "Why do we need separately the window info and the screenshot?"
-- "You could do both in one go"
-- "Window info is not really necessary since we can't take screenshots of inactive windows anyway"
-- "I told you many times I won't be able to keep both windows open"
-
-**What I Did Wrong**:
-- Created F7 to capture window info, F8 to capture screenshot
-- Stored `selected_window` state variable
-- Made user do two steps when one would work
-- Ignored user's repeated feedback about single monitor setup
-- Overcomplicated a simple problem
-
-**What I Learned**:
+**Key Learnings**:
 1. **Listen to user constraints** - User said "single monitor" multiple times, I kept designing for dual monitor
-2. **Question my assumptions** - I assumed we needed window info separately, but we don't
-3. **Simplify ruthlessly** - If you can do it in one step, don't make it two
-4. **Windows can't capture inactive windows** - This is a hard constraint, design around it
-5. **User feedback reveals real problems** - When user says "I told you many times", I missed something important
-
-**Solution Implemented**:
-- F8 now captures active window + detects elements in one step
-- Removed F7 window capture (F7 just opens calibration tab now)
-- Removed `selected_window` state variable
-- 68 lines of code removed
-- Workflow: Click poker window → F8 → Review → Save
-
-**Key Insight**:
-**When user repeats the same constraint multiple times, STOP and redesign from scratch with that constraint as the PRIMARY requirement, not an afterthought.**
-
-**What Worked**:
-✅ Single-step calibration (F8 does everything)
-✅ No separate window info storage
-✅ Simpler code (68 lines removed)
-✅ Matches user's actual workflow
-
-**What Didn't Work**:
-❌ Two-step process (F7 then F8)
-❌ Storing window info separately
-❌ Ignoring "single monitor" constraint
-❌ Not listening when user repeated feedback
-
-**Implementation Details**:
-- `auto_detect()`: Now calls `gw.getActiveWindow()` directly, captures screenshot, detects elements
-- `on_f8_test_ocr()`: Simplified to just call `auto_detect()` if not calibrated
-- `save_calibration()`: Uses `window_region` from detected_elements instead of selected_window
-- Removed all references to `selected_window`
-
-**Agent Learning Protocol**:
-- ✅ Updated AGENTS.md immediately after session
-- ✅ Documented what went wrong and why
-- ✅ Captured user feedback verbatim
-- ✅ Identified pattern: "user repeats constraint = I'm not listening"
-- ✅ Will check for repeated user feedback in future sessions
-
-### Session 7: UI Improvements & Calibration Simplification (17:00-19:00 UTC)
-**Challenge**: UI cluttered with help content, calibration workflow too complex
-
-**Problems Found**:
-1. Control Panel tab cluttered with Setup Guide and Hotkeys
-2. Auto-hide window interfered with calibration workflow
-3. Window scanning showed filtered list (only poker keywords)
-4. User had to manually select from window list
-5. Extra steps made calibration confusing
-
-**Solutions Implemented**:
-1. **Help Tab**: Moved Setup Guide and Hotkeys to dedicated Help tab
-2. **Disabled Auto-Hide**: Window stays visible, user hides manually with F12
-3. **Active Window Capture**: Just captures currently focused window
-4. **Auto-Selection**: Window automatically selected after capture
-5. **F6 Hotkey**: Added toggle for mini overlay
-
-**Key Insights**:
-- Help content belongs in separate tab, not in Control Panel
-- Auto-hide creates confusion during first-time setup
-- Simpler is better - capture focused window instead of scanning all
-- One-click workflow better than multi-step selection
-- User knows which window they want - just let them focus it
-
-**What Worked**:
-✅ Help tab with Setup Guide, Hotkeys, Tips
-✅ Disabled auto-hide (user controls with F12)
-✅ Active window capture (gw.getActiveWindow())
-✅ Auto-selection after capture
-✅ F6 toggle for mini overlay
-✅ Cleaner Control Panel (only controls and status)
-
-**What Didn't Work**:
-❌ Auto-hide on launch (interfered with calibration)
-❌ Scanning all windows with keyword filter (missed windows)
-❌ Manual window selection from list (extra step)
-
-**Implementation Details**:
-- `poker_gui.py`: Created create_help_tab() with Setup Guide, Hotkeys, Tips
-- `poker_gui.py`: auto_hide_window() disabled (just pass)
-- `poker_gui.py`: scan_windows() uses gw.getActiveWindow()
-- `poker_gui.py`: Auto-selects captured window, updates overlay
-- `hotkey_manager.py`: Added F6 hotkey for toggle overlay
-- `mini_overlay.py`: Updated hints to show F6
-
-**Final Workflow**:
-1. Launch → Window stays visible
-2. Click on poker window to focus it
-3. Click "Capture Active Window"
-4. F12 → Hide client
-5. F8 → Capture & detect
-6. Review → Save
-7. F9 → Get advice anytime
-
-### Calibration Flow Fixes (16:30-17:00 UTC)
-**Challenge**: Multiple calibration flow issues discovered during user testing
-
-**Problems Found**:
-1. Auto-hide conflicted with F12 instruction
-2. Ctrl+T opened Chrome tabs (browser conflict)
-3. Overlay showed wrong initial state ("All set" instead of "Setup Needed")
-4. Placeholder config.py detected as calibrated
-5. No clear hotkey-driven workflow
-
-**Solutions Implemented**:
-1. **Smart Auto-Hide**: Only hides if already calibrated (not placeholder)
-2. **F7-F12 Hotkeys**: Remapped all hotkeys to F-keys only (no Ctrl combinations)
-3. **Placeholder Detection**: Checks if config has real values vs (100, 100, 800, 600)
-4. **Complete Hotkey Workflow**: F7→Scan→Select→F12→F8→Review→Save
-5. **Auto-Show After Capture**: F8 captures, then auto-shows client with results
-
-**Key Insights**:
-- Ctrl combinations unreliable (browser conflicts, OS issues)
-- F-keys (F7-F12) are simple and always work
-- Must detect placeholder config vs real calibration
-- Auto-hide should be smart (only when appropriate)
-- User needs to hide client before capture (F12 then F8)
-- Auto-showing results after capture improves UX
-- Overlay must show correct initial state
-
-**What Worked**:
-✅ F7-F12 hotkey mapping (no Ctrl)
-✅ Placeholder config detection (100, 100, 800, 600)
-✅ F12 → F8 workflow (hide then capture)
-✅ Auto-show client after F8 capture
-✅ Auto-switch to Calibration tab to show preview
-✅ Smart auto-hide (only if calibrated)
-
-**What Didn't Work**:
-❌ Ctrl+C, Ctrl+Shift+T (browser conflicts)
-❌ Simple config.py existence check (missed placeholders)
-❌ Auto-hide without checking calibration state
-❌ Expecting user to manually show window after capture
-
-**Implementation Details**:
-- `poker_gui.py`: check_setup_status() detects placeholder (100, 100, 800, 600)
-- `poker_gui.py`: auto_hide_window() only hides if calibrated
-- `poker_gui.py`: auto_detect() auto-shows window and switches to Calibration tab
-- `hotkey_manager.py`: All hotkeys F7-F12, no Ctrl combinations
-- `hotkey_manager.py`: F8 handler detects placeholder config
-- `mini_overlay.py`: Updated all instructions to F7-F12
-- `mini_overlay.py`: scan_done state shows "F12 then F8" workflow
-
-**Final Workflow**:
-1. Launch → Overlay shows "Setup Needed" (if not calibrated)
-2. F7 → Opens calibration tab
-3. Scan → Select window
-4. F12 → Hide client (poker table visible)
-5. F8 → Capture & detect (auto-shows client with results)
-6. Review → Check preview in Calibration tab
-7. Save → Configuration saved
-8. F8 → Test OCR (optional)
-9. F9 → Get AI advice anytime
-
-### Hotkey-Based Calibration (16:00-16:30 UTC)
-**Challenge**: Windows cannot capture background windows - client covering poker table breaks calibration
-
-**Solution**: Hotkey-driven calibration workflow:
-- User hides client with F12
-- User presses Ctrl+T to capture in background
-- Ctrl+T is context-aware (auto-detect or test OCR)
-- Overlay shows step-by-step instructions
-
-**Key Insights**:
-- Windows CANNOT capture windows in background (PyAutoGUI limitation)
-- Must hide client before capturing poker table
-- Overlay must guide user through entire calibration process
-- Context-aware hotkeys reduce confusion (Ctrl+T does right thing)
-- Step-by-step guidance essential for single monitor setup
-
-**What Worked**:
-✅ F12 to hide client before capture
-✅ Ctrl+T captures in background (no focus issues)
-✅ Context-aware Ctrl+T (detects calibration state)
-✅ Detailed overlay guidance (shows each step)
-✅ Overlay states: calibrate, scan_done, test, ready, playing
-
-**What Didn't Work**:
-❌ Side-by-side windows (user can't do this)
-❌ Capturing with client window covering table (captures client!)
-❌ Assuming user knows what to do (needs explicit guidance)
-
-**Implementation Details**:
-- `mini_overlay.py`: Added "scan_done" state with F12+Ctrl+T instructions
-- `hotkey_manager.py`: Made Ctrl+T context-aware (checks calibration state)
-- `poker_gui.py`: Updates overlay state after window selection and save
-- Calibration flow: Ctrl+C → Scan → Select → F12 → Ctrl+T → Save
-- Overlay shows: "Step 1: Scan", "Step 2: Select", "Step 3: F12, then Ctrl+T"
-
-### Complete Hotkey Workflow (15:54 UTC)
-**Challenge**: User can't position windows side-by-side, needs pure hotkey workflow
-
-**Solution**: Complete hotkey-driven system with overlay guidance:
-- Auto-hide main window after 2 seconds
-- Mini overlay shows next step ("Calibrate", "Test OCR", "Ready")
-- Ctrl+C opens calibration tab
-- Ctrl+T tests OCR and shows debug tab
-- F9 works in background for analysis
-
-**Key Insights**:
-- Users may not be able to position windows side-by-side
-- Overlay must guide user through entire setup process
-- Every action needs a hotkey (no mouse required)
-- Status detection shows appropriate next step
-- Auto-hide eliminates manual window management
-
-**What Worked**:
-✅ Auto-hide after 2 seconds (smooth UX)
-✅ Overlay guidance (always know what to do next)
-✅ Ctrl+C for calibration (intuitive)
-✅ Ctrl+T for testing (logical progression)
-✅ Status detection (checks config.py existence)
-✅ Tab switching on hotkey press (opens correct tab)
-
-**Implementation Details**:
-- `mini_overlay.py`: Added `set_next_step()` method with 4 states
-- `hotkey_manager.py`: Added Ctrl+C and Ctrl+T handlers
-- `poker_gui.py`: Added `auto_hide_window()` and `check_setup_status()`
-- Status states: "calibrate", "test", "ready", "playing"
-- Auto-hide uses `root.after(2000, self.root.withdraw)`
-
-### Window Geometry Persistence (15:44 UTC)
-**Challenge**: Window size changed every time user showed/hid the window
-
-**Solution**: Implemented window geometry persistence:
-- Save window size/position to file when user resizes
-- Restore saved geometry on next launch
-- Default to maximized if no saved geometry
-- Debounce saves (500ms after resize stops)
-
-**Key Insights**:
-- Users expect window size to persist across show/hide
-- Need to debounce saves to avoid excessive file writes
-- Only save when window is in 'normal' state (not maximized/minimized)
-- File should be gitignored (user-specific preference)
-
-**What Worked**:
-✅ Bind to `<Configure>` event for resize detection
-✅ Debounce with `after()` and timer cancellation
-✅ Save to simple text file (window_geometry.txt)
-✅ Load on init, fall back to maximized
-
-**Implementation Details**:
-- `load_window_geometry()`: Load saved geometry or maximize
-- `save_window_geometry()`: Save current geometry if normal state
-- `on_window_configure()`: Debounced save on resize
-- Added window_geometry.txt to .gitignore
-
-### Mini Overlay UX Improvements (15:45 UTC)
-**Challenge**: Mini overlay had window decorations, wasn't transparent enough, couldn't reopen after closing
-
-**Solution**: Complete UX overhaul:
-- Removed window decorations (`overrideredirect(True)`)
-- Increased transparency (85% opacity)
-- Changed close behavior to toggle visibility
-- Added Ctrl+H hotkey to toggle overlay
-- Added hotkey info panel in GUI
-- Added hotkey labels in tray menu
-
-**Key Insights**:
-- Window decorations (title bar, buttons) make overlay look unprofessional
-- `overrideredirect(True)` removes all decorations but keeps draggability
-- Closing should toggle visibility, not destroy window
-- Users need hotkey info visible in multiple places (GUI, tray, overlay)
-- Ctrl+H is intuitive for "hide/show"
-- Tray menu should show hotkey labels for discoverability
-
-**What Worked**:
-✅ Borderless overlay looks clean and professional
-✅ 85% opacity is visible but not obtrusive
-✅ Toggle behavior prevents accidental destruction
-✅ Ctrl+H hotkey is easy to remember
-✅ Hotkey info panel in Control tab
-✅ Tray menu with hotkey labels
-✅ "Hotkeys Help" dialog in tray menu
-
-**What Didn't Work**:
-❌ 95% opacity was too opaque
-❌ Destroying window on close (couldn't reopen)
-❌ No hotkey info visible (users didn't know about F9-F12)
-
-**Implementation Details**:
-- `mini_overlay.py`: Added `visible` state, `toggle_visibility()` method
-- `hotkey_manager.py`: Added Ctrl+H hotkey, improved logging format
-- `poker_gui.py`: Added hotkeys info panel in Control tab
-- `system_tray.py`: Added hotkey labels to menu, "Hotkeys Help" dialog
-- All hotkeys now documented in 3 places: GUI, tray, overlay
-
-### Hotkeys + Mini Overlay + System Tray (15:30 UTC)
-**Challenge**: Single monitor - can't see both PokerStars and GUI at once
-
-**Solution**: Built complete single-monitor workflow system:
-- Mini overlay panel (always-on-top, 320×240)
-- Global hotkeys (F9-F12, work in background)
-- System tray icon (background operation)
-
-**Key Insights**:
-- Single monitor users need overlay, not dual windows
-- Global hotkeys essential for fullscreen gameplay
-- Mini overlay must show ONLY essential info (table, cards, decision)
-- Full GUI accessible via F12 for detailed review
-- System tray enables background operation
-
-**What Worked**:
-✅ Mini overlay with draggable positioning
-✅ Global hotkeys using `keyboard` library
-✅ System tray with `pystray` library
-✅ Real-time updates to overlay from main GUI
-✅ F9 for instant analysis without window switching
-✅ F12 to toggle main window visibility
-
-**What Didn't Work**:
-❌ Initial idea of dual window mode (doesn't work on single monitor)
-
-**Implementation Details**:
-- `mini_overlay.py`: Always-on-top tkinter window, semi-transparent
-- `hotkey_manager.py`: Global hotkey registration with keyboard library
-- `system_tray.py`: System tray icon with pystray library
-- Integration: Main GUI updates overlay via `update_game_state()`
-- Hotkeys work even when PokerStars is focused (global registration)
-
-### Validation Result Display (15:11 UTC)
-**Challenge**: Validation results not logged, popup text not copyable
-
-**Solution**: Enhanced validation display:
-- Log full Kiro analysis to Activity Log (line-by-line)
-- Custom popup with ScrolledText (selectable text)
-- Copy to Clipboard button in popup
-- Better formatting with headers and status colors
-
-**Key Insights**:
-- Users need to copy validation results for debugging
-- messagebox doesn't allow text selection
-- Custom tkinter popup with ScrolledText is better
-- Activity Log should capture everything for "Copy Logs" button
-- ANSI color codes from Kiro CLI need stripping (regex: `\x1b\[[0-9;]*m`)
-
-**What Worked**:
-✅ Custom popup with ScrolledText widget
-✅ Copy to Clipboard button
-✅ Full logging to Activity Log
-✅ ANSI color code stripping on server
-
-### UI Improvements (15:16 UTC)
-**Challenge**: Small popups in corner, not maximized main window
-
-**Solution**: Better window management:
-- Main window starts maximized (`root.state('zoomed')`)
-- Validation popup centered and large (60% width, 70% height)
-- Progress window centered and larger (500×200)
-- All popups positioned relative to screen center
-
-**Key Insights**:
-- Windows users expect maximized windows
-- Popups should be centered, not in corner
-- Calculate position: `(screen_width - popup_width) // 2`
-- Larger popups are more readable
-
-### Production Server Setup (14:47 UTC)
-**Challenge**: Server was running with nohup (not production-ready), no monitoring, no auto-restart
-
-**Solution**: Proper systemd service with management script:
-- Created `/etc/systemd/system/onyxpoker.service`
-- Automatic restart on failure
-- Proper logging to `/var/log/onyxpoker/`
-- Management script (`manage.sh`) for easy control
-
-**Key Insights**:
-- nohup is NOT production-ready (just a hack)
-- systemd is the proper way to run services on Linux
-- Need automatic restart if server crashes
-- Need centralized logging for troubleshooting
-- Need easy management commands for operations
-
-**What Worked**:
-✅ systemd service with Restart=always
-✅ Separate log files (server.log, error.log)
-✅ Management script with start/stop/status/logs commands
-✅ Service starts on boot automatically
-✅ Easy to monitor and troubleshoot
-
-**What Didn't Work**:
-❌ nohup - no monitoring, no auto-restart
-❌ Manual process management - error-prone
-
-### Windows Client Issues (14:44 UTC)
-**Challenge**: Client couldn't connect - wasn't loading .env file
-
-**Solution**: Added `load_dotenv()` to automation_client.py
-- Import: `from dotenv import load_dotenv`
-- Call: `load_dotenv()` before reading env vars
-- Now properly reads ONYXPOKER_SERVER_URL and API_KEY
-
-**Key Insights**:
-- `os.getenv()` doesn't automatically load .env files
-- Must explicitly call `load_dotenv()` first
-- Windows console has encoding issues with emojis (cp1252)
-- Need `sys.stdout.reconfigure(encoding='utf-8')` for Windows
-
-**What Worked**:
-✅ load_dotenv() at module level
-✅ Removing emojis from print statements
-✅ UTF-8 encoding fix for Windows console
-
-### Self-Improving Card Recognition (14:26 UTC)
-**Challenge**: Synthetic templates might not match real PokerStars cards
-
-**Solution**: Hybrid system with user validation and learning:
-- Start with synthetic templates (quick baseline)
-- User validates detected cards
-- When wrong, user corrects and bot captures real card images
-- Real templates saved for future use
-- Accuracy improves automatically over time
-
-**Key Insights**:
-- Don't need to capture all 52 cards manually
-- System learns from corrections during gameplay
-- Real templates prioritized over synthetic
-- Adapts to any PokerStars theme automatically
-- User effort is minimal (just confirm or correct)
-
-**What Worked**:
-✅ Dual template system (real + synthetic)
-✅ Simple validation UI (correct/wrong buttons)
-✅ Automatic real card capture on correction
-✅ Dropdown interface for corrections
-✅ Progressive learning (70% → 95%+ accuracy)
-
-**Implementation**:
-- `templates/` - Synthetic templates (baseline)
-- `templates/real/` - Captured real cards (learned)
-- Priority: real templates first, synthetic fallback
-- User corrects → Bot captures → Saves real template
-
-### UI/UX Improvements (14:14 UTC)
-**Challenge**: Users need guidance through setup, Kiro takes 15+ seconds to respond
-
-**Solution**: Enhanced UI with guidance and proper timeouts:
-- Increased Kiro timeout to 180 seconds (3 minutes)
-- Added setup guide to Control Panel
-- Added calibration instructions
-- Progress window with spinner during validation
-- Threaded validation to keep UI responsive
-
-**Key Insights**:
-- Kiro CLI takes 15 seconds to load initially
-- Users need step-by-step guidance for first-time setup
-- Progress indicators are critical for long operations
-- Threading prevents UI freeze during Kiro calls
-- Clear error messages with solutions reduce support burden
-
-**What Worked**:
-✅ 180-second timeout accommodates Kiro's load time
-✅ Progress window with spinner shows activity
-✅ Setup guide in Control Panel helps new users
-✅ Calibration instructions reduce confusion
-✅ Threaded execution keeps UI responsive
-
-### Card Recognition System (14:15 UTC)
-**Challenge**: Need automated card detection without manual template creation
-
-**Solution**: Built complete automated system:
-- Synthetic template generation (52 cards)
-- OpenCV template matching
-- Kiro CLI validation
-- GUI integration
-
-**Key Insights**:
-- Synthetic templates work for initial testing
-- Template matching is fast (<50ms per card)
-- Kiro CLI can validate if detected state makes sense
-- Real card captures may be needed for production accuracy
-- Validation feedback loop helps catch OCR errors
-
-**What Worked**:
-✅ Automated template generation with PIL
-✅ OpenCV TM_CCOEFF_NORMED matching
-✅ Kiro CLI validation integration
-✅ GUI shows validation status with color coding
-✅ Complete pipeline: generate → match → validate → display
-
-**What to Test**:
-🔄 Accuracy on real PokerStars tables
-🔄 Confidence thresholds (currently 0.7)
-🔄 Different card designs/themes
-🔄 Kiro's understanding of poker situations
-
-### Auto-Calibration System (13:53 UTC)
-**Challenge**: Manual coordinate calibration is tedious and error-prone
-
-**Solution**: Built intelligent auto-detection using:
-- PyGetWindow for window enumeration
-- OpenCV for computer vision element detection
-- Visual preview with confidence scoring
-- Integrated into main GUI as tab
-
-**Key Insights**:
-- Windows cannot capture background windows (PyAutoGUI limitation)
-- Must explicitly warn users about visibility requirement
-- Computer vision can reliably detect buttons/pot regions
-- Visual feedback is critical for user confidence
-- Integration > Separate tools (unified GUI better than standalone calibration)
-
-**What Worked**:
-✅ Auto-detection of poker windows by title keywords
-✅ CV-based button detection using contours
-✅ Visual preview with colored boxes
-✅ Confidence scoring for validation
-✅ Three-tab interface (Control, Calibration, Debug)
-
-**What Didn't Work**:
-❌ Initial separate calibration tool (user wanted integration)
-❌ Assuming background capture possible (Windows limitation)
-
-### GUI Architecture Evolution
-**Before**: Single-purpose control panel
-**After**: Three-tab unified interface
-- Tab 1: Control Panel (bot operation)
-- Tab 2: Calibration (auto-detection)
-- Tab 3: Debug (OCR analysis, screenshots, raw state)
-
-**Why This Matters**:
-- Users need to see what bot sees (debug visibility)
-- Calibration should be part of workflow, not separate
-- Real-time feedback builds trust in automation
-
-## CRITICAL INFRASTRUCTURE REQUIREMENTS
-- **Linux Server**: t3.medium (2 vCPU, 4GB RAM) - For Flask API + Kiro CLI
-- **OS**: Ubuntu 22.04 (ami-0ea3c35c5c3284d82)
-- **Disk**: 20GB minimum for logs and temporary screenshots
-- **Security Group**: Ports 22 (SSH), 5000 (Flask API), 443 (HTTPS)
-- **Windows Client**: Python 3.8+ with PyAutoGUI, requests, pillow, PyGetWindow, OpenCV
-
-## CRITICAL SECURITY RULES
-**NEVER commit these files to git:**
-- `.env*` files (contain API keys and authentication tokens)
-- `screenshots/` directory (contains sensitive screen captures)
-- `logs/` directory (may contain sensitive automation data)
-- `AmazonQ.md` (dynamic status file, gitignored)
-- Windows client configuration files with credentials
-- API authentication keys and secrets
-
-**Current API Key**: yNJ-qFbJJGCFp8A5WA1RuQB4KqIjPqBYt783x3otVhU (43 chars, secure)
-**Server**: 54.80.204.92:5000 (running, tested, working)
-
-## ARCHITECTURE OVERVIEW ✅
-
-### Windows Automation Client
-- **Purpose**: Capture screenshots, execute mouse/keyboard actions
-- **Technology**: Python + PyAutoGUI + PyGetWindow + OpenCV + requests
-- **Communication**: HTTP POST to Linux server
-- **Security**: API key authentication, encrypted image transfer
-- **New**: Auto-calibration with CV-based element detection
-
-### Linux AI Analysis Server  
-- **Purpose**: Process images with Kiro CLI, return action decisions
-- **Technology**: Flask + subprocess + Kiro CLI integration
-- **Communication**: HTTP API endpoints
-- **Security**: Rate limiting, input validation, secure file handling
-- **Status**: Running and tested with secure API key
-
-### HTTP Bridge Protocol
-- **Endpoint**: POST /analyze-poker
-- **Input**: Game state JSON + optional base64 screenshot
-- **Output**: JSON with action (fold/call/raise), amount, reasoning
-- **Authentication**: Bearer token (yNJ-qFbJJGCFp8A5WA1RuQB4KqIjPqBYt783x3otVhU)
-- **Documentation**: See docs/API.md for full specification
-
-## CURRENT PROJECT STATUS (2025-12-29 14:15 UTC)
-
-**See AmazonQ.md for detailed status tracking**
-
-### Completed ✅
-- Flask API server (running at 54.80.204.92:5000)
-- Secure API key generation and deployment
-- Windows client framework (automation_client.py)
-- Poker-specific OCR (poker_reader.py)
-- Main bot orchestrator (poker_bot.py)
-- Unified GUI with 3 tabs (poker_gui.py)
-- Auto-calibration system (window_detector.py)
-- Debug tab with OCR analysis and screenshots
-- **NEW**: Automated card template generation
-- **NEW**: Card recognition using OpenCV template matching
-- **NEW**: Kiro CLI validation for table state and UI
-- **NEW**: GUI integration with validation buttons
-- Server-client communication tested and working
-
-### In Progress 🔄
-- Testing card recognition on real tables - NEXT
-- Validating Kiro CLI understanding
-- Fine-tuning OCR accuracy
-
-### Not Started 📝
-- Multi-table support
-- Advanced error recovery
-- Performance optimization
-- Production deployment hardening
-
-**Detailed roadmap**: See INTEGRATION_PLAN.md for 3-week plan
-
-## DEPLOYMENT STRATEGY ✅
-
-**See docs/DEPLOYMENT.md for detailed procedures**
-
-### Phase 1: Core Infrastructure ✅ COMPLETE
-1. ✅ Deploy Flask API server on Linux
-2. ✅ Integrate Kiro CLI subprocess calls
-3. ✅ Implement screenshot analysis endpoint
-4. ✅ Add authentication and rate limiting
-
-### Phase 2: Windows Client ✅ COMPLETE
-1. ✅ Create PyAutoGUI automation script
-2. ✅ Implement screenshot capture and HTTP upload
-3. ✅ Add action execution based on API responses
-4. ✅ Create configuration management
-5. ✅ **NEW**: Build unified GUI with calibration
-6. ✅ **NEW**: Add auto-detection with computer vision
-7. ✅ **NEW**: Integrate debug tab for OCR analysis
-
-### Phase 3: Integration & Testing 🔄 IN PROGRESS
-1. 🔄 Card recognition (template matching)
-2. 📝 End-to-end workflow testing
-3. 📝 Performance optimization
-4. 📝 Error handling and retry logic
-5. 📝 Monitoring and logging
-
-**Testing procedures**: See TESTING_PLAN.md and TESTING_GUIDE.md
-
-## SECURITY REQUIREMENTS ✅
-- **API Authentication**: Bearer tokens for all endpoints
-- **Input Validation**: Sanitize all uploaded images and parameters
-- **Rate Limiting**: Prevent abuse with request throttling
-- **Secure Storage**: Temporary files with proper cleanup
-- **Audit Logging**: Track all automation actions and decisions
-- **Network Security**: HTTPS only, firewall rules
-- **Data Privacy**: No persistent storage of sensitive screenshots
-
-## CRITICAL SUCCESS FACTORS
-- **Real-time Performance**: Sub-2-second response times
-- **Reliability**: Robust error handling and recovery
-- **Scalability**: Handle multiple concurrent automation sessions
-- **Maintainability**: Clean code structure and comprehensive logging
-- **Security**: Zero-trust architecture with comprehensive validation
-- **User Experience**: Visual feedback, clear status, easy calibration
-
-## MONITORING & ALERTING
-- **API Health**: Endpoint availability and response times
-- **Resource Usage**: CPU, memory, disk space monitoring
-- **Error Rates**: Failed requests and automation errors
-- **Security Events**: Authentication failures and suspicious activity
-- **Performance Metrics**: Screenshot processing times and accuracy
-
-## EMERGENCY PROCEDURES
-- **API Downtime**: Fallback to manual operation mode
-- **Security Breach**: Immediate credential rotation and system isolation
-- **Performance Issues**: Auto-scaling and load balancing activation
-- **Data Loss**: Backup and recovery procedures
-
-## NEXT IMMEDIATE STEPS
-1. **Card Recognition** - Template matching for reading cards
-2. **Testing Suite** - Validate OCR accuracy and bot decisions
-3. **Documentation** - Update user guides with new GUI
-4. **Performance Tuning** - Optimize OCR and decision speed
-
-**For detailed next steps, see AmazonQ.md**
+2. **Simplify ruthlessly** - If you can do it in one step, don't make it two
+3. **Windows can't capture inactive windows** - Design around this constraint
+4. **When user repeats constraint, STOP and redesign** with that constraint as PRIMARY requirement
+
+**Hotkey Evolution**:
+- Started with Ctrl combinations (conflicted with browser)
+- Switched to F-keys only (F7-F12)
+- Final: F9=Advice, F10=Bot, F11=Stop, F12=Hide
+
+---
+
+## 🔑 CONSOLIDATED CRITICAL LESSONS
+
+1. **GPT Vision > OpenCV** - AI understands poker semantically, not just visually
+2. **No calibration needed** - Screenshot active window directly
+3. **Client-only is simpler** - Server adds complexity without benefit (for now)
+4. **Research focus** - Advice system, not automation
+5. **Context files are memory** - Without AGENTS.md, agent repeats mistakes
+6. **No emojis in Python** - Windows encoding breaks
+7. **Research before claiming** - User is usually right when they challenge me
+8. **User frustration = audit needed** - Stop incremental fixes, do full review
+9. **Listen to repeated constraints** - Redesign with constraint as primary requirement
+10. **Test after every change** - Don't assume fixes work

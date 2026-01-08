@@ -49,7 +49,6 @@ python helper_bar.py
 client/
   helper_bar.py      # Main UI
   vision_detector.py # GPT-5.2 API wrapper
-  poker_reader.py    # Screenshot + parse
   requirements.txt   # Dependencies
 ```
 
