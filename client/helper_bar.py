@@ -146,9 +146,9 @@ class HelperBar:
                                       bg='#2d2d2d', fg='#00ffff')
         self.decision_label.pack(pady=2)
 
-        # Reasoning - larger font, bright color, full text
-        self.reasoning_label = tk.Label(right, text="Press F9 for advice", font=('Arial', 11),
-                                       bg='#2d2d2d', fg='#00ff00', wraplength=380, justify='left')
+        # Reasoning - compact, scrollable if needed
+        self.reasoning_label = tk.Label(right, text="Press F9 for advice", font=('Arial', 9),
+                                       bg='#2d2d2d', fg='#00ff00', wraplength=380, justify='left', height=4)
         self.reasoning_label.pack(pady=2, fill='x', padx=5)
 
         # Confidence & time
@@ -297,6 +297,8 @@ class HelperBar:
         position = result.get('hero_position') or '?'
         confidence = result.get('confidence', 0.95) or 0.95
 
+        max_call = result.get('max_call')
+        
         # Save to session log (JSONL format) - includes screenshot name for correlation
         log_entry = {
             'timestamp': datetime.now().isoformat(),
@@ -308,6 +310,7 @@ class HelperBar:
             'is_hero_turn': result.get('is_hero_turn', True),
             'action': action,
             'amount': amount,
+            'max_call': max_call,
             'reasoning': reasoning,
             'confidence': confidence,
             'elapsed': round(elapsed, 2)
@@ -342,7 +345,6 @@ class HelperBar:
 
         # Check if hero's turn
         is_hero_turn = result.get('is_hero_turn', True)
-        max_call = result.get('max_call')
         turn_indicator = "" if is_hero_turn else "[WAITING] "
         
         # Add max_call info if pre-action
