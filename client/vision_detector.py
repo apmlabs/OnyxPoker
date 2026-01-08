@@ -38,25 +38,24 @@ Return ONLY valid JSON:
 {
   "hero_cards": ["As", "Kh"],
   "community_cards": ["Qd", "Jc", "Ts"],
-  "pot": 150,
-  "hero_stack": 500,
-  "to_call": 20,
-  "hero_position": "BTN",
+  "pot": 0.15,
+  "hero_stack": 5.00,
+  "to_call": 0.02,
+  "hero_position": "SB",
   "num_players": 6,
   "players_in_hand": 3,
-  "recommended_action": "raise",
-  "recommended_amount": 60,
+  "recommended_action": "fold",
+  "recommended_amount": null,
   "reasoning": "Brief explanation"
 }
 
 Rules:
-- hero_cards: The TWO face-up cards at BOTTOM of screen (hero's hole cards). Format: As=Ace spades, Kh=King hearts, Td=Ten diamonds
+- hero_cards: The TWO face-up cards at BOTTOM of screen. Format: As=Ace spades, Kh=King hearts, Td=Ten diamonds. Use null if hero has no cards (sitting out)
 - community_cards: Cards in CENTER of table. Empty [] if preflop
-- hero_position: Where is the dealer button (D) relative to hero? BTN=hero has button, SB=hero is small blind, BB=big blind, CO=cutoff, MP=middle, EP=early
-- num_players: Total seats with players
-- players_in_hand: Players still active (have cards/chips in front)
-- to_call: Amount shown on CALL button, 0 if CHECK available, null if unclear
-- recommended_action: fold/call/check/raise based on position, cards, pot odds
+- pot/hero_stack/to_call: Read EXACT amounts including decimals (e.g. 0.05 not 5). Look at currency symbol and decimal point carefully
+- to_call: Amount on CALL button, 0 if CHECK available, null if no action buttons
+- hero_position: Find the dealer button (D chip). BTN=on hero, SB=one left of BTN, BB=two left of BTN, CO/MP/EP for others
+- recommended_action: fold/call/check/raise. Consider position and hand strength
 - Return ONLY JSON"""
 
         # Call GPT-5.2 using Responses API
