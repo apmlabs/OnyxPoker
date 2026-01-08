@@ -328,12 +328,16 @@ class HelperBar:
         # Show decision if we have any useful info (pot > 0 means table detected)
         if pot > 0 or cards or board:
             decision_str = f"=> {action.upper()}" + (f" ${amount}" if amount else "")
-            self.log(decision_str, "INFO")
+            self.log(decision_str, "DECISION")
             if reasoning:
-                self.log(reasoning[:150], "DEBUG")
+                self.log(reasoning, "DEBUG")
         else:
             decision_str = "No poker table detected"
-            self.log(decision_str, "WARN")
+            self.log(decision_str, "ERROR")
+
+        # Update right panel
+        self.cards_label.config(text=f"{pos_str} {cards_str}")
+        self.board_label.config(text=f"Board: {board_str}")
 
         # Update right panel
         self.cards_label.config(text=f"{pos_str} {cards_str}")
