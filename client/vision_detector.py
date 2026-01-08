@@ -57,7 +57,7 @@ Rules:
 - community_cards: Cards in CENTER of table. Empty [] if preflop
 - pot/hero_stack/to_call: Read EXACT amounts including decimals (e.g. 0.05 not 5). Look at currency symbol and decimal point carefully
 - to_call: Amount on CALL button, 0 if CHECK available, null if no action buttons
-- hero_position: Find the dealer button (D chip). Count seats clockwise from button: BTN=on hero, SB=1 seat left, BB=2 seats left, UTG=3 seats left, MP=4 seats left, CO=5 seats left (in 6-max). Use exact seat counting, not guessing.
+- hero_position: CRITICAL - Find the dealer button (D chip) first. Count seats clockwise: BTN=dealer button on hero, SB=1 seat clockwise, BB=2 seats clockwise, UTG=3 seats clockwise, MP=4 seats clockwise, CO=5 seats clockwise. In 6-max, there are exactly 6 positions. NEVER guess - count the exact seats from the dealer button.
 - is_hero_turn: Look at BOTTOM RIGHT corner. TRUE only if you see LARGE RED rectangular buttons with white text like "Fold" "Call €X" "Raise To €X" or "Check" "Bet €X". These buttons are ~150px wide and bright red. FALSE if you only see small gray/white checkboxes with text like "Check", "Check/Fold", "Call Any", "Fold" - those are pre-select options, NOT action buttons.
 - recommended_action: What hero SHOULD do. When is_hero_turn=FALSE, recommend what to do IF action gets to hero (e.g. "raise" on BTN with K9o preflop means open-raise if folded to). NEVER recommend fold when checking is free!
 - max_call: When is_hero_turn=FALSE, set max amount to call if someone raises ahead. Example: K9o on BTN preflop → action="raise", max_call=0.06 (call up to 3bb if someone opens). Use 0.0 only for trash hands that should fold to any raise.
@@ -72,22 +72,26 @@ Strategy rules:
 - SUITED vs OFFSUIT: Check BOTH card suits carefully. A♠2♦ = offsuit (different suits). A♠2♠ = suited (same suit). This affects preflop decisions!
 - VALUE BETTING: With sets, trips, two-pair, strong top pair - ALWAYS bet or raise for value. At 2NL opponents call light, so bet thinner than higher stakes.
 - NEVER SLOWPLAY: Sets/trips/two-pair should bet every street for value. Checking strong hands loses money at micros.
-- Suited aces (A2s-A9s) and suited kings (K2s-K9s) are playable on BTN/CO - call or raise, do not fold
-- PREFLOP SUITED HANDS: Any suited king or ace is playable in position - don't auto-fold
-- POSITION-SPECIFIC RANGES:
-  * UTG/MP: Only premium hands (AA-TT, AK-AQ, suited aces A9s+)
-  * CO: Add suited connectors (98s+), suited kings (K9s+)  
-  * BTN: Wide range including K2s+, A2s+, suited connectors
-  * SB: Tighter vs raises, wider vs limps
-  * BB: Defend wide vs small raises, fold vs 3bets OOP
+- Suited aces (A2s-A9s): Playable CO/BTN only, fold UTG/MP/SB vs raises
+- Suited kings (K9s+): Playable CO/BTN, fold K2s-K8s in all positions vs raises
+- POSITION-SPECIFIC RANGES (CRITICAL):
+  * UTG: Tight range - AA-TT, AK-AQ, AJs+, KQs (fold K2s-K9s, A2s-A9s)
+  * MP: Add ATs+, KJs+, QJs, suited aces A9s+ (fold K2s-K8s, A2s-A8s)  
+  * CO: Add suited connectors 98s+, suited kings K9s+, A2s+ (fold K2s-K8s)
+  * BTN: Wide range - K2s+, A2s+, suited connectors 65s+, any pocket pair
+  * SB: Tight vs raises (fold K2s-K9s, A2s-A9s), wider vs limps
+  * BB: Defend wide vs small raises, fold weak hands vs 3bets OOP
 
 MICRO STAKES (2NL) ADJUSTMENTS:
 - Players at 2NL rarely fold pairs - reduce bluff frequency
 - If villain calls flop AND turn, they have something - do NOT bluff river with air
 - Only bluff with equity (draws, blockers) or on very scary board changes
 - Triple barrel bluffing with ace-high = burning money at micros
-- EXPLOIT LOOSE-PASSIVE POOL: Bet bigger with value hands (75-100% pot)
-- Suited kings (K2s-K9s) are playable on BTN/CO - don't auto-fold suited hands
+- EXPLOIT LOOSE-PASSIVE POOL: 
+  * UTG/MP value bets: 60-75% pot (tighter ranges need protection)
+  * CO/BTN value bets: 75-100% pot (wider ranges, more bluffs)
+  * Against calling stations: bet bigger with value, smaller with bluffs
+- Suited kings (K9s+) are playable on BTN/CO - don't auto-fold suited hands
 
 VALUE BETTING STRATEGY (CRITICAL FOR PROFIT):
 - With sets/trips/two-pair/full house: ALWAYS bet or raise for value - never slowplay
@@ -163,5 +167,11 @@ Return ONLY JSON"""
         result['api_time'] = api_time
         result['model'] = self.model
         result['confidence'] = 0.95
+        
+        # Validate position detection
+        valid_positions = ['UTG', 'MP', 'CO', 'BTN', 'SB', 'BB']
+        if result.get('hero_position') not in valid_positions:
+            self.log(f"WARNING: Invalid position '{result.get('hero_position')}' detected. Expected one of: {valid_positions}", "ERROR")
+            result['hero_position'] = '?'  # Mark as unknown for debugging
         
         return result
