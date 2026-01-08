@@ -53,7 +53,7 @@ Return ONLY valid JSON:
   "num_players": 6,
   "players_in_hand": 3,
   "is_hero_turn": true,
-  "action": "fold",
+  "recommended_action": "fold",
   "amount": 0,
   "max_call": null,
   "reasoning": "Detailed explanation here",
