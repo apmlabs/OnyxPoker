@@ -1,8 +1,8 @@
-pyautogui==0.9.54
-requests==2.31.0
-pillow==10.0.1
-python-dotenv==1.0.0
-PyGetWindow==0.0.9
-keyboard==0.13.5
-pystray==0.19.5
-openai==1.54.0
+pyautogui>=0.9.54
+requests>=2.31.0
+pillow>=10.0.0
+python-dotenv>=1.0.0
+PyGetWindow>=0.0.9
+keyboard>=0.13.5
+pystray>=0.19.5
+openai>=1.54.0
