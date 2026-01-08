@@ -127,41 +127,34 @@ class HelperBar:
         state_frame = tk.Frame(right, bg='#2d2d2d')
         state_frame.pack(fill='x', padx=5)
 
-        self.cards_label = tk.Label(state_frame, text="Cards: --", font=('Courier', 10, 'bold'),
+        self.cards_label = tk.Label(state_frame, text="Cards: --", font=('Courier', 12, 'bold'),
                                    bg='#2d2d2d', fg='#00ffff', anchor='w')
         self.cards_label.pack(fill='x')
 
-        self.board_label = tk.Label(state_frame, text="Board: --", font=('Courier', 9),
+        self.board_label = tk.Label(state_frame, text="Board: --", font=('Courier', 10),
                                    bg='#2d2d2d', fg='#fff', anchor='w')
         self.board_label.pack(fill='x')
 
-        self.pot_label = tk.Label(state_frame, text="Pot: $--", font=('Courier', 9),
+        self.pot_label = tk.Label(state_frame, text="Pot: --", font=('Courier', 10),
                                  bg='#2d2d2d', fg='#ffff00', anchor='w')
         self.pot_label.pack(fill='x')
 
-        tk.Frame(right, height=1, bg='#555').pack(fill='x', pady=3)
+        tk.Frame(right, height=1, bg='#555').pack(fill='x', pady=5)
 
-        # Decision
-        self.decision_label = tk.Label(right, text="--", font=('Arial', 14, 'bold'),
-                                      bg='#2d2d2d', fg='#00ffff')
-        self.decision_label.pack(pady=2)
+        # Decision - big and clear
+        self.decision_label = tk.Label(right, text="--", font=('Arial', 18, 'bold'),
+                                      bg='#2d2d2d', fg='#00ff00')
+        self.decision_label.pack(pady=5)
 
-        # Reasoning - compact, scrollable if needed
-        self.reasoning_label = tk.Label(right, text="Press F9 for advice", font=('Arial', 9),
-                                       bg='#2d2d2d', fg='#00ff00', wraplength=380, justify='left', height=4)
-        self.reasoning_label.pack(pady=2, fill='x', padx=5)
+        # Max call info
+        self.maxcall_label = tk.Label(right, text="", font=('Arial', 12),
+                                     bg='#2d2d2d', fg='#ffff00')
+        self.maxcall_label.pack(pady=2)
 
-        # Confidence & time
-        meta_frame = tk.Frame(right, bg='#2d2d2d')
-        meta_frame.pack(fill='x', padx=5)
-
-        self.conf_label = tk.Label(meta_frame, text="", font=('Arial', 8),
+        # Time
+        self.time_label = tk.Label(right, text="", font=('Arial', 9),
                                   bg='#2d2d2d', fg='#888')
-        self.conf_label.pack(side='left')
-
-        self.time_label = tk.Label(meta_frame, text="", font=('Arial', 8),
-                                  bg='#2d2d2d', fg='#888')
-        self.time_label.pack(side='right')
+        self.time_label.pack(pady=2)
 
     def log(self, message, level="INFO"):
         """Add message to log queue"""
@@ -337,28 +330,20 @@ class HelperBar:
         # Update right panel
         self.cards_label.config(text=f"{pos_str} {cards_str}")
         self.board_label.config(text=f"Board: {board_str}")
-
-        # Update right panel
-        self.cards_label.config(text=f"{pos_str} {cards_str}")
-        self.board_label.config(text=f"Board: {board_str}")
-        self.pot_label.config(text=f"Pot: ${pot}")
+        self.pot_label.config(text=f"Pot: €{pot}")
 
         # Check if hero's turn
         is_hero_turn = result.get('is_hero_turn', True)
-        turn_indicator = "" if is_hero_turn else "[WAITING] "
+        turn_indicator = "" if is_hero_turn else "[WAIT] "
         
-        # Add max_call info if pre-action
+        self.decision_label.config(text=turn_indicator + action.upper())
+        
+        # Show max_call if pre-action
         if not is_hero_turn and max_call:
-            decision_str = f"{action.upper()} (max call: €{max_call})"
+            self.maxcall_label.config(text=f"Max call: €{max_call}")
         else:
-            decision_str = decision_str.replace("=> ", "")
+            self.maxcall_label.config(text="")
         
-        self.decision_label.config(text=turn_indicator + decision_str)
-        # Show full reasoning, no truncation
-        self.reasoning_label.config(text=reasoning)
-
-        conf_color = '#00ff00' if confidence > 0.9 else '#ffff00' if confidence > 0.7 else '#ff8800'
-        self.conf_label.config(text=f"Conf: {confidence:.0%}", fg=conf_color)
         self.time_label.config(text=f"{elapsed:.1f}s")
 
     def on_f10(self):
