@@ -1,20 +1,18 @@
 """
-Vision-Based Poker Table Detection
-Configurable AI model for poker table analysis
+Vision-Based Poker Table Detection using GPT-5.2 Responses API
 """
 
 import os
 import base64
 import json
+import time
 from typing import Dict, Any, Optional
 from openai import OpenAI
 
-# Model configuration - change here to switch models
-MODEL = "gpt-5.2"  # Options: gpt-5-mini, gpt-5.2, gpt-4o
+MODEL = "gpt-5.2"
 
 class VisionDetector:
     def __init__(self, api_key: Optional[str] = None, logger=None):
-        """Initialize vision detector"""
         self.api_key = api_key or os.getenv('OPENAI_API_KEY')
         if not self.api_key:
             raise ValueError("OPENAI_API_KEY not found in environment")
@@ -24,26 +22,17 @@ class VisionDetector:
         self.model = MODEL
     
     def log(self, message: str, level: str = "INFO"):
-        """Log to GUI only"""
         if self.logger:
             self.logger(message, level)
     
     def detect_poker_elements(self, screenshot_path: str, include_decision: bool = False) -> Dict[str, Any]:
-        """Analyze poker table screenshot with AI vision"""
-        import time
-        
-        timings = {}
+        """Analyze poker table screenshot using GPT-5.2 Responses API"""
         
         # Encode image
-        t = time.time()
         with open(screenshot_path, 'rb') as f:
             image_data = base64.b64encode(f.read()).decode('utf-8')
-        timings['encode'] = time.time() - t
         
-        # Build prompt
-        t = time.time()
-        if include_decision:
-            prompt = """Analyze this poker screenshot. Return JSON only:
+        prompt = """Analyze this poker table screenshot. Return ONLY valid JSON:
 
 {
   "hero_cards": ["As", "Kh"],
@@ -51,61 +40,53 @@ class VisionDetector:
   "pot": 150,
   "hero_stack": 500,
   "to_call": 20,
-  "available_actions": ["fold", "call", "raise"],
-  "button_positions": {"fold": [300, 700], "call": [400, 700], "raise": [500, 700]},
   "recommended_action": "raise",
   "recommended_amount": 60,
-  "reasoning": "Strong hand, good pot odds"
+  "reasoning": "Brief explanation"
 }
 
-Use null if you can't see something. Cards format: As=Ace spades, Kh=King hearts."""
-        else:
-            prompt = """Analyze this poker screenshot. Return JSON only:
+Rules:
+- hero_cards: Hole cards at bottom. Format: As=Ace spades, Kh=King hearts
+- community_cards: Center cards (flop/turn/river). Empty [] if preflop
+- pot: Total pot amount
+- recommended_action: fold, call, check, or raise
+- Use null for unclear values
+- Return ONLY JSON, no other text"""
 
-{
-  "hero_cards": ["As", "Kh"],
-  "community_cards": ["Qd", "Jc", "Ts"],
-  "pot": 150,
-  "hero_stack": 500,
-  "to_call": 20,
-  "available_actions": ["fold", "call", "raise"],
-  "button_positions": {"fold": [300, 700], "call": [400, 700], "raise": [500, 700]}
-}
-
-Use null if you can't see something. Cards format: As=Ace spades, Kh=King hearts."""
-        timings['prompt'] = time.time() - t
-        
-        # Call AI model
+        # Call GPT-5.2 using Responses API
         t = time.time()
-        response = self.client.chat.completions.create(
+        response = self.client.responses.create(
             model=self.model,
-            messages=[{
-                "role": "user",
-                "content": [
-                    {"type": "text", "text": prompt},
-                    {"type": "image_url", "image_url": {"url": f"data:image/png;base64,{image_data}"}}
-                ]
-            }],
-            max_completion_tokens=1000
+            input=[
+                {
+                    "role": "user",
+                    "content": [
+                        {"type": "input_text", "text": prompt},
+                        {"type": "input_image", "image_url": f"data:image/png;base64,{image_data}"}
+                    ]
+                }
+            ],
+            max_output_tokens=500,
+            reasoning={"effort": "none"},
+            text={"verbosity": "low"}
         )
-        timings['api'] = time.time() - t
+        api_time = time.time() - t
         
-        if not response.choices:
-            raise ValueError("No response from API")
-        
-        choice = response.choices[0]
-        result_text = choice.message.content
-        
-        self.log(f"Raw: {result_text[:200] if result_text else 'empty'}...", "DEBUG")
-        
-        if choice.finish_reason == 'length':
-            raise ValueError("Response truncated")
+        # Extract response text
+        result_text = None
+        for item in response.output:
+            if hasattr(item, 'content'):
+                for content in item.content:
+                    if hasattr(content, 'text'):
+                        result_text = content.text
+                        break
         
         if not result_text:
-            raise ValueError("Empty response")
+            raise ValueError("No text in response")
+        
+        self.log(f"Raw: {result_text[:150]}...", "DEBUG")
         
         # Parse JSON
-        t = time.time()
         result_text = result_text.strip()
         if result_text.startswith('```'):
             result_text = result_text.split('```')[1]
@@ -116,28 +97,11 @@ Use null if you can't see something. Cards format: As=Ace spades, Kh=King hearts
         try:
             result = json.loads(result_text)
         except json.JSONDecodeError as e:
+            self.log(f"JSON error: {result_text[:100]}", "ERROR")
             raise ValueError(f"Invalid JSON: {e}")
-        timings['parse'] = time.time() - t
         
-        result['confidence'] = 0.95
-        result['timings'] = timings
+        result['api_time'] = api_time
         result['model'] = self.model
+        result['confidence'] = 0.95
         
         return result
-    
-    def detect_calibration(self, screenshot_path: str) -> Dict[str, Any]:
-        """
-        Detect poker table elements for calibration
-        Returns button regions and pot region
-        """
-        # Use same detection but extract regions
-        elements = self.detect_poker_elements(screenshot_path)
-        
-        # Convert to calibration format
-        calibration = {
-            'button_regions': elements.get('button_positions', {}),
-            'pot_region': None,  # GPT-5-mini reads pot directly, no region needed
-            'confidence': elements.get('confidence', 0.95)
-        }
-        
-        return calibration
