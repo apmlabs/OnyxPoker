@@ -106,8 +106,11 @@ This project uses **9 essential markdown files**. **As an agent, I must understa
 - docs/API.md, docs/DEPLOYMENT.md
 - server/ (optional)
 
-**Critical Lesson**:
-**NEVER delete AGENTS.md or AmazonQ.md. These are my memory. Without them I repeat mistakes and lose all project context. Git is the archive for everything else.**
+**Critical Lesson - File Deletion Rules**:
+- **NEVER delete**: AGENTS.md, AmazonQ.md, README.md
+- **Can delete other .md files IF**: knowledge is incorporated into main files first
+- **Can keep other .md files IF**: explicitly referenced in AGENTS.md/AmazonQ.md
+- Currently keeping: docs/API.md, docs/DEPLOYMENT.md (referenced above)
 
 ## RECENT LEARNINGS (2025-12-29 to 2025-12-31)
 
