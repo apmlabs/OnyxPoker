@@ -16,6 +16,7 @@ The system analyzes poker tables using GPT vision API and provides strategic adv
 ### Technical Documentation (in docs/)
 - **docs/API.md** - Server API reference (for future use)
 - **docs/DEPLOYMENT.md** - Setup and deployment guide
+- **docs/ANALYSIS_NOTES.md** - GPT decision analysis and prompt tuning notes
 
 ## 🏗️ ARCHITECTURE
 
