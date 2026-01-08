@@ -1,10 +1,10 @@
 # OnyxPoker - Status Tracking
 
-**Last Updated**: January 8, 2026 13:02 UTC
+**Last Updated**: January 8, 2026 16:55 UTC
 
-## Current Status: LIVE TESTING COMPLETE
+## Current Status: PROMPT TUNING - SESSION 16
 
-Successfully tested on PokerStars play money tables. Detection working at 100% accuracy. Added session logging for analysis.
+Analyzing GPT decisions and fixing hallucination errors. Current accuracy: 97% (68/70 hands).
 
 ## What Works
 
@@ -34,6 +34,25 @@ Then: Focus poker window → Press F9 → See advice in helper bar
 4. **Measure speed** - Target <10s per analysis
 
 ## Session Log
+
+### Session 16 (January 8, 2026)
+- Analyzed 70 hands - 97% accuracy (68/70 correct)
+- Fixed: Draw verification (J7 on TQ4 = gutshot, not OESD)
+- Fixed: Pre-action advice now gives specific call/raise ranges
+- Wheel straight detection working correctly (A2 on 5QT43)
+- Suited/offsuit detection working
+- Commit: 3fe19ad
+
+### Session 15 (January 8, 2026)
+- Analyzed 6 hands - 67% accuracy (4/6 correct)
+- Fixed: Straight hallucination (A2 on 564 ≠ wheel)
+- Fixed: Suited/offsuit detection (A♠2♦ = offsuit)
+- Commit: 25ba336
+
+### Session 14 (January 8, 2026)
+- Fixed: Weak aces/kings OOP folding
+- Fixed: Multiway pot tightening
+- Commit: e6ee88e
 
 ### Session 13 (January 8, 2026)
 - Added screenshot saving to helper_bar.py (auto-saves to client/screenshots/)
