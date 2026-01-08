@@ -34,6 +34,14 @@ class VisionDetector:
         
         prompt = """Analyze this PokerStars table screenshot. HERO is the player at the BOTTOM of the screen (their cards face up).
 
+CRITICAL FIRST STEP: Find the dealer button (D chip). Count seats clockwise from button:
+- BTN = dealer button on hero
+- SB = 1 seat clockwise from button  
+- BB = 2 seats clockwise from button
+- UTG = 3 seats clockwise from button
+- MP = 4 seats clockwise from button  
+- CO = 5 seats clockwise from button
+
 Return ONLY valid JSON:
 {
   "hero_cards": ["As", "Kh"],
@@ -41,12 +49,12 @@ Return ONLY valid JSON:
   "pot": 0.15,
   "hero_stack": 5.00,
   "to_call": 0.02,
-  "hero_position": "SB",
+  "hero_position": "UTG",
   "num_players": 6,
   "players_in_hand": 3,
   "is_hero_turn": true,
-  "recommended_action": "fold",
-  "recommended_amount": null,
+  "action": "fold",
+  "amount": 0,
   "max_call": null,
   "reasoning": "Detailed explanation here",
   "confidence": 0.95
