@@ -235,10 +235,13 @@ class HelperBar:
             try:
                 # AI analysis
                 self.root.after(0, lambda: self.log(f"API call ({MODEL})...", "DEBUG"))
+                api_start = time.time()
                 vision = VisionDetector(logger=lambda m, l="DEBUG": self.root.after(0, lambda: self.log(m, l)))
                 result = vision.detect_poker_elements(temp_path, include_decision=True)
+                api_time = time.time() - api_start
 
                 elapsed = time.time() - start
+                self.root.after(0, lambda t=api_time: self.log(f"API done: {t:.1f}s", "DEBUG"))
                 self.root.after(0, lambda: self._display_result(result, elapsed, img))
 
             finally:

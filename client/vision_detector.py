@@ -86,7 +86,7 @@ Use null if you can't see something. Cards format: As=Ace spades, Kh=King hearts
                     {"type": "image_url", "image_url": {"url": f"data:image/png;base64,{image_data}"}}
                 ]
             }],
-            max_completion_tokens=50000
+            max_completion_tokens=1000
         )
         timings['api'] = time.time() - t
         
@@ -95,6 +95,8 @@ Use null if you can't see something. Cards format: As=Ace spades, Kh=King hearts
         
         choice = response.choices[0]
         result_text = choice.message.content
+        
+        self.log(f"Raw: {result_text[:200] if result_text else 'empty'}...", "DEBUG")
         
         if choice.finish_reason == 'length':
             raise ValueError("Response truncated")
