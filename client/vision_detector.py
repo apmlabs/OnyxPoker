@@ -64,6 +64,8 @@ Strategy rules:
 - Raise strong suited broadways (KQs, QJs, AJs) vs limpers when in position
 - Only cite flush draws if hero's suit matches board suits (e.g. hero has clubs, board has clubs)
 - When in position with a strong hand, prefer betting over checking
+- Suited aces (A2s-A9s) are playable on BTN/CO - call or raise, do not fold
+- When first to act or facing only blinds, open-raise with any Ax suited and AT+
 
 Return ONLY JSON"""
 
