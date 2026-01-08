@@ -16,17 +16,72 @@ python helper_bar.py
 
 Then: Focus poker window → Press F9 → See advice
 
+## Live Testing Workflow
+
+### 1. Play Session (Windows)
+```bash
+# Start helper bar
+python helper_bar.py
+
+# Play poker, press F9 for each decision
+# Screenshots auto-save to client/screenshots/
+# Logs auto-save to client/logs/session_*.jsonl
+```
+
+### 2. Send Data to Server (Windows)
+```bash
+# Send screenshots
+python send_to_kiro.py
+
+# Send logs  
+python send_logs.py
+```
+
+### 3. Analyze on Server (Linux)
+```bash
+# SSH to server
+ssh ubuntu@54.80.204.92
+
+# Analyze latest session
+cd /home/ubuntu/mcpprojects/onyxpoker-server/server
+python analyze_session.py
+
+# Or test screenshots with GPT
+cd /home/ubuntu/mcpprojects/onyxpoker/client
+python test_screenshots.py /path/to/uploads/
+```
+
+### 4. Review & Iterate
+- Check analysis output for mistakes
+- Update `docs/ANALYSIS_NOTES.md` with findings
+- Tune prompt in `vision_detector.py` if needed
+
+## Log Format (JSONL)
+
+Each line in session log:
+```json
+{
+  "timestamp": "2026-01-08T13:30:00",
+  "screenshot": "20260108_133000.png",
+  "hero_cards": ["As", "Kh"],
+  "board": ["Qd", "Jc", "Ts"],
+  "pot": 0.15,
+  "position": "BTN",
+  "action": "raise",
+  "amount": 0.45,
+  "reasoning": "Strong hand in position...",
+  "confidence": 0.95,
+  "elapsed": 6.2
+}
+```
+
+Screenshot filename matches log entry for easy correlation.
+
 ## Requirements
 
 - Windows 10/11
 - Python 3.8+
 - OpenAI API key with GPT-5.2 access
-
-## Get OpenAI API Key
-
-1. Go to https://platform.openai.com/api-keys
-2. Create new secret key
-3. Copy key (starts with `sk-`)
 
 ## Hotkeys
 
@@ -44,40 +99,12 @@ Then: Focus poker window → Press F9 → See advice
 
 ## Optional: Kiro Analysis Server
 
-For remote screenshot analysis (send from Windows to Linux):
+Server runs on port 5001 at 54.80.204.92.
 
-### Server Setup (Linux)
-```bash
-# On AWS EC2 (54.80.204.92)
-cd /home/ubuntu/mcpprojects/onyxpoker-server/server
-source venv/bin/activate
-python kiro_analyze.py
-```
-
-Server runs on port 5001. Endpoints:
-- `POST /analyze` - Send screenshot for analysis
-- `POST /logs` - Send session logs
+Endpoints:
+- `POST /analyze` - Receive screenshot
+- `POST /logs` - Receive session logs
 - `GET /health` - Health check
-
-### Client Scripts
-```bash
-# Send screenshots to server
-python send_to_kiro.py
-
-# Send session logs
-python send_logs.py
-```
-
-### AWS Security Group
-
-Ensure port 5001 is open:
-```bash
-aws ec2 authorize-security-group-ingress \
-  --group-id sg-xxxxx \
-  --protocol tcp \
-  --port 5001 \
-  --cidr 0.0.0.0/0
-```
 
 ## Troubleshooting
 
@@ -89,16 +116,3 @@ aws ec2 authorize-security-group-ingress \
 
 **Server connection refused**
 - Check server running: `curl http://54.80.204.92:5001/health`
-- Check port 5001 open in security group
-
-## File Structure
-
-```
-client/
-  helper_bar.py      # Main UI
-  vision_detector.py # GPT-5.2 API
-  send_to_kiro.py    # Send screenshots to server
-  send_logs.py       # Send logs to server
-  screenshots/       # Auto-saved screenshots
-  logs/              # Session logs (JSONL)
-```
