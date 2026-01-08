@@ -18,13 +18,14 @@ def send_screenshot(path):
 
 if __name__ == '__main__':
     if len(sys.argv) < 2:
-        # Send all screenshots in folder
         folder = 'screenshots'
         if os.path.isdir(folder):
-            for f in sorted(os.listdir(folder)):
-                if f.endswith('.png'):
-                    print(f"\n=== {f} ===")
-                    send_screenshot(os.path.join(folder, f))
+            files = [f for f in sorted(os.listdir(folder)) if f.endswith('.png')]
+            total = len(files)
+            for i, f in enumerate(files, 1):
+                print(f"\n[{i}/{total}] {f}")
+                send_screenshot(os.path.join(folder, f))
+            print(f"\nDone! Sent {total} screenshots.")
         else:
             print("Usage: python send_to_kiro.py <screenshot.png>")
     else:
