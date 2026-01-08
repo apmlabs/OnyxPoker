@@ -64,12 +64,17 @@ Rules:
 
 Strategy rules:
 - HAND STRENGTH: Hero has pair ONLY if one of hero's 2 cards matches a board card. Example: Hero Q9 on 44T board = NO PAIR (queen high). Hero Q4 on 44T = trips. Board pair alone does NOT give hero a pair!
-- With sets or better, BET/RAISE for value - do not check strong hands
-- Raise strong suited broadways (KQs, QJs, AJs) vs limpers when in position
 - FLUSH DRAWS: Hero has flush draw ONLY if hero's suit matches board suit. Hero spades on hearts board = NO flush draw
-- When in position with a strong hand, prefer betting over checking
+- With sets or better, BET/RAISE for value - do not check strong hands
 - Suited aces (A2s-A9s) are playable on BTN/CO - call or raise, do not fold
-- When first to act or facing only blinds, open-raise with any Ax suited and AT+
+
+MICRO STAKES (2NL) ADJUSTMENTS:
+- Players at 2NL rarely fold pairs - reduce bluff frequency
+- If villain calls flop AND turn, they have something - do NOT bluff river with air
+- Only bluff with equity (draws, blockers) or on very scary board changes
+- Triple barrel bluffing with ace-high = burning money at micros
+- Preflop: fold trash hands like J6o, 96o even on BTN - don't call just because it's cheap
+- On monotone boards without the flush suit, be cautious - call don't raise with pair+draw
 
 Return ONLY JSON"""
 
