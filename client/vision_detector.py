@@ -32,26 +32,32 @@ class VisionDetector:
         with open(screenshot_path, 'rb') as f:
             image_data = base64.b64encode(f.read()).decode('utf-8')
         
-        prompt = """Analyze this poker table screenshot. Return ONLY valid JSON:
+        prompt = """Analyze this PokerStars table screenshot. HERO is the player at the BOTTOM of the screen (their cards face up).
 
+Return ONLY valid JSON:
 {
   "hero_cards": ["As", "Kh"],
   "community_cards": ["Qd", "Jc", "Ts"],
   "pot": 150,
   "hero_stack": 500,
   "to_call": 20,
+  "hero_position": "BTN",
+  "num_players": 6,
+  "players_in_hand": 3,
   "recommended_action": "raise",
   "recommended_amount": 60,
   "reasoning": "Brief explanation"
 }
 
 Rules:
-- hero_cards: Hole cards at bottom. Format: As=Ace spades, Kh=King hearts
-- community_cards: Center cards (flop/turn/river). Empty [] if preflop
-- pot: Total pot amount
-- recommended_action: fold, call, check, or raise
-- Use null for unclear values
-- Return ONLY JSON, no other text"""
+- hero_cards: The TWO face-up cards at BOTTOM of screen (hero's hole cards). Format: As=Ace spades, Kh=King hearts, Td=Ten diamonds
+- community_cards: Cards in CENTER of table. Empty [] if preflop
+- hero_position: Where is the dealer button (D) relative to hero? BTN=hero has button, SB=hero is small blind, BB=big blind, CO=cutoff, MP=middle, EP=early
+- num_players: Total seats with players
+- players_in_hand: Players still active (have cards/chips in front)
+- to_call: Amount shown on CALL button, 0 if CHECK available, null if unclear
+- recommended_action: fold/call/check/raise based on position, cards, pot odds
+- Return ONLY JSON"""
 
         # Call GPT-5.2 using Responses API
         t = time.time()

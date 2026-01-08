@@ -280,20 +280,24 @@ class HelperBar:
             return
 
         # Extract data
-        cards = result.get('hero_cards', ['??', '??'])
+        cards = result.get('hero_cards') or []
+        # Filter out null values from cards
+        cards = [c for c in cards if c] if cards else []
         board = result.get('community_cards', [])
         pot = result.get('pot', 0) or 0
         action = result.get('recommended_action') or 'unknown'
         amount = result.get('recommended_amount') or 0
         reasoning = result.get('reasoning') or ''
-        confidence = result.get('confidence') or 0
+        position = result.get('hero_position') or '?'
 
         # Log result
         cards_str = ' '.join(cards) if cards else '--'
         board_str = ' '.join(board) if board else '--'
-        self.log(f"Cards: {cards_str} | Board: {board_str} | Pot: ${pot}", "INFO")
+        pos_str = f"[{position}]" if position != '?' else ''
+        self.log(f"{pos_str} Cards: {cards_str} | Board: {board_str} | Pot: ${pot}", "INFO")
 
-        if cards:
+        # Show decision if we have any useful info (pot > 0 means table detected)
+        if pot > 0 or cards or board:
             decision_str = f"=> {action.upper()}" + (f" ${amount}" if amount else "")
             self.log(decision_str, "INFO")
             if reasoning:
@@ -303,7 +307,7 @@ class HelperBar:
             self.log(decision_str, "WARN")
 
         # Update right panel
-        self.cards_label.config(text=f"Cards: {cards_str}")
+        self.cards_label.config(text=f"{pos_str} {cards_str}")
         self.board_label.config(text=f"Board: {board_str}")
         self.pot_label.config(text=f"Pot: ${pot}")
 
