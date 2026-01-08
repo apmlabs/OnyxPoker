@@ -1,8 +1,42 @@
 # OnyxPoker - Current Status & Development Progress
 
-## Current Development Status: PRODUCTION READY FOR TESTING
+## Current Development Status: NEW UI IMPLEMENTATION
 
-**Last Updated**: December 31, 2025 01:05 UTC
+**Last Updated**: January 8, 2026 00:18 UTC
+
+## SESSION 12: Helper Bar UI (January 8, 2026)
+
+### What Happened
+- Previous session deleted agent context files (AGENTS.md, AmazonQ.md) during cleanup
+- Files restored via git revert
+- Continuing with helper_bar.py implementation
+
+### New UI: helper_bar.py
+Created new simplified UI based on audit findings:
+- **Wide, short bar** docked to bottom (full width x 220px)
+- **No calibration needed** - screenshots active window directly
+- **Three columns**: Status | Log | Result
+- **Single window** (replaces poker_gui.py + mini_overlay.py)
+
+### Key Changes
+1. F9 now screenshots active window (no config.py needed)
+2. Removed calibration workflow entirely
+3. Consolidated all info into one bar
+4. Screenshot thumbnail shows what AI analyzed
+
+### Files
+- `client/helper_bar.py` - NEW main UI (replaces poker_gui.py)
+- `client/poker_gui.py` - OLD (keep for reference, will delete later)
+- `client/mini_overlay.py` - OLD (replaced by helper_bar.py)
+
+### Next Steps
+1. Test helper_bar.py on Windows
+2. Delete old UI files if working
+3. Update README.md
+
+---
+
+## Previous Status (December 31, 2025)
 
 **🚀 PROJECT STATUS**: Clean, fast, ready for real poker testing
 **📊 CURRENT MODEL**: gpt-5.2 (2-3x faster than gpt-5-mini)
