@@ -1,8 +1,8 @@
 # OnyxPoker - Status Tracking
 
-**Last Updated**: January 8, 2026 22:39 UTC
+**Last Updated**: January 8, 2026 23:55 UTC
 
-## Current Status: READY FOR TESTING - SESSION 20
+## Current Status: READY FOR TESTING - SESSION 21
 
 Position detection fixed, strategy optimized for maximum 2NL profit.
 
@@ -34,6 +34,14 @@ Then: Focus poker window → Press F9 → See advice in helper bar
 4. **Measure speed** - Target <10s per analysis
 
 ## Session Log
+
+### Session 21 (January 8, 2026)
+- **CRITICAL FIX**: JSON schema field name mismatch causing 100% strategy parsing failures
+- Fixed: `recommended_action` → `action` in JSON schema
+- Fixed: `hero_position` → `position` in JSON schema  
+- Fixed: helper_bar.py and test_screenshots.py field references
+- All files now use consistent field names matching existing logs
+- Commits: 917336f, c66efe3, e83bee3
 
 ### Session 20 (January 8, 2026)
 - **MAJOR BREAKTHROUGH**: Position detection bug found and fixed
