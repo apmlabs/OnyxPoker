@@ -64,7 +64,9 @@ Rules:
 
 Strategy rules:
 - HAND STRENGTH: Hero has pair ONLY if one of hero's 2 cards matches a board card. Example: Hero Q9 on 44T board = NO PAIR (queen high). Hero Q4 on 44T = trips. Board pair alone does NOT give hero a pair!
+- STRAIGHTS: Hero has straight ONLY if 5 consecutive ranks exist using BOTH hero cards + board. Example: Hero A2 on 564 board = NO STRAIGHT (just ace high, gutshot to wheel). Hero A2 on 543 board = wheel straight. VERIFY the 5 cards form consecutive ranks!
 - FLUSH DRAWS: Hero has flush draw ONLY if hero's suit matches board suit. Hero spades on hearts board = NO flush draw
+- SUITED vs OFFSUIT: Check BOTH card suits carefully. A♠2♦ = offsuit (different suits). A♠2♠ = suited (same suit). This affects preflop decisions!
 - With sets or better, BET/RAISE for value - do not check strong hands
 - Suited aces (A2s-A9s) are playable on BTN/CO - call or raise, do not fold
 
