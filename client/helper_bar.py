@@ -262,21 +262,24 @@ class HelperBar:
         cards = result.get('hero_cards', ['??', '??'])
         board = result.get('community_cards', [])
         pot = result.get('pot', 0) or 0
-        action = result.get('recommended_action', 'fold')
-        amount = result.get('recommended_amount', 0) or 0
-        reasoning = result.get('reasoning', '')
-        confidence = result.get('confidence', 0.95) or 0.95
+        action = result.get('recommended_action') or 'unknown'
+        amount = result.get('recommended_amount') or 0
+        reasoning = result.get('reasoning') or ''
+        confidence = result.get('confidence') or 0
 
         # Log result
         cards_str = ' '.join(cards) if cards else '--'
         board_str = ' '.join(board) if board else '--'
         self.log(f"Cards: {cards_str} | Board: {board_str} | Pot: ${pot}", "INFO")
 
-        decision_str = f"=> {action.upper()}" + (f" ${amount}" if amount else "")
-        self.log(decision_str, "INFO")
-
-        if reasoning:
-            self.log(reasoning[:150], "DEBUG")
+        if cards:
+            decision_str = f"=> {action.upper()}" + (f" ${amount}" if amount else "")
+            self.log(decision_str, "INFO")
+            if reasoning:
+                self.log(reasoning[:150], "DEBUG")
+        else:
+            decision_str = "No poker table detected"
+            self.log(decision_str, "WARN")
 
         # Update right panel
         self.cards_label.config(text=f"Cards: {cards_str}")
