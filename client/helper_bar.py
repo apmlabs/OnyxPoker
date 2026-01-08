@@ -346,9 +346,16 @@ class HelperBar:
 
         # Check if hero's turn
         is_hero_turn = result.get('is_hero_turn', True)
+        max_call = result.get('max_call')
         turn_indicator = "" if is_hero_turn else "[WAITING] "
         
-        self.decision_label.config(text=turn_indicator + decision_str.replace("=> ", ""))
+        # Add max_call info if pre-action
+        if not is_hero_turn and max_call:
+            decision_str = f"{action.upper()} (max call: €{max_call})"
+        else:
+            decision_str = decision_str.replace("=> ", "")
+        
+        self.decision_label.config(text=turn_indicator + decision_str)
         # Show full reasoning, no truncation
         self.reasoning_label.config(text=reasoning)
 

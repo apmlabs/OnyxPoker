@@ -47,6 +47,7 @@ Return ONLY valid JSON:
   "is_hero_turn": true,
   "recommended_action": "fold",
   "recommended_amount": null,
+  "max_call": null,
   "reasoning": "Detailed explanation here",
   "confidence": 0.95
 }
@@ -59,7 +60,8 @@ Rules:
 - hero_position: Find the dealer button (D chip). BTN=on hero, SB=one left of BTN, BB=two left of BTN, CO/MP/EP for others
 - is_hero_turn: TRUE if large red action buttons (Fold/Call/Raise) are visible at bottom. FALSE if waiting for others
 - recommended_action: fold/call/check/raise/bet. If CHECK button visible, never recommend fold - check is free!
-- reasoning: 2-3 sentences. If NOT hero's turn, give specific ranges: "Call raises up to Xbb, fold to larger. If limped to you, raise to Ybb."
+- max_call: When is_hero_turn=FALSE, set max amount hero should call (in euros, e.g. 0.06). null if hero should fold to any raise or if is_hero_turn=TRUE
+- reasoning: 2-3 sentences explaining the decision
 - confidence: 0.0-1.0 how confident you are in the recommendation
 
 Strategy rules:
