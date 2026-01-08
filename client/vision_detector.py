@@ -62,7 +62,7 @@ Rules:
 Strategy rules:
 - With sets or better, BET/RAISE for value - do not check strong hands
 - Raise strong suited broadways (KQs, QJs, AJs) vs limpers when in position
-- Only cite flush draws if hero's suit matches board suits (e.g. hero has clubs, board has clubs)
+- CRITICAL: Check suit matches! Hero spades + board hearts = NO flush draw. Only count flush draw if hero's suit appears on board
 - When in position with a strong hand, prefer betting over checking
 - Suited aces (A2s-A9s) are playable on BTN/CO - call or raise, do not fold
 - When first to act or facing only blinds, open-raise with any Ax suited and AT+
