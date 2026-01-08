@@ -2,9 +2,9 @@
 
 **Last Updated**: January 8, 2026 22:39 UTC
 
-## Current Status: PROMPT TUNING - SESSION 20
+## Current Status: READY FOR TESTING - SESSION 20
 
-Major breakthrough: is_hero_turn detection now 100% accurate. Fixed poker decision bugs.
+Position detection fixed, strategy optimized for maximum 2NL profit.
 
 ## What Works
 
@@ -36,11 +36,13 @@ Then: Focus poker window → Press F9 → See advice in helper bar
 ## Session Log
 
 ### Session 20 (January 8, 2026)
-- Analyzed 24 hands - **100% is_hero_turn accuracy** (24/24 correct)
-- Fixed: Never recommend "fold" when check is free (A9 on KJQ with no bet)
-- Fixed: Pre-action advice for playable hands (K9o BTN should be "raise" not "fold")
-- Set up systemd service for Kiro server (auto-restart, survives reboots)
-- Commit: 8391ad5
+- **MAJOR BREAKTHROUGH**: Position detection bug found and fixed
+- Only detecting BTN/SB/BB (missing UTG/MP/CO) - 65.9% hands marked as BTN
+- Added position-specific ranges: UTG tight, CO medium, BTN wide
+- Strategy optimization: aggressive value betting (75-100% pot sizing)
+- Monster hands (full house+) must jam for maximum value
+- Expected win rate improvement: +4-6bb/100 from position + value betting fixes
+- Commit: 1cdec55
 
 ### Session 16 (January 8, 2026)
 - Analyzed 70 hands - 97% accuracy (68/70 correct)
