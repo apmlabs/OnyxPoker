@@ -104,16 +104,16 @@ class HelperBar:
                  command=self.copy_log).pack(side='right', padx=1)
 
         # Log text
-        self.log_text = scrolledtext.ScrolledText(center, font=('Courier', 9),
+        self.log_text = scrolledtext.ScrolledText(center, font=('Courier', 10),
                                                   bg='#0d0d0d', fg='#ccc',
                                                   wrap='word', height=10)
         self.log_text.pack(fill='both', expand=True, pady=2)
 
         # Color tags
-        self.log_text.tag_configure('INFO', foreground='#00ff00')
-        self.log_text.tag_configure('DEBUG', foreground='#888888')
-        self.log_text.tag_configure('ERROR', foreground='#ff4444')
-        self.log_text.tag_configure('DECISION', foreground='#00ffff', font=('Courier', 10, 'bold'))
+        self.log_text.tag_configure('INFO', foreground='#00ff00', font=('Courier', 10))
+        self.log_text.tag_configure('DEBUG', foreground='#00ffff', font=('Courier', 10))
+        self.log_text.tag_configure('ERROR', foreground='#ff4444', font=('Courier', 10, 'bold'))
+        self.log_text.tag_configure('DECISION', foreground='#ffff00', font=('Courier', 11, 'bold'))
 
         # === RIGHT: Last Result (400px) ===
         right = tk.Frame(main, bg='#2d2d2d', width=400)
