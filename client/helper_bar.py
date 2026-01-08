@@ -123,10 +123,6 @@ class HelperBar:
         tk.Label(right, text="LAST RESULT", font=('Arial', 9, 'bold'),
                 bg='#2d2d2d', fg='#888').pack(pady=3)
 
-        # Screenshot thumbnail
-        self.thumb_canvas = tk.Canvas(right, width=380, height=70, bg='#111', highlightthickness=0)
-        self.thumb_canvas.pack(pady=2)
-
         # Game state
         state_frame = tk.Frame(right, bg='#2d2d2d')
         state_frame.pack(fill='x', padx=5)
@@ -362,21 +358,6 @@ class HelperBar:
         conf_color = '#00ff00' if confidence > 0.9 else '#ffff00' if confidence > 0.7 else '#ff8800'
         self.conf_label.config(text=f"Conf: {confidence:.0%}", fg=conf_color)
         self.time_label.config(text=f"{elapsed:.1f}s")
-
-        # Update thumbnail
-        self._update_thumbnail(screenshot)
-
-    def _update_thumbnail(self, img):
-        """Update screenshot thumbnail"""
-        try:
-            # Resize to fit canvas
-            thumb = img.copy()
-            thumb.thumbnail((380, 70), Image.Resampling.LANCZOS)
-            self._thumb_photo = ImageTk.PhotoImage(thumb)
-            self.thumb_canvas.delete("all")
-            self.thumb_canvas.create_image(190, 35, image=self._thumb_photo)
-        except Exception as e:
-            self.log(f"Thumbnail error: {e}", "DEBUG")
 
     def on_f10(self):
         """Toggle bot mode"""
