@@ -1,257 +1,104 @@
 # OnyxPoker Deployment Guide
 
-## Quick Start
+## Quick Start (Windows Client)
 
-### 1. Linux Server (Already Running)
 ```bash
-Server: http://54.80.204.92:5000
-Status: ✅ Running as systemd service
-API Key: test_key_12345
-```
-
-### 2. Windows Client Setup
-```bash
-# 1. Get OpenAI API key
-export OPENAI_API_KEY='sk-your-key-here'
+# 1. Set OpenAI API key
+set OPENAI_API_KEY=sk-your-key-here
 
 # 2. Install dependencies
 cd client
 pip install -r requirements.txt
 
-# 3. Configure .env
-echo "ONYXPOKER_SERVER_URL=http://54.80.204.92:5000" > .env
-echo "ONYXPOKER_API_KEY=test_key_12345" >> .env
-echo "OPENAI_API_KEY=sk-your-key-here" >> .env
-
-# 4. Test vision
-python test_vision.py poker_table.png
-
-# 5. Run GUI
-python poker_gui.py
+# 3. Run
+python helper_bar.py
 ```
 
-## Server Deployment (Already Complete)
+Then: Focus poker window → Press F9 → See advice
 
-### Current Setup
-- **Location**: AWS EC2 (54.80.204.92)
-- **Service**: systemd (onyxpoker.service)
-- **Port**: 5000 (publicly accessible)
-- **Logs**: /var/log/onyxpoker/
-- **Auto-restart**: Enabled
+## Requirements
 
-### Server Management
-```bash
-# Check status
-sudo systemctl status onyxpoker
-
-# View logs
-sudo journalctl -u onyxpoker -f
-
-# Restart
-sudo systemctl restart onyxpoker
-
-# Stop
-sudo systemctl stop onyxpoker
-```
-
-### Update Server Code
-```bash
-# SSH to server
-ssh ubuntu@54.80.204.92
-
-# Pull latest code
-cd /home/ubuntu/mcpprojects/onyxpoker
-git pull origin main
-
-# Restart service
-sudo systemctl restart onyxpoker
-```
-
-## Client Deployment
-
-### Prerequisites
 - Windows 10/11
 - Python 3.8+
-- OpenAI API key (for GPT-4o vision)
-- Network access to server
+- OpenAI API key with GPT-5.2 access
 
-### Installation
-```bash
-# Clone repository
-git clone https://github.com/apmlabs/OnyxPoker.git
-cd OnyxPoker/client
+## Get OpenAI API Key
 
-# Create virtual environment
-python -m venv venv
-venv\Scripts\activate
-
-# Install dependencies
-pip install -r requirements.txt
-
-# Configure environment
-copy ..\.env.example .env
-# Edit .env with your OpenAI API key
-```
-
-### Configuration
-
-**Client .env file:**
-```bash
-# Server connection
-ONYXPOKER_SERVER_URL=http://54.80.204.92:5000
-ONYXPOKER_API_KEY=test_key_12345
-
-# OpenAI GPT-4o Vision (REQUIRED)
-OPENAI_API_KEY=sk-your-key-here
-
-# Optional settings
-SCREENSHOT_DELAY=1.0
-MAX_RETRIES=3
-```
-
-**Get OpenAI API Key:**
 1. Go to https://platform.openai.com/api-keys
-2. Sign up or log in
-3. Click "Create new secret key"
-4. Copy key (starts with `sk-`)
+2. Create new secret key
+3. Copy key (starts with `sk-`)
 
-## Testing
+## Hotkeys
 
-### Test Vision Detection
+| Key | Action |
+|-----|--------|
+| F9 | Get AI advice |
+| F10 | Start bot loop |
+| F11 | Stop bot |
+| F12 | Hide/show bar |
+
+## Cost
+
+- ~$0.002 per hand
+- ~$2 per 1000 hands
+
+## Optional: Kiro Analysis Server
+
+For remote screenshot analysis (send from Windows to Linux):
+
+### Server Setup (Linux)
 ```bash
-# Take screenshot of poker table
-# Save as poker_table.png
-
-# Test GPT-4o vision
-python test_vision.py poker_table.png
+# On AWS EC2 (54.80.204.92)
+cd /home/ubuntu/mcpprojects/onyxpoker-server/server
+source venv/bin/activate
+python kiro_analyze.py
 ```
 
-Expected output:
-```
-✅ Detection Results:
-Hero Cards:       ['As', 'Kh']
-Community Cards:  ['Qd', 'Jc', 'Ts']
-Pot:              $150
-Hero Stack:       $500
-Confidence:       0.95
-```
+Server runs on port 5001. Endpoints:
+- `POST /analyze` - Send screenshot for analysis
+- `POST /logs` - Send session logs
+- `GET /health` - Health check
 
-### Test Server Connection
+### Client Scripts
 ```bash
-# Test health endpoint
-curl http://54.80.204.92:5000/health
+# Send screenshots to server
+python send_to_kiro.py
 
-# Test poker analysis
-curl -X POST http://54.80.204.92:5000/analyze-poker \
-  -H "Authorization: Bearer test_key_12345" \
-  -H "Content-Type: application/json" \
-  -d '{"hero_cards":["As","Kh"],"pot":150,"hero_stack":500,"to_call":20}'
+# Send session logs
+python send_logs.py
 ```
 
-## Security
+### AWS Security Group
 
-### Current Setup
-- API key authentication (test_key_12345)
-- Rate limiting (60 req/min)
-- CORS enabled
-- Firewall: Port 5000 open
-
-### Production Recommendations
-1. **Change API key** - Generate secure key
-2. **Enable HTTPS** - Use nginx + Let's Encrypt
-3. **Restrict IPs** - Firewall rules for client IPs only
-4. **Rotate keys** - Regular API key rotation
-
-### Generate Secure API Key
+Ensure port 5001 is open:
 ```bash
-python -c "import secrets; print(secrets.token_urlsafe(32))"
-```
-
-## Monitoring
-
-### Server Logs
-```bash
-# Application logs
-tail -f /var/log/onyxpoker/server.log
-
-# Error logs
-tail -f /var/log/onyxpoker/error.log
-
-# Systemd logs
-sudo journalctl -u onyxpoker -f
-```
-
-### Health Check
-```bash
-# Check server health
-curl http://54.80.204.92:5000/health
-
-# Should return: {"status":"healthy"}
+aws ec2 authorize-security-group-ingress \
+  --group-id sg-xxxxx \
+  --protocol tcp \
+  --port 5001 \
+  --cidr 0.0.0.0/0
 ```
 
 ## Troubleshooting
 
-### Client Issues
-
 **"OPENAI_API_KEY not found"**
-- Set environment variable or add to .env file
-- Verify key starts with `sk-`
+- Set environment variable: `set OPENAI_API_KEY=sk-...`
 
-**"Connection refused"**
-- Check server is running: `curl http://54.80.204.92:5000/health`
-- Verify firewall allows port 5000
-- Check API key is correct
+**"No module named 'openai'"**
+- Run: `pip install -r requirements.txt`
 
-**"Invalid API key"**
-- Verify OpenAI API key is valid
-- Check you have GPT-4o access
-- Try regenerating key
+**Server connection refused**
+- Check server running: `curl http://54.80.204.92:5001/health`
+- Check port 5001 open in security group
 
-### Server Issues
+## File Structure
 
-**"Service not running"**
-```bash
-sudo systemctl status onyxpoker
-sudo systemctl start onyxpoker
 ```
-
-**"Kiro CLI not found"**
-```bash
-which kiro-cli
-# Should return: /home/ubuntu/.local/bin/kiro-cli
+client/
+  helper_bar.py      # Main UI
+  vision_detector.py # GPT-5.2 API
+  send_to_kiro.py    # Send screenshots to server
+  send_logs.py       # Send logs to server
+  screenshots/       # Auto-saved screenshots
+  logs/              # Session logs (JSONL)
 ```
-
-**"Port already in use"**
-```bash
-sudo lsof -i :5000
-sudo systemctl restart onyxpoker
-```
-
-## Cost Analysis
-
-### GPT-4o Vision API
-- **Per hand**: ~$0.002
-- **100 hands/day**: $6/month
-- **1000 hands/day**: $60/month
-
-### AWS Server
-- **t3.medium**: ~$30/month
-- **20GB storage**: ~$2/month
-- **Total**: ~$32/month
-
-### Total Cost
-- Casual player: $38/month
-- Serious grinder: $92/month
-
-## Performance
-
-### Expected Response Times
-- Vision detection: 3-5 seconds
-- Kiro CLI analysis: 2-5 seconds
-- Total cycle: 5-10 seconds
-
-### Optimization Tips
-1. Keep Kiro CLI warm (persistent process)
-2. Cache button positions
-3. Batch API calls when possible
-4. Use Gemini 2.0 Flash for 50% cost savings
