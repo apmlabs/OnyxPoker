@@ -7,7 +7,7 @@ import os
 import base64
 import requests
 
-SERVER_URL = os.getenv('KIRO_SERVER', 'http://57.181.105.180:5001')
+SERVER_URL = os.getenv('KIRO_SERVER', 'http://54.80.204.92:5001')
 
 def send_screenshot(path):
     with open(path, 'rb') as f:
