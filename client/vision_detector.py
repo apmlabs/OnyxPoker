@@ -178,8 +178,8 @@ Return ONLY JSON"""
         
         # Validate position detection
         valid_positions = ['UTG', 'MP', 'CO', 'BTN', 'SB', 'BB']
-        if result.get('hero_position') not in valid_positions:
-            self.log(f"WARNING: Invalid position '{result.get('hero_position')}' detected. Expected one of: {valid_positions}", "ERROR")
-            result['hero_position'] = '?'  # Mark as unknown for debugging
+        if result.get('position') not in valid_positions:
+            self.log(f"WARNING: Invalid position '{result.get('position')}' detected. Expected one of: {valid_positions}", "ERROR")
+            result['position'] = '?'  # Mark as unknown for debugging
         
         return result
