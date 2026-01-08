@@ -59,7 +59,7 @@ Rules:
 - to_call: Amount on CALL button, 0 if CHECK available, null if no action buttons
 - hero_position: Find the dealer button (D chip). BTN=on hero, SB=one left of BTN, BB=two left of BTN, CO/MP/EP for others
 - is_hero_turn: Look at BOTTOM RIGHT corner. TRUE only if you see LARGE RED rectangular buttons with white text like "Fold" "Call €X" "Raise To €X" or "Check" "Bet €X". These buttons are ~150px wide and bright red. FALSE if you only see small gray/white checkboxes with text like "Check", "Check/Fold", "Call Any", "Fold" - those are pre-select options, NOT action buttons.
-- recommended_action: fold/call/check/raise/bet. If CHECK button visible, never recommend fold - check is free!
+- recommended_action: fold/call/check/raise/bet. NEVER recommend fold when checking is free! If is_hero_turn=TRUE and CHECK button visible, recommend check not fold. If is_hero_turn=FALSE and no bet to face (no chips in front of opponents on current street), recommend check not fold.
 - max_call: REQUIRED when is_hero_turn=FALSE. Set the maximum raise amount hero should call (e.g. 0.06 for 3bb). Use null ONLY if hero should fold to ANY raise, or if is_hero_turn=TRUE.
 - reasoning: 2-3 sentences explaining the decision
 - confidence: 0.0-1.0 how confident you are in the recommendation
