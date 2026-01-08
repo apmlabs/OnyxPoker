@@ -147,6 +147,32 @@ onyxpoker/
 
 ## 📖 SESSION HISTORY & LESSONS LEARNED
 
+### Session 20: 100% Turn Detection + Systemd Service (January 8, 2026)
+
+**Challenge**: Two poker decision bugs found during testing.
+
+**Major Achievement**: is_hero_turn detection reached **100% accuracy** (24/24 hands).
+
+**Fixes Applied**:
+1. **Never fold when check is free**: A9 on KJQ with no bet → recommend "check" not "fold"
+2. **Pre-action playable hands**: K9o on BTN → recommend "raise" (if folded to) not "fold"
+
+**Infrastructure Improvement**: Set up systemd service for Kiro server
+- Auto-restart on crash (RestartSec=10)
+- Auto-start on boot (enabled)
+- Proper process management
+- Easy monitoring with `systemctl status kiro-server`
+
+**What Worked**:
+✅ Turn detection fix from previous sessions is rock solid
+✅ GPT correctly distinguishes RED action buttons vs gray checkboxes
+✅ max_call field working perfectly for pre-action sizing
+✅ Systemd service prevents server downtime issues
+
+**Critical Lesson**: The is_hero_turn detection problem is now completely solved. Focus can shift to poker strategy refinement.
+
+---
+
 ### Session 12: Helper Bar UI + Cleanup (January 8, 2026)
 
 **Challenge**: Previous session deleted agent context files during cleanup.

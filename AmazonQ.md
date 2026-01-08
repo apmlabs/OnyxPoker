@@ -1,10 +1,10 @@
 # OnyxPoker - Status Tracking
 
-**Last Updated**: January 8, 2026 16:55 UTC
+**Last Updated**: January 8, 2026 22:39 UTC
 
-## Current Status: PROMPT TUNING - SESSION 16
+## Current Status: PROMPT TUNING - SESSION 20
 
-Analyzing GPT decisions and fixing hallucination errors. Current accuracy: 97% (68/70 hands).
+Major breakthrough: is_hero_turn detection now 100% accurate. Fixed poker decision bugs.
 
 ## What Works
 
@@ -34,6 +34,13 @@ Then: Focus poker window → Press F9 → See advice in helper bar
 4. **Measure speed** - Target <10s per analysis
 
 ## Session Log
+
+### Session 20 (January 8, 2026)
+- Analyzed 24 hands - **100% is_hero_turn accuracy** (24/24 correct)
+- Fixed: Never recommend "fold" when check is free (A9 on KJQ with no bet)
+- Fixed: Pre-action advice for playable hands (K9o BTN should be "raise" not "fold")
+- Set up systemd service for Kiro server (auto-restart, survives reboots)
+- Commit: 8391ad5
 
 ### Session 16 (January 8, 2026)
 - Analyzed 70 hands - 97% accuracy (68/70 correct)
