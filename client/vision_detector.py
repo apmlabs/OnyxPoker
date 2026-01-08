@@ -59,12 +59,13 @@ Rules:
 - hero_position: Find the dealer button (D chip). BTN=on hero, SB=one left of BTN, BB=two left of BTN, CO/MP/EP for others
 - is_hero_turn: TRUE if large red action buttons (Fold/Call/Raise) are visible at bottom. FALSE if waiting for others
 - recommended_action: fold/call/check/raise/bet. Consider position and hand strength
-- reasoning: 2-3 sentences. If NOT hero's turn, explain what to do for each scenario (e.g. "If checked to: bet 1/2 pot. If raised: call up to X, fold to larger")
+- reasoning: 2-3 sentences. If NOT hero's turn, give specific ranges: "Call raises up to Xbb, fold to larger. If limped to you, raise to Ybb."
 - confidence: 0.0-1.0 how confident you are in the recommendation
 
 Strategy rules:
 - HAND STRENGTH: Hero has pair ONLY if one of hero's 2 cards matches a board card. Example: Hero Q9 on 44T board = NO PAIR (queen high). Hero Q4 on 44T = trips. Board pair alone does NOT give hero a pair!
 - STRAIGHTS: Hero has straight ONLY if 5 consecutive ranks exist using BOTH hero cards + board. Example: Hero A2 on 564 board = NO STRAIGHT (just ace high, gutshot to wheel). Hero A2 on 543 board = wheel straight. VERIFY the 5 cards form consecutive ranks!
+- STRAIGHT DRAWS: OESD needs 4 consecutive cards where hero contributes. J7 on TQ4 = gutshot only (needs 9), NOT OESD. The 7 doesn't connect! Verify each card in the sequence.
 - FLUSH DRAWS: Hero has flush draw ONLY if hero's suit matches board suit. Hero spades on hearts board = NO flush draw
 - SUITED vs OFFSUIT: Check BOTH card suits carefully. A♠2♦ = offsuit (different suits). A♠2♠ = suited (same suit). This affects preflop decisions!
 - With sets or better, BET/RAISE for value - do not check strong hands
