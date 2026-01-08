@@ -58,7 +58,7 @@ Rules:
 - to_call: Amount on CALL button, 0 if CHECK available, null if no action buttons
 - hero_position: Find the dealer button (D chip). BTN=on hero, SB=one left of BTN, BB=two left of BTN, CO/MP/EP for others
 - is_hero_turn: TRUE if large red action buttons (Fold/Call/Raise) are visible at bottom. FALSE if waiting for others
-- recommended_action: fold/call/check/raise/bet. Consider position and hand strength
+- recommended_action: fold/call/check/raise/bet. If CHECK button visible, never recommend fold - check is free!
 - reasoning: 2-3 sentences. If NOT hero's turn, give specific ranges: "Call raises up to Xbb, fold to larger. If limped to you, raise to Ybb."
 - confidence: 0.0-1.0 how confident you are in the recommendation
 
