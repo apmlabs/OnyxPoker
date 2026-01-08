@@ -266,8 +266,6 @@ class HelperBar:
                     os.unlink(temp_path)
 
         except Exception as e:
-
-        except Exception as e:
             import traceback
             self.root.after(0, lambda: self.log(f"Error: {e}", "ERROR"))
             self.root.after(0, lambda: self.log(traceback.format_exc(), "DEBUG"))
