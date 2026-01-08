@@ -46,7 +46,8 @@ Return ONLY valid JSON:
   "players_in_hand": 3,
   "recommended_action": "fold",
   "recommended_amount": null,
-  "reasoning": "Brief explanation"
+  "reasoning": "Brief explanation",
+  "confidence": 0.95
 }
 
 Rules:
@@ -55,8 +56,16 @@ Rules:
 - pot/hero_stack/to_call: Read EXACT amounts including decimals (e.g. 0.05 not 5). Look at currency symbol and decimal point carefully
 - to_call: Amount on CALL button, 0 if CHECK available, null if no action buttons
 - hero_position: Find the dealer button (D chip). BTN=on hero, SB=one left of BTN, BB=two left of BTN, CO/MP/EP for others
-- recommended_action: fold/call/check/raise. Consider position and hand strength
-- Return ONLY JSON"""
+- recommended_action: fold/call/check/raise/bet. Consider position and hand strength
+- confidence: 0.0-1.0 how confident you are in the recommendation
+
+Strategy rules:
+- With sets or better, BET/RAISE for value - do not check strong hands
+- Raise strong suited broadways (KQs, QJs, AJs) vs limpers when in position
+- Only cite flush draws if hero's suit matches board suits (e.g. hero has clubs, board has clubs)
+- When in position with a strong hand, prefer betting over checking
+
+Return ONLY JSON"""
 
         # Call GPT-5.2 using Responses API
         t = time.time()

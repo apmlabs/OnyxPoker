@@ -219,6 +219,7 @@ class HelperBar:
         import time
         from datetime import datetime
         start = time.time()
+        screenshot_name = None
 
         try:
             if test_image_path:
@@ -226,7 +227,8 @@ class HelperBar:
                 from PIL import Image
                 img = Image.open(test_image_path)
                 temp_path = test_image_path
-                self.root.after(0, lambda: self.log(f"Test: {os.path.basename(test_image_path)}", "DEBUG"))
+                screenshot_name = os.path.basename(test_image_path)
+                self.root.after(0, lambda: self.log(f"Test: {screenshot_name}", "DEBUG"))
                 delete_temp = False
             else:
                 # Live mode - screenshot active window
@@ -245,7 +247,8 @@ class HelperBar:
                 screenshots_dir = os.path.join(os.path.dirname(__file__), 'screenshots')
                 os.makedirs(screenshots_dir, exist_ok=True)
                 timestamp = datetime.now().strftime('%Y%m%d_%H%M%S')
-                saved_path = os.path.join(screenshots_dir, f'{timestamp}.png')
+                screenshot_name = f'{timestamp}.png'
+                saved_path = os.path.join(screenshots_dir, screenshot_name)
                 img.save(saved_path)
                 self.root.after(0, lambda p=saved_path: self.log(f"Saved: {os.path.basename(p)}", "DEBUG"))
 
@@ -265,7 +268,7 @@ class HelperBar:
 
                 elapsed = time.time() - start
                 self.root.after(0, lambda t=api_time: self.log(f"API done: {t:.1f}s", "DEBUG"))
-                self.root.after(0, lambda: self._display_result(result, elapsed, img))
+                self.root.after(0, lambda: self._display_result(result, elapsed, img, screenshot_name))
 
             finally:
                 if delete_temp:
@@ -279,7 +282,7 @@ class HelperBar:
             self._analyzing = False
             self.root.after(0, lambda: self.status_label.config(text="Ready", fg='#00ff00'))
 
-    def _display_result(self, result, elapsed, screenshot):
+    def _display_result(self, result, elapsed, screenshot, screenshot_name=None):
         """Display analysis result"""
         if not result:
             self.log("No result from AI", "ERROR")
@@ -297,9 +300,10 @@ class HelperBar:
         position = result.get('hero_position') or '?'
         confidence = result.get('confidence', 0.95) or 0.95
 
-        # Save to session log (JSONL format)
+        # Save to session log (JSONL format) - includes screenshot name for correlation
         log_entry = {
             'timestamp': datetime.now().isoformat(),
+            'screenshot': screenshot_name,
             'hero_cards': cards,
             'board': board,
             'pot': pot,
@@ -308,7 +312,7 @@ class HelperBar:
             'amount': amount,
             'reasoning': reasoning,
             'confidence': confidence,
-            'elapsed': elapsed
+            'elapsed': round(elapsed, 2)
         }
         with open(SESSION_LOG, 'a') as f:
             f.write(json.dumps(log_entry) + '\n')
