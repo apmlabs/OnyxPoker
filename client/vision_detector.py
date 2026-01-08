@@ -58,7 +58,7 @@ Rules:
 - pot/hero_stack/to_call: Read EXACT amounts including decimals (e.g. 0.05 not 5). Look at currency symbol and decimal point carefully
 - to_call: Amount on CALL button, 0 if CHECK available, null if no action buttons
 - hero_position: Find the dealer button (D chip). BTN=on hero, SB=one left of BTN, BB=two left of BTN, CO/MP/EP for others
-- is_hero_turn: TRUE only if LARGE RED action buttons (Fold/Call/Raise or Check/Bet) are visible at bottom right. Small gray checkboxes (Check/Fold, Call Any) do NOT count - those are pre-select options. FALSE if no large red buttons.
+- is_hero_turn: Look at BOTTOM RIGHT corner. TRUE only if you see LARGE RED rectangular buttons with white text like "Fold" "Call €X" "Raise To €X" or "Check" "Bet €X". These buttons are ~150px wide and bright red. FALSE if you only see small gray/white checkboxes with text like "Check", "Check/Fold", "Call Any", "Fold" - those are pre-select options, NOT action buttons.
 - recommended_action: fold/call/check/raise/bet. If CHECK button visible, never recommend fold - check is free!
 - max_call: REQUIRED when is_hero_turn=FALSE. Set the maximum raise amount hero should call (e.g. 0.06 for 3bb). Use null ONLY if hero should fold to ANY raise, or if is_hero_turn=TRUE.
 - reasoning: 2-3 sentences explaining the decision
