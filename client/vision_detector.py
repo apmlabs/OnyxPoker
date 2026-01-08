@@ -63,10 +63,10 @@ Rules:
 - confidence: 0.0-1.0 how confident you are in the recommendation
 
 Strategy rules:
-- CRITICAL: Hero's hand = ONLY the two cards at bottom. Board cards are shared. Hero needs a card matching the board to have a pair/trips
+- HAND STRENGTH: Hero has pair ONLY if one of hero's 2 cards matches a board card. Example: Hero Q9 on 44T board = NO PAIR (queen high). Hero Q4 on 44T = trips. Board pair alone does NOT give hero a pair!
 - With sets or better, BET/RAISE for value - do not check strong hands
 - Raise strong suited broadways (KQs, QJs, AJs) vs limpers when in position
-- CRITICAL: Check suit matches! Hero spades + board hearts = NO flush draw. Only count flush draw if hero's suit appears on board
+- FLUSH DRAWS: Hero has flush draw ONLY if hero's suit matches board suit. Hero spades on hearts board = NO flush draw
 - When in position with a strong hand, prefer betting over checking
 - Suited aces (A2s-A9s) are playable on BTN/CO - call or raise, do not fold
 - When first to act or facing only blinds, open-raise with any Ax suited and AT+
