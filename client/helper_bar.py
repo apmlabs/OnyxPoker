@@ -341,6 +341,9 @@ class HelperBar:
         # Show max_call if pre-action
         if not is_hero_turn and max_call:
             self.maxcall_label.config(text=f"Max call: €{max_call}")
+            self.log(f"Max call: €{max_call}", "INFO")
+        elif not is_hero_turn:
+            self.maxcall_label.config(text="[PRE-ACTION]")
         else:
             self.maxcall_label.config(text="")
         

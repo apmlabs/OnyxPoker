@@ -132,6 +132,9 @@ Return ONLY JSON"""
             self.log(f"JSON error: {result_text[:100]}", "ERROR")
             raise ValueError(f"Invalid JSON: {e}")
         
+        # Debug max_call
+        self.log(f"max_call from GPT: {result.get('max_call')}, is_hero_turn: {result.get('is_hero_turn')}", "DEBUG")
+        
         result['api_time'] = api_time
         result['model'] = self.model
         result['confidence'] = 0.95
