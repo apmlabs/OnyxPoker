@@ -284,10 +284,10 @@ class HelperBar:
         cards = [c for c in cards if c] if cards else []
         board = result.get('community_cards', [])
         pot = result.get('pot', 0) or 0
-        action = result.get('recommended_action') or 'unknown'
+        action = result.get('action') or 'unknown'
         amount = result.get('recommended_amount') or 0
         reasoning = result.get('reasoning') or ''
-        position = result.get('hero_position') or '?'
+        position = result.get('position') or '?'
         confidence = result.get('confidence', 0.95) or 0.95
 
         max_call = result.get('max_call')

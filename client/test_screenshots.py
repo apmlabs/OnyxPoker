@@ -21,7 +21,7 @@ def test_screenshot(path, index=None, total=None):
         cards = result.get('hero_cards') or []
         board = result.get('community_cards') or []
         pot = result.get('pot') or 0
-        action = result.get('recommended_action') or 'none'
+        action = result.get('action') or 'none'
         amount = result.get('recommended_amount') or 0
         reasoning = result.get('reasoning') or ''
         api_time = result.get('api_time', 0)
