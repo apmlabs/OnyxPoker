@@ -29,10 +29,23 @@ Created new simplified UI based on audit findings:
 - `client/poker_gui.py` - OLD (keep for reference, will delete later)
 - `client/mini_overlay.py` - OLD (replaced by helper_bar.py)
 
+### Cleanup Done
+- Deleted old client files (poker_gui.py, mini_overlay.py, etc.)
+- Deleted archive folder (git is our history)
+- Updated README.md with simple instructions
+
+### Current Files
+```
+client/
+  helper_bar.py      # Main UI (NEW)
+  vision_detector.py # GPT-5.2 API
+  poker_reader.py    # Screenshot helper
+  requirements.txt
+```
+
 ### Next Steps
 1. Test helper_bar.py on Windows
-2. Delete old UI files if working
-3. Update README.md
+2. Fix any issues found during testing
 
 ---
 

@@ -71,6 +71,44 @@ This project uses **9 essential markdown files**. **As an agent, I must understa
 **Phase 1**: Vision LLM reads real tables, makes decisions (client-only)
 **Phase 2**: Deep CFR agent on server (research-grade AI)
 
+### Session 12: Helper Bar UI + Cleanup (January 8, 2026 00:18-00:23 UTC)
+**Challenge**: Previous session deleted agent context files during cleanup. User frustrated.
+
+**What I Did Wrong**:
+1. Deleted AGENTS.md and AmazonQ.md during "cleanup"
+2. Lost all agent learnings and project history
+3. User had to ask me to restore from git
+
+**What I Did Right (This Session)**:
+1. Restored files via git revert
+2. Created helper_bar.py (new simplified UI)
+3. Cleaned up old files WITHOUT touching agent files
+4. Deleted archive folder (git is our history)
+5. Updated AmazonQ.md with current status
+
+**New UI: helper_bar.py**:
+- Wide, short bar docked to bottom (full width x 220px)
+- No calibration needed - F9 screenshots active window
+- Three columns: Status | Log | Result
+- Single window replaces poker_gui.py + mini_overlay.py
+
+**Files Deleted**:
+- poker_gui.py, mini_overlay.py, hotkey_manager.py, system_tray.py
+- config.py, kiro_validator.py, automation_client.py
+- poker_bot.py, test_*.py
+- archive/ folder (20 old docs)
+
+**Files Kept**:
+- AGENTS.md (THIS FILE - NEVER DELETE)
+- AmazonQ.md (status tracking - NEVER DELETE)
+- README.md (updated with new instructions)
+- client/helper_bar.py, vision_detector.py, poker_reader.py
+- docs/API.md, docs/DEPLOYMENT.md
+- server/ (optional)
+
+**Critical Lesson**:
+**NEVER delete AGENTS.md or AmazonQ.md. These are my memory. Without them I repeat mistakes and lose all project context. Git is the archive for everything else.**
+
 ## RECENT LEARNINGS (2025-12-29 to 2025-12-31)
 
 ### Session 11: Complete Cleanup + gpt-5.2 Switch (00:54-01:05 UTC December 31, 2025)
