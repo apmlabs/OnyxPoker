@@ -289,6 +289,7 @@ class HelperBar:
         amount = result.get('recommended_amount') or 0
         reasoning = result.get('reasoning') or ''
         position = result.get('hero_position') or '?'
+        confidence = result.get('confidence', 0.95) or 0.95
 
         # Log result
         cards_str = ' '.join(cards) if cards else '--'
