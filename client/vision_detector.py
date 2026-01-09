@@ -32,37 +32,22 @@ class VisionDetector:
         with open(screenshot_path, 'rb') as f:
             image_data = base64.b64encode(f.read()).decode('utf-8')
         
-        prompt = """Analyze this PokerStars table screenshot. HERO is the player at the BOTTOM of the screen (their cards face up).
+        prompt = """Analyze this PokerStars table screenshot. HERO is at the bottom center (cards face up).
 
 POSITION DETECTION:
 
-You are looking at a green oval poker table with 6 seats:
-- BOTTOM: This is HERO (you). Cards face up.
-- BOTTOM-RIGHT: One seat to hero's right
-- RIGHT: Two seats to hero's right  
-- TOP-RIGHT: Three seats to hero's right (top area)
-- TOP-LEFT: Four seats to hero's right (top area)
-- LEFT: Five seats to hero's right
+Find the RED SPADE with STAR icon - this is the dealer button.
+Look at which player has this icon next to their avatar.
 
-The DEALER BUTTON is a RED SPADE with a STAR inside. Find it.
+Use this mapping based on where you see the button on screen:
+- Button next to HERO (bottom center) → position = "BTN"
+- Button to hero's immediate right → position = "SB"
+- Button on the right side of table → position = "BB"
+- Button at top-right area → position = "UTG"
+- Button at top-left area → position = "MP"
+- Button on the left side of table → position = "CO"
 
-POSITION LOOKUP (memorize this):
-- Button at BOTTOM = hero is BTN
-- Button at BOTTOM-RIGHT = hero is SB
-- Button at RIGHT = hero is BB
-- Button at TOP-RIGHT = hero is UTG
-- Button at TOP-LEFT = hero is MP
-- Button at LEFT = hero is CO
-
-START your reasoning with: "Button is at [BOTTOM/BOTTOM-RIGHT/RIGHT/TOP-RIGHT/TOP-LEFT/LEFT], so hero is [BTN/SB/BB/UTG/MP/CO]."
-
-CRITICAL - USE THIS EXACT MAPPING:
-Button at BOTTOM → "BTN"
-Button at BOTTOM-RIGHT → "SB"
-Button at RIGHT → "BB"
-Button at TOP-RIGHT → "UTG"
-Button at TOP-LEFT → "MP"
-Button at LEFT → "CO"
+Your reasoning MUST start with: "Button is at [location], so hero is [position]."
 
 Return ONLY valid JSON:
 {
