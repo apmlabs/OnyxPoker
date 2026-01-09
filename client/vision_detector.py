@@ -58,24 +58,33 @@ READING THE TABLE:
 - bet_size: When action is bet/raise, specify the amount in euros. Use 2.5-3x BB preflop, 65-75% pot postflop.
 - reasoning: Focus on WHAT to do and WHY.
 
-SUITED CHECK: Look at BOTH card suits. Ah5c = OFFSUIT (hearts vs clubs). A5s means SAME suit only!
+CRITICAL - SUITED VS OFFSUIT:
+Before ANY preflop decision, check BOTH card suits:
+- Ad6d = SUITED (both diamonds) = A6s
+- Ad6c = OFFSUIT (diamond vs club) = A6o
+- 6h5s = OFFSUIT (heart vs spade) = 65o = FOLD
+- 6s5s = SUITED (both spades) = 65s = CALL
+If suits are DIFFERENT, treat as OFFSUIT and usually FOLD.
 
 PREFLOP STRATEGY:
 RAISE 2.5x: AA-99, AKs-ATs, AKo, AQo, AJo, KQs, KJs, KQo, QJs
-AJo RULE: AJo is ALWAYS a raise/3-bet. NEVER fold AJo vs a single open.
-CALL vs open: 88-22, A2s-A9s (SUITED ONLY), KTs, QTs, JTs, T9s, 98s, 87s, 76s, 65s
-VS 3-BET: Call JJ-99, AQs, AKo. 4-bet/call QQ+, AKs. Fold everything else.
+AJo RULE: AJo vs single open = 3-BET always. €0.05 open is NOT a 3-bet!
+CALL vs open (SUITED ONLY): 88-22, A2s-A9s, KTs, QTs, JTs, T9s, 98s, 87s, 76s, 65s
+VS 3-BET (€0.15+ sizing): Call JJ-99, AQs, AKo. 4-bet QQ+, AKs. Fold rest including 22-88.
 
 SB RULE: From SB facing ANY raise, FOLD unless:
 - Pairs: AA-22
-- Suited aces: A2s-AKs (SAME SUIT ONLY - check both cards!)
-- Good suited connectors: 65s, 76s, 87s, 98s, T9s, JTs, QJs
-FOLD from SB: A2o-A9o (offsuit aces), Q2s, T7s, Q8o, J7o, J9s, K7s, K9s, all trash
+- Suited aces: A2s-AKs (MUST be same suit!)
+- Suited connectors: 65s, 76s, 87s, 98s, T9s, JTs, QJs (MUST be same suit!)
+FOLD from SB: All offsuit hands except pairs.
 
 FOLD always preflop:
-- Offsuit aces: A9o and below (AJo is RAISE, ATo is FOLD)
+- ALL offsuit connectors: 65o, 76o, 87o, 98o, T9o, JTo (only suited versions call)
+- Offsuit aces: A9o and below
 - Offsuit broadways: KJo, KTo, QJo, QTo, JTo
 - Weak suited: K9s-, Q9s-, J9s-, T8s-, 97s-, 86s-
+
+BOTTOM PAIR: CHECK always. Never bet with bottom pair.
 
 POSTFLOP STRATEGY:
 - STRAIGHTS/FLUSHES/SETS/FULL HOUSE: BET 75-100% pot
