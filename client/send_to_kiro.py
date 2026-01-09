@@ -7,18 +7,29 @@ import os
 import base64
 import requests
 
+import time
+
 SERVER_URL = os.getenv('KIRO_SERVER', 'http://54.80.204.92:5001')
 
-def send_screenshot(path):
+def send_screenshot(path, retries=3):
     filename = os.path.basename(path)
     print(f"Uploading {filename}...", end=" ", flush=True)
     with open(path, 'rb') as f:
         img_b64 = base64.b64encode(f.read()).decode()
     
-    resp = requests.post(f'{SERVER_URL}/analyze', json={'image': img_b64, 'filename': filename}, timeout=30)
-    result = resp.json()
-    print(f"OK {result}")
-    return result
+    for attempt in range(retries):
+        try:
+            resp = requests.post(f'{SERVER_URL}/analyze', json={'image': img_b64, 'filename': filename}, timeout=30)
+            result = resp.json()
+            print(f"OK")
+            return result
+        except Exception as e:
+            if attempt < retries - 1:
+                print(f"RETRY ({attempt+1})...", end=" ", flush=True)
+                time.sleep(2)
+            else:
+                print(f"FAILED: {e}")
+                return None
 
 if __name__ == '__main__':
     if len(sys.argv) < 2:
