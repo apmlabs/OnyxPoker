@@ -45,6 +45,8 @@ Button on player at TOP-RIGHT → position = "UTG"
 Button on player at TOP-LEFT → position = "MP"
 Button on player at LEFT → position = "CO"
 
+You MUST start your reasoning with: "Button is at [location], so hero is [position]."
+
 Return ONLY valid JSON:
 {
   "hero_cards": ["As", "Kh"],
