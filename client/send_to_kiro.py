@@ -17,7 +17,7 @@ def send_screenshot(path):
     
     resp = requests.post(f'{SERVER_URL}/analyze', json={'image': img_b64, 'filename': filename}, timeout=30)
     result = resp.json()
-    print(f"✓ {result}")
+    print(f"OK {result}")
     return result
 
 if __name__ == '__main__':
