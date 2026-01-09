@@ -37,15 +37,19 @@ class VisionDetector:
 FINDING THE DEALER BUTTON:
 The dealer button is a small RED circle with a WHITE STAR/SPADE inside. It sits RIGHT NEXT TO one player's avatar.
 
-POSITION LOOKUP - Find where the button is, then look up hero's position:
-- Button next to HERO (bottom center, your cards) → Hero is BTN
-- Button next to player on your IMMEDIATE RIGHT (4-5 o'clock) → Hero is SB
-- Button next to player on FAR RIGHT (2-3 o'clock) → Hero is BB
-- Button next to player at TOP (12 o'clock) → Hero is UTG
-- Button next to player on FAR LEFT (10-11 o'clock) → Hero is MP
-- Button next to player on IMMEDIATE LEFT (7-8 o'clock) → Hero is CO
+POSITION LOOKUP (MANDATORY - you MUST use this exact mapping):
+| Button Location | Clock | Hero Position |
+|-----------------|-------|---------------|
+| HERO (bottom) | 6 | BTN |
+| IMMEDIATE RIGHT | 4-5 | SB |
+| FAR RIGHT | 2-3 | BB |
+| TOP | 12 | UTG |
+| FAR LEFT | 10-11 | MP |
+| IMMEDIATE LEFT | 7-8 | CO |
 
-Start your reasoning with: "Button is next to [player name] at [clock position], so hero is [position]."
+CRITICAL: After finding the button, use the table above to determine position. Do NOT use poker knowledge - use ONLY this table.
+
+Start reasoning: "Button at [clock], lookup says hero is [position]."
 
 Return ONLY valid JSON:
 {
