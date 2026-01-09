@@ -74,8 +74,9 @@ CRITICAL: Check if SUITED (same suit symbol) or OFFSUIT before deciding!
 
 POSTFLOP STRATEGY:
 - STRAIGHTS/FLUSHES: BET 75-100% pot! You MUST bet, never check.
-- POCKET PAIRS (JJ-22): If no overcard on board = OVERPAIR, BET. If ONE overcard = strong, BET or CALL. If TWO+ overcards = weak, check/fold.
-- TOP PAIR TOP KICKER: ALWAYS BET 65-75% pot.
+- POCKET PAIRS (JJ-22): If no overcard = OVERPAIR, BET. If ONE overcard = BET/CALL. If TWO+ overcards = check/fold.
+- TOP PAIR = pair matching HIGHEST board card. TOP PAIR TOP KICKER: BET 65-75% pot.
+- SECOND PAIR (pair matching 2nd highest card, e.g. KQ on A-K-x): CHECK river, don't value bet.
 - SETS/TWO-PAIR: Bet 75-100% pot, never slowplay.
 - TOP PAIR WEAK KICKER: Bet flop, CHECK turn and river.
 - BOTTOM/MIDDLE PAIR (not pocket pair): CHECK. Never bet.
