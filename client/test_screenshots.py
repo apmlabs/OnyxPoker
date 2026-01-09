@@ -6,57 +6,70 @@ Usage: python test_screenshots.py [screenshot_path]
 import os
 import sys
 import json
+from datetime import datetime
 from vision_detector import VisionDetector
 
+LOG_FILE = None
+
 def test_screenshot(path, index=None, total=None):
+    global LOG_FILE
     prefix = f"[{index}/{total}] " if index else ""
     print(f"\n{prefix}Testing: {os.path.basename(path)}")
-    print("-" * 50)
     
     detector = VisionDetector()
-    print("  Calling GPT-5.2 API...")
     try:
         result = detector.detect_poker_elements(path, include_decision=True)
         
         cards = result.get('hero_cards') or []
         board = result.get('community_cards') or []
-        pot = result.get('pot') or 0
+        pos = result.get('position') or '?'
+        turn = result.get('is_hero_turn', False)
         action = result.get('action') or 'none'
-        amount = result.get('recommended_amount') or 0
-        reasoning = result.get('reasoning') or ''
         api_time = result.get('api_time', 0)
         
-        print(f"Cards:  {' '.join(cards) if cards else '--'}")
-        print(f"Board:  {' '.join(board) if board else '--'}")
-        print(f"Pot:    ${pot}")
-        print(f"Action: {action}" + (f" ${amount}" if amount else ""))
-        print(f"Reason: {reasoning[:100]}..." if len(reasoning) > 100 else f"Reason: {reasoning}")
-        print(f"Time:   {api_time:.1f}s")
-        print(f"\nRaw JSON:")
-        print(json.dumps(result, indent=2))
+        print(f"  {' '.join(cards) if cards else '--'} | {pos} | turn={turn} | {action} | {api_time:.1f}s")
         
+        # Save to log
+        if LOG_FILE:
+            result['screenshot'] = os.path.basename(path)
+            result['timestamp'] = datetime.now().isoformat()
+            LOG_FILE.write(json.dumps(result) + '\n')
+            LOG_FILE.flush()
+        
+        return result
     except Exception as e:
-        print(f"ERROR: {e}")
+        print(f"  ERROR: {e}")
+        return None
 
 def main():
+    global LOG_FILE
+    
     if len(sys.argv) > 1:
-        # Test specific file
         test_screenshot(sys.argv[1])
     else:
-        # Test all screenshots in folder
         screenshots_dir = os.path.join(os.path.dirname(__file__), 'screenshots')
         if not os.path.exists(screenshots_dir):
-            print(f"No screenshots folder. Run helper_bar.py and press F9 to capture some.")
+            print(f"No screenshots folder found")
             return
         
         files = sorted([f for f in os.listdir(screenshots_dir) if f.endswith('.png')])
         if not files:
-            print(f"No screenshots found in {screenshots_dir}")
+            print(f"No screenshots found")
             return
         
-        print(f"Found {len(files)} screenshots\n")
+        # Create log file
+        logs_dir = os.path.join(os.path.dirname(__file__), 'logs')
+        os.makedirs(logs_dir, exist_ok=True)
+        log_path = os.path.join(logs_dir, f"test_{datetime.now().strftime('%Y%m%d_%H%M%S')}.jsonl")
+        LOG_FILE = open(log_path, 'w')
+        
+        print(f"Testing {len(files)} screenshots, logging to {log_path}\n")
         for i, f in enumerate(files, 1):
             test_screenshot(os.path.join(screenshots_dir, f), i, len(files))
+        
+        LOG_FILE.close()
+        print(f"\nDone! Results saved to: {log_path}")
+        print(f"Upload with: python send_logs.py")
 
 if __name__ == '__main__':
     main()
