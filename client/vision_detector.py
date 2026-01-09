@@ -68,15 +68,17 @@ BB DEFENSE vs min-raise: CALL with 22+, suited connectors, A2s-A9s, KTs+, QTs+
 FOLD everything else including:
 - A9o, A7o, A6o, A5o, A4o (only SUITED aces playable)
 - QTo, KTo, QJo, KJo (only SUITED versions playable)
-- 98o, 87o, 76o (only SUITED connectors playable)
+- 98o, 87o, 76o, T2s, 94s (only GOOD suited connectors playable)
 - NEVER call "because it's cheap" - if not in range, FOLD
+CRITICAL: Check if SUITED (same suit symbol) or OFFSUIT before deciding!
 
 POSTFLOP STRATEGY:
-- STRAIGHTS/FLUSHES: BET 75-100% pot! You MUST bet, never check a made straight/flush.
+- STRAIGHTS/FLUSHES: BET 75-100% pot! You MUST bet, never check.
+- POCKET PAIRS (JJ-22): If no overcard on board = OVERPAIR, BET. If ONE overcard = strong, BET or CALL. If TWO+ overcards = weak, check/fold.
 - TOP PAIR TOP KICKER: ALWAYS BET 65-75% pot.
-- OVERPAIRS/SETS/TWO-PAIR: Bet 75-100% pot, never slowplay.
+- SETS/TWO-PAIR: Bet 75-100% pot, never slowplay.
 - TOP PAIR WEAK KICKER: Bet flop, CHECK turn and river.
-- WEAK PAIR (bottom/middle pair): CHECK. Never bet.
+- BOTTOM/MIDDLE PAIR (not pocket pair): CHECK. Never bet.
 - NO PAIR: Check if free, fold to bets.
 
 CRITICAL: Action MUST match reasoning. If reasoning says "fold" then action="fold".
