@@ -32,103 +32,50 @@ class VisionDetector:
         with open(screenshot_path, 'rb') as f:
             image_data = base64.b64encode(f.read()).decode('utf-8')
         
-        prompt = """You are analyzing a PokerStars 6-max poker table for research purposes.
+        prompt = """Analyze this PokerStars 6-max table screenshot.
 
-FINDING THE DEALER BUTTON:
-The dealer button is a small RED circle with a WHITE STAR/SPADE inside. It sits RIGHT NEXT TO one player's avatar.
-
-POSITION LOOKUP (MANDATORY - you MUST use this exact mapping):
-| Button Location | Clock | Hero Position |
-|-----------------|-------|---------------|
-| HERO (bottom) | 6 | BTN |
-| IMMEDIATE RIGHT | 4-5 | SB |
-| FAR RIGHT | 2-3 | BB |
-| TOP | 12 | UTG |
-| FAR LEFT | 10-11 | MP |
-| IMMEDIATE LEFT | 7-8 | CO |
-
-CRITICAL: After finding the button, use the table above to determine position. Do NOT use poker knowledge - use ONLY this table.
-
-Start reasoning: "Button at [clock], lookup says hero is [position]."
-
-Return ONLY valid JSON:
+Return JSON:
 {
   "hero_cards": ["As", "Kh"],
   "community_cards": ["Qd", "Jc", "Ts"],
   "pot": 0.15,
   "hero_stack": 5.00,
   "to_call": 0.02,
-  "position": "UTG",
-  "num_players": 6,
-  "players_in_hand": 3,
+  "position": "BTN",
   "is_hero_turn": true,
-  "action": "fold",
-  "amount": 0,
-  "max_call": null,
-  "reasoning": "Detailed explanation here",
+  "action": "raise",
+  "reasoning": "explanation",
   "confidence": 0.95
 }
 
-Rules:
-- hero_cards: The TWO face-up cards at BOTTOM of screen. Format: As=Ace spades, Kh=King hearts, Td=Ten diamonds. Use null if hero has no cards (sitting out)
-- community_cards: Cards in CENTER of table. Empty [] if preflop
-- pot/hero_stack/to_call: Read EXACT amounts including decimals (e.g. 0.05 not 5). Look at currency symbol and decimal point carefully
-- to_call: Amount on CALL button, 0 if CHECK available, null if no action buttons
-- position: MUST be BTN, SB, BB, UTG, MP, or CO. Use the POSITION LOOKUP table above - find where the button is, then set hero's position accordingly.
-- is_hero_turn: Look at BOTTOM RIGHT corner. TRUE only if you see LARGE RED rectangular buttons with white text like "Fold" "Call €X" "Raise To €X" or "Check" "Bet €X". These buttons are ~150px wide and bright red. FALSE if you only see small gray/white checkboxes with text like "Check", "Check/Fold", "Call Any", "Fold" - those are pre-select options, NOT action buttons.
-- action: What hero SHOULD do. When is_hero_turn=FALSE, recommend what to do IF action gets to hero (e.g. "raise" on BTN with K9o preflop means open-raise if folded to). NEVER recommend fold when checking is free!
-- max_call: When is_hero_turn=FALSE, set max amount to call if someone raises ahead. Example: K9o on BTN preflop → action="raise", max_call=0.06 (call up to 3bb if someone opens). Use 0.0 only for trash hands that should fold to any raise.
-- reasoning: 2-3 sentences explaining the decision
-- confidence: 0.0-1.0 how confident you are in the recommendation
+READING THE TABLE:
+- hero_cards: TWO face-up cards at BOTTOM. Format: As=Ace spades, Kh=King hearts. null if no cards.
+- community_cards: Cards in CENTER. Empty [] if preflop.
+- pot/hero_stack/to_call: Read EXACT amounts with decimals.
+- to_call: Amount on CALL button, 0 if CHECK available, null if no buttons.
+- position: BTN/SB/BB/UTG/MP/CO based on dealer button location.
+- is_hero_turn: TRUE only if LARGE RED action buttons visible (Fold/Call/Raise). FALSE if only small checkboxes.
+- action: fold/check/call/bet/raise. NEVER fold when check is free!
 
-Strategy rules:
-- HAND STRENGTH: Hero has pair ONLY if one of hero's 2 cards matches a board card. Example: Hero Q9 on 44T board = NO PAIR (queen high). Hero Q4 on 44T = trips. Board pair alone does NOT give hero a pair!
-- STRAIGHTS: Hero has straight ONLY if 5 consecutive ranks exist using BOTH hero cards + board. Example: Hero A2 on 564 board = NO STRAIGHT (just ace high, gutshot to wheel). Hero A2 on 543 board = wheel straight. VERIFY the 5 cards form consecutive ranks!
-- STRAIGHT DRAWS: OESD needs 4 consecutive cards where hero contributes. J7 on TQ4 = gutshot only (needs 9), NOT OESD. The 7 doesn't connect! Verify each card in the sequence.
-- FLUSH DRAWS: Hero has flush draw ONLY if hero's suit matches board suit. Hero spades on hearts board = NO flush draw
-- SUITED vs OFFSUIT: Check BOTH card suits carefully. A♠2♦ = offsuit (different suits). A♠2♠ = suited (same suit). This affects preflop decisions!
-- VALUE BETTING: With sets, trips, two-pair, strong top pair - ALWAYS bet or raise for value. At 2NL opponents call light, so bet thinner than higher stakes.
-- NEVER SLOWPLAY: Sets/trips/two-pair should bet every street for value. Checking strong hands loses money at micros.
-- Suited aces (A2s-A9s): Playable CO/BTN only, fold UTG/MP/SB vs raises
-- Suited kings (K9s+): Playable CO/BTN, fold K2s-K8s in all positions vs raises
-- POSITION-SPECIFIC RANGES (CRITICAL):
-  * UTG: Tight range - AA-TT, AK-AQ, AJs+, KQs (fold K2s-K9s, A2s-A9s)
-  * MP: Add ATs+, KJs+, QJs, suited aces A9s+ (fold K2s-K8s, A2s-A8s)  
-  * CO: Add suited connectors 98s+, suited kings K9s+, A2s+ (fold K2s-K8s)
-  * BTN: Wide range - K2s+, A2s+, suited connectors 65s+, any pocket pair
-  * SB: Tight vs raises (fold K2s-K9s, A2s-A9s), wider vs limps
-  * BB: Defend wide vs small raises, fold weak hands vs 3bets OOP
+PREFLOP STRATEGY (CRITICAL):
+OPEN-RAISE these hands, FOLD everything else:
+- Any position: AA-22, AKs-ATs, AKo-AJo, KQs-KJs, QJs
+- Late position (CO/BTN): Add A9s-A2s, KTs, QTs, JTs, T9s, 98s, 87s, 76s
+- FOLD all offsuit trash: K7o, J7o, 65o, Q6o, etc. - these lose money even on BTN
 
-MICRO STAKES (2NL) ADJUSTMENTS:
-- Players at 2NL rarely fold pairs - reduce bluff frequency
-- If villain calls flop AND turn, they have something - do NOT bluff river with air
-- Only bluff with equity (draws, blockers) or on very scary board changes
-- Triple barrel bluffing with ace-high = burning money at micros
-- EXPLOIT LOOSE-PASSIVE POOL: 
-  * UTG/MP value bets: 60-75% pot (tighter ranges need protection)
-  * CO/BTN value bets: 75-100% pot (wider ranges, more bluffs)
-  * Against calling stations: bet bigger with value, smaller with bluffs
-- Suited kings (K9s+) are playable on BTN/CO - don't auto-fold suited hands
-- 3-BET STRATEGY (CRITICAL): With AQ+, KQs, JJ+ in position vs single raiser: 3-BET, don't flat. KQo on BTN vs open = 3-bet to 3x their raise. Flatting premium hands loses value at 2NL.
+POSTFLOP STRATEGY:
+- TOP PAIR+: Bet 65-75% pot for value. 2NL players call too light.
+- OVERPAIRS: Bet all streets, don't slowplay.
+- SETS/TWO-PAIR: Bet big (75-100% pot), never check.
+- BOTTOM PAIR/WEAK PAIR: CHECK, don't bet for "thin value" - you get called by better.
+- NO PAIR: Check if free, fold to bets unless you have draws.
+- DRAWS: Call reasonable bets, don't bluff-raise at 2NL.
 
-VALUE BETTING STRATEGY (CRITICAL FOR PROFIT):
-- With sets/trips/two-pair/full house: ALWAYS bet or raise for value - never slowplay
-- NUTS/NEAR-NUTS: Bet large (75-100% pot) - 2NL players call with weak hands
-- Opponents call too light at 2NL - bet thinner for value than higher stakes
-- Top pair good kicker: bet all three streets for value (60-75% pot sizing)
-- Overpairs: bet for value and protection, don't slowplay
-- Two pair or better: NEVER just call - always bet or raise for maximum value
-- FULL HOUSE/QUADS: Always jam/raise for maximum value - never slowplay the nuts
-
-DEFENSIVE STRATEGY:
-- Big blind defense: call with any ace, suited connectors, pocket pairs
-- Don't fold decent hands to small bets - opponents bluff less at micros
-- When check is free, NEVER fold - always take the free card
-- ACE-HIGH CALLS: With A-high and backdoor draws, call small bets (under 1/3 pot)
-- Preflop: fold trash hands like J6o, 96o even on BTN - don't call just because it's cheap
-- Preflop OOP: fold weak aces (A2o-A9o) and weak kings (K2o-K9o) facing raises - they make dominated pairs
-- Multiway pots: tighten up significantly, weak hands play poorly vs multiple opponents
-- On monotone boards without the flush suit, be cautious - call don't raise with pair+draw
+2NL RULES:
+- Don't bluff - they don't fold.
+- Value bet relentlessly with strong hands.
+- Fold trash preflop, even on BTN.
+- Check weak hands, bet strong hands.
 
 Return ONLY JSON"""
 
