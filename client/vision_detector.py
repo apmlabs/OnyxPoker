@@ -100,7 +100,30 @@ POSTFLOP STRATEGY:
 
 Return ONLY JSON"""
 
-        # Call GPT-5.2 using Responses API
+        # JSON schema to enforce action consistency
+        json_schema = {
+            "name": "poker_decision",
+            "strict": True,
+            "schema": {
+                "type": "object",
+                "properties": {
+                    "hero_cards": {"type": ["array", "null"], "items": {"type": "string"}},
+                    "community_cards": {"type": "array", "items": {"type": "string"}},
+                    "pot": {"type": ["number", "null"]},
+                    "hero_stack": {"type": ["number", "null"]},
+                    "to_call": {"type": ["number", "null"]},
+                    "is_hero_turn": {"type": "boolean"},
+                    "action": {"type": "string", "enum": ["fold", "check", "call", "bet", "raise"]},
+                    "bet_size": {"type": ["number", "null"]},
+                    "reasoning": {"type": "string"},
+                    "confidence": {"type": "number"}
+                },
+                "required": ["hero_cards", "community_cards", "pot", "hero_stack", "to_call", "is_hero_turn", "action", "bet_size", "reasoning", "confidence"],
+                "additionalProperties": False
+            }
+        }
+        
+        # Call GPT-5.2 using Responses API with structured output
         t = time.time()
         response = self.client.responses.create(
             model=self.model,
@@ -115,7 +138,7 @@ Return ONLY JSON"""
             ],
             max_output_tokens=500,
             reasoning={"effort": "none"},
-            text={"verbosity": "low"}
+            text={"format": {"type": "json_schema", "json_schema": json_schema}}
         )
         api_time = time.time() - t
         
