@@ -14,31 +14,33 @@ LOG_FILE = None
 def test_screenshot(path, index=None, total=None):
     global LOG_FILE
     prefix = f"[{index}/{total}] " if index else ""
-    print(f"\n{prefix}Testing: {os.path.basename(path)}")
+    fname = os.path.basename(path)
+    print(f"{prefix}{fname}", end=" ", flush=True)
     
     detector = VisionDetector()
     try:
         result = detector.detect_poker_elements(path, include_decision=True)
         
         cards = result.get('hero_cards') or []
-        board = result.get('community_cards') or []
         pos = result.get('position') or '?'
         turn = result.get('is_hero_turn', False)
         action = result.get('action') or 'none'
         api_time = result.get('api_time', 0)
         
-        print(f"  {' '.join(cards) if cards else '--'} | {pos} | turn={turn} | {action} | {api_time:.1f}s")
+        out = f"| {' '.join(cards) if cards else '--':8} | {pos:3} | turn={str(turn):5} | {action:6} | {api_time:.1f}s"
+        print(out)
         
         # Save to log
         if LOG_FILE:
-            result['screenshot'] = os.path.basename(path)
+            result['screenshot'] = fname
             result['timestamp'] = datetime.now().isoformat()
             LOG_FILE.write(json.dumps(result) + '\n')
             LOG_FILE.flush()
         
         return result
     except Exception as e:
-        print(f"  ERROR: {e}")
+        err = str(e).encode('ascii', 'replace').decode('ascii')
+        print(f"| ERROR: {err[:50]}")
         return None
 
 def main():
