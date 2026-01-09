@@ -1,17 +1,17 @@
 # OnyxPoker - Status Tracking
 
-**Last Updated**: January 9, 2026 02:03 UTC
+**Last Updated**: January 9, 2026 15:07 UTC
 
-## Current Status: READY FOR TESTING - SESSION 22
+## Current Status: STRATEGY TUNING - SESSION 25
 
-Server infrastructure cleaned up, only kiro-server.service running.
+Position detection removed, strategy prompt refined for better accuracy.
 
 ## What Works
 
 | Component | Status | Notes |
 |-----------|--------|-------|
 | helper_bar.py | ✅ Ready | Main UI, F9 screenshots active window |
-| vision_detector.py | ✅ Ready | GPT-5.2 API wrapper |
+| vision_detector.py | ✅ Ready | GPT-5.2 API wrapper, no position detection |
 | Hotkeys | ✅ Ready | F9=Advice, F10=Bot, F11=Stop, F12=Hide |
 | Server | ⏸️ Placeholder | Not needed for current workflow |
 
@@ -34,6 +34,20 @@ Then: Focus poker window → Press F9 → See advice in helper bar
 4. **Measure speed** - Target <10s per analysis
 
 ## Session Log
+
+### Session 25 (January 9, 2026)
+- **POSITION DETECTION REMOVED**: Completely removed unreliable position detection
+- **STRATEGY FIXES**:
+  - Suited/offsuit confusion: Added explicit check instruction
+  - Pocket pairs postflop: JJ on Q-high now bets (was checking as "weak pair")
+  - Second pair defined: KQ on A-K-x = second pair, CHECK river
+  - Trash suited folds: T2s, 94s added to fold list
+  - Top pair clarified: Must match HIGHEST board card
+- **UI FIXES**:
+  - Fixed `amount` undefined variable crash
+  - Changed `max_call` to `to_call` field name
+  - Show both PRE-ACTION and to_call amount
+- Commits: 135b3ae, b04abef, c078801
 
 ### Session 22 (January 9, 2026)
 - **INFRASTRUCTURE CLEANUP**: Removed redundant old server
