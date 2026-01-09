@@ -58,35 +58,36 @@ READING THE TABLE:
 - bet_size: When action is bet/raise, specify the amount in euros. Use 2.5-3x BB preflop, 65-75% pot postflop.
 - reasoning: Focus on WHAT to do and WHY.
 
+SUITED CHECK: Look at BOTH card suits. Ah5c = OFFSUIT (hearts vs clubs). A5s means SAME suit only!
+
 PREFLOP STRATEGY:
 RAISE 2.5x: AA-99, AKs-ATs, AKo, AQo, AJo, KQs, KJs, KQo, QJs
-CALL vs open: 88-22, A2s-A9s, KTs, QTs, JTs, T9s, 98s, 87s, 76s, 65s
+AJo RULE: AJo is ALWAYS a raise/3-bet. NEVER fold AJo vs a single open.
+CALL vs open: 88-22, A2s-A9s (SUITED ONLY), KTs, QTs, JTs, T9s, 98s, 87s, 76s, 65s
 VS 3-BET: Call JJ-99, AQs, AKo. 4-bet/call QQ+, AKs. Fold everything else.
 
-SB RULE: From SB facing ANY raise (even 0.03), FOLD unless:
+SB RULE: From SB facing ANY raise, FOLD unless:
 - Pairs: AA-22
-- Suited aces: A2s-AKs
+- Suited aces: A2s-AKs (SAME SUIT ONLY - check both cards!)
 - Good suited connectors: 65s, 76s, 87s, 98s, T9s, JTs, QJs
-FOLD from SB: T7s, Q8o, J7o, J9s, K7s, K9s, A9o, and all trash
+FOLD from SB: A2o-A9o (offsuit aces), Q2s, T7s, Q8o, J7o, J9s, K7s, K9s, all trash
 
 FOLD always preflop:
+- Offsuit aces: A9o and below (AJo is RAISE, ATo is FOLD)
 - Offsuit broadways: KJo, KTo, QJo, QTo, JTo
-- Offsuit aces: ATo and below (AJo is RAISE!)
 - Weak suited: K9s-, Q9s-, J9s-, T8s-, 97s-, 86s-
-- All offsuit connectors/gappers: J7o, Q8o, 64o, 97o, T7o
 
 POSTFLOP STRATEGY:
-- STRAIGHTS/FLUSHES/SETS/FULL HOUSE: BET 75-100% pot, never slowplay
+- STRAIGHTS/FLUSHES/SETS/FULL HOUSE: BET 75-100% pot
 - TWO PAIR (both hole cards paired): BET 75% pot all streets
-- BOARD PAIR + POCKET PAIR (44 on K33): BET flop 70%, CHECK turn if called
+- BOARD PAIR + POCKET PAIR (44 on K33): BET flop 70%, CHECK turn
 - COMBO DRAWS (flush+straight, flush+pair): SEMI-BLUFF 65-75% pot
 - TOP PAIR GOOD KICKER (AK/AQ/AJ on Axx): BET 70% flop, 65% turn, 50% river
-- TOP PAIR WEAK KICKER (K7 on Kxx): BET flop 70%, CHECK turn, CHECK river. If bet at, CALL only.
-- MIDDLE PAIR (QJ on A-Q-7): CHECK-CALL small bets, fold to big bets
-- OVERPAIR on scary board (KK on Axx): CHECK-CALL, do not raise
+- TOP PAIR WEAK KICKER (K7 on Kxx): BET flop 70% ONLY. If bet at later, CALL. Never RAISE.
+- OVERPAIR on scary board (KK on Axx): CHECK-CALL only. NEVER raise.
 - FLUSH DRAW alone: Check if free, call up to 40% pot
 - STRAIGHT DRAW alone: Check if free, call up to 33% pot
-- NO PAIR NO DRAW: CHECK always, fold to any bet. Never bluff.
+- NO PAIR NO DRAW: CHECK always. NEVER bet with just ace-high or king-high.
 
 Return ONLY JSON"""
 
