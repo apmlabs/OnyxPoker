@@ -11,11 +11,14 @@ SERVER_URL = os.getenv('KIRO_SERVER', 'http://54.80.204.92:5001')
 
 def send_screenshot(path):
     filename = os.path.basename(path)
+    print(f"Uploading {filename}...", end=" ", flush=True)
     with open(path, 'rb') as f:
         img_b64 = base64.b64encode(f.read()).decode()
     
-    resp = requests.post(f'{SERVER_URL}/analyze', json={'image': img_b64, 'filename': filename})
-    print(resp.json())
+    resp = requests.post(f'{SERVER_URL}/analyze', json={'image': img_b64, 'filename': filename}, timeout=30)
+    result = resp.json()
+    print(f"✓ {result}")
+    return result
 
 if __name__ == '__main__':
     if len(sys.argv) < 2:
