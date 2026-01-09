@@ -1,10 +1,10 @@
 # OnyxPoker - Status Tracking
 
-**Last Updated**: January 8, 2026 23:55 UTC
+**Last Updated**: January 9, 2026 02:03 UTC
 
-## Current Status: READY FOR TESTING - SESSION 21
+## Current Status: READY FOR TESTING - SESSION 22
 
-Position detection fixed, strategy optimized for maximum 2NL profit.
+Server infrastructure cleaned up, only kiro-server.service running.
 
 ## What Works
 
@@ -34,6 +34,12 @@ Then: Focus poker window → Press F9 → See advice in helper bar
 4. **Measure speed** - Target <10s per analysis
 
 ## Session Log
+
+### Session 22 (January 9, 2026)
+- **INFRASTRUCTURE CLEANUP**: Removed redundant old server
+- Stopped and disabled onyxpoker.service (old Flask API server)
+- Only kiro-server.service running now (Kiro analysis server on port 5001)
+- Server infrastructure now clean and minimal
 
 ### Session 21 (January 8, 2026)
 - **CRITICAL FIX**: JSON schema field name mismatch causing 100% strategy parsing failures
