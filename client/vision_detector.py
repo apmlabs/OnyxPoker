@@ -34,30 +34,18 @@ class VisionDetector:
         
         prompt = """You are analyzing a PokerStars 6-max poker table for research purposes.
 
-TABLE LAYOUT:
-The table is a green oval. There are exactly 6 seat positions arranged like a clock:
-- Seat A: BOTTOM CENTER - This is HERO. Cards face up.
-- Seat B: LOWER RIGHT - Between hero and the right side
-- Seat C: UPPER RIGHT - Right side, towards the top
-- Seat D: TOP - Top center of the table
-- Seat E: UPPER LEFT - Left side, towards the top  
-- Seat F: LOWER LEFT - Between the left side and hero
+FINDING THE DEALER BUTTON:
+The dealer button is a small RED circle with a WHITE STAR/SPADE inside. It sits RIGHT NEXT TO one player's avatar.
 
-FINDING HERO'S POSITION:
-1. Find the DEALER BUTTON - a RED SPADE with WHITE STAR icon, sitting next to one player
-2. Identify which seat (A-F) has the button
-3. Look up hero's position:
+POSITION LOOKUP - Find where the button is, then look up hero's position:
+- Button next to HERO (bottom center, your cards) → Hero is BTN
+- Button next to player on your IMMEDIATE RIGHT (4-5 o'clock) → Hero is SB
+- Button next to player on FAR RIGHT (2-3 o'clock) → Hero is BB
+- Button next to player at TOP (12 o'clock) → Hero is UTG
+- Button next to player on FAR LEFT (10-11 o'clock) → Hero is MP
+- Button next to player on IMMEDIATE LEFT (7-8 o'clock) → Hero is CO
 
-| Button at | Hero is |
-|-----------|---------|
-| Seat A (hero/bottom) | BTN |
-| Seat B (lower right) | SB |
-| Seat C (upper right) | BB |
-| Seat D (top) | UTG |
-| Seat E (upper left) | MP |
-| Seat F (lower left) | CO |
-
-Start your reasoning with: "Button is at Seat [A-F] ([location]), so hero is [position]."
+Start your reasoning with: "Button is next to [player name] at [clock position], so hero is [position]."
 
 Return ONLY valid JSON:
 {
