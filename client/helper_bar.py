@@ -285,7 +285,7 @@ class HelperBar:
         board = result.get('community_cards', [])
         pot = result.get('pot', 0) or 0
         action = result.get('action') or 'unknown'
-        amount = result.get('recommended_amount') or 0
+        bet_size = result.get('bet_size') or 0
         reasoning = result.get('reasoning') or ''
         position = result.get('position') or '?'
         confidence = result.get('confidence', 0.95) or 0.95
@@ -319,7 +319,9 @@ class HelperBar:
 
         # Show decision if we have any useful info (pot > 0 means table detected)
         if pot > 0 or cards or board:
-            decision_str = f"=> {action.upper()}" + (f" ${amount}" if amount else "")
+            decision_str = f"=> {action.upper()}"
+            if bet_size and action in ('bet', 'raise'):
+                decision_str += f" €{bet_size:.2f}"
             self.log(decision_str, "DECISION")
             if reasoning:
                 self.log(reasoning, "DEBUG")

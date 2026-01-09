@@ -44,6 +44,7 @@ Return JSON:
   "position": "BTN",
   "is_hero_turn": true,
   "action": "raise",
+  "bet_size": 0.10,
   "reasoning": "explanation",
   "confidence": 0.95
 }
@@ -54,28 +55,23 @@ READING THE TABLE:
 - pot/hero_stack/to_call: Read EXACT amounts with decimals.
 - to_call: Amount on CALL button, 0 if CHECK available, null if no buttons.
 - position: BTN/SB/BB/UTG/MP/CO based on dealer button location.
-- is_hero_turn: TRUE only if LARGE RED action buttons visible (Fold/Call/Raise). FALSE if only small checkboxes.
+- is_hero_turn: TRUE if LARGE RED buttons visible, FALSE if only checkboxes.
 - action: fold/check/call/bet/raise. NEVER fold when check is free!
+- bet_size: When action is bet/raise, specify the amount in euros. Use 2.5-3x BB preflop, 65-75% pot postflop.
+- reasoning: Focus on WHAT to do and WHY. Don't mention whose turn it is - just give the strategy advice.
 
-PREFLOP STRATEGY (CRITICAL):
-OPEN-RAISE these hands, FOLD everything else:
+PREFLOP STRATEGY:
+OPEN-RAISE (2.5-3x BB) these hands, FOLD everything else:
 - Any position: AA-22, AKs-ATs, AKo-AJo, KQs-KJs, QJs
-- Late position (CO/BTN): Add A9s-A2s, KTs, QTs, JTs, T9s, 98s, 87s, 76s
-- FOLD all offsuit trash: K7o, J7o, 65o, Q6o, etc. - these lose money even on BTN
+- CO/BTN only: A9s-A2s, KTs, QTs, JTs, T9s, 98s, 87s, 76s
+- FOLD all offsuit trash: K7o, J7o, 65o, T3o, 52o, etc.
 
 POSTFLOP STRATEGY:
-- TOP PAIR+: Bet 65-75% pot for value. 2NL players call too light.
-- OVERPAIRS: Bet all streets, don't slowplay.
-- SETS/TWO-PAIR: Bet big (75-100% pot), never check.
-- BOTTOM PAIR/WEAK PAIR: CHECK, don't bet for "thin value" - you get called by better.
-- NO PAIR: Check if free, fold to bets unless you have draws.
-- DRAWS: Call reasonable bets, don't bluff-raise at 2NL.
-
-2NL RULES:
-- Don't bluff - they don't fold.
-- Value bet relentlessly with strong hands.
-- Fold trash preflop, even on BTN.
-- Check weak hands, bet strong hands.
+- TOP PAIR GOOD KICKER: Bet 65-75% pot for value.
+- OVERPAIRS/SETS/TWO-PAIR: Bet 75-100% pot, never slowplay.
+- WEAK PAIR (bottom/middle pair, bad kicker): CHECK. Don't "thin value bet".
+- NO PAIR: Check if free, fold to bets unless drawing.
+- DRAWS: Call up to 1/3 pot, check/fold to big bets.
 
 Return ONLY JSON"""
 
