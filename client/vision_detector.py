@@ -32,22 +32,32 @@ class VisionDetector:
         with open(screenshot_path, 'rb') as f:
             image_data = base64.b64encode(f.read()).decode('utf-8')
         
-        prompt = """Analyze this PokerStars table screenshot. HERO is at the bottom center (cards face up).
+        prompt = """You are analyzing a PokerStars 6-max poker table for research purposes.
 
-POSITION DETECTION:
+TABLE LAYOUT:
+The table is a green oval. There are exactly 6 seat positions arranged like a clock:
+- Seat A: BOTTOM CENTER - This is HERO. Cards face up.
+- Seat B: LOWER RIGHT - Between hero and the right side
+- Seat C: UPPER RIGHT - Right side, towards the top
+- Seat D: TOP - Top center of the table
+- Seat E: UPPER LEFT - Left side, towards the top  
+- Seat F: LOWER LEFT - Between the left side and hero
 
-Find the RED SPADE with STAR icon - this is the dealer button.
-Look at which player has this icon next to their avatar.
+FINDING HERO'S POSITION:
+1. Find the DEALER BUTTON - a RED SPADE with WHITE STAR icon, sitting next to one player
+2. Identify which seat (A-F) has the button
+3. Look up hero's position:
 
-Use this mapping based on where you see the button on screen:
-- Button next to HERO (bottom center) → position = "BTN"
-- Button to hero's immediate right → position = "SB"
-- Button on the right side of table → position = "BB"
-- Button at top-right area → position = "UTG"
-- Button at top-left area → position = "MP"
-- Button on the left side of table → position = "CO"
+| Button at | Hero is |
+|-----------|---------|
+| Seat A (hero/bottom) | BTN |
+| Seat B (lower right) | SB |
+| Seat C (upper right) | BB |
+| Seat D (top) | UTG |
+| Seat E (upper left) | MP |
+| Seat F (lower left) | CO |
 
-Your reasoning MUST start with: "Button is at [location], so hero is [position]."
+Start your reasoning with: "Button is at Seat [A-F] ([location]), so hero is [position]."
 
 Return ONLY valid JSON:
 {
