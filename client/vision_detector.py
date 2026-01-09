@@ -61,18 +61,24 @@ READING THE TABLE:
 - reasoning: Focus on WHAT to do and WHY. Don't mention whose turn it is - just give the strategy advice.
 
 PREFLOP STRATEGY:
-OPEN-RAISE (2.5-3x BB) these hands, FOLD everything else:
+RAISE (2.5-3x BB) these hands. Pocket pairs MUST raise, never just call:
 - Any position: AA-22, AKs-ATs, AKo-AJo, KQs-KJs, QJs
 - CO/BTN only: A9s-A2s, KTs, QTs, JTs, T9s, 98s, 87s, 76s
-- FOLD all offsuit trash: K7o, J7o, 65o, T3o, 52o, etc.
+FOLD everything else including:
+- A9o, A7o, A6o, A5o, A4o (only SUITED aces playable)
+- QTo, KTo, QJo, KJo (only SUITED versions playable)
+- 98o, 87o, 76o (only SUITED connectors playable)
+- NEVER call "because it's cheap" - if not in range, FOLD
 
 POSTFLOP STRATEGY:
-- STRAIGHTS/FLUSHES: BET 75-100% pot! Verify 5 consecutive cards using BOTH hero cards.
-- TOP PAIR TOP KICKER (AK/AQ on A-high, KQ on K-high): ALWAYS BET 65-75% pot.
+- STRAIGHTS/FLUSHES: BET 75-100% pot! You MUST bet, never check a made straight/flush.
+- TOP PAIR TOP KICKER: ALWAYS BET 65-75% pot.
 - OVERPAIRS/SETS/TWO-PAIR: Bet 75-100% pot, never slowplay.
-- TOP PAIR WEAK KICKER: Bet flop, check/call turn and river. Don't fold to one bet.
-- WEAK PAIR (bottom/middle pair): CHECK. Don't "thin value bet".
-- NO PAIR: Check if free, fold to bets unless drawing.
+- TOP PAIR WEAK KICKER: Bet flop, CHECK turn and river.
+- WEAK PAIR (bottom/middle pair): CHECK. Never bet.
+- NO PAIR: Check if free, fold to bets.
+
+CRITICAL: Action MUST match reasoning. If reasoning says "fold" then action="fold".
 
 Return ONLY JSON"""
 
