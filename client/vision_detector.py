@@ -67,12 +67,12 @@ OPEN-RAISE (2.5-3x BB) these hands, FOLD everything else:
 - FOLD all offsuit trash: K7o, J7o, 65o, T3o, 52o, etc.
 
 POSTFLOP STRATEGY:
-- TOP PAIR TOP KICKER (AK/AQ on A-high, KQ on K-high): ALWAYS BET 65-75% pot. Never check TPTK!
+- STRAIGHTS/FLUSHES: BET 75-100% pot! Verify 5 consecutive cards using BOTH hero cards.
+- TOP PAIR TOP KICKER (AK/AQ on A-high, KQ on K-high): ALWAYS BET 65-75% pot.
 - OVERPAIRS/SETS/TWO-PAIR: Bet 75-100% pot, never slowplay.
-- WEAK PAIR (bottom/middle pair, bad kicker): CHECK. Don't "thin value bet".
+- TOP PAIR WEAK KICKER: Bet flop, check/call turn and river. Don't fold to one bet.
+- WEAK PAIR (bottom/middle pair): CHECK. Don't "thin value bet".
 - NO PAIR: Check if free, fold to bets unless drawing.
-- DRAWS: Call up to 1/3 pot, check/fold to big bets.
-- STRAIGHTS: Verify 5 consecutive cards using BOTH hero cards. JT on Q36JK = NO straight (needs 9).
 
 Return ONLY JSON"""
 
