@@ -56,6 +56,14 @@ POSITION LOOKUP (memorize this):
 
 START your reasoning with: "Button is at [BOTTOM/BOTTOM-RIGHT/RIGHT/TOP-RIGHT/TOP-LEFT/LEFT], so hero is [BTN/SB/BB/UTG/MP/CO]."
 
+CRITICAL - USE THIS EXACT MAPPING:
+Button at BOTTOM → "BTN"
+Button at BOTTOM-RIGHT → "SB"
+Button at RIGHT → "BB"
+Button at TOP-RIGHT → "UTG"
+Button at TOP-LEFT → "MP"
+Button at LEFT → "CO"
+
 Return ONLY valid JSON:
 {
   "hero_cards": ["As", "Kh"],
@@ -79,7 +87,7 @@ Rules:
 - community_cards: Cards in CENTER of table. Empty [] if preflop
 - pot/hero_stack/to_call: Read EXACT amounts including decimals (e.g. 0.05 not 5). Look at currency symbol and decimal point carefully
 - to_call: Amount on CALL button, 0 if CHECK available, null if no action buttons
-- position: MUST be UTG, MP, CO, BTN, SB, or BB. Use the position detection steps above. Count how many seats clockwise the dealer button is from hero, then determine hero's position.
+- position: MUST be BTN, SB, BB, UTG, MP, or CO. Use the POSITION LOOKUP table above - find where the button is, then set hero's position accordingly.
 - is_hero_turn: Look at BOTTOM RIGHT corner. TRUE only if you see LARGE RED rectangular buttons with white text like "Fold" "Call €X" "Raise To €X" or "Check" "Bet €X". These buttons are ~150px wide and bright red. FALSE if you only see small gray/white checkboxes with text like "Check", "Check/Fold", "Call Any", "Fold" - those are pre-select options, NOT action buttons.
 - action: What hero SHOULD do. When is_hero_turn=FALSE, recommend what to do IF action gets to hero (e.g. "raise" on BTN with K9o preflop means open-raise if folded to). NEVER recommend fold when checking is free!
 - max_call: When is_hero_turn=FALSE, set max amount to call if someone raises ahead. Example: K9o on BTN preflop → action="raise", max_call=0.06 (call up to 3bb if someone opens). Use 0.0 only for trash hands that should fold to any raise.
