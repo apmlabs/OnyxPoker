@@ -146,7 +146,7 @@ class HelperBar:
                                       bg='#2d2d2d', fg='#00ff00')
         self.decision_label.pack(pady=5)
 
-        # Max call info
+        # To call info
         self.maxcall_label = tk.Label(right, text="", font=('Arial', 12),
                                      bg='#2d2d2d', fg='#ffff00')
         self.maxcall_label.pack(pady=2)
@@ -290,7 +290,7 @@ class HelperBar:
         position = result.get('position') or '?'
         confidence = result.get('confidence', 0.95) or 0.95
 
-        max_call = result.get('max_call')
+        to_call = result.get('to_call')
         
         # Save to session log (JSONL format) - includes screenshot name for correlation
         log_entry = {
@@ -303,7 +303,7 @@ class HelperBar:
             'is_hero_turn': result.get('is_hero_turn', True),
             'action': action,
             'amount': amount,
-            'max_call': max_call,
+            'to_call': to_call,
             'reasoning': reasoning,
             'confidence': confidence,
             'elapsed': round(elapsed, 2)
@@ -340,9 +340,9 @@ class HelperBar:
             # Not hero's turn - show max call instead of cards
             self.cards_label.config(text=f"{pos_str} [WAIT]")
             self.decision_label.config(text=f"=> {action.upper()}")
-            if max_call:
-                self.maxcall_label.config(text=f"Max call: €{max_call}")
-                self.log(f"Max call: €{max_call}", "INFO")
+            if to_call:
+                self.maxcall_label.config(text=f"To call: €{to_call}")
+                self.log(f"To call: €{to_call}", "INFO")
             else:
                 self.maxcall_label.config(text="Pre-action")
         
