@@ -35,21 +35,31 @@ class VisionDetector:
         prompt = """Analyze this PokerStars table screenshot. HERO is the player at the BOTTOM of the screen (their cards face up).
 
 POSITION DETECTION (CRITICAL - follow exactly):
-1. Find the DEALER BUTTON: A RED SPADE with STAR inside, sitting next to a player's avatar
-2. The player WITH the dealer button is BTN
-3. Count CLOCKWISE from BTN to find other positions:
-   BTN -> SB -> BB -> UTG -> MP -> CO -> (back to BTN)
-4. Find which seat HERO is in (bottom of screen) and determine hero's position
 
-EXAMPLE (6-max table, hero at bottom):
-- If dealer button is ON hero -> hero is BTN
-- If dealer button is 1 seat to hero's RIGHT -> hero is SB
-- If dealer button is 2 seats to hero's RIGHT -> hero is BB  
-- If dealer button is 3 seats to hero's RIGHT -> hero is UTG
-- If dealer button is 4 seats to hero's RIGHT -> hero is MP
-- If dealer button is 5 seats to hero's RIGHT -> hero is CO
+The table is an oval with 6 seats arranged like this:
+```
+        [Seat 1]    [Seat 2]
+    [Seat 6]            [Seat 3]
+        [Seat 5]    [Seat 4]
+              HERO
+```
+HERO is always at the bottom (Seat 5 area).
 
-VERIFY with blinds: SB posts 0.01, BB posts 0.02. If hero posted 0.01 -> hero is SB. If hero posted 0.02 -> hero is BB.
+1. Find the DEALER BUTTON: A RED SPADE with STAR inside, next to a player's avatar
+2. The player WITH the dealer button is BTN (Button)
+3. Positions go in order around the table: BTN -> SB -> BB -> UTG -> MP -> CO -> BTN...
+4. Starting from BTN, go LEFT around the table to find each position
+
+TO FIND HERO'S POSITION:
+- Look at where the dealer button is
+- If button is at HERO (bottom) -> HERO is BTN
+- If button is at bottom-right -> HERO is SB (one left of button)
+- If button is at right side -> HERO is BB (two left of button)
+- If button is at top-right -> HERO is UTG (three left of button)
+- If button is at top-left -> HERO is MP (four left of button)
+- If button is at left side -> HERO is CO (five left of button)
+
+VERIFY: SB has €0.01 posted, BB has €0.02 posted. Check hero's posted blind amount.
 
 Return ONLY valid JSON:
 {
