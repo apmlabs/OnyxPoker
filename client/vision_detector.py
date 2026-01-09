@@ -60,9 +60,9 @@ READING THE TABLE:
 
 PREFLOP STRATEGY:
 RAISE (2.5-3x BB) these hands. Pocket pairs MUST raise, never just call:
-- Premium: AA-22, AKs-ATs, AKo-AJo, KQs-KJs, QJs
+- Premium: AA-22, AKs-ATs, AKo, AQo, AJo, KQs-KJs, QJs
 - Playable suited: A9s-A2s, KTs, QTs, JTs, T9s, 98s, 87s, 76s
-BB DEFENSE vs min-raise: CALL with 22+, suited connectors, A2s-A9s, KTs+, QTs+
+BB DEFENSE vs min-raise: CALL with 22+, suited connectors (76s, 87s, 98s, T9s, JTs), A2s-A9s, KTs+, QTs+
 FOLD everything else including:
 - A9o, A7o, A6o, A5o, A4o (only SUITED aces playable)
 - QTo, KTo, QJo, KJo (only SUITED versions playable)
