@@ -59,28 +59,27 @@ READING THE TABLE:
 - reasoning: Focus on WHAT to do and WHY.
 
 PREFLOP STRATEGY:
-RAISE (2.5-3x BB) these hands. Pocket pairs MUST raise, never just call:
-- Premium: AA-22, AKs-ATs, AKo, AQo, AJo, KQs-KJs, QJs
-- Playable suited: A9s-A2s, KTs, QTs, JTs, T9s, 98s, 87s, 76s
-BB DEFENSE vs min-raise: CALL with 22+, suited connectors (76s, 87s, 98s, T9s, JTs), A2s-A9s, KTs+, QTs+
-FOLD everything else including:
-- A9o, A7o, A6o, A5o, A4o (only SUITED aces playable)
-- QTo, KTo, QJo, KJo (only SUITED versions playable)
-- 98o, 87o, 76o, T2s, 94s (only GOOD suited connectors playable)
-- NEVER call "because it's cheap" - if not in range, FOLD
-CRITICAL: Check if SUITED (same suit symbol) or OFFSUIT before deciding!
+RAISE 2.5x with: AA-TT, AKs-ATs, AKo, AQo, AJo, KQs, KJs, QJs
+RAISE or CALL with: 99-22, A9s-A2s, KTs, QTs, JTs, T9s, 98s, 87s, 76s
+
+VS OPEN (2-3x): CALL with 99-22, 76s-JTs, A2s-A9s, KQo
+VS 3-BET: Only continue with QQ+, AKs, AKo. Fold everything else.
+
+FOLD always:
+- Offsuit broadways: KJo, KTo, QJo, QTo, JTo (only suited versions playable)
+- Offsuit aces: A9o and below
+- Weak suited: K9s-, Q9s-, J9s-, T8s-, 97s-, 86s-, 75s-, 65s-
+- All offsuit connectors
 
 POSTFLOP STRATEGY:
-- STRAIGHTS/FLUSHES: BET 75-100% pot! You MUST bet, never check.
-- POCKET PAIRS (JJ-22): If no overcard = OVERPAIR, BET. If ONE overcard = BET/CALL. If TWO+ overcards = check/fold.
-- TOP PAIR = pair matching HIGHEST board card. TOP PAIR TOP KICKER: BET 65-75% pot.
-- SECOND PAIR (pair matching 2nd highest card, e.g. KQ on A-K-x): CHECK river, don't value bet.
-- SETS/TWO-PAIR: Bet 75-100% pot, never slowplay.
-- TOP PAIR WEAK KICKER: Bet flop, CHECK turn and river.
-- BOTTOM/MIDDLE PAIR (not pocket pair): CHECK. Never bet.
-- NO PAIR: Check if free, fold to bets.
-
-CRITICAL: Action MUST match reasoning. If reasoning says "fold" then action="fold".
+- MADE HANDS (straights/flushes/sets/two-pair): BET 75-100% pot, never slowplay
+- STRONG DRAWS (flush draw + pair, OESD + pair, combo draws): SEMI-BLUFF 65-75% pot
+- TOP PAIR TOP KICKER: BET 65-75% pot all streets
+- TOP PAIR WEAK KICKER: Bet flop, CHECK turn and river
+- SECOND PAIR: CHECK, call small bets, fold to big bets
+- POCKET PAIRS: Overpair=BET. One overcard=BET/CALL. Two+ overcards=CHECK/FOLD
+- FLUSH/STRAIGHT DRAWS alone: Check if free, call up to 33% pot bets
+- NO PAIR NO DRAW: Check if free, fold to any bet
 
 Return ONLY JSON"""
 
