@@ -65,7 +65,7 @@ Rules:
 - community_cards: Cards in CENTER of table. Empty [] if preflop
 - pot/hero_stack/to_call: Read EXACT amounts including decimals (e.g. 0.05 not 5). Look at currency symbol and decimal point carefully
 - to_call: Amount on CALL button, 0 if CHECK available, null if no action buttons
-- position: MUST be UTG, MP, CO, BTN, SB, or BB. Find dealer button (D chip), count clockwise seats.
+- position: MUST be UTG, MP, CO, BTN, SB, or BB. STEP BY STEP: 1) Find the white "D" dealer chip on table. 2) The player WITH the D chip is BTN. 3) Going LEFT from BTN: next seat is SB, then BB, then UTG, then MP, then CO. 4) Hero is ALWAYS at BOTTOM of screen. 5) Report hero's position based on where hero sits relative to the D chip.
 - is_hero_turn: Look at BOTTOM RIGHT corner. TRUE only if you see LARGE RED rectangular buttons with white text like "Fold" "Call €X" "Raise To €X" or "Check" "Bet €X". These buttons are ~150px wide and bright red. FALSE if you only see small gray/white checkboxes with text like "Check", "Check/Fold", "Call Any", "Fold" - those are pre-select options, NOT action buttons.
 - action: What hero SHOULD do. When is_hero_turn=FALSE, recommend what to do IF action gets to hero (e.g. "raise" on BTN with K9o preflop means open-raise if folded to). NEVER recommend fold when checking is free!
 - max_call: When is_hero_turn=FALSE, set max amount to call if someone raises ahead. Example: K9o on BTN preflop → action="raise", max_call=0.06 (call up to 3bb if someone opens). Use 0.0 only for trash hands that should fold to any raise.
@@ -100,6 +100,7 @@ MICRO STAKES (2NL) ADJUSTMENTS:
   * CO/BTN value bets: 75-100% pot (wider ranges, more bluffs)
   * Against calling stations: bet bigger with value, smaller with bluffs
 - Suited kings (K9s+) are playable on BTN/CO - don't auto-fold suited hands
+- 3-BET STRATEGY (CRITICAL): With AQ+, KQs, JJ+ in position vs single raiser: 3-BET, don't flat. KQo on BTN vs open = 3-bet to 3x their raise. Flatting premium hands loses value at 2NL.
 
 VALUE BETTING STRATEGY (CRITICAL FOR PROFIT):
 - With sets/trips/two-pair/full house: ALWAYS bet or raise for value - never slowplay
