@@ -34,18 +34,27 @@ class VisionDetector:
         
         prompt = """Analyze this PokerStars table screenshot. HERO is the player at the BOTTOM of the screen (their cards face up).
 
-POSITION DETECTION - use this lookup table:
+POSITION DETECTION:
 
-Find the RED SPADE with STAR (dealer button). Which player has it?
+You are looking at a green oval poker table with 6 seats:
+- BOTTOM: This is HERO (you). Cards face up.
+- BOTTOM-RIGHT: One seat to hero's right
+- RIGHT: Two seats to hero's right  
+- TOP-RIGHT: Three seats to hero's right (top area)
+- TOP-LEFT: Four seats to hero's right (top area)
+- LEFT: Five seats to hero's right
 
-Button on player at BOTTOM (hero) → position = "BTN"
-Button on player at BOTTOM-RIGHT → position = "SB"
-Button on player at RIGHT → position = "BB"
-Button on player at TOP-RIGHT → position = "UTG"
-Button on player at TOP-LEFT → position = "MP"
-Button on player at LEFT → position = "CO"
+The DEALER BUTTON is a RED SPADE with a STAR inside. Find it.
 
-You MUST start your reasoning with: "Button is at [location], so hero is [position]."
+POSITION LOOKUP (memorize this):
+- Button at BOTTOM = hero is BTN
+- Button at BOTTOM-RIGHT = hero is SB
+- Button at RIGHT = hero is BB
+- Button at TOP-RIGHT = hero is UTG
+- Button at TOP-LEFT = hero is MP
+- Button at LEFT = hero is CO
+
+START your reasoning with: "Button is at [BOTTOM/BOTTOM-RIGHT/RIGHT/TOP-RIGHT/TOP-LEFT/LEFT], so hero is [BTN/SB/BB/UTG/MP/CO]."
 
 Return ONLY valid JSON:
 {
