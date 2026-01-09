@@ -34,32 +34,16 @@ class VisionDetector:
         
         prompt = """Analyze this PokerStars table screenshot. HERO is the player at the BOTTOM of the screen (their cards face up).
 
-POSITION DETECTION (CRITICAL - follow exactly):
+POSITION DETECTION - use this lookup table:
 
-The table is an oval with 6 seats arranged like this:
-```
-        [Seat 1]    [Seat 2]
-    [Seat 6]            [Seat 3]
-        [Seat 5]    [Seat 4]
-              HERO
-```
-HERO is always at the bottom (Seat 5 area).
+Find the RED SPADE with STAR (dealer button). Which player has it?
 
-1. Find the DEALER BUTTON: A RED SPADE with STAR inside, next to a player's avatar
-2. The player WITH the dealer button is BTN (Button)
-3. Positions go in order around the table: BTN -> SB -> BB -> UTG -> MP -> CO -> BTN...
-4. Starting from BTN, go LEFT around the table to find each position
-
-TO FIND HERO'S POSITION:
-- Look at where the dealer button is
-- If button is at HERO (bottom) -> HERO is BTN
-- If button is at bottom-right -> HERO is SB (one left of button)
-- If button is at right side -> HERO is BB (two left of button)
-- If button is at top-right -> HERO is UTG (three left of button)
-- If button is at top-left -> HERO is MP (four left of button)
-- If button is at left side -> HERO is CO (five left of button)
-
-VERIFY: SB has €0.01 posted, BB has €0.02 posted. Check hero's posted blind amount.
+Button on player at BOTTOM (hero) → position = "BTN"
+Button on player at BOTTOM-RIGHT → position = "SB"
+Button on player at RIGHT → position = "BB"
+Button on player at TOP-RIGHT → position = "UTG"
+Button on player at TOP-LEFT → position = "MP"
+Button on player at LEFT → position = "CO"
 
 Return ONLY valid JSON:
 {
