@@ -337,14 +337,12 @@ class HelperBar:
             self.decision_label.config(text=action.upper())
             self.maxcall_label.config(text="")
         else:
-            # Not hero's turn - show max call instead of cards
-            self.cards_label.config(text=f"{pos_str} [WAIT]")
+            # Not hero's turn - show to_call and pre-action status
+            self.cards_label.config(text=f"{pos_str} [PRE-ACTION]")
             self.decision_label.config(text=f"=> {action.upper()}")
-            if to_call:
-                self.maxcall_label.config(text=f"To call: €{to_call}")
-                self.log(f"To call: €{to_call}", "INFO")
-            else:
-                self.maxcall_label.config(text="Pre-action")
+            to_call_str = f"To call: €{to_call}" if to_call else "To call: €0 (check)"
+            self.maxcall_label.config(text=to_call_str)
+            self.log(f"Pre-action | {to_call_str}", "INFO")
         
         self.board_label.config(text=f"Board: {board_str}")
         self.pot_label.config(text=f"Pot: €{pot}")
