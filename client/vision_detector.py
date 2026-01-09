@@ -59,32 +59,34 @@ READING THE TABLE:
 - reasoning: Focus on WHAT to do and WHY.
 
 PREFLOP STRATEGY:
-RAISE 2.5x with: AA-TT, AKs-ATs, AKo, AQo, AJo (AJo is a RAISE not fold!), KQs, KJs, QJs
-CALL vs open with: 99-22, A2s-A9s, KTs, QTs, JTs, T9s, 98s, 87s, 76s, KQo
-NOT in call range: K9s, K8s, K7s, Q9s, J9s, T8s - these are FOLDS vs opens
-VS 3-BET: Only continue with QQ+, AKs, AKo. Fold everything else.
+RAISE 2.5x: AA-99, AKs-ATs, AKo, AQo, AJo, KQs, KJs, KQo, QJs
+CALL vs open: 88-22, A2s-A9s, KTs, QTs, JTs, T9s, 98s, 87s, 76s, 65s
+VS 3-BET: Call JJ-99, AQs, AKo. 4-bet/call QQ+, AKs. Fold everything else.
 
 SB RULE: From SB facing ANY raise (even 0.03), FOLD unless:
 - Pairs: AA-22
-- Suited aces: A2s-AKs  
-- Suited connectors: 76s, 87s, 98s, T9s, JTs, QJs
-FOLD from SB: T7s, Q8o, J7o, J9s, K7s, A9o, and all other trash
+- Suited aces: A2s-AKs
+- Good suited connectors: 65s, 76s, 87s, 98s, T9s, JTs, QJs
+FOLD from SB: T7s, Q8o, J7o, J9s, K7s, K9s, A9o, and all trash
 
 FOLD always preflop:
 - Offsuit broadways: KJo, KTo, QJo, QTo, JTo
-- Offsuit aces: ATo, A9o, A8o and below (AJo is RAISE!)
-- Weak suited: K9s-, Q9s-, J9s-, T8s-, 97s-, 86s-, 75s-, 65s-
-- All offsuit connectors: J7o, Q8o, 64o, 97o, T7o, etc
+- Offsuit aces: ATo and below (AJo is RAISE!)
+- Weak suited: K9s-, Q9s-, J9s-, T8s-, 97s-, 86s-
+- All offsuit connectors/gappers: J7o, Q8o, 64o, 97o, T7o
 
 POSTFLOP STRATEGY:
-- MADE HANDS (straights/flushes/sets/two-pair): BET 75% pot, never slowplay
-- STRONG DRAWS (flush+pair, OESD+pair, combo draws): SEMI-BLUFF 65-75% pot
-- TOP PAIR TOP KICKER: BET 65-75% pot all streets
-- TOP PAIR WEAK KICKER (K7 on Kxx, Q6 on Qxx): Bet flop 70%, then CHECK turn, CHECK river. If bet at on turn/river, CALL only - NEVER raise with TPWK.
-- SECOND PAIR: CHECK, call small bets only, fold to big bets
-- OVERPAIR on scary board (KK on AAx): CHECK-CALL, do not raise into likely better hands
-- FLUSH/STRAIGHT DRAWS alone: Check if free, call up to 33% pot
-- NO PAIR NO DRAW (A-high, K-high, air): CHECK always. Do NOT bet. Just check and fold to bets.
+- STRAIGHTS/FLUSHES/SETS/FULL HOUSE: BET 75-100% pot, never slowplay
+- TWO PAIR (both hole cards paired): BET 75% pot all streets
+- BOARD PAIR + POCKET PAIR (44 on K33): BET flop 70%, CHECK turn if called
+- COMBO DRAWS (flush+straight, flush+pair): SEMI-BLUFF 65-75% pot
+- TOP PAIR GOOD KICKER (AK/AQ/AJ on Axx): BET 70% flop, 65% turn, 50% river
+- TOP PAIR WEAK KICKER (K7 on Kxx): BET flop 70%, CHECK turn, CHECK river. If bet at, CALL only.
+- MIDDLE PAIR (QJ on A-Q-7): CHECK-CALL small bets, fold to big bets
+- OVERPAIR on scary board (KK on Axx): CHECK-CALL, do not raise
+- FLUSH DRAW alone: Check if free, call up to 40% pot
+- STRAIGHT DRAW alone: Check if free, call up to 33% pot
+- NO PAIR NO DRAW: CHECK always, fold to any bet. Never bluff.
 
 Return ONLY JSON"""
 
