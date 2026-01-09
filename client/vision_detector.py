@@ -138,7 +138,7 @@ Return ONLY JSON"""
             ],
             max_output_tokens=500,
             reasoning={"effort": "none"},
-            text={"format": {"type": "json_schema", "json_schema": json_schema}}
+            text={"format": {"type": "json_schema", "name": "poker_decision", "schema": json_schema["schema"]}}
         )
         api_time = time.time() - t
         
