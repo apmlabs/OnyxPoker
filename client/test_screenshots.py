@@ -40,7 +40,7 @@ def test_screenshot(path, index=None, total=None):
         return result
     except Exception as e:
         err = str(e).encode('ascii', 'replace').decode('ascii')
-        print(f"| ERROR: {err[:50]}")
+        print(f"| ERROR: {err}")
         return None
 
 def main():
