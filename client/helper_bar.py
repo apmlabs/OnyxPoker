@@ -287,7 +287,6 @@ class HelperBar:
         action = result.get('action') or 'unknown'
         bet_size = result.get('bet_size') or 0
         reasoning = result.get('reasoning') or ''
-        position = result.get('position') or '?'
         confidence = result.get('confidence', 0.95) or 0.95
 
         to_call = result.get('to_call')
@@ -299,7 +298,6 @@ class HelperBar:
             'hero_cards': cards,
             'board': board,
             'pot': pot,
-            'position': position,
             'is_hero_turn': result.get('is_hero_turn', True),
             'action': action,
             'amount': bet_size,
@@ -314,8 +312,7 @@ class HelperBar:
         # Log result
         cards_str = ' '.join(cards) if cards else '--'
         board_str = ' '.join(board) if board else '--'
-        pos_str = f"[{position}]" if position != '?' else ''
-        self.log(f"{pos_str} Cards: {cards_str} | Board: {board_str} | Pot: ${pot}", "INFO")
+        self.log(f"Cards: {cards_str} | Board: {board_str} | Pot: ${pot}", "INFO")
 
         # Show decision if we have any useful info (pot > 0 means table detected)
         if pot > 0 or cards or board:
@@ -333,12 +330,12 @@ class HelperBar:
         is_hero_turn = result.get('is_hero_turn', True)
         
         if is_hero_turn:
-            self.cards_label.config(text=f"{pos_str} {cards_str}")
+            self.cards_label.config(text=cards_str)
             self.decision_label.config(text=action.upper())
             self.maxcall_label.config(text="")
         else:
             # Not hero's turn - show to_call and pre-action status
-            self.cards_label.config(text=f"{pos_str} [PRE-ACTION]")
+            self.cards_label.config(text="[PRE-ACTION]")
             self.decision_label.config(text=f"=> {action.upper()}")
             to_call_str = f"To call: €{to_call}" if to_call else "To call: €0 (check)"
             self.maxcall_label.config(text=to_call_str)

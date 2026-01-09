@@ -41,7 +41,6 @@ Return JSON:
   "pot": 0.15,
   "hero_stack": 5.00,
   "to_call": 0.02,
-  "position": "BTN",
   "is_hero_turn": true,
   "action": "raise",
   "bet_size": 0.10,
@@ -54,16 +53,15 @@ READING THE TABLE:
 - community_cards: Cards in CENTER. Empty [] if preflop.
 - pot/hero_stack/to_call: Read EXACT amounts with decimals.
 - to_call: Amount on CALL button, 0 if CHECK available, null if no buttons.
-- position: BTN/SB/BB/UTG/MP/CO based on dealer button location.
 - is_hero_turn: TRUE if LARGE RED buttons visible, FALSE if only checkboxes.
 - action: fold/check/call/bet/raise. NEVER fold when check is free!
 - bet_size: When action is bet/raise, specify the amount in euros. Use 2.5-3x BB preflop, 65-75% pot postflop.
-- reasoning: Focus on WHAT to do and WHY. Don't mention whose turn it is - just give the strategy advice.
+- reasoning: Focus on WHAT to do and WHY.
 
 PREFLOP STRATEGY:
 RAISE (2.5-3x BB) these hands. Pocket pairs MUST raise, never just call:
-- Any position: AA-22, AKs-ATs, AKo-AJo, KQs-KJs, QJs
-- CO/BTN only: A9s-A2s, KTs, QTs, JTs, T9s, 98s, 87s, 76s
+- Premium: AA-22, AKs-ATs, AKo-AJo, KQs-KJs, QJs
+- Playable suited: A9s-A2s, KTs, QTs, JTs, T9s, 98s, 87s, 76s
 BB DEFENSE vs min-raise: CALL with 22+, suited connectors, A2s-A9s, KTs+, QTs+
 FOLD everything else including:
 - A9o, A7o, A6o, A5o, A4o (only SUITED aces playable)
@@ -139,11 +137,5 @@ Return ONLY JSON"""
         result['api_time'] = api_time
         result['model'] = self.model
         result['confidence'] = 0.95
-        
-        # Validate position detection
-        valid_positions = ['UTG', 'MP', 'CO', 'BTN', 'SB', 'BB']
-        if result.get('position') not in valid_positions:
-            self.log(f"WARNING: Invalid position '{result.get('position')}' detected. Expected one of: {valid_positions}", "ERROR")
-            result['position'] = '?'  # Mark as unknown for debugging
         
         return result
