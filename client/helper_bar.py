@@ -302,7 +302,7 @@ class HelperBar:
             'position': position,
             'is_hero_turn': result.get('is_hero_turn', True),
             'action': action,
-            'amount': amount,
+            'amount': bet_size,
             'to_call': to_call,
             'reasoning': reasoning,
             'confidence': confidence,
