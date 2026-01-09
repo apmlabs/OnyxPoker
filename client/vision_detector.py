@@ -34,13 +34,22 @@ class VisionDetector:
         
         prompt = """Analyze this PokerStars table screenshot. HERO is the player at the BOTTOM of the screen (their cards face up).
 
-CRITICAL FIRST STEP: Find the dealer button (D chip). Count seats clockwise from button:
-- BTN = dealer button on hero
-- SB = 1 seat clockwise from button  
-- BB = 2 seats clockwise from button
-- UTG = 3 seats clockwise from button
-- MP = 4 seats clockwise from button  
-- CO = 5 seats clockwise from button
+POSITION DETECTION (CRITICAL - follow exactly):
+1. Find the DEALER BUTTON: A RED SPADE with STAR inside, sitting next to a player's avatar
+2. The player WITH the dealer button is BTN
+3. Count CLOCKWISE from BTN to find other positions:
+   BTN -> SB -> BB -> UTG -> MP -> CO -> (back to BTN)
+4. Find which seat HERO is in (bottom of screen) and determine hero's position
+
+EXAMPLE (6-max table, hero at bottom):
+- If dealer button is ON hero -> hero is BTN
+- If dealer button is 1 seat to hero's RIGHT -> hero is SB
+- If dealer button is 2 seats to hero's RIGHT -> hero is BB  
+- If dealer button is 3 seats to hero's RIGHT -> hero is UTG
+- If dealer button is 4 seats to hero's RIGHT -> hero is MP
+- If dealer button is 5 seats to hero's RIGHT -> hero is CO
+
+VERIFY with blinds: SB posts 0.01, BB posts 0.02. If hero posted 0.01 -> hero is SB. If hero posted 0.02 -> hero is BB.
 
 Return ONLY valid JSON:
 {
@@ -65,7 +74,7 @@ Rules:
 - community_cards: Cards in CENTER of table. Empty [] if preflop
 - pot/hero_stack/to_call: Read EXACT amounts including decimals (e.g. 0.05 not 5). Look at currency symbol and decimal point carefully
 - to_call: Amount on CALL button, 0 if CHECK available, null if no action buttons
-- position: MUST be UTG, MP, CO, BTN, SB, or BB. FINDING THE DEALER BUTTON: Look for a RED SPADE ICON with a small STAR inside - this is the PokerStars dealer button. It sits NEXT TO a player's avatar (not in front with bets). The player with this red spade is BTN. VERIFICATION: SB usually has 0.01 posted, BB has 0.02 posted. Go LEFT from BTN: SB, BB, UTG, MP, CO. Hero is at BOTTOM of screen. IGNORE the small "1c" or "5c" chip icons - those are blind/bet chips, NOT the dealer button.
+- position: MUST be UTG, MP, CO, BTN, SB, or BB. Use the position detection steps above. Count how many seats clockwise the dealer button is from hero, then determine hero's position.
 - is_hero_turn: Look at BOTTOM RIGHT corner. TRUE only if you see LARGE RED rectangular buttons with white text like "Fold" "Call €X" "Raise To €X" or "Check" "Bet €X". These buttons are ~150px wide and bright red. FALSE if you only see small gray/white checkboxes with text like "Check", "Check/Fold", "Call Any", "Fold" - those are pre-select options, NOT action buttons.
 - action: What hero SHOULD do. When is_hero_turn=FALSE, recommend what to do IF action gets to hero (e.g. "raise" on BTN with K9o preflop means open-raise if folded to). NEVER recommend fold when checking is free!
 - max_call: When is_hero_turn=FALSE, set max amount to call if someone raises ahead. Example: K9o on BTN preflop → action="raise", max_call=0.06 (call up to 3bb if someone opens). Use 0.0 only for trash hands that should fold to any raise.
