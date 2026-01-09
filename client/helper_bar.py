@@ -330,24 +330,24 @@ class HelperBar:
             self.log(decision_str, "ERROR")
 
         # Update right panel
-        self.cards_label.config(text=f"{pos_str} {cards_str}")
+        is_hero_turn = result.get('is_hero_turn', True)
+        
+        if is_hero_turn:
+            self.cards_label.config(text=f"{pos_str} {cards_str}")
+            self.decision_label.config(text=action.upper())
+            self.maxcall_label.config(text="")
+        else:
+            # Not hero's turn - show max call instead of cards
+            self.cards_label.config(text=f"{pos_str} [WAIT]")
+            self.decision_label.config(text=f"=> {action.upper()}")
+            if max_call:
+                self.maxcall_label.config(text=f"Max call: €{max_call}")
+                self.log(f"Max call: €{max_call}", "INFO")
+            else:
+                self.maxcall_label.config(text="Pre-action")
+        
         self.board_label.config(text=f"Board: {board_str}")
         self.pot_label.config(text=f"Pot: €{pot}")
-
-        # Check if hero's turn
-        is_hero_turn = result.get('is_hero_turn', True)
-        turn_indicator = "" if is_hero_turn else "[WAIT] "
-        
-        self.decision_label.config(text=turn_indicator + action.upper())
-        
-        # Show max_call if pre-action
-        if not is_hero_turn and max_call:
-            self.maxcall_label.config(text=f"Max call: €{max_call}")
-            self.log(f"Max call: €{max_call}", "INFO")
-        elif not is_hero_turn:
-            self.maxcall_label.config(text="[PRE-ACTION]")
-        else:
-            self.maxcall_label.config(text="")
         
         self.time_label.config(text=f"{elapsed:.1f}s")
 
