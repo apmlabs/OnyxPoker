@@ -67,21 +67,30 @@ Before ANY preflop decision, check BOTH card suits:
 If suits are DIFFERENT, treat as OFFSUIT and usually FOLD.
 
 PREFLOP STRATEGY:
-RAISE 2.5x: AA-99, AKs-ATs, AKo, AQo, AJo, KQs, KJs, KQo, QJs
-AJo RULE: AJo vs single open = 3-BET always. €0.05 open is NOT a 3-bet!
-CALL vs open (€0.05 or less to call):
-- ALL pairs: 22-AA
-- ALL suited aces: A2s-AKs
-- ALL suited kings: K2s-KQs
-- ALL suited queens: Q2s-QJs
-- ALL suited connectors: 54s-JTs
-- ALL suited one-gappers: 53s-J9s
-VS 3-BET (€0.15+ sizing): Call JJ-99, AQs, AKo. 4-bet QQ+, AKs. Fold rest.
 
-FOLD preflop:
-- Offsuit hands below AT (A9o, A8o, etc)
-- Offsuit connectors (T9o, 98o, etc)
-- Offsuit broadways (KJo, QTo, etc)
+CRITICAL: CHECK SUITS FIRST! Same suit = suited (s). Different suits = offsuit (o).
+Example: Kh7h = K7s (CALL). Kh7c = K7o (FOLD).
+
+RAISE 2.5x: AA-99, AKs-ATs, AKo, AQo, AJo, KQs, KJs, QJs
+AJo RULE: AJo vs single open = 3-BET always.
+
+CALL vs open (€0.05 or less) - SUITED ONLY:
+- ALL pairs: 22-AA
+- ALL suited aces: A2s-AKs (SAME SUIT ONLY)
+- ALL suited kings: K2s-KQs (SAME SUIT ONLY)
+- ALL suited queens: Q2s-QJs (SAME SUIT ONLY)
+- ALL suited connectors: 54s-JTs (SAME SUIT ONLY)
+- ALL suited one-gappers: 53s-J9s (SAME SUIT ONLY)
+
+VS 3-BET (€0.15+): Call JJ-99, AQs, AKo. 4-bet QQ+, AKs. Fold rest.
+
+FOLD ALWAYS - OFFSUIT (different suits):
+- A9o, A8o, A7o, A6o, A5o, A4o, A3o, A2o = FOLD
+- KJo, KTo, K9o, K8o, K7o, K6o, K5o = FOLD
+- QJo, QTo, Q9o = FOLD
+- JTo, J9o = FOLD
+- T9o, 98o, 87o, 76o, 65o, 54o = FOLD
+- Any hand with DIFFERENT SUITS not listed above = FOLD
 
 BOTTOM PAIR: CHECK always. Never bet with bottom pair.
 
