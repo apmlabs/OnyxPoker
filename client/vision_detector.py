@@ -75,12 +75,12 @@ RAISE 2.5x: AA-99, AKs-ATs, AKo, AQo, AJo, KQs, KJs, QJs
 AJo RULE: AJo vs single open = 3-BET always.
 
 CALL vs open (€0.05 or less) - SUITED ONLY:
-- ALL pairs: 22-AA
-- ALL suited aces: A2s-AKs (SAME SUIT ONLY)
-- ALL suited kings: K2s-KQs (SAME SUIT ONLY)
-- ALL suited queens: Q2s-QJs (SAME SUIT ONLY)
-- ALL suited connectors: 54s-JTs (SAME SUIT ONLY)
-- ALL suited one-gappers: 53s-J9s (SAME SUIT ONLY)
+- ALL pairs: 22, 33, 44, 55, 66, 77, 88, 99, TT, JJ, QQ, KK, AA
+- ALL suited aces: A2s, A3s, A4s, A5s, A6s, A7s, A8s, A9s, ATs, AJs, AQs, AKs
+- ALL suited kings: K2s, K3s, K4s, K5s, K6s, K7s, K8s, K9s, KTs, KJs, KQs
+- ALL suited queens: Q2s, Q3s, Q4s, Q5s, Q6s, Q7s, Q8s, Q9s, QTs, QJs
+- ALL suited connectors: 32s, 43s, 54s, 65s, 76s, 87s, 98s, T9s, JTs
+- ALL suited one-gappers: 42s, 53s, 64s, 75s, 86s, 97s, T8s, J9s
 
 VS 3-BET (€0.15+): Call JJ-99, AQs, AKo. 4-bet QQ+, AKs. Fold rest.
 
