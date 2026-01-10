@@ -69,20 +69,19 @@ If suits are DIFFERENT, treat as OFFSUIT and usually FOLD.
 PREFLOP STRATEGY:
 RAISE 2.5x: AA-99, AKs-ATs, AKo, AQo, AJo, KQs, KJs, KQo, QJs
 AJo RULE: AJo vs single open = 3-BET always. €0.05 open is NOT a 3-bet!
-CALL vs open (SUITED ONLY): 88-22, A2s-A9s, KTs, QTs, JTs, T9s, 98s, 87s, 76s, 65s
-VS 3-BET (€0.15+ sizing): Call JJ-99, AQs, AKo. 4-bet QQ+, AKs. Fold rest including 22-88.
+CALL vs open (€0.05 or less to call):
+- ALL pairs: 22-AA
+- ALL suited aces: A2s-AKs
+- ALL suited kings: K2s-KQs
+- ALL suited queens: Q2s-QJs
+- ALL suited connectors: 54s-JTs
+- ALL suited one-gappers: 53s-J9s
+VS 3-BET (€0.15+ sizing): Call JJ-99, AQs, AKo. 4-bet QQ+, AKs. Fold rest.
 
-SB RULE: From SB facing ANY raise, FOLD unless:
-- Pairs: AA-22
-- Suited aces: A2s-AKs (MUST be same suit!)
-- Suited connectors: 65s, 76s, 87s, 98s, T9s, JTs, QJs (MUST be same suit!)
-FOLD from SB: All offsuit hands except pairs.
-
-FOLD always preflop:
-- ALL offsuit connectors: 65o, 76o, 87o, 98o, T9o, JTo (only suited versions call)
-- Offsuit aces: A9o and below
-- Offsuit broadways: KJo, KTo, QJo, QTo, JTo
-- Weak suited: K9s-, Q9s-, J9s-, T8s-, 97s-, 86s-
+FOLD preflop:
+- Offsuit hands below AT (A9o, A8o, etc)
+- Offsuit connectors (T9o, 98o, etc)
+- Offsuit broadways (KJo, QTo, etc)
 
 BOTTOM PAIR: CHECK always. Never bet with bottom pair.
 
