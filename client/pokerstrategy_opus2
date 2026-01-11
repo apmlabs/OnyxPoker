@@ -1,0 +1,128 @@
+BLITZ/ZOOM PREFLOP STRATEGY (2NL-5NL 6-MAX)
+
+Reality of Blitz:
+- New opponents every hand - NO reads possible
+- Players fold weak hands instantly (why wait with trash?)
+- When someone plays back, they usually HAVE IT
+- Pots that go to showdown are often monster vs monster
+- Pool is tighter than regular tables (weak hands = click fold)
+
+CORE PRINCIPLES
+
+1. TIGHTEN UP - Blitz pools are nittier than regular tables
+2. VALUE HEAVY - When you bet, bet for value (bluffs get called by better)
+3. RESPECT AGGRESSION - 3-bets and raises are real, not bluffs
+4. POSITION IS KING - Play way more hands IP, very tight OOP
+5. DON'T HERO CALL - They have it more often than regular tables
+
+OPEN RAISE (2.5bb standard)
+
+UTG
+- Raise: 99+, AJs+, KQs, AQo+
+
+MP  
+- Raise: 77+, ATs+, KJs+, QJs, AJo+, KQo
+
+CO
+- Raise: 55+, A8s+, A5s-A4s, KTs+, QTs+, JTs, T9s, 98s, ATo+, KJo+
+
+BTN
+- Raise: 22+, A2s+, K8s+, Q9s+, J9s+, T8s+, 97s+, 86s+, 76s, 65s, A7o+, KTo+, QJo
+
+SB (raise or fold - NEVER complete)
+- Raise: 55+, A4s+, K9s+, Q9s+, J9s+, T8s+, 98s, 87s, A9o+, KJo+
+
+3-BET RANGES (keep it tight - Blitz 3-bets are VALUE)
+
+vs UTG/MP open
+- 3-bet: QQ+, AKs, AKo
+- Call IP: JJ-99, AQs (fold AQo, KQs - dominated too often)
+- Fold rest
+
+vs CO open
+- 3-bet: JJ+, AKs, AKo, AQs
+- Call IP: TT-77, AJs, KQs
+- Fold rest
+
+vs BTN open
+- 3-bet: TT+, AQs+, AKo, A5s-A4s (some bluffs ok here)
+- Call: 99-55, AJs-ATs, KQs-KJs, QJs, JTs, T9s
+- Fold rest
+
+FACING 3-BET (they have it - be disciplined)
+
+- 4-bet/call: KK+, AKs
+- Call: QQ, JJ, AKo, AQs (IP only)
+- FOLD EVERYTHING ELSE
+
+Why fold so much? Blitz 3-bets are 90% value. AJo, KQo, TT are losing calls.
+
+BLIND DEFENSE
+
+BB vs BTN (defend but don't go crazy)
+- 3-bet: JJ+, AQs+, AKo, A5s-A4s
+- Call: TT-22, AJs-A7s, KTs+, QTs+, JTs, T9s, 98s, 87s, 76s
+- Fold: offsuit junk, weak aces, dominated hands
+
+BB vs CO/MP (tighter - they're stronger)
+- 3-bet: QQ+, AKs, AKo
+- Call: JJ-77, AQs-ATs, KQs
+- Fold rest
+
+SB vs any open (3-bet or fold ONLY)
+- 3-bet: TT+, AQs+, AKo
+- Fold: everything else (flatting SB = lighting money on fire)
+
+KEY BLITZ ADJUSTMENTS
+
+1. FOLD MORE TO 3-BETS
+   - Regular table: "maybe he's bluffing"
+   - Blitz: he's not bluffing, fold your AJo
+
+2. DON'T BLUFF 3-BET
+   - Light 3-bets work on regs you have reads on
+   - In Blitz, random villain calls with QQ and you're dead
+
+3. VALUE BET THINNER POSTFLOP
+   - When you have it, bet - they'll call with worse
+   - When you don't have it, give up - they're not folding
+
+4. RESPECT TURN/RIVER RAISES
+   - In Blitz, turn raise = nuts or close to it
+   - Don't pay off with one pair
+
+5. SMALL PAIRS ARE MARGINAL
+   - 22-55 need to hit sets to win
+   - Fold them OOP, only play IP vs single raise
+
+6. SUITED CONNECTORS NEED POSITION
+   - 76s, 87s, 98s are great on BTN
+   - Trash from blinds - fold them
+
+HANDS TO AUTO-FOLD IN BLITZ
+
+Preflop (always):
+- Any offsuit hand worse than A7o
+- K9o, Q9o, J9o, T9o from early position
+- Small suited gappers (75s, 64s, 53s) from blinds
+- A9o-A2o facing any raise
+
+Facing 3-bet (always):
+- AJo, ATo, KQo, KJo
+- TT, 99 out of position
+- Any suited connector
+- Any small pair
+
+THE BLITZ MINDSET
+
+You're playing against the POOL, not individuals.
+- Pool is tight → your steals work more often
+- Pool is value-heavy → don't bluff catch
+- Pool folds trash → when they play, respect it
+- You can't adjust to players → play solid fundamentals
+
+Win rate comes from:
+1. Stealing blinds with position
+2. Value betting made hands
+3. Folding marginal hands to aggression
+4. NOT paying off monsters with one pair
