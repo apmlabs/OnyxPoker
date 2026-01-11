@@ -1,0 +1,91 @@
+BLITZ 6-MAX PREFLOP STRATEGY (2NL-10NL)
+
+SUIT CHECK: Same suit = suited (s). Different = offsuit (o).
+
+BLITZ FACTS
+- No reads, new table every hand
+- 3-bets are 85%+ value
+- Turn/river raises = near-nuts
+- Pool overfolds to steals, underfolds to value
+
+OPEN RAISE (2.5bb)
+
+UTG: 77+, ATs+, KQs, AQo+
+MP: 66+, ATs+, A5s-A4s, KJs+, QJs, JTs, AJo+, KQo
+CO: 55+, A7s+, A5s-A2s, KTs+, QTs+, J9s+, T9s, 98s, 87s, ATo+, KJo+
+BTN: 22+, A2s+, K7s+, Q8s+, J8s+, T8s+, 97s+, 86s+, 75s+, 65s, 54s, A8o+, KTo+, QTo+, JTo
+SB: 44+, A2s+, K9s+, Q9s+, J9s+, T9s, 98s, 87s, A9o+, KJo+ (raise or fold)
+
+VS SINGLE OPEN
+
+3-bet value:
+- vs UTG/MP: QQ+, AKs, AKo
+- vs CO: JJ+, AQs+, AKo
+- vs BTN: TT+, AQs+, AKo
+
+3-bet bluff (BTN/SB only vs CO/BTN opens):
+- A5s-A4s, K9s
+
+Call IP:
+- vs UTG/MP: JJ-88, AQs-AJs, KQs
+- vs CO: TT-66, AJs-ATs, KQs-KJs, QJs, JTs
+- vs BTN: 99-44, ATs-A9s, KJs-KTs, QJs-QTs, JTs, T9s, 98s, 87s
+
+OOP (SB): 3-bet or fold. Never flat.
+
+BB DEFENSE
+
+vs BTN:
+- 3-bet: TT+, AQs+, AKo, A5s-A4s
+- Call: 99-22, AJs-A2s, KTs+, QTs+, J9s+, T8s+, 97s+, 86s+, 76s, 65s, KJo, QJo
+- Fold: weak offsuit, dominated aces
+
+vs CO:
+- 3-bet: QQ+, AKs, AKo
+- Call: JJ-55, AQs-A9s, KQs-KTs, QJs, JTs, T9s
+- Fold: rest
+
+vs UTG/MP:
+- 3-bet: QQ+, AKs, AKo
+- Call: JJ-77, AQs-ATs, KQs
+- Fold: rest
+
+VS 3-BET
+
+4-bet/call: KK+, AKs
+4-bet/fold: AKo (vs tight 3-bettor fold pre)
+Call IP: QQ, JJ, AQs
+Fold: TT-, AJo, KQo, suited connectors, small pairs
+
+VS 4-BET
+
+All-in: KK+
+Call: AKs (if <100bb effective)
+Fold: everything else including QQ (unless read)
+
+AUTO-FOLD LIST
+
+Preflop opens:
+- A6o-A2o, K9o-, Q9o-, J9o-, T8o-
+- Suited gappers from EP (75s, 64s, 53s)
+
+Facing 3-bet:
+- AJo, ATo, KQo, KJo, QJo
+- TT-22 OOP
+- All suited connectors
+- 99-22 vs EP 3-bet
+
+ADJUSTMENTS
+
+Blinds overfold: Steal wider from CO/BTN (add K5s+, Q7s+, J8s+)
+Blinds 3-bet light: Tighten steals, 4-bet wider with QQ+/AK
+Villain opens too wide: 3-bet more for value (add AQo, KQs)
+Villain folds to 3-bet >65%: 3-bet any two from BTN/SB
+
+MINDSET
+
+- You beat Blitz by folding trash and value betting made hands
+- Don't bluff rivers (they call)
+- Don't hero call (they have it)
+- Steal blinds relentlessly with position
+- When raised on turn/river, fold one pair
