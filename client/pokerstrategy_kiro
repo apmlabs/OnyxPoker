@@ -1,0 +1,116 @@
+BLITZ 2NL-5NL PREFLOP STRATEGY (6-MAX)
+
+SUITS CHECK: Same suit = suited (s). Different suits = offsuit (o).
+Example: Kh7h = K7s. Kh7c = K7o.
+
+OPEN RAISE (2.5bb)
+
+UTG: 99+, AJs+, KQs, AQo+
+MP: 77+, ATs+, KJs+, QJs, AJo+, KQo
+CO: 66+, A9s+, A5s-A2s, KTs+, QTs+, JTs, T9s, 98s, ATo+, KJo+
+BTN: 22+, A2s+, K8s+, Q9s+, J9s+, T8s+, 97s+, 86s+, 76s, 65s, A8o+, KTo+, QJo
+SB: 77+, A7s+, K9s+, Q9s+, J9s+, T9s, 98s, A9o+, KJo+ (raise or fold, never limp)
+
+VS SINGLE OPEN
+
+3-bet for value:
+- vs UTG/MP: QQ+, AKs, AKo
+- vs CO: JJ+, AQs+, AKo
+- vs BTN: TT+, AQs+, AKo, A5s-A4s (light 3-bet bluffs)
+
+Call in position:
+- vs UTG/MP: JJ-99, AQs (fold AQo, KQs)
+- vs CO: TT-77, AJs, KQs
+- vs BTN: 99-55, AJs-ATs, KQs-KJs, QJs, JTs, T9s, 98s
+
+Fold out of position:
+- SB: 3-bet or fold (never flat)
+- BB vs UTG/MP: fold most hands, 3-bet QQ+/AK, call JJ-77/AQs-ATs/KQs
+- BB vs CO/BTN: defend wider (see BB defense below)
+
+BB DEFENSE
+
+vs BTN open:
+- 3-bet: JJ+, AQs+, AKo, A5s-A4s
+- Call: TT-22, AJs-A6s, KTs+, QTs+, JTs, T9s, 98s, 87s, 76s, ATo, KJo
+- Fold: weak offsuit, dominated hands
+
+vs CO open:
+- 3-bet: QQ+, AKs, AKo
+- Call: JJ-66, AJs-A9s, KQs-KTs, QJs, JTs
+- Fold: rest
+
+vs MP/UTG open:
+- 3-bet: QQ+, AKs, AKo
+- Call: JJ-88, AQs-ATs, KQs
+- Fold: rest
+
+VS 3-BET (they have it)
+
+4-bet/call: KK+, AKs
+Call IP: QQ, JJ, AKo, AQs
+Fold: everything else (AJo, KQo, TT, 99, suited connectors)
+
+BLITZ REALITY
+
+1. No reads - new table every hand
+2. 3-bets are value (90%+ real hands)
+3. Turn/river raises = nuts
+4. Showdowns = monster vs monster
+5. Pool is tighter than regular tables
+
+POSTFLOP PRINCIPLES
+
+Made hands (bet for value):
+- Straights/flushes/sets/full house: 75-100% pot all streets
+- Two pair: 75% pot all streets
+- Top pair good kicker (AK/AQ on Axx): 70% flop, 65% turn, 50% river
+- Top pair weak kicker (K7 on Kxx): 70% flop, check-call turn/river
+- Overpair on scary board (KK on Axx): check-call, never raise
+
+Draws:
+- Combo draws (flush+straight, flush+pair): semi-bluff 65-75% pot
+- Flush draw alone: check if free, call up to 40% pot
+- Straight draw alone: check if free, call up to 33% pot
+
+Weak hands:
+- Bottom pair: check always, never bet
+- No pair no draw: check always, never bet
+- Ace-high/king-high: check, don't bluff
+
+Facing aggression:
+- Respect turn/river raises (they have it)
+- Don't hero call with one pair
+- When in doubt, fold (Blitz players don't bluff much)
+
+FOLD ALWAYS
+
+Preflop:
+- Offsuit trash: A6o-A2o, K9o-K2o, Q9o-Q2o, J9o-J2o, T8o-T2o
+- Weak suited: K7s-K2s (except BTN), Q8s-Q2s (except BTN), J8s-J2s (except BTN)
+- Gappers: 75s, 64s, 53s, 42s (except BTN)
+
+Facing 3-bet:
+- AJo, ATo, KQo, KJo, QJo
+- TT, 99 (unless IP vs BTN)
+- All suited connectors
+- All small pairs 88-22
+
+KEY ADJUSTMENTS
+
+1. Tighter than regular tables - Blitz pools fold trash instantly
+2. Respect aggression - raises are real, not bluffs
+3. Value bet bigger - they call light with worse
+4. Don't bluff catch - they're not bluffing
+5. Position is everything - play tight OOP, wider IP
+6. Small pairs need position - fold them OOP
+7. Suited connectors need position - fold them from blinds
+8. When they play back, they have it - don't pay off
+
+WIN RATE SOURCES
+
+1. Stealing blinds with position (BTN/CO opens)
+2. Value betting made hands (bet bigger)
+3. Folding marginal hands to aggression (don't hero call)
+4. Not paying off monsters (respect turn/river raises)
+5. Playing tight OOP (SB 3-bet or fold)
