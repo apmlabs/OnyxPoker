@@ -25,7 +25,8 @@ LITE_MODE = os.getenv('POKER_LITE_MODE', '0') == '1'
 LITE_STRATEGY = os.getenv('POKER_STRATEGY', 'gpt3')
 
 if LITE_MODE:
-    from vision_detector_lite import VisionDetectorLite, MODEL as LITE_MODEL
+    from vision_detector_lite import VisionDetectorLite
+    LITE_MODEL = "gpt-4o-mini"  # Default lite model
     from strategy_engine import StrategyEngine, get_available_strategies
 
 # Session log file
