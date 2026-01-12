@@ -129,10 +129,11 @@ Position: UTG/MP/CO/BTN/SB/BB
         
         # Call Kiro CLI with prompt (image path is in the prompt)
         result = subprocess.run(
-            [kiro_cli_path, 'chat', '--no-interactive', prompt],
+            [kiro_cli_path, 'chat', prompt],
             capture_output=True,
             text=True,
-            timeout=180
+            timeout=180,
+            input='\n'  # Send newline to skip any prompts
         )
         
         # Clean up temp file
@@ -149,17 +150,33 @@ Position: UTG/MP/CO/BTN/SB/BB
         
         # Try to parse JSON response
         import json
+        import re
         try:
+            # First try direct parse
             parsed = json.loads(response)
             logger.info(f"Successfully parsed JSON: {list(parsed.keys())}")
             logger.info("=== ANALYZE-SCREENSHOT SUCCESS ===")
             return jsonify(parsed)
-        except json.JSONDecodeError as e:
-            logger.error(f"Failed to parse JSON: {e}")
+        except json.JSONDecodeError:
+            # Try to extract JSON from markdown or conversational text
+            logger.info("Direct parse failed, trying to extract JSON...")
+            
+            # Look for JSON object in the response
+            json_match = re.search(r'\{[^{}]*(?:\{[^{}]*\}[^{}]*)*\}', response, re.DOTALL)
+            if json_match:
+                try:
+                    parsed = json.loads(json_match.group(0))
+                    logger.info(f"Extracted JSON: {list(parsed.keys())}")
+                    logger.info("=== ANALYZE-SCREENSHOT SUCCESS ===")
+                    return jsonify(parsed)
+                except json.JSONDecodeError as e:
+                    logger.error(f"Failed to parse extracted JSON: {e}")
+            
+            logger.error(f"No valid JSON found in response")
             logger.error(f"Raw response: {response[:500]}")
             return jsonify({
                 'error': 'Failed to parse response',
-                'raw_response': response
+                'raw_response': response[:500]
             }), 500
         
     except subprocess.TimeoutExpired:
