@@ -20,8 +20,6 @@ class VisionDetectorLite:
         self.client = OpenAI(api_key=self.api_key)
         self.logger = logger
         self.model = model or DEFAULT_MODEL
-        self.logger = logger
-        self.model = MODEL
     
     def log(self, message: str, level: str = "INFO"):
         if self.logger:
