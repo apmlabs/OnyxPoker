@@ -68,7 +68,6 @@ class HelperBar:
         self._analyzing = False
         self.last_screenshot = None
         self.bot_running = False
-        self.position_var = tk.StringVar(value='BTN')  # Default position
         
         # Drag state
         self._drag_start_x = 0
@@ -85,7 +84,7 @@ class HelperBar:
         main = tk.Frame(self.root, bg='#1e1e1e')
         main.pack(fill='both', expand=True)
 
-        # === TOP: Position selector bar (draggable) ===
+        # === TOP: Title bar (draggable) ===
         top_bar = tk.Frame(main, bg='#2d2d2d', height=30)
         top_bar.pack(side='top', fill='x')
         top_bar.pack_propagate(False)
@@ -94,15 +93,8 @@ class HelperBar:
         top_bar.bind('<Button-1>', self._start_drag)
         top_bar.bind('<B1-Motion>', self._on_drag)
         
-        tk.Label(top_bar, text="Position:", font=('Arial', 9, 'bold'),
-                bg='#2d2d2d', fg='#aaa').pack(side='left', padx=5)
-        
-        for pos in ['UTG', 'MP', 'CO', 'BTN', 'SB', 'BB']:
-            tk.Radiobutton(top_bar, text=pos, variable=self.position_var, value=pos,
-                          font=('Arial', 8), bg='#2d2d2d', fg='#fff', 
-                          selectcolor='#444', activebackground='#2d2d2d',
-                          indicatoron=0, width=4, relief='flat', 
-                          highlightthickness=0).pack(side='left', padx=1)
+        tk.Label(top_bar, text="OnyxPoker - All Position Advisor", font=('Arial', 10, 'bold'),
+                bg='#2d2d2d', fg='#00ffff').pack(side='left', padx=10)
         
         # Close button on right
         tk.Button(top_bar, text="✕", font=('Arial', 10, 'bold'),
@@ -308,9 +300,6 @@ class HelperBar:
                 delete_temp = True
 
             try:
-                # Get manual position from UI
-                manual_position = self.position_var.get()
-                
                 # AI analysis
                 if AI_ONLY_MODE:
                     # AI-only mode: gpt-5.2 does both vision + decision
@@ -320,8 +309,8 @@ class HelperBar:
                     result = vision.detect_poker_elements(temp_path, include_decision=True)
                     api_time = time.time() - api_start
                     
-                    # Override position with manual selection
-                    result['position'] = manual_position
+                    # For AI-only mode, just use the single result
+                    all_position_results = None
                 else:
                     # Default mode: gpt-5.2 for vision, strategy_engine for decision
                     self.root.after(0, lambda: self.log(f"API call ({DEFAULT_MODEL})...", "DEBUG"))
@@ -330,16 +319,19 @@ class HelperBar:
                     table_data = vision.detect_table(temp_path)
                     api_time = time.time() - api_start
                     
-                    # Override position with manual selection
-                    table_data['position'] = manual_position
-                    
-                    # Apply hardcoded strategy
+                    # Calculate action for ALL 6 positions
                     engine = StrategyEngine(STRATEGY)
-                    decision = engine.get_action(table_data)
+                    all_position_results = {}
                     
-                    # Merge table data with decision
-                    result = {**table_data, **decision}
+                    for pos in ['UTG', 'MP', 'CO', 'BTN', 'SB', 'BB']:
+                        pos_data = {**table_data, 'position': pos}
+                        decision = engine.get_action(pos_data)
+                        all_position_results[pos] = decision
+                    
+                    # Use BTN as default for display
+                    result = {**table_data, **all_position_results['BTN']}
                     result['api_time'] = api_time
+                    result['all_positions'] = all_position_results
 
                 elapsed = time.time() - start
                 self.root.after(0, lambda t=api_time: self.log(f"API done: {t:.1f}s", "DEBUG"))
@@ -401,10 +393,28 @@ class HelperBar:
 
         # Show decision if we have any useful info (pot > 0 means table detected)
         if pot > 0 or cards or board:
-            decision_str = f"=> {action.upper()}"
-            if bet_size and action in ('bet', 'raise'):
-                decision_str += f" €{bet_size:.2f}"
-            self.log(decision_str, "DECISION")
+            # If we have all position results (preflop), show them
+            all_positions = result.get('all_positions')
+            if all_positions and not board:  # Preflop only
+                self.log("=== PREFLOP ACTIONS BY POSITION ===", "DECISION")
+                for pos in ['UTG', 'MP', 'CO', 'BTN', 'SB', 'BB']:
+                    pos_result = all_positions[pos]
+                    action = pos_result.get('action', 'fold')
+                    bet_size = pos_result.get('bet_size', 0)
+                    
+                    if action in ('bet', 'raise') and bet_size:
+                        action_str = f"{action.upper()} €{bet_size:.2f}"
+                    else:
+                        action_str = action.upper()
+                    
+                    self.log(f"{pos:4s}: {action_str}", "DECISION")
+            else:
+                # Postflop or AI-only mode - show single decision
+                decision_str = f"=> {action.upper()}"
+                if bet_size and action in ('bet', 'raise'):
+                    decision_str += f" €{bet_size:.2f}"
+                self.log(decision_str, "DECISION")
+            
             if reasoning:
                 self.log(reasoning, "DEBUG")
         else:
