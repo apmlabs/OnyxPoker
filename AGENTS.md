@@ -160,6 +160,37 @@ onyxpoker-server/             # Separate folder on EC2 (NOT in GitHub repo)
 
 ## 📖 SESSION HISTORY & LESSONS LEARNED
 
+### Session 28: GPT-5 Model Testing & Reasoning Parameters (January 12, 2026)
+
+**Challenge**: Test all GPT-5 models with correct reasoning_effort parameters for vision tasks.
+
+**Key Findings**:
+- GPT-5 family has different reasoning_effort support across versions
+- gpt-5.1/gpt-5.2 support "none" (no reasoning at all)
+- gpt-5/gpt-5-mini/gpt-5-nano only support "minimal" (not "none")
+- GPT-4 models don't support reasoning_effort parameter at all
+
+**Implementation**:
+1. Added comprehensive model testing: 7 models total
+2. Verified reasoning_effort logic in vision_detector_lite.py
+3. Removed debug logging (console prints and self.log calls)
+4. Added all GPT-5 variants to test suite
+
+**Test Models** (7 total):
+| Model | reasoning_effort | Notes |
+|-------|------------------|-------|
+| gpt-4o | (none) | GPT-4 doesn't support parameter |
+| gpt-4o-mini | (none) | GPT-4 doesn't support parameter |
+| gpt-5 | "minimal" | Base GPT-5 |
+| gpt-5-mini | "minimal" | Smaller GPT-5 |
+| gpt-5-nano | "minimal" | Cheapest GPT-5 |
+| gpt-5.1 | "none" | No reasoning for vision |
+| gpt-5.2 | "none" | No reasoning for vision |
+
+**Critical Lesson**: Different GPT-5 versions have different capabilities. Always verify API support before assuming consistency across model family.
+
+---
+
 ### Session 27: Strategy-Specific Postflop (January 12, 2026)
 
 **Challenge**: All bot strategies were using identical postflop logic, but strategy files have different approaches.

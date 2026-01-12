@@ -1,10 +1,10 @@
 # OnyxPoker - Status Tracking
 
-**Last Updated**: January 12, 2026 14:31 UTC
+**Last Updated**: January 12, 2026 15:43 UTC
 
-## Current Status: STRATEGY-SPECIFIC POSTFLOP - SESSION 27
+## Current Status: GPT-5 MODEL TESTING - SESSION 28
 
-Full postflop implementation with strategy-specific logic for all bot strategies.
+Comprehensive testing of all GPT-5 models with correct reasoning_effort parameters.
 
 ## What Works
 
@@ -89,6 +89,15 @@ python3 poker_sim.py 150000  # Run 150k hands simulation
 | 4 | gpt4 | +14.79 |
 
 ## Session Log
+
+### Session 28 (January 12, 2026)
+- **GPT-5 MODEL TESTING**: Added comprehensive testing for all 7 GPT-5/GPT-4 models
+  - gpt-4o, gpt-4o-mini: No reasoning_effort (GPT-4 doesn't support)
+  - gpt-5, gpt-5-mini, gpt-5-nano: reasoning_effort="minimal"
+  - gpt-5.1, gpt-5.2: reasoning_effort="none"
+- **Removed debug logging**: Cleaned up console prints and self.log calls
+- **Test suite**: Now tests 7 models with correct parameters
+- Commits: c84d71f, d353009, 609d1df
 
 ### Session 27 (January 12, 2026)
 - **STRATEGY-SPECIFIC POSTFLOP**: Each bot strategy now uses its own postflop logic
