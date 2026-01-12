@@ -1,0 +1,94 @@
+POKERSTARS ZOOM NL5 (0.02/0.05) — BLITZ 6-MAX PREFLOP DEFAULT (NO READS, RAKE-AWARE)
+
+Suit check
+- Same suit = suited (s). Different suits = offsuit (o)
+
+Core rules
+- No limping. First in = raise or fold
+- SB vs open: prefer 3-bet or fold (do not flat)
+- Call opens mostly in position (IP). Out of position (OOP) tighten hard
+- Default sizes: Open 2.0–2.2bb (SB open 2.5–3.0bb)
+- 3-bet sizes: IP ~3.5x; OOP ~4.0–4.5x
+
+OPEN RAISE (RFI)
+
+UTG
+- Raise: 77+, ATs+, KQs, AJo+, AQo+
+
+MP
+- Raise: 66+, ATs+, A5s-A2s, KJs+, QJs, JTs, KQo, AJo+, AQo+
+
+CO
+- Raise: 55+, A8s+, A5s-A2s, KTs+, QTs+, JTs, T9s, 98s, 87s, ATo+, KJo+, QJo
+- Optional add if you play well postflop: 76s
+
+BTN
+- Raise: 22+, A2s+, K7s+, Q8s+, J8s+, T8s+, 97s+, 86s+, 75s+, 65s, 54s,
+         A2o+, KTo+, QTo+, JTo, T9o, 98o
+- Fold weak offsuit junk (K9o-, Q9o-, J9o-, etc.)
+
+SB vs BB (raise-or-fold)
+- Raise: 22+, A2s+, K6s+, Q7s+, J7s+, T7s+, 97s+, 86s+, 75s+, 65s, 54s,
+         ATo+, KJo+, QJo, JTo
+- Fold: everything else
+
+VS SINGLE OPEN (NO CALLERS)
+
+3-bet for value
+- Vs UTG: QQ+, AKs, AKo (add JJ/AQs only if opener is clearly loose)
+- Vs MP: JJ+, AKs, AKo, AQs
+- Vs CO: TT+, AJs+, AQo+, KQs
+- Vs BTN: TT+, AJs+, AQo+, KQs
+
+3-bet bluffs (small, consistent; only vs CO/BTN opens)
+- A5s-A2s
+- Optional second family (only if you see lots of folds to 3-bets): KTs-K9s
+
+Calling opens (default tight)
+
+Call IP vs UTG/MP
+- Call: 99-22, AQs-AJs, KQs, QJs, JTs, T9s, 98s
+- If UTG is very tight: drop 98s/T9s first
+
+Call IP vs CO/BTN
+- Call: 99-22, AJs-ATs, KQs-KJs, QJs, JTs, T9s, 98s, 87s (add 76s vs very wide steals)
+
+Call OOP
+- SB: never flat (3-bet or fold)
+- BB: defend only "playable" hands (see below)
+
+BB DEFENSE
+
+Vs BTN min-raise (2.0–2.2bb)
+- 3-bet value: TT+, AJs+, AQo+, KQs
+- 3-bet bluff mix: A5s-A2s
+- Call: A2s+, K8s+, Q9s+, J9s+, T8s+, 97s+, 86s+, 75s+, 65s, 54s,
+        A8o+, KTo+, QTo+, JTo, T9o, 98o
+- Fold: dominated offsuit trash (K9o-, Q9o-, J9o-, A7o- etc.)
+
+Vs CO open
+- 3-bet value: JJ+, AQs+, AQo+, AKo, KQs (add TT if CO is loose)
+- Call: 99-44, AJs-ATs, KQs-KJs, QJs, JTs, T9s, 98s
+- Fold: the rest
+
+Vs UTG/MP open
+- 3-bet value: QQ+, AKs, AKo (add JJ/AQs only if opener is loose)
+- Call: 99-66, AQs-ATs, KQs, QJs, JTs
+- Fold: the rest
+
+VS 3-BET (AFTER YOU OPEN)
+
+4-bet for value (default)
+- QQ+, AKs, AKo
+
+4-bet bluff (rare; only vs late-position 3-bets)
+- A5s-A4s (optional, low frequency)
+
+Call vs 3-bet (mainly IP)
+- Call IP: JJ-TT, AQs, AKo (mix), KQs (mix)
+- OOP: default to 4-bet value or fold; do not "peel" marginally
+
+VS 4-BET (DEFAULT AT ZOOM NL5 WITHOUT READS)
+- Stack off: KK+
+- Continue sometimes: QQ and AKs only if you have evidence villain 4-bets wider
+- Fold: everything else
