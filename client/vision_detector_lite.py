@@ -84,6 +84,7 @@ Return ONLY the JSON object, nothing else."""
             api_time = time.time() - t
             
             result_text = response.choices[0].message.content
+            print(f"[{self.model}] Raw API response: {result_text}")
             self.log(f"Raw response: {result_text[:200]}...", "DEBUG")
             
             # Clean up JSON
