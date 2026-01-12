@@ -82,19 +82,14 @@ onyxpoker/                    # Main repo (GitHub: apmlabs/OnyxPoker)
 - User runs helper_bar.py or test_screenshots.py
 - Screenshots taken locally
 - `send_logs.py` uploads to server
+- **TESTING**: All test_screenshots.py tests run on CLIENT (not server)
 
 **EC2 Server** (54.80.204.92:5001)
 - Receives uploads at POST /logs
 - Analyzes screenshots with Kiro CLI at POST /analyze-screenshot
 - Validates poker states at POST /validate-state
 - Stores in /home/ubuntu/mcpprojects/onyxpoker/server/uploads/
-- Agent can view screenshots and analyze logs here
-
-**Server Code Location**: `/home/ubuntu/mcpprojects/onyxpoker/server/`
-- Now part of main GitHub repo (consolidated January 12, 2026)
-- Previously was in separate onyxpoker-server/ folder
-- Stores in /home/ubuntu/mcpprojects/onyxpoker/server/uploads/
-- Agent can view screenshots and analyze logs here
+- Agent can view screenshots and analyze logs here (for analysis only, NOT testing)
 
 **Server Code Location**: `/home/ubuntu/mcpprojects/onyxpoker/server/`
 - Now part of main GitHub repo (consolidated January 12, 2026)
