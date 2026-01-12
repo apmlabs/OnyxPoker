@@ -89,6 +89,10 @@ def health():
 @app.route('/analyze-screenshot', methods=['POST'])
 def analyze_screenshot():
     """Analyze screenshot with Kiro CLI vision"""
+    import time
+    timings = {}
+    start_total = time.time()
+    
     logger.info("=== ANALYZE-SCREENSHOT REQUEST START ===")
     try:
         data = request.json
@@ -96,16 +100,19 @@ def analyze_screenshot():
             return jsonify({'error': 'No image provided'}), 400
         
         # Save screenshot temporarily
+        start = time.time()
         import tempfile
         img_data = base64.b64decode(data['image'])
         
         with tempfile.NamedTemporaryFile(suffix='.png', delete=False) as f:
             f.write(img_data)
             temp_path = f.name
+        timings['image_decode_save'] = time.time() - start
         
         logger.info(f"Saved screenshot to: {temp_path}")
         
         # Build analysis prompt with image path
+        start = time.time()
         prompt = f"""Look at this poker screenshot: {temp_path}
 
 Extract the game state and give me JSON with these fields:
@@ -114,6 +121,7 @@ Extract the game state and give me JSON with these fields:
 - pot: number (just the number, no currency symbol)
 - position: string (UTG/MP/CO/BTN/SB/BB)
 - is_hero_turn: boolean"""
+        timings['prompt_build'] = time.time() - start
         
         logger.info(f"Calling kiro-cli with prompt including image path")
         
@@ -122,6 +130,7 @@ Extract the game state and give me JSON with these fields:
         
         # Call Kiro CLI with prompt (image path is in the prompt)
         # Use poker-vision agent (built-in tools only, no MCP servers = faster)
+        start = time.time()
         result = subprocess.run(
             [kiro_cli_path, 'chat', '--agent', 'poker-vision', '--trust-all-tools', prompt],
             capture_output=True,
@@ -130,9 +139,12 @@ Extract the game state and give me JSON with these fields:
             input='',  # Empty input to let it complete
             env={**os.environ, 'KIRO_NO_TIPS': '1'}  # Disable tips to reduce output
         )
+        timings['kiro_cli_execution'] = time.time() - start
         
         # Clean up temp file
+        start = time.time()
         os.unlink(temp_path)
+        timings['cleanup'] = time.time() - start
         
         logger.info(f"Kiro CLI exit code: {result.returncode}")
         logger.info(f"Stdout length: {len(result.stdout)} chars")
@@ -140,22 +152,31 @@ Extract the game state and give me JSON with these fields:
         if result.stderr:
             logger.warning(f"Stderr: {result.stderr[:200]}")
         
+        start = time.time()
         response = result.stdout.strip()
         
         # Strip ANSI color codes
         import re
         ansi_escape = re.compile(r'\x1B(?:[@-Z\\-_]|\[[0-?]*[ -/]*[@-~])')
         response = ansi_escape.sub('', response)
+        timings['ansi_strip'] = time.time() - start
         
         logger.info(f"Response preview (cleaned): {response[:200]}...")
         
         # Try to parse JSON response
+        start = time.time()
         import json
         import re
         try:
             # First try direct parse
             parsed = json.loads(response)
             logger.info(f"Successfully parsed JSON: {list(parsed.keys())}")
+            timings['json_parse'] = time.time() - start
+            timings['total'] = time.time() - start_total
+            
+            # Add performance metrics
+            parsed['_performance'] = timings
+            logger.info(f"⏱️  PERFORMANCE: Total={timings['total']:.3f}s | Kiro={timings['kiro_cli_execution']:.3f}s | Decode={timings['image_decode_save']:.3f}s | Parse={timings['json_parse']:.3f}s")
             logger.info("=== ANALYZE-SCREENSHOT SUCCESS ===")
             return jsonify(parsed)
         except json.JSONDecodeError:
@@ -168,6 +189,12 @@ Extract the game state and give me JSON with these fields:
                 try:
                     parsed = json.loads(json_match.group(0))
                     logger.info(f"Extracted JSON: {list(parsed.keys())}")
+                    timings['json_parse'] = time.time() - start
+                    timings['total'] = time.time() - start_total
+                    
+                    # Add performance metrics
+                    parsed['_performance'] = timings
+                    logger.info(f"⏱️  PERFORMANCE: Total={timings['total']:.3f}s | Kiro={timings['kiro_cli_execution']:.3f}s | Decode={timings['image_decode_save']:.3f}s | Parse={timings['json_parse']:.3f}s")
                     logger.info("=== ANALYZE-SCREENSHOT SUCCESS ===")
                     return jsonify(parsed)
                 except json.JSONDecodeError as e:
