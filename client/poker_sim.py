@@ -96,13 +96,13 @@ STRATEGIES = {
     'kiro_v2': {
         'open': {
             'UTG': expand_range('77+,ATs+,KQs,AQo+'),
-            'MP': expand_range('66+,A9s+,A5s-A2s,KJs+,QJs,JTs,AJo+,KQo'),
+            'MP': expand_range('66+,A9s+,A5s-A3s,KJs+,QJs,JTs,AJo+,KQo'),
             'CO': expand_range('55+,A2s+,K9s+,Q9s+,J9s+,T8s+,97s+,87s,76s,ATo+,KJo+,QJo'),
             'BTN': expand_range('22+,A2s+,K6s+,Q8s+,J8s+,T7s+,96s+,85s+,75s,65s,54s,A8o+,K9o+,QTo+,JTo'),
             'SB': expand_range('55+,A2s+,K8s+,Q9s+,J9s+,T8s+,98s,87s,A9o+,KTo+'),
         },
-        '3bet_value': expand_range('QQ+,AKs,AKo,JJ,AQs+'),
-        '3bet_bluff': expand_range('A5s-A2s,K9s'),
+        '3bet_value': expand_range('QQ+,AKs,AKo,JJ,AQs+,AKo'),
+        '3bet_bluff': expand_range('A5s-A4s,K9s'),
         'call_3bet': expand_range('QQ,JJ,AKo,AQs'),
         '4bet': expand_range('KK+,AKs'),
     },
@@ -111,7 +111,7 @@ STRATEGIES = {
             'UTG': expand_range('77+,ATs+,KQs,AQo+'),
             'MP': expand_range('66+,A9s+,A5s-A2s,KJs+,QJs,JTs,AJo+,KQo'),
             'CO': expand_range('44+,A2s+,K9s+,Q9s+,J9s+,T8s+,97s+,86s+,76s,65s,ATo+,KJo+,QJo'),
-            'BTN': expand_range('22+,A2s+,K5s+,Q7s+,J7s+,T7s+,96s+,85s+,75s+,64s+,54s,A7o+,K9o+,QTo+,JTo'),
+            'BTN': expand_range('22+,A2s+,K6s+,Q7s+,J7s+,T7s+,96s+,85s+,75s+,64s+,54s,A7o+,K9o+,QTo+,JTo'),
             'SB': expand_range('55+,A2s+,K8s+,Q9s+,J9s+,T8s+,98s,87s,A9o+,KTo+'),
         },
         '3bet_value': expand_range('QQ+,AKs,AKo,JJ,AQs+'),
@@ -124,7 +124,7 @@ STRATEGIES = {
             'UTG': expand_range('77+,ATs+,KQs,AQo+'),
             'MP': expand_range('66+,A9s+,A5s-A2s,KJs+,QJs,JTs,AJo+,KQo'),
             'CO': expand_range('44+,A2s+,K9s+,Q9s+,J9s+,T8s+,97s+,86s+,76s,65s,ATo+,KJo+,QJo'),
-            'BTN': expand_range('22+,A2s+,K6s+,Q7s+,J7s+,T7s+,96s+,85s+,75s+,64s+,54s,A7o+,K9o+,QTo+,JTo'),
+            'BTN': expand_range('22+,A2s+,K5s+,Q7s+,J7s+,T7s+,96s+,85s+,75s+,64s+,54s,A7o+,K9o+,QTo+,JTo'),
             'SB': expand_range('55+,A2s+,K8s+,Q9s+,J9s+,T8s+,98s,87s,A9o+,KTo+'),
         },
         '3bet_value': expand_range('QQ+,AKs,AKo,JJ,AQs+'),
@@ -150,10 +150,10 @@ STRATEGIES = {
             'UTG': expand_range('77+,ATs+,KQs,AJo+,AQo+'),
             'MP': expand_range('66+,ATs+,A5s-A2s,KJs+,QJs,JTs,KQo,AJo+,AQo+'),
             'CO': expand_range('55+,A8s+,A5s-A2s,KTs+,QTs+,JTs,T9s,98s,87s,ATo+,KJo+,QJo'),
-            'BTN': expand_range('22+,A2s+,K7s+,Q8s+,J8s+,T8s+,97s+,86s+,75s+,65s,54s,A2o+,KTo+,QTo+,JTo'),
+            'BTN': expand_range('22+,A2s+,K7s+,Q8s+,J8s+,T8s+,97s+,86s+,75s+,65s,54s,A2o+,KTo+,QTo+,JTo,T9o,98o'),
             'SB': expand_range('22+,A2s+,K6s+,Q7s+,J7s+,T7s+,97s+,86s+,75s+,65s,54s,ATo+,KJo+,QJo,JTo'),
         },
-        '3bet_value': expand_range('QQ+,AKs,AKo,JJ,AQs'),
+        '3bet_value': expand_range('QQ+,AKs,AKo,JJ,AQs,TT,AJs+,AQo+,KQs'),
         '3bet_bluff': expand_range('A5s-A2s'),
         'call_3bet': expand_range('JJ,TT,AQs,AKo,KQs'),
         '4bet': expand_range('QQ+,AKs,AKo'),
@@ -163,25 +163,12 @@ STRATEGIES = {
             'UTG': expand_range('77+,ATs+,KQs,AJo+,AQo+'),
             'MP': expand_range('66+,ATs+,A5s-A2s,KJs+,QJs,JTs,KQo,AJo+,AQo+'),
             'CO': expand_range('55+,A8s+,A5s-A2s,KTs+,QTs+,JTs,T9s,98s,87s,ATo+,KJo+,QJo'),
-            'BTN': expand_range('22+,A2s+,K7s+,Q8s+,J8s+,T8s+,97s+,86s+,75s+,65s,54s,A2o+,KTo+,QTo+,JTo'),
+            'BTN': expand_range('22+,A2s+,K7s+,Q8s+,J8s+,T8s+,97s+,86s+,75s+,65s,54s,A2o+,KTo+,QTo+,JTo,T9o,98o'),
             'SB': expand_range('22+,A2s+,K6s+,Q7s+,J7s+,T7s+,97s+,86s+,75s+,65s,54s,ATo+,KJo+,QJo,JTo'),
         },
-        '3bet_value': expand_range('QQ+,AKs,AKo,JJ,AQs'),
+        '3bet_value': expand_range('QQ+,AKs,AKo,JJ,AQs,TT,AJs+,AQo+,KQs'),
         '3bet_bluff': expand_range('A5s-A2s'),
         'call_3bet': expand_range('JJ,TT,AQs,AKo,KQs'),
-        '4bet': expand_range('QQ+,AKs,AKo'),
-    },
-    'gpt2': {
-        'open': {
-            'UTG': expand_range('77+,ATs+,KQs,AJo+,AQo+'),
-            'MP': expand_range('66+,ATs+,A5s-A2s,KJs+,QJs,JTs,KQo,AJo+,AQo+'),
-            'CO': expand_range('55+,A8s+,A5s-A2s,KTs+,QTs+,JTs,T9s,98s,87s,ATo+,KJo+,QJo'),
-            'BTN': expand_range('22+,A2s+,K7s+,Q8s+,J8s+,T8s+,97s+,86s+,75s+,65s,54s,A2o+,KTo+,QTo+,JTo'),
-            'SB': expand_range('22+,A2s+,K6s+,Q7s+,J7s+,T7s+,97s+,86s+,75s+,65s,54s,ATo+,KJo+,QJo,JTo'),
-        },
-        '3bet_value': expand_range('QQ+,AKs,AKo'),
-        '3bet_bluff': expand_range('A5s-A2s,KTs-K9s'),
-        'call_3bet': expand_range('JJ,TT,AQs'),
         '4bet': expand_range('QQ+,AKs,AKo'),
     },
     'opus2': {
@@ -192,7 +179,7 @@ STRATEGIES = {
             'BTN': expand_range('22+,A2s+,K8s+,Q9s+,J9s+,T8s+,97s+,86s+,76s,65s,A7o+,KTo+,QJo'),
             'SB': expand_range('55+,A4s+,K9s+,Q9s+,J9s+,T8s+,98s,87s,A9o+,KJo+'),
         },
-        '3bet_value': expand_range('QQ+,AKs,AKo'),
+        '3bet_value': expand_range('QQ+,AKs,AKo,JJ,AQs'),
         '3bet_bluff': expand_range('A5s-A4s'),
         'call_3bet': expand_range('QQ,JJ,AKo,AQs'),
         '4bet': expand_range('KK+,AKs'),
@@ -592,19 +579,33 @@ if __name__ == '__main__':
     print(f"Testing {len(bot_strategies)} bot strategies against player archetypes")
     print(f"Bots: {', '.join(bot_strategies)}")
     print(f"Players: {', '.join(player_archetypes)}")
-    print(f"Rule: Each table has 2-3 player archetypes + 3-4 bots\n", flush=True)
+    print(f"Realistic mix: 2-3 fish, 0-1 nit, 0-1 lag, 1-2 bots per table\n", flush=True)
     
-    # Generate valid table combinations (2-3 archetypes + 3-4 bots = 6 players)
-    from itertools import combinations, product
+    # Generate realistic table combinations
+    # Real Blitz: ~50% fish, ~15% nit, ~10% lag, ~25% regs
+    from itertools import combinations
     
     valid_tables = []
-    # 2 archetypes + 4 bots
-    for archs in combinations(player_archetypes, 2):
-        for bots in combinations(bot_strategies, 4):
-            valid_tables.append(list(archs) + list(bots))
-    # 3 archetypes + 3 bots
+    
+    # Most common: 3 fish + 1 nit + 2 bots (soft table)
+    for bots in combinations(bot_strategies, 2):
+        valid_tables.append(['fish', 'fish', 'fish', 'nit'] + list(bots))
+    
+    # Common: 2 fish + 1 lag + 1 nit + 2 bots
+    for bots in combinations(bot_strategies, 2):
+        valid_tables.append(['fish', 'fish', 'lag', 'nit'] + list(bots))
+    
+    # Common: 3 fish + 1 lag + 2 bots
+    for bots in combinations(bot_strategies, 2):
+        valid_tables.append(['fish', 'fish', 'fish', 'lag'] + list(bots))
+    
+    # Less common: 2 fish + 2 nits + 2 bots (tighter table)
+    for bots in combinations(bot_strategies, 2):
+        valid_tables.append(['fish', 'fish', 'nit', 'nit'] + list(bots))
+    
+    # Tough table: 2 fish + 1 lag + 3 bots
     for bots in combinations(bot_strategies, 3):
-        valid_tables.append(list(player_archetypes) + list(bots))
+        valid_tables.append(['fish', 'fish', 'lag'] + list(bots))
     
     print(f"Generated {len(valid_tables)} valid table configurations", flush=True)
     
@@ -622,12 +623,22 @@ if __name__ == '__main__':
         hands_per_table = num_hands // len(valid_tables)
         
         for idx, table_strats in enumerate(valid_tables):
-            players = [Player(name, STRATEGIES[name]) for name in table_strats]
+            # Create players with unique names (fish_1, fish_2, etc.)
+            name_counts = {}
+            players = []
+            for strat in table_strats:
+                name_counts[strat] = name_counts.get(strat, 0) + 1
+                unique_name = f"{strat}_{name_counts[strat]}" if table_strats.count(strat) > 1 else strat
+                p = Player(unique_name, STRATEGIES[strat])
+                p.base_strategy = strat  # Track original strategy name
+                players.append(p)
+            
             for i in range(hands_per_table):
                 simulate_hand(players, i % 6)
             for p in players:
-                total_profit[p.name] += p.profit
-                total_hands[p.name] += p.stats['hands']
+                strat = p.base_strategy if hasattr(p, 'base_strategy') else p.name
+                total_profit[strat] += p.profit
+                total_hands[strat] += p.stats['hands']
             
             # Progress every 20 tables
             if (idx + 1) % 20 == 0:
