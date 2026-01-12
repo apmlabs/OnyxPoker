@@ -108,7 +108,8 @@ def analyze_screenshot():
         # Build analysis prompt with image path
         prompt = f"""Analyze this poker screenshot: {temp_path}
 
-Return ONLY valid JSON with this exact structure:
+CRITICAL: Return ONLY the JSON object below with actual values. No explanation, no markdown, no code blocks.
+
 {{
   "hero_cards": ["Ah", "Kd"],
   "community_cards": ["Qh", "Jc", "Ts"],
@@ -128,7 +129,7 @@ Position: UTG/MP/CO/BTN/SB/BB
         
         # Call Kiro CLI with prompt (image path is in the prompt)
         result = subprocess.run(
-            [kiro_cli_path, 'chat', prompt],
+            [kiro_cli_path, 'chat', '--no-interactive', prompt],
             capture_output=True,
             text=True,
             timeout=180
