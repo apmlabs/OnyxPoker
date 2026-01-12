@@ -32,11 +32,8 @@ TEST_ALL_MODELS = '--test-all-models' in sys.argv
 
 # All available vision models to test
 ALL_VISION_MODELS = [
-    'kiro-server',      # Kiro CLI via server subprocess
-    'gpt-4o',           # Best vision specialist (75% cards, 64% board)
-    'gpt-5-mini',       # GPT-5 family (62.5% cards, 60% board)
-    'gpt-5.1',          # GPT-5.1 (75% cards, 82% board)
-    'gpt-5.2',          # Best accuracy (100% cards, 91% board) ⭐
+    'kiro-server',      # Kiro CLI via server (100% cards, 100% board, 50% pos) ⭐
+    'gpt-5.2',          # Best OpenAI model (100% cards, 100% board, 50% pos) ⭐
 ]
 
 for arg in sys.argv:
