@@ -122,12 +122,14 @@ Extract the game state and give me JSON with these fields:
         
         # Call Kiro CLI with prompt (image path is in the prompt)
         # Remove --no-interactive as it causes early exit (exit code 1)
+        # Use default agent which has image reading capabilities
         result = subprocess.run(
             [kiro_cli_path, 'chat', '--trust-all-tools', prompt],
             capture_output=True,
             text=True,
             timeout=180,
-            input=''  # Empty input to let it complete
+            input='',  # Empty input to let it complete
+            env={**os.environ, 'KIRO_NO_TIPS': '1'}  # Disable tips to reduce output
         )
         
         # Clean up temp file
