@@ -18,16 +18,24 @@ import tempfile
 import json
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
-from vision_detector import VisionDetector, MODEL
 
-# Lite mode imports (gpt-5-nano + hardcoded strategy)
-LITE_MODE = os.getenv('POKER_LITE_MODE', '0') == '1'
-LITE_STRATEGY = os.getenv('POKER_STRATEGY', 'gpt3')
+# Parse command line arguments
+import argparse
+parser = argparse.ArgumentParser(description='OnyxPoker Helper Bar')
+parser.add_argument('--ai-only', action='store_true', help='Use AI for both vision and decisions (old mode)')
+parser.add_argument('--strategy', type=str, default='gpt3', help='Strategy to use (default: gpt3)')
+args = parser.parse_args()
 
-if LITE_MODE:
-    from vision_detector_lite import VisionDetectorLite
-    LITE_MODEL = "gpt-4o-mini"  # Default lite model
-    from strategy_engine import StrategyEngine, get_available_strategies
+# Default: gpt-5.2 vision + strategy_engine (hardcoded strategy)
+# --ai-only: gpt-5.2 does both vision + decision (old behavior)
+AI_ONLY_MODE = args.ai_only
+STRATEGY = args.strategy
+
+if AI_ONLY_MODE:
+    from vision_detector import VisionDetector, MODEL
+else:
+    from vision_detector_lite import VisionDetectorLite, DEFAULT_MODEL
+    from strategy_engine import StrategyEngine
 
 # Session log file
 LOG_DIR = os.path.join(os.path.dirname(__file__), 'logs')
@@ -129,14 +137,14 @@ class HelperBar:
 
         tk.Frame(left, height=1, bg='#555').pack(fill='x', pady=5)
 
-        if LITE_MODE:
-            tk.Label(left, text=f"LITE: {LITE_MODEL}", font=('Arial', 8),
+        if AI_ONLY_MODE:
+            tk.Label(left, text=f"AI ONLY: {MODEL}", font=('Arial', 8),
                     bg='#2d2d2d', fg='#ff8800').pack(pady=1)
-            tk.Label(left, text=f"Strat: {LITE_STRATEGY}", font=('Arial', 8),
-                    bg='#2d2d2d', fg='#00ff00').pack(pady=1)
         else:
-            tk.Label(left, text=f"Model: {MODEL}", font=('Arial', 8),
-                    bg='#2d2d2d', fg='#888').pack(pady=2)
+            tk.Label(left, text=f"Vision: {DEFAULT_MODEL}", font=('Arial', 8),
+                    bg='#2d2d2d', fg='#888').pack(pady=1)
+            tk.Label(left, text=f"Strategy: {STRATEGY}", font=('Arial', 8),
+                    bg='#2d2d2d', fg='#00ff00').pack(pady=1)
 
         # === CENTER: Live Log (expandable) ===
         center = tk.Frame(bottom, bg='#1a1a1a')
@@ -304,9 +312,19 @@ class HelperBar:
                 manual_position = self.position_var.get()
                 
                 # AI analysis
-                if LITE_MODE:
-                    # Lite mode: gpt-5-nano for table data, hardcoded strategy for action
-                    self.root.after(0, lambda: self.log(f"API call ({LITE_MODEL})...", "DEBUG"))
+                if AI_ONLY_MODE:
+                    # AI-only mode: gpt-5.2 does both vision + decision
+                    self.root.after(0, lambda: self.log(f"API call ({MODEL})...", "DEBUG"))
+                    api_start = time.time()
+                    vision = VisionDetector(logger=lambda m, l="DEBUG": self.root.after(0, lambda: self.log(m, l)))
+                    result = vision.detect_poker_elements(temp_path, include_decision=True)
+                    api_time = time.time() - api_start
+                    
+                    # Override position with manual selection
+                    result['position'] = manual_position
+                else:
+                    # Default mode: gpt-5.2 for vision, strategy_engine for decision
+                    self.root.after(0, lambda: self.log(f"API call ({DEFAULT_MODEL})...", "DEBUG"))
                     api_start = time.time()
                     vision = VisionDetectorLite(logger=lambda m, l="DEBUG": self.root.after(0, lambda: self.log(m, l)))
                     table_data = vision.detect_table(temp_path)
@@ -316,22 +334,12 @@ class HelperBar:
                     table_data['position'] = manual_position
                     
                     # Apply hardcoded strategy
-                    engine = StrategyEngine(LITE_STRATEGY)
+                    engine = StrategyEngine(STRATEGY)
                     decision = engine.get_action(table_data)
                     
                     # Merge table data with decision
                     result = {**table_data, **decision}
                     result['api_time'] = api_time
-                else:
-                    # Full mode: gpt-5.2 for everything
-                    self.root.after(0, lambda: self.log(f"API call ({MODEL})...", "DEBUG"))
-                    api_start = time.time()
-                    vision = VisionDetector(logger=lambda m, l="DEBUG": self.root.after(0, lambda: self.log(m, l)))
-                    result = vision.detect_poker_elements(temp_path, include_decision=True)
-                    api_time = time.time() - api_start
-                    
-                    # Override position with manual selection
-                    result['position'] = manual_position
 
                 elapsed = time.time() - start
                 self.root.after(0, lambda t=api_time: self.log(f"API done: {t:.1f}s", "DEBUG"))

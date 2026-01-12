@@ -10,7 +10,7 @@ import time
 from typing import Dict, Any, Optional
 from openai import OpenAI
 
-DEFAULT_MODEL = "gpt-4o-mini"
+DEFAULT_MODEL = "gpt-5.2"
 
 class VisionDetectorLite:
     def __init__(self, api_key: Optional[str] = None, logger=None, model: Optional[str] = None):

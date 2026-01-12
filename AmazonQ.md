@@ -1,10 +1,10 @@
 # OnyxPoker - Status Tracking
 
-**Last Updated**: January 12, 2026 20:05 UTC
+**Last Updated**: January 12, 2026 20:35 UTC
 
-## Current Status: SESSION 29 - UI IMPROVEMENTS + KIRO OPTIMIZATION ✅
+## Current Status: SESSION 29 - ARCHITECTURE FINALIZED ✅
 
-Removed position detection (unreliable 7-31%). Added manual position selector to UI. Optimized Kiro with Sonnet 4.5 + prompt caching.
+Strategy engine is now the default. GPT-5.2 for vision, hardcoded poker logic for decisions. AI-only mode available via `--ai-only` flag.
 
 ## What Works
 
@@ -20,16 +20,16 @@ Removed position detection (unreliable 7-31%). Added manual position selector to
 
 ## Architecture
 
-### Full Mode (gpt-5.2) - DEFAULT
+### Default Mode (gpt-5.2 vision + strategy)
 ```
-F9 → screenshot → vision_detector.py (gpt-5.2) → action + reasoning
+F9 → screenshot → vision_detector_lite.py (gpt-5.2) → table data
+                → strategy_engine.py → poker_logic.py → action + reasoning
 Position: Manual selection from UI radio buttons
 ```
 
-### Lite Mode (gpt-4o-mini + hardcoded strategy)
+### AI-Only Mode (--ai-only flag)
 ```
-F9 → screenshot → vision_detector_lite.py (gpt-4o-mini) → table data
-                → strategy_engine.py → poker_logic.py → action + reasoning
+F9 → screenshot → vision_detector.py (gpt-5.2) → action + reasoning
 Position: Manual selection from UI radio buttons
 ```
 
@@ -91,6 +91,17 @@ python3 poker_sim.py 150000  # Run 150k hands simulation
 | 4 | gpt4 | +14.79 |
 
 ## Session Log
+
+### Session 29 (January 12, 2026)
+- **ARCHITECTURE FINALIZED**: Strategy engine is now the default ⭐
+  - vision_detector_lite.py: gpt-4o-mini → gpt-5.2
+  - helper_bar.py: Inverted mode logic (strategy_engine default)
+  - Command line args: --ai-only and --strategy <name>
+  - UI labels: Show current mode (AI ONLY vs Vision + Strategy)
+- **NEW DEFAULT**: GPT-5.2 vision → strategy_engine → Decision
+- **AI-ONLY MODE**: GPT-5.2 does both vision + decision (old behavior)
+- **RATIONALE**: Strategy engine gives control, GPT-5.2 vision is 96.9% accurate
+- Commits: [pending]
 
 ### Session 28 (January 12, 2026)
 - **GROUND TRUTH COMPLETE**: Built 50-screenshot verified dataset ⭐

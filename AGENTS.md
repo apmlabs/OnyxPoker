@@ -23,16 +23,23 @@ The system analyzes poker tables using GPT vision API and provides strategic adv
 ```
 PokerStars/Simulator Window
          ↓ F9 (screenshot active window)
-    GPT-5.2 Vision API OR Kiro CLI Vision
+    GPT-5.2 Vision (vision_detector_lite.py)
+         ↓
+   Strategy Engine (poker_logic.py)
          ↓
    Decision + Reasoning
          ↓
     Helper Bar UI (advice display)
 ```
 
-**Dual approach**:
-- **Client-only**: All processing via OpenAI API directly (gpt-5.2)
-- **Kiro server**: Screenshot → Server → Kiro CLI vision → Poker state
+**Default approach** (NEW):
+- **Vision**: GPT-5.2 reads table (cards, pot, stacks)
+- **Decision**: strategy_engine.py applies hardcoded poker logic
+- **Manual position**: UI radio buttons (UTG/MP/CO/BTN/SB/BB)
+
+**AI-Only mode** (OLD - use `--ai-only` flag):
+- GPT-5.2 does both vision + decision in one call
+- No hardcoded strategy, AI decides everything
 
 Server runs on EC2 (54.80.204.92:5001) for Kiro CLI integration and log collection.
 
@@ -99,10 +106,11 @@ onyxpoker/                    # Main repo (GitHub: apmlabs/OnyxPoker)
 
 ### What Works
 - `helper_bar.py` - Draggable UI with manual position selector, no window decorations
-- `vision_detector.py` - GPT-5.2 API for vision + decisions (95% card accuracy)
-- `vision_detector_lite.py` - gpt-4o-mini for vision only
+- `vision_detector_lite.py` - GPT-5.2 for vision only (NEW DEFAULT)
+- `vision_detector.py` - GPT-5.2 for vision + decisions (--ai-only mode)
+- `strategy_engine.py` - Applies hardcoded strategy from poker_logic.py
 - `poker_sim.py` - Full postflop simulation with strategy-specific logic
-- `strategy_engine.py` - Lite mode with strategy-specific postflop
+- `poker_logic.py` - Shared logic with strategy-specific postflop
 - Screenshot saving - Auto-saves to client/screenshots/ folder
 - Test mode - test_screenshots.py for offline testing
 - Kiro server - Flask app on port 5001 with Sonnet 4.5
@@ -189,6 +197,33 @@ onyxpoker/                    # Main repo (GitHub: apmlabs/OnyxPoker)
 ---
 
 ## 📖 SESSION HISTORY & LESSONS LEARNED
+
+### Session 29: Architecture Finalization - Strategy Engine as Default (January 12, 2026)
+
+**Challenge**: Clarify and finalize the architecture - make strategy_engine the default, keep AI-only as fallback.
+
+**Key Changes**:
+1. **vision_detector_lite.py**: Changed default model from gpt-4o-mini → gpt-5.2
+2. **helper_bar.py**: Inverted mode logic
+   - Default: GPT-5.2 vision + strategy_engine (hardcoded poker logic)
+   - `--ai-only` flag: GPT-5.2 does both vision + decision (old behavior)
+3. **Command line args**: `--ai-only` and `--strategy <name>` instead of env vars
+4. **UI labels**: Show current mode (AI ONLY vs Vision + Strategy)
+
+**New Architecture**:
+```
+DEFAULT: Screenshot → GPT-5.2 (vision) → strategy_engine → Decision
+AI-ONLY: Screenshot → GPT-5.2 (vision + decision) → Decision
+```
+
+**Rationale**: 
+- Strategy engine gives us control over poker logic
+- GPT-5.2 vision is 96.9% accurate (vs 72.7% for Kiro)
+- AI-only mode kept as fallback for testing/comparison
+
+**Critical Lesson**: When user says "we need to be on the same page", STOP and read ALL relevant files before making changes. Understanding the full architecture is critical.
+
+---
 
 ### Session 28: GPT-5 Model Testing & Vision Prompt Improvement + Kiro Vision Integration (January 12, 2026)
 
