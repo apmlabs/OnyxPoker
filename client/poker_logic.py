@@ -261,6 +261,25 @@ STRATEGIES['tag'] = {
     '4bet': expand_range('KK+,AKs'),
 }
 
+# MANIAC: Very aggressive, 3-bets wide, overbets postflop (based on real 2NL data)
+STRATEGIES['maniac'] = {
+    'name': 'Maniac',
+    'open': {
+        'UTG': expand_range('55+,A7s+,A5s-A2s,KTs+,QTs+,JTs,T9s,ATo+,KJo+'),
+        'MP': expand_range('44+,A5s+,K8s+,Q9s+,J9s+,T8s+,97s+,87s,76s,A9o+,KTo+,QJo'),
+        'CO': expand_range('22+,A2s+,K5s+,Q7s+,J7s+,T7s+,96s+,85s+,75s,64s+,54s,A7o+,K9o+,QTo+,JTo'),
+        'BTN': expand_range('22+,A2s+,K2s+,Q4s+,J6s+,T6s+,95s+,84s+,74s+,63s+,53s+,43s,A2o+,K7o+,Q9o+,J9o+,T9o'),
+        'SB': expand_range('22+,A2s+,K4s+,Q6s+,J7s+,T7s+,96s+,85s+,75s,64s+,54s,A5o+,K8o+,QTo+,JTo'),
+    },
+    '3bet_vs': {'UTG': expand_range('TT+,AQs+,AKo,AJs,KQs'), 'MP': expand_range('99+,AJs+,AKo,AQo,KQs,QJs'), 'CO': expand_range('88+,ATs+,AJo+,KQs,KJs,QJs,JTs'), 'BTN': expand_range('77+,A9s+,ATo+,KJs+,KQo,QJs,JTs,T9s')},
+    '3bet_bluff': expand_range('A5s-A2s,K9s-K6s,Q9s-Q8s,J9s,T9s,98s,87s,76s,65s,54s'),
+    'call_open_ip': expand_range('TT-22,AJs-A5s,KQs-K9s,QJs-Q9s,JTs-J9s,T9s,98s,87s,76s'),
+    'bb_defend': expand_range('22+,A2s+,K4s+,Q6s+,J7s+,T7s+,96s+,85s+,75s,64s+,54s,A5o+,K9o+,QTo+,JTo,T9o'),
+    'call_3bet': expand_range('JJ,TT,99,AKo,AQs,AQo,AJs,KQs'),
+    '4bet': expand_range('QQ+,AKs,AKo'),
+    'overbet': True,  # Flag for postflop overbetting
+}
+
 
 # Hand evaluation
 def hand_to_str(cards: List[Tuple[str, str]]) -> str:
@@ -556,6 +575,40 @@ def postflop_action(hole_cards: List[Tuple[str, str]], board: List[Tuple[str, st
             if has_flush_draw or has_oesd:
                 return ('call', 0, "lag calls with draw")
             return ('fold', 0, f"{desc} - lag folds")
+    
+    # MANIAC: Overbets (100-150% pot), 3-barrels wide, rarely folds
+    if archetype == 'maniac':
+        if to_call == 0 or to_call is None:
+            if strength >= 4:
+                # Overbet value hands
+                return ('bet', round(pot * 1.25, 2), f"{desc} - maniac overbets value")
+            if strength >= 3:
+                return ('bet', round(pot * 1.1, 2), f"{desc} - maniac bets big")
+            if "pair" in desc:
+                if street in ['flop', 'turn'] and random.random() < 0.85:
+                    return ('bet', round(pot * 1.0, 2), f"{desc} - maniac overbets")
+                if street == 'river' and random.random() < 0.5:
+                    return ('bet', round(pot * 1.2, 2), f"{desc} - maniac river overbet")
+            if has_any_draw:
+                return ('bet', round(pot * 1.0, 2), "maniac overbets draw")
+            if street == 'flop' and random.random() < 0.80:
+                return ('bet', round(pot * 0.9, 2), "maniac c-bets big")
+            if street == 'turn' and random.random() < 0.60:
+                return ('bet', round(pot * 1.0, 2), "maniac barrels turn")
+            if street == 'river' and random.random() < 0.35:
+                return ('bet', round(pot * 1.1, 2), "maniac river bluff")
+            return ('check', 0, f"{desc} - maniac checks")
+        else:
+            # Maniac calls wide, rarely folds
+            if strength >= 3:
+                return ('call', 0, f"{desc} - maniac calls")
+            if "pair" in desc:
+                return ('call', 0, f"{desc} - maniac calls any pair")
+            if has_any_draw:
+                return ('call', 0, "maniac calls with draw")
+            if street == 'flop' and random.random() < 0.5:
+                return ('call', 0, "maniac floats flop")
+            return ('fold', 0, f"{desc} - maniac folds")
     
     # BOT STRATEGIES - strategy-specific postflop logic
     # gpt3/gpt4: Board texture aware, smaller c-bets, 3-bet pot adjustments

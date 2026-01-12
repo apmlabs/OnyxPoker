@@ -64,15 +64,26 @@ def simulate_hand(players, dealer_pos):
                 action_order.append(p)
                 break
     
+    limpers = []  # Track limpers
+    
     for p in action_order:
         if not active[p.name]:
             continue
         pos = positions[p.name]
         p.stats['hands'] += 1
+        base = p.base_strategy if hasattr(p, 'base_strategy') else p.name
         
         if opener is None:
             facing = 'none'
             action, _ = preflop_action(p.hand_str, pos, p.strategy, facing)
+            
+            # Fish limp with weak hands instead of folding
+            if action == 'fold' and base == 'fish' and pos not in ['UTG', 'SB'] and random.random() < 0.3:
+                limpers.append(p)
+                invested[p.name] = 1.0  # Limp = 1BB
+                p.stats['vpip'] += 1
+                continue
+            
             if action == 'raise':
                 opener = p
                 invested[p.name] = open_size
@@ -85,7 +96,12 @@ def simulate_hand(players, dealer_pos):
             action, _ = preflop_action(p.hand_str, pos, p.strategy, facing, positions[opener.name])
             if action == 'raise':
                 three_bettor = p
-                invested[p.name] = three_bet_size
+                # Maniacs use variable 3-bet sizing (3x to 5x the open)
+                if base == 'maniac':
+                    three_bet_mult = random.uniform(3.0, 5.0)
+                    invested[p.name] = open_size * three_bet_mult
+                else:
+                    invested[p.name] = three_bet_size
                 p.stats['vpip'] += 1
                 p.stats['pfr'] += 1
             elif action == 'call':
@@ -94,13 +110,22 @@ def simulate_hand(players, dealer_pos):
             else:
                 active[p.name] = False
     
+    # Limpers call raises (fish behavior)
+    if opener and limpers:
+        for p in limpers:
+            if random.random() < 0.6:  # 60% limp-call
+                invested[p.name] = open_size
+            else:
+                active[p.name] = False
+    
     # Handle 3-bet response
     if three_bettor and opener and active[opener.name]:
         action, _ = preflop_action(opener.hand_str, positions[opener.name], opener.strategy, '3bet')
+        three_bet_amt = invested[three_bettor.name]
         if action == 'raise':
-            invested[opener.name] = 20.0
+            invested[opener.name] = three_bet_amt * 2.5  # 4-bet
         elif action == 'call':
-            invested[opener.name] = three_bet_size
+            invested[opener.name] = three_bet_amt
         else:
             active[opener.name] = False
     
@@ -214,34 +239,38 @@ def run_simulation(num_hands=100000):
     random.seed(42)
     
     bot_strategies = ['gpt3', 'gpt4', 'sonnet', 'kiro_optimal', 'aggressive', '2nl_exploit']
-    player_archetypes = ['fish', 'nit', 'lag', 'tag']
+    player_archetypes = ['fish', 'nit', 'lag', 'tag', 'maniac']
     all_strategies = bot_strategies + player_archetypes
     
     print(f"Testing {len(bot_strategies)} bot strategies with full postflop play")
     print(f"Bots: {', '.join(bot_strategies)}")
     print(f"Players: {', '.join(player_archetypes)}")
-    print(f"~40% fish, ~25% TAG, ~20% nit, ~10% LAG per table\n", flush=True)
+    print(f"~30% fish, ~20% TAG, ~15% nit, ~20% LAG, ~15% maniac per table\n", flush=True)
     
-    # Generate table configs
+    # Generate table configs - updated based on real 2NL data
+    # More LAG/maniac to match 17% 3-bet frequency observed
     valid_tables = []
     for bot in bot_strategies:
-        # Soft tables (50%)
-        for _ in range(3):
-            valid_tables.append(['fish', 'fish', 'fish', 'tag', 'nit', bot])
-        for _ in range(3):
-            valid_tables.append(['fish', 'fish', 'tag', 'tag', 'nit', bot])
+        # Soft tables with maniacs (35%)
         for _ in range(2):
-            valid_tables.append(['fish', 'fish', 'tag', 'nit', 'nit', bot])
-        # Standard with LAG (35%)
-        for _ in range(3):
-            valid_tables.append(['fish', 'fish', 'tag', 'nit', 'lag', bot])
+            valid_tables.append(['fish', 'fish', 'tag', 'nit', 'maniac', bot])
         for _ in range(2):
-            valid_tables.append(['fish', 'fish', 'tag', 'tag', 'lag', bot])
-        valid_tables.append(['fish', 'fish', 'fish', 'tag', 'lag', bot])
-        # Tougher (15%)
-        valid_tables.append(['fish', 'tag', 'tag', 'nit', 'lag', bot])
-        valid_tables.append(['fish', 'tag', 'tag', 'nit', 'nit', bot])
-        valid_tables.append(['fish', 'tag', 'nit', 'nit', 'lag', bot])
+            valid_tables.append(['fish', 'fish', 'lag', 'tag', 'maniac', bot])
+        valid_tables.append(['fish', 'fish', 'fish', 'lag', 'maniac', bot])
+        valid_tables.append(['fish', 'fish', 'tag', 'maniac', 'maniac', bot])
+        # Standard LAG tables (35%)
+        for _ in range(2):
+            valid_tables.append(['fish', 'fish', 'tag', 'lag', 'lag', bot])
+        for _ in range(2):
+            valid_tables.append(['fish', 'tag', 'nit', 'lag', 'maniac', bot])
+        valid_tables.append(['fish', 'fish', 'lag', 'lag', 'nit', bot])
+        valid_tables.append(['fish', 'tag', 'tag', 'lag', 'maniac', bot])
+        # Tougher tables (30%)
+        for _ in range(2):
+            valid_tables.append(['fish', 'tag', 'tag', 'lag', 'nit', bot])
+        valid_tables.append(['fish', 'tag', 'nit', 'lag', 'lag', bot])
+        valid_tables.append(['tag', 'tag', 'nit', 'lag', 'maniac', bot])
+        valid_tables.append(['fish', 'tag', 'lag', 'lag', 'maniac', bot])
     
     print(f"Generated {len(valid_tables)} table configurations", flush=True)
     
