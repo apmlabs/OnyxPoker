@@ -160,34 +160,51 @@ onyxpoker-server/             # Separate folder on EC2 (NOT in GitHub repo)
 
 ## 📖 SESSION HISTORY & LESSONS LEARNED
 
-### Session 28: GPT-5 Model Testing & Reasoning Parameters (January 12, 2026)
+### Session 28: GPT-5 Model Testing & Vision Prompt Improvement (January 12, 2026)
 
-**Challenge**: Test all GPT-5 models with correct reasoning_effort parameters for vision tasks.
+**Challenge**: Test all GPT-5 models and improve vision accuracy for card/position detection.
 
-**Key Findings**:
+**Key Findings - Model Testing**:
 - GPT-5 family has different reasoning_effort support across versions
 - gpt-5.1/gpt-5.2 support "none" (no reasoning at all)
 - gpt-5/gpt-5-mini/gpt-5-nano only support "minimal" (not "none")
 - GPT-4 models don't support reasoning_effort parameter at all
 
-**Implementation**:
-1. Added comprehensive model testing: 7 models total
-2. Verified reasoning_effort logic in vision_detector_lite.py
-3. Removed debug logging (console prints and self.log calls)
-4. Added all GPT-5 variants to test suite
+**Ground Truth Comparison Results** (OLD prompt):
+```
+Model           Cards (Exact)    Position
+gpt-5.2         87.5% (7/8)      50.0% (4/8)  ⭐ Best overall
+gpt-4o          62.5% (5/8)      12.5% (1/8)
+gpt-4o-mini     37.5% (3/8)      37.5% (3/8)
+gpt-5-mini      37.5% (3/8)      37.5% (3/8)
+gpt-5-nano       0.0% (0/8)      37.5% (3/8)  ❌ Hallucinated every hand
+```
+
+**Vision Prompt Improvements**:
+1. Added detailed suit detection instructions (♠♥♦♣ symbols explained)
+2. Added step-by-step position detection (count clockwise from button)
+3. Added common mistake warnings (suit confusion, hallucination)
+4. Added position examples (if button here → position is X)
+
+**Ground Truth Infrastructure**:
+- Created ground_truth.json with 11 screenshots analyzed by Kiro
+- Created compare_with_ground_truth.py for automated accuracy testing
+- Can now test prompt improvements without re-analyzing images
 
 **Test Models** (7 total):
-| Model | reasoning_effort | Notes |
-|-------|------------------|-------|
-| gpt-4o | (none) | GPT-4 doesn't support parameter |
-| gpt-4o-mini | (none) | GPT-4 doesn't support parameter |
-| gpt-5 | "minimal" | Base GPT-5 |
-| gpt-5-mini | "minimal" | Smaller GPT-5 |
-| gpt-5-nano | "minimal" | Cheapest GPT-5 |
-| gpt-5.1 | "none" | No reasoning for vision |
-| gpt-5.2 | "none" | No reasoning for vision |
+| Model | reasoning_effort | Card Accuracy | Position Accuracy |
+|-------|------------------|---------------|-------------------|
+| gpt-5.2 | "none" | 87.5% | 50.0% |
+| gpt-4o | (none) | 62.5% | 12.5% |
+| gpt-4o-mini | (none) | 37.5% | 37.5% |
+| gpt-5-mini | "minimal" | 37.5% | 37.5% |
+| gpt-5-nano | "minimal" | 0.0% ❌ | 37.5% |
+| gpt-5 | "minimal" | Not tested yet |
+| gpt-5.1 | "none" | Not tested yet |
 
-**Critical Lesson**: Different GPT-5 versions have different capabilities. Always verify API support before assuming consistency across model family.
+**Next Steps**: Test improved prompt on Windows to see if position detection improves.
+
+**Critical Lesson**: Position detection requires explicit step-by-step instructions. Generic "based on dealer button" doesn't work.
 
 ---
 
