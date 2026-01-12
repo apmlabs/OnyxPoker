@@ -170,14 +170,16 @@ onyxpoker-server/             # Separate folder on EC2 (NOT in GitHub repo)
 - gpt-5/gpt-5-mini/gpt-5-nano only support "minimal" (not "none")
 - GPT-4 models don't support reasoning_effort parameter at all
 
-**Ground Truth Comparison Results** (OLD prompt):
+**Ground Truth Comparison Results** (IMPROVED prompt):
 ```
-Model           Cards (Exact)    Position
-gpt-5.2         87.5% (7/8)      50.0% (4/8)  ⭐ Best overall
-gpt-4o          62.5% (5/8)      12.5% (1/8)
-gpt-4o-mini     37.5% (3/8)      37.5% (3/8)
-gpt-5-mini      37.5% (3/8)      37.5% (3/8)
-gpt-5-nano       0.0% (0/8)      37.5% (3/8)  ❌ Hallucinated every hand
+Model           Cards    Board    Position  Pot
+gpt-5.2         100% ⭐  90.9% ⭐  37.5%     100% ⭐  BEST OVERALL
+gpt-5.1         75.0%    81.8%    25.0%     100%     Good alternative
+gpt-4o          75.0%    63.6%    37.5%     100%     Decent
+gpt-5-mini      62.5%    60.0%    0.0% ❌   100%     Unreliable
+gpt-5           62.5%    81.8%    12.5%     100%     Removed from testing
+gpt-5-nano      28.6%    44.4%    0.0% ❌   57.1% ❌  BROKEN - Removed
+gpt-4o-mini     12.5% ❌  54.5%    0.0% ❌   100%     BROKEN - Removed
 ```
 
 **Vision Prompt Improvements**:
@@ -186,25 +188,29 @@ gpt-5-nano       0.0% (0/8)      37.5% (3/8)  ❌ Hallucinated every hand
 3. Added common mistake warnings (suit confusion, hallucination)
 4. Added position examples (if button here → position is X)
 
+**Results**:
+- ✅ Card detection improved significantly (gpt-5.2: 87.5% → 100%)
+- ✅ Board detection improved (gpt-5.2: 100% → 90.9%, gpt-5.1: 81.8%)
+- ❌ Position detection still broken (0-37.5% across all models)
+- ✅ Pot detection perfect (100% for working models)
+
 **Ground Truth Infrastructure**:
 - Created ground_truth.json with 11 screenshots analyzed by Kiro
 - Created compare_with_ground_truth.py for automated accuracy testing
 - Can now test prompt improvements without re-analyzing images
 
-**Test Models** (7 total):
-| Model | reasoning_effort | Card Accuracy | Position Accuracy |
-|-------|------------------|---------------|-------------------|
-| gpt-5.2 | "none" | 87.5% | 50.0% |
-| gpt-4o | (none) | 62.5% | 12.5% |
-| gpt-4o-mini | (none) | 37.5% | 37.5% |
-| gpt-5-mini | "minimal" | 37.5% | 37.5% |
-| gpt-5-nano | "minimal" | 0.0% ❌ | 37.5% |
-| gpt-5 | "minimal" | Not tested yet |
-| gpt-5.1 | "none" | Not tested yet |
+**Kiro Server Integration**:
+- Added /validate-state endpoint to kiro_analyze.py (calls kiro-cli via subprocess)
+- Integrated kiro-server as model option in test_screenshots.py
+- Architecture: gpt-4o-mini reads screenshot → server validates via Kiro CLI
 
-**Next Steps**: Test improved prompt on Windows to see if position detection improves.
+**Production Recommendations**:
+- ✅ Use gpt-5.2 for production (100% cards, 91% board)
+- ✅ gpt-5.1 as cheaper alternative (75% cards, 82% board)
+- ❌ Removed gpt-5, gpt-5-nano, gpt-4o-mini from testing (too unreliable)
+- ❌ Position detection needs different approach (prompt improvements didn't help)
 
-**Critical Lesson**: Position detection requires explicit step-by-step instructions. Generic "based on dealer button" doesn't work.
+**Critical Lesson**: Detailed suit instructions work. Position detection requires visual approach (not text instructions).
 
 ---
 

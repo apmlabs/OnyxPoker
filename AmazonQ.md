@@ -97,13 +97,17 @@ python3 poker_sim.py 150000  # Run 150k hands simulation
   - Added common mistake warnings (hallucination, suit confusion)
 - **GROUND TRUTH INFRASTRUCTURE**: Created ground_truth.json with 11 screenshots
   - compare_with_ground_truth.py for automated accuracy testing
-  - OLD prompt results: gpt-5.2 best (87.5% cards, 50% position)
-  - gpt-5-nano completely broken (0% card accuracy - hallucinated every hand)
-- **GPT-5 MODEL TESTING**: Added comprehensive testing for all 7 GPT-5/GPT-4 models
-  - gpt-4o, gpt-4o-mini: No reasoning_effort (GPT-4 doesn't support)
-  - gpt-5, gpt-5-mini, gpt-5-nano: reasoning_effort="minimal"
-  - gpt-5.1, gpt-5.2: reasoning_effort="none"
-- Commits: 2fcf2fa, 636e0dd, 609d1df, d353009, c84d71f
+  - Fixed K♠ to K♣ suit errors in ground truth
+- **GPT-5 MODEL TESTING**: Comprehensive testing of 7 models
+  - **gpt-5.2**: 100% cards, 91% board ⭐ BEST
+  - **gpt-5.1**: 75% cards, 82% board (good alternative)
+  - **gpt-4o**: 75% cards, 64% board
+  - **gpt-5-mini**: 62.5% cards, 60% board (kept for testing)
+  - **Removed from testing**: gpt-5, gpt-5-nano, gpt-4o-mini (too unreliable)
+- **KIRO SERVER INTEGRATION**: Added /validate-state endpoint
+  - Calls kiro-cli via subprocess for AI validation
+  - Integrated as model option in test_screenshots.py
+- Commits: 2fcf2fa, 636e0dd, 609d1df, d353009, c84d71f, d81145c
 
 ### Session 27 (January 12, 2026)
 - **STRATEGY-SPECIFIC POSTFLOP**: Each bot strategy now uses its own postflop logic
