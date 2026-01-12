@@ -34,6 +34,7 @@ ALL_VISION_MODELS = [
     'gpt-4o-mini',      # Budget vision (89% accuracy)
     'gpt-5-mini',       # GPT-5 family with reasoning control
     'gpt-5-nano',       # Cheapest GPT-5
+    'gpt-5.1',          # GPT-5.1 with reasoning_effort="none"
     'gpt-5.2'           # Best accuracy (current full mode)
 ]
 
