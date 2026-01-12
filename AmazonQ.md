@@ -1,10 +1,10 @@
 # OnyxPoker - Status Tracking
 
-**Last Updated**: January 12, 2026 23:04 UTC
+**Last Updated**: January 12, 2026 23:33 UTC
 
-## Current Status: SESSION 30 - SIMULATION IMPROVEMENTS ✅
+## Current Status: SESSION 30 - VALUE_MAX MATCHES MANIAC ✅
 
-Added maniac archetype, realistic 2NL player distribution, 8 bot strategies now tested.
+Analyzed why maniac archetype beat all bots. Updated value_max with wider preflop + aggressive postflop - now performs equally (+41-55 BB/100).
 
 ## What Works
 
@@ -98,7 +98,16 @@ python3 poker_sim.py 150000  # Run 150k hands simulation
 ## Session Log
 
 ### Session 30 (January 12, 2026)
-- **SIMULATION IMPROVEMENTS**: Based on real 162-hand session analysis ⭐
+- **VALUE_MAX OPTIMIZATION**: Analyzed why maniac beats all bots ⭐
+  - Compared preflop: maniac opens 316 combos vs value_max 206
+  - Compared postflop: maniac bets 100-125% pot, value_max was 60-85%
+  - Compared defense: maniac calls any pair, value_max was folding
+  - Updated value_max with maniac's preflop ranges
+  - Updated value_max postflop to bet bigger (100-120% pot)
+  - Updated value_max to call any pair when facing bet
+  - Result: value_max now matches maniac (+41-55 BB/100)
+- **SIMULATION FIX**: Changed random.seed to None for fresh results each run
+- **SIMULATION IMPROVEMENTS**: Based on real 162-hand session analysis
   - Added maniac archetype (overbets 100%+ pot, wide 3-bets)
   - Fish now limp 30% of weak hands, 60% limp-call raises
   - Maniacs use variable 3-bet sizing (3x-5x)
@@ -109,7 +118,7 @@ python3 poker_sim.py 150000  # Run 150k hands simulation
   - Removed pokerstrategy_gpt2 (unused)
 - **OVERPAIR FIX**: Fixed detection bug (AA on 789 was "top pair weak kicker")
 - **2NL_EXPLOIT STRATEGY**: Wider 3-bet calling range
-- Commits: 3b98235, a81cbd7, 2be7d0d
+- Commits: 3b98235, a81cbd7, 2be7d0d, 1d21090, 9118ec2
 
 ### Session 30 Earlier (January 12, 2026)
 - **STRATEGY ANALYSIS**: Comprehensive 162-hand session analysis

@@ -1,89 +1,54 @@
-VALUE_MAX STRATEGY - Maximum Value Extraction for 2NL
+# VALUE_MAX Strategy - Maniac-style ranges + aggressive postflop
+# Based on analysis: wider preflop + bigger bets = more value vs 2NL fish
 
-Combines smart preflop ranges (from 2nl_exploit) with maniac-style postflop sizing.
-Key insight: 2NL players call too much, so bigger bets = more value.
+## PREFLOP - Same as maniac (316 open combos)
 
-PREFLOP (same as 2nl_exploit)
+### Open Ranges
+UTG: 55+, A7s+, A5s-A2s, KTs+, QTs+, JTs, T9s, ATo+, KJo+
+MP: 44+, A5s+, K8s+, Q9s+, J9s+, T8s+, 97s+, 87s, 76s, A9o+, KTo+, QJo
+CO: 22+, A2s+, K5s+, Q7s+, J7s+, T7s+, 96s+, 85s+, 75s, 64s+, 54s, A7o+, K9o+, QTo+, JTo
+BTN: 22+, A2s+, K2s+, Q4s+, J6s+, T6s+, 95s+, 84s+, 74s+, 63s+, 53s+, 43s, A2o+, K7o+, Q9o+, J9o+, T9o
+SB: 22+, A2s+, K4s+, Q6s+, J7s+, T7s+, 96s+, 85s+, 75s, 64s+, 54s, A5o+, K8o+, QTo+, JTo
 
-OPEN RAISE (2.5bb)
+### 3-Bet Value
+vs UTG: TT+, AQs+, AKo, AJs, KQs
+vs MP: 99+, AJs+, AKo, AQo, KQs, QJs
+vs CO: 88+, ATs+, AJo+, KQs, KJs, QJs, JTs
+vs BTN: 77+, A9s+, ATo+, KJs+, KQo, QJs, JTs, T9s
 
-UTG (16%):
-77+, ATs+, KQs, AJo+
+### 3-Bet Bluff (wide like maniac)
+A5s-A2s, K9s-K6s, Q9s-Q8s, J9s, T9s, 98s, 87s, 76s, 65s, 54s
 
-MP (22%):
-66+, A9s+, A5s-A2s, KJs+, QJs, JTs, AJo+, KQo
+### Call 3-Bet
+JJ, TT, 99, AKo, AQs, AQo, AJs, KQs
 
-CO (35%):
-44+, A2s+, K9s+, Q9s+, J9s+, T8s+, 97s+, 86s+, 76s, 65s, ATo+, KJo+, QJo
+### 4-Bet
+QQ+, AKs, AKo
 
-BTN (50%):
-22+, A2s+, K5s+, Q7s+, J7s+, T7s+, 96s+, 85s+, 75s+, 64s+, 54s, A5o+, K9o+, QTo+, JTo, T9o
+## POSTFLOP - Aggressive like maniac
 
-SB (28%):
-55+, A2s+, K8s+, Q9s+, J9s+, T8s+, 98s, 87s, A9o+, KTo+
+### Betting (when checked to)
+- Straights+: 120% pot (overbet)
+- Sets/Two pair: 110% pot
+- Top pair+: 100% pot
+- Overpair: 100% pot
+- Any pair flop/turn: 90% pot (85% frequency)
+- Any pair river: 85% pot (50% frequency)
+- Combo draw: 90% pot
+- Flush draw: 85% pot
+- OESD: 80% pot
+- C-bet flop: 75% pot (80% frequency)
+- Barrel turn: 85% pot (60% frequency)
 
-VS SINGLE OPEN - 3-BET
+### Facing Bet
+- Straights+: RAISE 2.5x pot
+- Sets/Two pair: RAISE 2.2x (call river)
+- Top pair: CALL
+- Any pair: CALL (don't fold winners!)
+- Flush draw/OESD: CALL
+- Float flop: 40% frequency
+- Otherwise: FOLD
 
-3-bet value:
-- vs UTG: QQ+, AKs, AKo
-- vs MP: JJ+, AKs, AKo, AQs
-- vs CO: TT+, AQs+, AKo, AJs
-- vs BTN: 99+, AQs+, AKo, AJs, KQs
-
-3-bet bluff:
-- A5s-A2s, K9s
-
-Call IP:
-- JJ-44, AJs-A7s, KQs-K9s, QJs-Q9s, JTs-J9s, T9s, 98s, 87s, 76s
-
-BB DEFENSE (wide)
-
-vs BTN (defend 58%):
-- 3-bet: TT+, AQs+, AKo, A5s-A4s
-- Call: 99-22, A2s+, K8s+, Q9s+, J9s+, T8s+, 97s+, 86s+, 76s, 65s, 54s, A8o+, KTo+, QTo+, JTo, T9o, 98o
-
-VS 3-BET
-
-4-bet/call: KK+, AKs
-Call IP: QQ, JJ, TT, 99, 88, AQs, AQo, AJs, KQs
-Fold: rest
-
-POSTFLOP - BIG BETS FOR VALUE
-
-Key principle: 2NL players call too much. Bigger bets = more value.
-
-VALUE HANDS (bet 85-100% pot):
-- Straights+: 100% pot all streets
-- Sets/two pair: 90% pot all streets
-- Top pair: 85%/80%/75% (flop/turn/river)
-- Overpair: 85% pot all streets
-
-DRAWS (semi-bluff big):
-- Combo draws: 80% pot
-- Flush draw (flop): 70% pot
-- OESD (flop): 65% pot
-
-C-BETTING:
-- As aggressor on flop: 60% pot
-- Otherwise: check
-
-FACING BETS:
-- Straights+: Raise for value
-- Sets/two pair: Raise (call river)
-- Top pair good kicker: Call
-- Top pair weak kicker: Call flop only
-- Draws: Call if getting 2:1 or better
-
-WHY THIS WORKS
-
-1. Fish call too much -> bigger bets extract more value
-2. TAGs/NITs fold to big bets -> win pots uncontested
-3. Same hand, same opponent:
-   - 50% pot bets: win 30BB
-   - 100% pot bets: win 70BB
-   - 2.3x more profit!
-
-SIMULATION RESULTS
-
-+38.40 BB/100 (best among all bot strategies)
-Low variance (StdDev 6.83)
+## KEY INSIGHT
+Fish call too much, so bigger bets = 2.3x more value
+(50% pot = 30BB win vs 100% pot = 70BB win on same hand)

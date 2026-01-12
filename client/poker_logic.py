@@ -215,28 +215,23 @@ STRATEGIES = {
         'call_3bet': expand_range('QQ,JJ,TT,99,88,AQs,AQo,AJs,KQs'),
         '4bet': expand_range('KK+,AKs'),
     },
-    # VALUE_MAX: Smart preflop (2nl_exploit) + Maniac-style postflop (big bets, more aggression)
+    # VALUE_MAX: Maniac-style ranges + aggressive postflop
     'value_max': {
         'name': 'Value Max',
         'open': {
-            'UTG': expand_range('77+,ATs+,KQs,AJo+'),
-            'MP': expand_range('66+,A9s+,A5s-A2s,KJs+,QJs,JTs,AJo+,KQo'),
-            'CO': expand_range('44+,A2s+,K9s+,Q9s+,J9s+,T8s+,97s+,86s+,76s,65s,ATo+,KJo+,QJo'),
-            'BTN': expand_range('22+,A2s+,K5s+,Q7s+,J7s+,T7s+,96s+,85s+,75s+,64s+,54s,A5o+,K9o+,QTo+,JTo,T9o'),
-            'SB': expand_range('55+,A2s+,K8s+,Q9s+,J9s+,T8s+,98s,87s,A9o+,KTo+'),
+            'UTG': expand_range('55+,A7s+,A5s-A2s,KTs+,QTs+,JTs,T9s,ATo+,KJo+'),
+            'MP': expand_range('44+,A5s+,K8s+,Q9s+,J9s+,T8s+,97s+,87s,76s,A9o+,KTo+,QJo'),
+            'CO': expand_range('22+,A2s+,K5s+,Q7s+,J7s+,T7s+,96s+,85s+,75s,64s+,54s,A7o+,K9o+,QTo+,JTo'),
+            'BTN': expand_range('22+,A2s+,K2s+,Q4s+,J6s+,T6s+,95s+,84s+,74s+,63s+,53s+,43s,A2o+,K7o+,Q9o+,J9o+,T9o'),
+            'SB': expand_range('22+,A2s+,K4s+,Q6s+,J7s+,T7s+,96s+,85s+,75s,64s+,54s,A5o+,K8o+,QTo+,JTo'),
         },
-        '3bet_vs': {
-            'UTG': expand_range('QQ+,AKs,AKo'),
-            'MP': expand_range('JJ+,AKs,AKo,AQs'),
-            'CO': expand_range('TT+,AQs+,AKo,AJs'),
-            'BTN': expand_range('99+,AQs+,AKo,AJs,KQs'),
-        },
-        '3bet_bluff': expand_range('A5s-A2s,K9s'),
-        'call_open_ip': expand_range('JJ-44,AJs-A7s,KQs-K9s,QJs-Q9s,JTs-J9s,T9s,98s,87s,76s'),
-        'bb_defend': expand_range('99-22,A2s+,K8s+,Q9s+,J9s+,T8s+,97s+,86s+,76s,65s,54s,A8o+,KTo+,QTo+,JTo,T9o,98o'),
-        'call_3bet': expand_range('QQ,JJ,TT,99,88,AQs,AQo,AJs,KQs'),
-        '4bet': expand_range('KK+,AKs'),
-        'overbet': True,  # Flag for maniac-style postflop
+        '3bet_vs': {'UTG': expand_range('TT+,AQs+,AKo,AJs,KQs'), 'MP': expand_range('99+,AJs+,AKo,AQo,KQs,QJs'), 'CO': expand_range('88+,ATs+,AJo+,KQs,KJs,QJs,JTs'), 'BTN': expand_range('77+,A9s+,ATo+,KJs+,KQo,QJs,JTs,T9s')},
+        '3bet_bluff': expand_range('A5s-A2s,K9s-K6s,Q9s-Q8s,J9s,T9s,98s,87s,76s,65s,54s'),
+        'call_open_ip': expand_range('TT-22,AJs-A5s,KQs-K9s,QJs-Q9s,JTs-J9s,T9s,98s,87s,76s'),
+        'bb_defend': expand_range('22+,A2s+,K4s+,Q6s+,J7s+,T7s+,96s+,85s+,75s,64s+,54s,A5o+,K9o+,QTo+,JTo,T9o'),
+        'call_3bet': expand_range('JJ,TT,99,AKo,AQs,AQo,AJs,KQs'),
+        '4bet': expand_range('QQ+,AKs,AKo'),
+        'overbet': True,
     },
 }
 
@@ -692,60 +687,62 @@ def postflop_action(hole_cards: List[Tuple[str, str]], board: List[Tuple[str, st
 def _postflop_value_max(hole_cards, board, pot, to_call, street, is_ip, is_aggressor,
                         strength, desc, draws, combo_draw, has_flush_draw, has_oesd, has_any_draw):
     """
-    VALUE_MAX: Smart preflop + Maniac-style postflop.
-    Key differences from other strategies:
-    - Bet 85-100% pot for value (not 50-75%)
-    - Bet more often when checked to (don't give free cards)
-    - Raise more instead of calling with strong hands
-    - Less bluffing than maniac (smarter hand selection)
+    VALUE_MAX: Maniac-style aggression with smarter hand selection.
+    Key insight: Fish call too much, so bigger bets = more value.
     """
     if to_call == 0 or to_call is None:
-        # VALUE HANDS - bet big
+        # VALUE HANDS - overbet like maniac
         if strength >= 5:  # Straights+
-            return ('bet', round(pot * 1.0, 2), f"{desc} - value_max pots it")
+            return ('bet', round(pot * 1.2, 2), f"{desc} - value_max overbets")
         if strength >= 4:  # Sets, two pair
-            return ('bet', round(pot * 0.9, 2), f"{desc} - value_max bets big")
+            return ('bet', round(pot * 1.1, 2), f"{desc} - value_max bets big")
         if strength >= 3 or "top pair" in desc:
-            size = {
-                'flop': 0.85,
-                'turn': 0.80,
-                'river': 0.75
-            }.get(street, 0.75)
-            return ('bet', round(pot * size, 2), f"{desc} - value_max value bets")
+            return ('bet', round(pot * 1.0, 2), f"{desc} - value_max pots it")
         
         # OVERPAIR - bet big
         if "overpair" in desc.lower():
-            return ('bet', round(pot * 0.85, 2), f"{desc} - value_max bets overpair")
+            return ('bet', round(pot * 1.0, 2), f"{desc} - value_max bets overpair")
         
-        # DRAWS - semi-bluff with good draws
+        # ANY PAIR - bet all streets (like maniac)
+        if "pair" in desc:
+            if street in ['flop', 'turn'] and random.random() < 0.85:
+                return ('bet', round(pot * 0.9, 2), f"{desc} - value_max bets pair")
+            if street == 'river' and random.random() < 0.5:
+                return ('bet', round(pot * 0.85, 2), f"{desc} - value_max bets river")
+        
+        # DRAWS - semi-bluff big
         if combo_draw:
-            return ('bet', round(pot * 0.8, 2), "value_max semi-bluffs combo draw")
-        if has_flush_draw and street == 'flop':
-            return ('bet', round(pot * 0.7, 2), "value_max semi-bluffs flush draw")
-        if has_oesd and street == 'flop':
-            return ('bet', round(pot * 0.65, 2), "value_max semi-bluffs OESD")
+            return ('bet', round(pot * 0.9, 2), "value_max semi-bluffs combo draw")
+        if has_flush_draw:
+            return ('bet', round(pot * 0.85, 2), "value_max semi-bluffs flush draw")
+        if has_oesd:
+            return ('bet', round(pot * 0.8, 2), "value_max semi-bluffs OESD")
         
-        # WEAK HANDS - c-bet flop if aggressor, otherwise check
-        if is_aggressor and street == 'flop':
-            return ('bet', round(pot * 0.6, 2), "value_max c-bets")
+        # C-BET and BARREL like maniac
+        if street == 'flop' and random.random() < 0.80:
+            return ('bet', round(pot * 0.75, 2), "value_max c-bets")
+        if street == 'turn' and is_aggressor and random.random() < 0.60:
+            return ('bet', round(pot * 0.85, 2), "value_max barrels turn")
         
         return ('check', 0, f"{desc} - value_max checks")
     
     else:
-        # FACING A BET - call/raise with strong hands, fold weak
+        # FACING A BET - call wider like maniac
         if strength >= 5:  # Straights+
-            return ('raise', round(pot * 2.5, 2), f"{desc} - value_max raises for value")
+            return ('raise', round(pot * 2.5, 2), f"{desc} - value_max raises")
         if strength >= 4:  # Sets, two pair
             if street == 'river':
                 return ('call', 0, f"{desc} - value_max calls river")
             return ('raise', round(pot * 2.2, 2), f"{desc} - value_max raises")
-        if strength >= 3 or "top pair good kicker" in desc:
+        if strength >= 3 or "top pair" in desc:
             return ('call', 0, f"{desc} - value_max calls")
-        if "top pair" in desc and street == 'flop':
-            return ('call', 0, f"{desc} - value_max calls flop")
+        # CALL ANY PAIR (like maniac)
+        if "pair" in desc:
+            return ('call', 0, f"{desc} - value_max calls pair")
         if has_flush_draw or has_oesd:
-            if to_call <= pot * 0.5:  # Good odds
-                return ('call', 0, "value_max calls with draw")
+            return ('call', 0, "value_max calls with draw")
+        if street == 'flop' and random.random() < 0.4:
+            return ('call', 0, "value_max floats flop")
         return ('fold', 0, f"{desc} - value_max folds")
 
 

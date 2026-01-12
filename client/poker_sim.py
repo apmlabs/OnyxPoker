@@ -236,9 +236,9 @@ def simulate_hand(players, dealer_pos):
 
 def run_simulation(num_hands=100000):
     """Run simulation with realistic table compositions."""
-    random.seed(42)
+    random.seed(None)  # Fresh results each run
     
-    bot_strategies = ['gpt3', 'gpt4', 'sonnet', 'kiro_optimal', 'kiro5', 'kiro_v2', 'aggressive', '2nl_exploit', 'value_max']
+    bot_strategies = ['value_max', 'maniac']
     player_archetypes = ['fish', 'nit', 'lag', 'tag', 'maniac']
     all_strategies = bot_strategies + player_archetypes
     
@@ -279,7 +279,7 @@ def run_simulation(num_hands=100000):
     
     for trial in range(3):
         print(f"\n--- Trial {trial+1}/3 ---", flush=True)
-        random.seed(trial * 1000 + 42)
+        random.seed(None)  # Fresh each trial
         
         total_profit = {name: 0.0 for name in all_strategies}
         total_hands = {name: 0 for name in all_strategies}
