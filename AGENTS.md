@@ -104,13 +104,22 @@ onyxpoker/                    # Main repo (GitHub: apmlabs/OnyxPoker)
 
 ### What Works
 - `helper_bar.py` - Wide bar UI docked to bottom, screenshots active window on F9
-- `vision_detector.py` - GPT-5.2 API for card/board/pot detection + decisions
+- `vision_detector.py` - GPT-5.2 API for card/board/pot detection + decisions (91% card accuracy)
 - `poker_sim.py` - Full postflop simulation with strategy-specific logic
 - `strategy_engine.py` - Lite mode with strategy-specific postflop
 - Screenshot saving - Auto-saves to client/screenshots/ folder
 - Test mode - test_screenshots.py for offline testing
 - Kiro server - Flask app on port 5001 for remote analysis
 - Hotkeys: F9=Advice, F10=Bot loop, F11=Stop, F12=Hide
+- Ground truth testing - 50 verified screenshots for model comparison
+
+### Vision Model Comparison (50 Screenshots)
+| Model | Cards | Board | Position | Pot | Speed |
+|-------|-------|-------|----------|-----|-------|
+| **GPT-5.2** | **91%** ✅ | **100%** ✅ | 44% ❌ | **100%** ✅ | 6-9s |
+| Kiro-server | 61% ⚠️ | 88% ⚠️ | 50% ❌ | 100% ✅ | 4-5s |
+
+**Production Decision**: Use GPT-5.2 (card accuracy is critical, wrong cards = wrong decisions)
 
 ### Strategy Files
 - 4 bot strategies in sim: gpt3, gpt4, sonnet, kiro_optimal
@@ -124,6 +133,7 @@ onyxpoker/                    # Main repo (GitHub: apmlabs/OnyxPoker)
 | sonnet/kiro_optimal | Big value bets | 75-85% pot sizing, overpair logic |
 
 ### What's Not Implemented
+- Position detection - BOTH MODELS FAIL (44-50% accuracy) - Don't use in production
 - Turn detection, action execution - LOW PRIORITY
 
 ## 🚀 NEXT STEPS
@@ -199,34 +209,26 @@ onyxpoker/                    # Main repo (GitHub: apmlabs/OnyxPoker)
 - gpt-5/gpt-5-mini/gpt-5-nano only support "minimal" (not "none")
 - GPT-4 models don't support reasoning_effort parameter at all
 
-**Ground Truth Comparison Results** (IMPROVED prompt):
+**Ground Truth Comparison Results** (50 screenshots):
 ```
-Model           Cards    Board    Position  Pot
-gpt-5.2         100% ⭐  90.9% ⭐  37.5%     100% ⭐  BEST OVERALL
-gpt-5.1         75.0%    81.8%    25.0%     100%     Good alternative
-gpt-4o          75.0%    63.6%    37.5%     100%     Decent
-gpt-5-mini      62.5%    60.0%    0.0% ❌   100%     Kept for testing
-gpt-5           62.5%    81.8%    12.5%     100%     Removed from testing
-gpt-5-nano      28.6%    44.4%    0.0% ❌   57.1% ❌  BROKEN - Removed
-gpt-4o-mini     12.5% ❌  54.5%    0.0% ❌   100%     BROKEN - Removed
+Model           Cards    Board    Position  Pot      Speed
+gpt-5.2         91% ⭐   100% ⭐   44%       100% ⭐   6-9s    PRODUCTION CHOICE
+kiro-server     61% ⚠️   88% ⚠️    50%       100% ✅   4-5s    Suit confusion issues
 ```
 
-**Vision Prompt Improvements**:
-1. Added detailed suit detection instructions (♠♥♦♣ symbols explained)
-2. Added step-by-step position detection (count clockwise from button)
-3. Added common mistake warnings (suit confusion, hallucination)
-4. Added position examples (if button here → position is X)
-
-**Results**:
-- ✅ Card detection improved significantly (gpt-5.2: 87.5% → 100%)
-- ✅ Board detection improved (gpt-5.2: 100% → 90.9%, gpt-5.1: 81.8%)
-- ❌ Position detection still broken (0-37.5% across all models)
-- ✅ Pot detection perfect (100% for working models)
+**Key Findings**:
+- ✅ GPT-5.2 card detection: 91% (40/44 correct)
+- ⚠️ Kiro card detection: 61% (26/43 correct) - confuses suits (♠ vs ♣, ♥ vs ♦)
+- ✅ GPT-5.2 board detection: 100% (49/49 perfect)
+- ⚠️ Kiro board detection: 88% (42/48 correct)
+- ❌ Position detection: Both fail (44-50%) - don't use in production
+- ✅ Pot detection: Both perfect (100%)
 
 **Ground Truth Infrastructure**:
-- Created ground_truth.json with 11 screenshots analyzed by Kiro
+- Created ground_truth.json with 50 verified screenshots
 - Created compare_with_ground_truth.py for automated accuracy testing
-- Can now test prompt improvements without re-analyzing images
+- Manual verification by human expert for all 50 screenshots
+- Coverage: preflop (15), flop (18), turn (10), river (5), between hands (2)
 
 **Kiro Server Integration** (NEW ARCHITECTURE):
 - Added `/analyze-screenshot` endpoint - Kiro CLI does vision analysis directly

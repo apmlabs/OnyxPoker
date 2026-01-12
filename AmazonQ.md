@@ -1,10 +1,10 @@
 # OnyxPoker - Status Tracking
 
-**Last Updated**: January 12, 2026 18:48 UTC
+**Last Updated**: January 12, 2026 19:17 UTC
 
-## Current Status: SESSION 28 - PROJECT CLEANUP COMPLETE ✅
+## Current Status: SESSION 28 - GROUND TRUTH COMPLETE ✅
 
-Cleaned up all temporary files, consolidated repository, updated documentation. Ready for vision model testing.
+Built 50-screenshot ground truth dataset. GPT-5.2 wins: 91% card accuracy vs Kiro's 61%. Production recommendation: Use GPT-5.2.
 
 ## What Works
 
@@ -96,6 +96,16 @@ python3 poker_sim.py 150000  # Run 150k hands simulation
 ## Session Log
 
 ### Session 28 (January 12, 2026)
+- **GROUND TRUTH COMPLETE**: Built 50-screenshot verified dataset ⭐
+  - Manual verification of 50 diverse screenshots (preflop/flop/turn/river)
+  - Automated comparison: GPT-5.2 vs Kiro-server
+  - **GPT-5.2 WINS**: 91% card accuracy vs Kiro's 61%
+  - **Production recommendation**: Use GPT-5.2 for vision
+  - Card errors: Kiro confuses suits (♠ vs ♣, ♥ vs ♦) - 17 errors
+  - Board detection: GPT-5.2 100%, Kiro 87.5%
+  - Position detection: Both fail (44-50%) - don't use in production
+  - Pot detection: Both perfect (100%)
+  - Files: ground_truth.json (50 entries), compare_with_ground_truth.py
 - **PROJECT CLEANUP COMPLETE**: Removed 14 temporary files ✅
   - Deleted: FIXES_PLAN.md, PROMPT_UPDATE_SUMMARY.md, all /tmp analysis files
   - Kept: Core docs (AGENTS/AmazonQ/README), testing infrastructure, all code
