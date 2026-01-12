@@ -1,5 +1,5 @@
 """
-Lite Vision Detector - Uses gpt-5-nano for table data extraction only.
+Lite Vision Detector - Uses vision models for table data extraction only.
 No poker strategy - just reads the table state.
 """
 
@@ -10,14 +10,16 @@ import time
 from typing import Dict, Any, Optional
 from openai import OpenAI
 
-MODEL = "gpt-4o-mini"  # Good balance of speed and vision accuracy
+DEFAULT_MODEL = "gpt-4o-mini"
 
 class VisionDetectorLite:
-    def __init__(self, api_key: Optional[str] = None, logger=None):
+    def __init__(self, api_key: Optional[str] = None, logger=None, model: Optional[str] = None):
         self.api_key = api_key or os.getenv('OPENAI_API_KEY')
         if not self.api_key:
             raise ValueError("OPENAI_API_KEY not found")
         self.client = OpenAI(api_key=self.api_key)
+        self.logger = logger
+        self.model = model or DEFAULT_MODEL
         self.logger = logger
         self.model = MODEL
     

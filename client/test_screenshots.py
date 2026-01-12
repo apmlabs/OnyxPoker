@@ -2,8 +2,16 @@
 Test vision detector on saved screenshots
 Usage: 
   python test_screenshots.py [screenshot_path]           # Full mode (gpt-5.2)
-  python test_screenshots.py --lite [screenshot_path]    # Lite mode (gpt-5-nano + strategy)
+  python test_screenshots.py --lite [screenshot_path]    # Lite mode (gpt-4o-mini + strategy)
   python test_screenshots.py --lite --strategy=gpt4      # Lite mode with specific strategy
+  python test_screenshots.py --lite --model=gpt-4o       # Lite mode with specific vision model
+  python test_screenshots.py --lite --test-all-models    # Test all vision models
+  
+Available vision models for --lite mode:
+  gpt-4o          - Better vision than 4o-mini
+  gpt-4o-mini     - Current lite default, fast and cheap
+  gpt-4.1-mini    - Newer, better instruction following
+  gpt-4.1-nano    - Fastest, cheapest
 """
 
 import os
@@ -14,9 +22,17 @@ from datetime import datetime
 # Parse args
 LITE_MODE = '--lite' in sys.argv
 STRATEGY = 'gpt3'
+VISION_MODEL = None  # None = use default for mode
+TEST_ALL_MODELS = '--test-all-models' in sys.argv
+
+# All available vision models to test
+ALL_VISION_MODELS = ['gpt-4o', 'gpt-4o-mini', 'gpt-4.1-mini', 'gpt-4.1-nano']
+
 for arg in sys.argv:
     if arg.startswith('--strategy='):
         STRATEGY = arg.split('=')[1]
+    if arg.startswith('--model='):
+        VISION_MODEL = arg.split('=')[1]
 
 # Remove flags from argv for path parsing
 args = [a for a in sys.argv[1:] if not a.startswith('--')]
@@ -29,15 +45,16 @@ else:
 
 LOG_FILE = None
 
-def test_screenshot(path, index=None, total=None):
+def test_screenshot(path, index=None, total=None, model_override=None):
     global LOG_FILE
     prefix = f"[{index}/{total}] " if index else ""
     fname = os.path.basename(path)
-    print(f"{prefix}{fname}", end=" ", flush=True)
+    model_suffix = f" ({model_override})" if model_override else ""
+    print(f"{prefix}{fname}{model_suffix}", end=" ", flush=True)
     
     try:
         if LITE_MODE:
-            detector = VisionDetectorLite()
+            detector = VisionDetectorLite(model=model_override or VISION_MODEL)
             table_data = detector.detect_table(path)
             
             engine = StrategyEngine(STRATEGY)
@@ -54,14 +71,17 @@ def test_screenshot(path, index=None, total=None):
         action = result.get('action') or 'none'
         api_time = result.get('api_time', 0)
         strategy = result.get('strategy', 'gpt-5.2')
+        model_used = result.get('model', 'unknown')
         
-        out = f"| {' '.join(cards) if cards else '--':8} | {pos:3} | turn={str(turn):5} | {action:6} | {api_time:.1f}s | {strategy}"
+        out = f"| {' '.join(cards) if cards else '--':8} | {pos:3} | turn={str(turn):5} | {action:6} | {api_time:.1f}s | {model_used}"
         print(out)
         
         # Save to log
         if LOG_FILE:
             result['screenshot'] = fname
             result['timestamp'] = datetime.now().isoformat()
+            if model_override:
+                result['test_model'] = model_override
             LOG_FILE.write(json.dumps(result) + '\n')
             LOG_FILE.flush()
         
@@ -75,14 +95,24 @@ def main():
     global LOG_FILE
     
     if LITE_MODE:
-        print(f"LITE MODE: gpt-5-nano + {STRATEGY} strategy")
+        model_info = VISION_MODEL or 'gpt-4o-mini (default)'
+        if TEST_ALL_MODELS:
+            model_info = f"ALL MODELS: {', '.join(ALL_VISION_MODELS)}"
+        print(f"LITE MODE: {model_info} + {STRATEGY} strategy")
         print(f"Available strategies: {', '.join(get_available_strategies())}\n")
     else:
         print("FULL MODE: gpt-5.2\n")
     
     if args:
-        test_screenshot(args[0])
+        # Single screenshot
+        if TEST_ALL_MODELS and LITE_MODE:
+            print(f"Testing {len(ALL_VISION_MODELS)} models on single screenshot:\n")
+            for model in ALL_VISION_MODELS:
+                test_screenshot(args[0], model_override=model)
+        else:
+            test_screenshot(args[0])
     else:
+        # All screenshots in folder
         screenshots_dir = os.path.join(os.path.dirname(__file__), 'screenshots')
         if not os.path.exists(screenshots_dir):
             print(f"No screenshots folder found")
@@ -96,17 +126,43 @@ def main():
         # Create log file
         logs_dir = os.path.join(os.path.dirname(__file__), 'logs')
         os.makedirs(logs_dir, exist_ok=True)
-        mode_suffix = f"lite_{STRATEGY}" if LITE_MODE else "full"
-        log_path = os.path.join(logs_dir, f"test_{mode_suffix}_{datetime.now().strftime('%Y%m%d_%H%M%S')}.jsonl")
-        LOG_FILE = open(log_path, 'w')
         
-        print(f"Testing {len(files)} screenshots, logging to {log_path}\n")
-        for i, f in enumerate(files, 1):
-            test_screenshot(os.path.join(screenshots_dir, f), i, len(files))
-        
-        LOG_FILE.close()
-        print(f"\nDone! Results saved to: {log_path}")
-        print(f"Upload with: python send_logs.py")
+        if TEST_ALL_MODELS and LITE_MODE:
+            # Test all models on all screenshots
+            for model in ALL_VISION_MODELS:
+                mode_suffix = f"lite_{STRATEGY}_{model.replace('.', '_').replace('-', '_')}"
+                log_path = os.path.join(logs_dir, f"test_{mode_suffix}_{datetime.now().strftime('%Y%m%d_%H%M%S')}.jsonl")
+                LOG_FILE = open(log_path, 'w')
+                
+                print(f"\n{'='*80}")
+                print(f"Testing {len(files)} screenshots with {model}")
+                print(f"Logging to: {log_path}")
+                print(f"{'='*80}\n")
+                
+                for i, f in enumerate(files, 1):
+                    test_screenshot(os.path.join(screenshots_dir, f), i, len(files), model_override=model)
+                
+                LOG_FILE.close()
+                print(f"\nDone with {model}! Results saved to: {log_path}")
+            
+            print(f"\n{'='*80}")
+            print(f"ALL MODELS TESTED! Upload logs with: python send_logs.py")
+            print(f"{'='*80}")
+        else:
+            # Single model test
+            mode_suffix = f"lite_{STRATEGY}" if LITE_MODE else "full"
+            if VISION_MODEL:
+                mode_suffix += f"_{VISION_MODEL.replace('.', '_').replace('-', '_')}"
+            log_path = os.path.join(logs_dir, f"test_{mode_suffix}_{datetime.now().strftime('%Y%m%d_%H%M%S')}.jsonl")
+            LOG_FILE = open(log_path, 'w')
+            
+            print(f"Testing {len(files)} screenshots, logging to {log_path}\n")
+            for i, f in enumerate(files, 1):
+                test_screenshot(os.path.join(screenshots_dir, f), i, len(files))
+            
+            LOG_FILE.close()
+            print(f"\nDone! Results saved to: {log_path}")
+            print(f"Upload with: python send_logs.py")
 
 if __name__ == '__main__':
     main()
