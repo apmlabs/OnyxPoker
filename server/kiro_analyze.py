@@ -121,10 +121,9 @@ Extract the game state and give me JSON with these fields:
         kiro_cli_path = '/home/ubuntu/.local/bin/kiro-cli'
         
         # Call Kiro CLI with prompt (image path is in the prompt)
-        # Remove --no-interactive as it causes early exit (exit code 1)
-        # Use default agent which has image reading capabilities
+        # Use poker-vision agent (built-in tools only, no MCP servers = faster)
         result = subprocess.run(
-            [kiro_cli_path, 'chat', '--trust-all-tools', prompt],
+            [kiro_cli_path, 'chat', '--agent', 'poker-vision', '--trust-all-tools', prompt],
             capture_output=True,
             text=True,
             timeout=180,
