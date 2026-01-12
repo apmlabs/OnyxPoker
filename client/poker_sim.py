@@ -226,6 +226,19 @@ STRATEGIES = {
         'call_3bet': expand_range('JJ,TT,AKo,AQs,AQo,KQs'),
         '4bet': expand_range('QQ+,AKs'),
     },
+    'tag': {
+        'open': {
+            'UTG': expand_range('77+,ATs+,KQs,AQo+'),
+            'MP': expand_range('66+,A9s+,KJs+,QJs,JTs,AJo+,KQo'),
+            'CO': expand_range('55+,A7s+,K9s+,Q9s+,J9s+,T9s,98s,ATo+,KJo+,QJo'),
+            'BTN': expand_range('22+,A2s+,K8s+,Q9s+,J9s+,T8s+,97s+,87s,76s,65s,A9o+,KTo+,QJo'),
+            'SB': expand_range('55+,A5s+,K9s+,Q9s+,J9s+,T8s+,98s,87s,A9o+,KJo+'),
+        },
+        '3bet_value': expand_range('QQ+,AKs,AKo,JJ,AQs'),
+        '3bet_bluff': expand_range('A5s-A4s'),
+        'call_3bet': expand_range('QQ,JJ,AKo,AQs'),
+        '4bet': expand_range('KK+,AKs'),
+    },
 }
 
 # Preflop hand equity (simplified - heads up all-in equity approximations)
@@ -574,38 +587,82 @@ if __name__ == '__main__':
     # Strategies to test (bots)
     bot_strategies = ['kiro_v2', 'sonnet', 'kiro_optimal', 'kiro5', 'gpt4', 'gpt3', 'opus2']
     # Simulated player archetypes
-    player_archetypes = ['fish', 'nit', 'lag']
+    player_archetypes = ['fish', 'nit', 'lag', 'tag']
     
     print(f"Testing {len(bot_strategies)} bot strategies against player archetypes")
     print(f"Bots: {', '.join(bot_strategies)}")
     print(f"Players: {', '.join(player_archetypes)}")
-    print(f"Realistic mix: 2-3 fish, 0-1 nit, 0-1 lag, 1-2 bots per table\n", flush=True)
+    print(f"REALISTIC ZOOM 2NL-5NL: ~40% fish, ~25% nit/tag, ~10% LAG")
+    print(f"Avg table: 2-3 fish, 1-2 nit/tag, 0-1 LAG, 1 bot\n", flush=True)
     
-    # Generate realistic table combinations
-    # Real Blitz: ~50% fish, ~15% nit, ~10% lag, ~25% regs
+    # Generate table combinations
+    # REALISTIC ZOOM 2NL-5NL: ~40% fish, ~25% nit, ~25% tag, ~10% LAG
     from itertools import combinations
     
     valid_tables = []
     
-    # Most common: 3 fish + 1 nit + 2 bots (soft table)
-    for bots in combinations(bot_strategies, 2):
-        valid_tables.append(['fish', 'fish', 'fish', 'nit'] + list(bots))
+    # Weight tables by frequency (more common = more entries)
     
-    # Common: 2 fish + 1 lag + 1 nit + 2 bots
-    for bots in combinations(bot_strategies, 2):
-        valid_tables.append(['fish', 'fish', 'lag', 'nit'] + list(bots))
+    # === SOFT TABLES (no LAG) - 50% of tables ===
+    # 3 fish + 1 nit + 1 tag + 1 bot (very soft)
+    for bot in bot_strategies:
+        for _ in range(3):  # 3x weight
+            valid_tables.append(['fish', 'fish', 'fish', 'nit', 'tag', bot])
     
-    # Common: 3 fish + 1 lag + 2 bots
-    for bots in combinations(bot_strategies, 2):
-        valid_tables.append(['fish', 'fish', 'fish', 'lag'] + list(bots))
+    # 2 fish + 2 nit + 1 tag + 1 bot
+    for bot in bot_strategies:
+        for _ in range(2):
+            valid_tables.append(['fish', 'fish', 'nit', 'nit', 'tag', bot])
     
-    # Less common: 2 fish + 2 nits + 2 bots (tighter table)
-    for bots in combinations(bot_strategies, 2):
-        valid_tables.append(['fish', 'fish', 'nit', 'nit'] + list(bots))
+    # 2 fish + 1 nit + 2 tag + 1 bot
+    for bot in bot_strategies:
+        for _ in range(2):
+            valid_tables.append(['fish', 'fish', 'nit', 'tag', 'tag', bot])
     
-    # Tough table: 2 fish + 1 lag + 3 bots
-    for bots in combinations(bot_strategies, 3):
-        valid_tables.append(['fish', 'fish', 'lag'] + list(bots))
+    # 2 fish + 3 nit + 1 bot (nitty soft)
+    for bot in bot_strategies:
+        valid_tables.append(['fish', 'fish', 'nit', 'nit', 'nit', bot])
+    
+    # 2 fish + 3 tag + 1 bot (reg heavy soft)
+    for bot in bot_strategies:
+        valid_tables.append(['fish', 'fish', 'tag', 'tag', 'tag', bot])
+    
+    # === TABLES WITH LAG - 40% of tables ===
+    # 2 fish + 1 nit + 1 tag + 1 lag + 1 bot (standard)
+    for bot in bot_strategies:
+        for _ in range(3):
+            valid_tables.append(['fish', 'fish', 'nit', 'tag', 'lag', bot])
+    
+    # 2 fish + 2 nit + 1 lag + 1 bot
+    for bot in bot_strategies:
+        for _ in range(2):
+            valid_tables.append(['fish', 'fish', 'nit', 'nit', 'lag', bot])
+    
+    # 2 fish + 2 tag + 1 lag + 1 bot
+    for bot in bot_strategies:
+        for _ in range(2):
+            valid_tables.append(['fish', 'fish', 'tag', 'tag', 'lag', bot])
+    
+    # 3 fish + 1 nit + 1 lag + 1 bot (soft with lag)
+    for bot in bot_strategies:
+        valid_tables.append(['fish', 'fish', 'fish', 'nit', 'lag', bot])
+    
+    # 3 fish + 1 tag + 1 lag + 1 bot
+    for bot in bot_strategies:
+        valid_tables.append(['fish', 'fish', 'fish', 'tag', 'lag', bot])
+    
+    # === TOUGH TABLES - 10% of tables ===
+    # 1 fish + 2 tag + 1 nit + 1 lag + 1 bot (reg battle)
+    for bot in bot_strategies:
+        valid_tables.append(['fish', 'tag', 'tag', 'nit', 'lag', bot])
+    
+    # 1 fish + 1 tag + 2 nit + 1 lag + 1 bot
+    for bot in bot_strategies:
+        valid_tables.append(['fish', 'tag', 'nit', 'nit', 'lag', bot])
+    
+    # 1 fish + 2 tag + 2 nit + 1 bot (no lag, reg heavy)
+    for bot in bot_strategies:
+        valid_tables.append(['fish', 'tag', 'tag', 'nit', 'nit', bot])
     
     print(f"Generated {len(valid_tables)} valid table configurations", flush=True)
     

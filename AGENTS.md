@@ -62,40 +62,24 @@ onyxpoker/
 ### What Works
 - `helper_bar.py` - Wide bar UI docked to bottom, screenshots active window on F9
 - `vision_detector.py` - GPT-5.2 API for card/board/pot detection + decisions
+- `poker_sim.py` - Strategy simulator comparing 7 bot strategies vs 4 player archetypes
 - Screenshot saving - Auto-saves to client/screenshots/ folder
 - Test mode - test_screenshots.py for offline testing
 - Kiro server - Flask app on port 5001 for remote analysis
-- send_to_kiro.py - Client script to send screenshots to server
 - Hotkeys: F9=Advice, F10=Bot loop, F11=Stop, F12=Hide
-- No calibration needed - F9 screenshots whatever window is active
+
+### Strategy Files
+- 7 bot strategies: kiro_v2, sonnet, kiro_optimal, kiro5, gpt4, gpt3, opus2
+- 4 player archetypes: fish, nit, lag, tag
 
 ### What's Not Implemented
-- Turn detection (detecting when it's hero's turn)
-- Action execution (clicking buttons) - LOW PRIORITY, research focus
-
-### What's Been Removed
-- Calibration system (not needed - active window screenshot)
-- poker_reader.py, config.py (redundant)
-- Old UI files (poker_gui.py, mini_overlay.py, etc.)
-- Archive folder (git is our history)
+- Turn detection, action execution - LOW PRIORITY
 
 ## 🚀 NEXT STEPS
 
-### Priority 1: Test on Real Tables
-- [ ] Test with PokerStars play money tables
-- [ ] Test with poker simulator software
-- [ ] Verify card/board/pot detection accuracy
-- [ ] Measure response time (target: <10s)
-
-### Priority 2: Improve Accuracy
-- [ ] Tune GPT prompt for edge cases
-- [ ] Handle all-in situations, side pots
-- [ ] Add hand history logging for analysis
-
-### Future (Low Priority)
-- [ ] Turn detection
-- [ ] Server-side processing (Deep CFR)
-- [ ] Multi-table support
+### Priority 1: Strategy Refinement
+- [ ] Use simulation results to tune bot strategies
+- [ ] Test against different table compositions
 
 ## 🧠 AGENT WORKFLOW
 

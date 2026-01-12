@@ -1,10 +1,10 @@
 # OnyxPoker - Status Tracking
 
-**Last Updated**: January 9, 2026 15:07 UTC
+**Last Updated**: January 12, 2026 12:20 UTC
 
-## Current Status: STRATEGY TUNING - SESSION 25
+## Current Status: STRATEGY SIMULATION - SESSION 26
 
-Position detection removed, strategy prompt refined for better accuracy.
+Built poker strategy simulator to compare 7 bot strategies against realistic player pools.
 
 ## What Works
 
@@ -12,6 +12,7 @@ Position detection removed, strategy prompt refined for better accuracy.
 |-----------|--------|-------|
 | helper_bar.py | ✅ Ready | Main UI, F9 screenshots active window |
 | vision_detector.py | ✅ Ready | GPT-5.2 API wrapper, no position detection |
+| poker_sim.py | ✅ NEW | Strategy simulator - pits strategies against each other |
 | Hotkeys | ✅ Ready | F9=Advice, F10=Bot, F11=Stop, F12=Hide |
 | Server | ⏸️ Placeholder | Not needed for current workflow |
 
@@ -26,28 +27,45 @@ python helper_bar.py
 
 Then: Focus poker window → Press F9 → See advice in helper bar
 
-## Next Steps
+## Strategy Simulator
 
-1. **Test on PokerStars** - Play money tables
-2. **Test on simulator** - Any poker software
-3. **Measure accuracy** - Card/board/pot detection
-4. **Measure speed** - Target <10s per analysis
+```bash
+cd client
+python3 poker_sim.py 150000  # Run 150k hands simulation
+```
+
+### Bot Strategies (7 total)
+- kiro_v2, sonnet, kiro_optimal, kiro5, gpt4, gpt3, opus2
+
+### Player Archetypes (4 total)
+- fish (loose passive), nit (ultra tight), lag (loose aggressive), tag (tight aggressive)
+
+### Latest Results (Realistic Zoom 2NL-5NL)
+| Rank | Strategy | BB/100 |
+|------|----------|--------|
+| 1 | gpt3 | +21.72 |
+| 2 | sonnet | +20.75 |
+| 3 | kiro5 | +20.70 |
+| 4 | lag | +20.09 |
+| 5 | gpt4 | +20.02 |
+| 6 | kiro_v2 | +19.59 |
+| 7 | kiro_optimal | +19.23 |
+| 8 | opus2 | +15.79 |
 
 ## Session Log
 
-### Session 25 (January 9, 2026)
-- **POSITION DETECTION REMOVED**: Completely removed unreliable position detection
-- **STRATEGY FIXES**:
-  - Suited/offsuit confusion: Added explicit check instruction
-  - Pocket pairs postflop: JJ on Q-high now bets (was checking as "weak pair")
-  - Second pair defined: KQ on A-K-x = second pair, CHECK river
-  - Trash suited folds: T2s, 94s added to fold list
-  - Top pair clarified: Must match HIGHEST board card
-- **UI FIXES**:
-  - Fixed `amount` undefined variable crash
-  - Changed `max_call` to `to_call` field name
-  - Show both PRE-ACTION and to_call amount
-- Commits: 135b3ae, b04abef, c078801
+### Session 26 (January 12, 2026)
+- **STRATEGY SIMULATOR**: Built poker_sim.py to compare preflop strategies
+- **8 STRATEGY FILES ANALYZED**: Ranked from best to worst for Blitz 6-max
+- **4 PLAYER ARCHETYPES CREATED**: fish, nit, lag, tag
+- **REALISTIC TABLE COMPOSITION**: 147 table configs based on actual Zoom pool research
+  - ~40% fish, ~25% nit, ~25% tag, ~10% LAG per table
+- **KEY FINDINGS**:
+  - All bot strategies profitable (+15 to +22 BB/100) in realistic pool
+  - LAG archetype competitive with bots (+20 BB/100)
+  - opus2 (tightest) underperforms - too passive
+  - gpt3/sonnet/kiro5 top performers
+- Commits: 665ddcf, 81088eb
 
 ### Session 22 (January 9, 2026)
 - **INFRASTRUCTURE CLEANUP**: Removed redundant old server

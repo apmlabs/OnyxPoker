@@ -1,0 +1,74 @@
+TAG - Tight Aggressive Regular
+
+PROFILE:
+- VPIP: 20-25%
+- PFR: 17-22%
+- 3-bet: 6-8%
+- Solid ABC poker player
+- Plays position well
+- Value bets made hands
+- Folds to aggression without strong holdings
+- Most common winning player type at micros
+
+OPEN RAISE (2.5bb)
+
+UTG (12%):
+77+, ATs+, KQs, AQo+
+
+MP (15%):
+66+, A9s+, KJs+, QJs, JTs, AJo+, KQo
+
+CO (22%):
+55+, A7s+, K9s+, Q9s+, J9s+, T9s, 98s, ATo+, KJo+, QJo
+
+BTN (32%):
+22+, A2s+, K8s+, Q9s+, J9s+, T8s+, 97s+, 87s, 76s, 65s, A9o+, KTo+, QJo
+
+SB (20%):
+55+, A5s+, K9s+, Q9s+, J9s+, T8s+, 98s, 87s, A9o+, KJo+
+
+VS SINGLE OPEN
+
+3-bet value:
+vs UTG/MP: QQ+, AKs, AKo
+vs CO: JJ+, AKs, AKo, AQs
+vs BTN: TT+, AQs+, AKo
+
+3-bet bluff:
+A5s-A4s (occasionally vs CO/BTN)
+
+Call IP:
+vs UTG/MP: JJ-88, AQs-AJs, KQs
+vs CO: TT-66, AJs-ATs, KQs-KJs, QJs, JTs
+vs BTN: 99-55, ATs-A8s, KJs-KTs, QJs, JTs, T9s, 98s
+
+BB DEFENSE
+
+vs BTN:
+- 3-bet: TT+, AQs+, AKo, A5s-A4s
+- Call: 99-22, AJs-A7s, KTs+, Q9s+, J9s+, T8s+, 97s+, 87s, 76s, A9o+, KJo
+- Fold: weak offsuit, trash
+
+vs CO/MP:
+- 3-bet: QQ+, AKs, AKo
+- Call: JJ-66, AQs-ATs, KQs-KJs, QJs, JTs
+- Fold: rest
+
+VS 3-BET
+
+4-bet: KK+, AKs
+Call IP: QQ, JJ, AKo, AQs
+Fold: TT-, AJo, KQo, suited connectors
+
+VS 4-BET
+
+All-in: KK+
+Fold: everything else
+
+POSTFLOP TENDENCIES:
+- C-bets 60-70% of flops
+- Gives up without equity on turn
+- Value bets made hands
+- Rarely bluffs river
+- Folds to raises without strong hand
+- Solid but predictable
