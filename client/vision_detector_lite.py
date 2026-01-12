@@ -86,18 +86,23 @@ Return ONLY JSON, no explanation."""
                     {"type": "input_image", "image_url": f"data:image/png;base64,{image_data}"}
                 ]
             }],
-            max_output_tokens=300,
-            reasoning={"effort": "minimal"},
             text={"format": {"type": "json_schema", "name": "table_data", "schema": json_schema}}
         )
         api_time = time.time() - t
         
+        # Extract response - gpt-5-nano returns output as string or in output array
         result_text = None
-        for item in response.output:
-            if hasattr(item, 'content'):
-                for content in item.content:
-                    if hasattr(content, 'text'):
-                        result_text = content.text
+        if hasattr(response, 'output'):
+            if isinstance(response.output, str):
+                result_text = response.output
+            elif isinstance(response.output, list):
+                for item in response.output:
+                    if hasattr(item, 'content'):
+                        for content in item.content:
+                            if hasattr(content, 'text'):
+                                result_text = content.text
+                                break
+                    if result_text:
                         break
         
         if not result_text:
