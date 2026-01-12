@@ -47,8 +47,10 @@ logic
 ## Server Locations
 
 **Windows Client**: C:\aws\onyx-client\
-**EC2 Server**: /home/ubuntu/mcpprojects/onyxpoker-server/
-**Uploads**: /home/ubuntu/mcpprojects/onyxpoker-server/server/uploads/
+**EC2 Server**: /home/ubuntu/mcpprojects/onyxpoker/server/
+**Uploads**: /home/ubuntu/mcpprojects/onyxpoker/server/uploads/
+
+**Note**: Server code is now part of main GitHub repo (consolidated January 12, 2026)
 
 ## Quick Start
 
@@ -91,12 +93,17 @@ python3 poker_sim.py 150000  # Run 150k hands simulation
 ## Session Log
 
 ### Session 28 (January 12, 2026)
+- **REPOSITORY CONSOLIDATION**: Merged server/ into main repo ⭐
+  - Was in separate onyxpoker-server/ folder (confusing!)
+  - Now everything in ONE place: /onyxpoker/
+  - Server code now tracked in GitHub
+  - Systemd service updated to new location
 - **KIRO VISION INTEGRATION**: Kiro CLI now does vision analysis directly ⭐
-  - Added /analyze-screenshot endpoint (sends image to kiro-cli --image)
+  - Added /analyze-screenshot endpoint (sends image to kiro-cli)
   - Added /validate-state endpoint (validates poker states)
   - Architecture: Screenshot → Kiro CLI vision → Poker state
   - Comprehensive debug logging on client and server
-  - Fixed PATH issue for kiro-cli subprocess calls
+  - Fixed: Include image path in prompt (not --image flag)
 - **VISION PROMPT IMPROVEMENT**: Improved prompt with detailed suit/position detection
   - Added explicit suit symbol descriptions (♠♥♦♣)
   - Added step-by-step position detection (count clockwise from button)
@@ -110,7 +117,7 @@ python3 poker_sim.py 150000  # Run 150k hands simulation
   - **gpt-4o**: 75% cards, 64% board
   - **gpt-5-mini**: 62.5% cards, 60% board (kept for testing)
   - **Removed from testing**: gpt-5, gpt-5-nano, gpt-4o-mini (too unreliable)
-- Commits: 2fcf2fa, 636e0dd, 609d1df, d353009, c84d71f, d81145c, d3fd49a, b618d09, 7aa46e7
+- Commits: 2fcf2fa, 636e0dd, 609d1df, d353009, c84d71f, d81145c, d3fd49a, b618d09, 7aa46e7, 2f811d9, 377818f, 0647033
 
 ### Session 27 (January 12, 2026)
 - **STRATEGY-SPECIFIC POSTFLOP**: Each bot strategy now uses its own postflop logic

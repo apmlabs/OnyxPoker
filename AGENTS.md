@@ -23,14 +23,18 @@ The system analyzes poker tables using GPT vision API and provides strategic adv
 ```
 PokerStars/Simulator Window
          ↓ F9 (screenshot active window)
-    GPT-5.2 Vision API
+    GPT-5.2 Vision API OR Kiro CLI Vision
          ↓
    Decision + Reasoning
          ↓
     Helper Bar UI (advice display)
 ```
 
-**Client-only approach** - All processing via OpenAI API directly. Server exists as placeholder for potential future work (Deep CFR, etc.) but is not currently used.
+**Dual approach**:
+- **Client-only**: All processing via OpenAI API directly (gpt-5.2)
+- **Kiro server**: Screenshot → Server → Kiro CLI vision → Poker state
+
+Server runs on EC2 (54.80.204.92:5001) for Kiro CLI integration and log collection.
 
 ## 📁 CURRENT FILE STRUCTURE
 
@@ -92,8 +96,14 @@ onyxpoker-server/             # Separate folder on EC2 (NOT in GitHub repo)
 
 **EC2 Server** (54.80.204.92:5001)
 - Receives uploads at POST /logs
-- Stores in /home/ubuntu/mcpprojects/onyxpoker-server/server/uploads/
+- Analyzes screenshots with Kiro CLI at POST /analyze-screenshot
+- Validates poker states at POST /validate-state
+- Stores in /home/ubuntu/mcpprojects/onyxpoker/server/uploads/
 - Agent can view screenshots and analyze logs here
+
+**Server Code Location**: `/home/ubuntu/mcpprojects/onyxpoker/server/`
+- Now part of main GitHub repo (consolidated January 12, 2026)
+- Previously was in separate onyxpoker-server/ folder
 
 ## ✅ CURRENT STATE
 
@@ -180,6 +190,13 @@ onyxpoker-server/             # Separate folder on EC2 (NOT in GitHub repo)
 ### Session 28: GPT-5 Model Testing & Vision Prompt Improvement + Kiro Vision Integration (January 12, 2026)
 
 **Challenge**: Test all GPT-5 models, improve vision accuracy, and integrate Kiro CLI for vision analysis.
+
+**Repository Consolidation**:
+- Merged server/ folder into main repo (was in separate onyxpoker-server/ folder)
+- Both folders were pointing to same GitHub (confusing!)
+- Now everything in ONE place: /onyxpoker/ with client/ and server/
+- Server code now tracked in GitHub
+- Systemd service updated to new location
 
 **Key Findings - Model Testing**:
 - GPT-5 family has different reasoning_effort support across versions
