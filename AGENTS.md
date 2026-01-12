@@ -43,48 +43,37 @@ onyxpoker/                    # Main repo (GitHub: apmlabs/OnyxPoker)
 ├── AGENTS.md                 # Agent memory (NEVER DELETE)
 ├── AmazonQ.md                # Status tracking (NEVER DELETE)
 ├── README.md                 # Quick start (NEVER DELETE)
+├── CLEANUP_PLAN.md           # Project cleanup documentation
 ├── .gitignore
 ├── .env.example
 ├── client/
 │   ├── helper_bar.py         # Main UI (F9=advice, F10=bot, F11=stop, F12=hide)
 │   ├── vision_detector.py    # Full mode: gpt-5.2 for vision + decisions
 │   ├── vision_detector_lite.py # Lite mode: gpt-4o-mini for vision only
+│   ├── vision_detector_test.py # Testing detector
 │   ├── strategy_engine.py    # Lite mode: applies hardcoded strategy
 │   ├── poker_logic.py        # Shared: hand eval, preflop/postflop logic
 │   ├── poker_sim.py          # Strategy simulator (1M hand tests)
-│   ├── test_screenshots.py   # Offline testing (--lite --strategy=X)
+│   ├── test_screenshots.py   # Offline testing (--lite --test-all-models)
 │   ├── send_logs.py          # Upload logs to server
+│   ├── send_to_kiro.py       # Upload screenshots to server
 │   ├── requirements.txt
 │   └── pokerstrategy_*       # Strategy definition files
 ├── server/
 │   ├── kiro_analyze.py       # Flask server on port 5001 (Kiro CLI integration)
 │   ├── app.py                # Old server code (not used)
+│   ├── poker_strategy.py     # Strategy logic
+│   ├── analyze_session.py    # Log analysis
 │   ├── requirements.txt
-│   └── uploads/              # Screenshots and logs from Windows client (gitignored)
-│       ├── *.png             # Uploaded screenshots
-│       ├── *.jsonl           # Uploaded test logs
+│   └── uploads/              # Screenshots and logs (gitignored)
+│       ├── *.png             # 471 screenshots (177MB)
+│       ├── *.jsonl           # 13 test logs
 │       ├── ground_truth.json # Ground truth for testing
-│       └── compare_with_ground_truth.py # Comparison script
+│       ├── compare_with_ground_truth.py # Comparison script
+│       └── VISION_COMPARISON_REPORT.md  # Model comparison results
 └── docs/
-    ├── API.md
-    └── DEPLOYMENT.md
-```
-│   ├── test_screenshots.py   # Offline testing (--lite --strategy=X)
-│   ├── send_logs.py          # Upload logs to server
-│   ├── requirements.txt
-│   └── pokerstrategy_*       # Strategy definition files
-├── docs/
-│   ├── API.md
-│   └── DEPLOYMENT.md
-```
-
-```
-onyxpoker-server/             # Separate folder on EC2 (NOT in GitHub repo)
-├── server/
-│   ├── kiro_analyze.py       # Flask server on port 5001
-│   └── uploads/              # Screenshots and logs from Windows client
-│       ├── *.png             # Uploaded screenshots
-│       └── *.jsonl           # Uploaded test logs
+    ├── DEPLOYMENT.md         # Setup guide
+    └── ANALYSIS_NOTES.md     # GPT decision analysis
 ```
 
 ## 🖥️ CLIENT-SERVER ARCHITECTURE
@@ -98,6 +87,12 @@ onyxpoker-server/             # Separate folder on EC2 (NOT in GitHub repo)
 - Receives uploads at POST /logs
 - Analyzes screenshots with Kiro CLI at POST /analyze-screenshot
 - Validates poker states at POST /validate-state
+- Stores in /home/ubuntu/mcpprojects/onyxpoker/server/uploads/
+- Agent can view screenshots and analyze logs here
+
+**Server Code Location**: `/home/ubuntu/mcpprojects/onyxpoker/server/`
+- Now part of main GitHub repo (consolidated January 12, 2026)
+- Previously was in separate onyxpoker-server/ folder
 - Stores in /home/ubuntu/mcpprojects/onyxpoker/server/uploads/
 - Agent can view screenshots and analyze logs here
 

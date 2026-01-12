@@ -1,10 +1,10 @@
 # OnyxPoker - Status Tracking
 
-**Last Updated**: January 12, 2026 17:58 UTC
+**Last Updated**: January 12, 2026 18:48 UTC
 
-## Current Status: SESSION 28 - KIRO CLI SPEED OPTIMIZATION
+## Current Status: SESSION 28 - PROJECT CLEANUP COMPLETE ✅
 
-Optimized Kiro CLI from 12.7s → 4.3s (66% faster!) via model fix + prompt simplification.
+Cleaned up all temporary files, consolidated repository, updated documentation. Ready for vision model testing.
 
 ## What Works
 
@@ -48,6 +48,9 @@ logic
 
 **Windows Client**: C:\aws\onyx-client\
 **EC2 Server**: /home/ubuntu/mcpprojects/onyxpoker/server/
+**Uploads**: /home/ubuntu/mcpprojects/onyxpoker/server/uploads/ (471 screenshots, 13 logs, 177MB)
+
+**Note**: Server code is now part of main GitHub repo (consolidated January 12, 2026)
 **Uploads**: /home/ubuntu/mcpprojects/onyxpoker/server/uploads/
 
 **Note**: Server code is now part of main GitHub repo (consolidated January 12, 2026)
@@ -93,6 +96,10 @@ python3 poker_sim.py 150000  # Run 150k hands simulation
 ## Session Log
 
 ### Session 28 (January 12, 2026)
+- **PROJECT CLEANUP COMPLETE**: Removed 14 temporary files ✅
+  - Deleted: FIXES_PLAN.md, PROMPT_UPDATE_SUMMARY.md, all /tmp analysis files
+  - Kept: Core docs (AGENTS/AmazonQ/README), testing infrastructure, all code
+  - Created: CLEANUP_PLAN.md documenting final structure
 - **REPOSITORY CONSOLIDATION**: Merged server/ into main repo ⭐
   - Was in separate onyxpoker-server/ folder (confusing!)
   - Now everything in ONE place: /onyxpoker/
@@ -123,7 +130,7 @@ python3 poker_sim.py 150000  # Run 150k hands simulation
   - **gpt-4o**: 75% cards, 64% board
   - **gpt-5-mini**: 62.5% cards, 60% board (kept for testing)
   - **Removed from testing**: gpt-5, gpt-5-nano, gpt-4o-mini (too unreliable)
-- Commits: 2fcf2fa, 636e0dd, 609d1df, d353009, c84d71f, d81145c, d3fd49a, b618d09, 7aa46e7, 2f811d9, 377818f, 0647033
+- Commits: 2fcf2fa, 636e0dd, 609d1df, d353009, c84d71f, d81145c, d3fd49a, b618d09, 7aa46e7, 2f811d9, 377818f, 0647033, 4fa2ff5, 260a9a9, 766ac7e
 
 ### Session 27 (January 12, 2026)
 - **STRATEGY-SPECIFIC POSTFLOP**: Each bot strategy now uses its own postflop logic
