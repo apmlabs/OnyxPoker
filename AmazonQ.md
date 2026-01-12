@@ -1,10 +1,10 @@
 # OnyxPoker - Status Tracking
 
-**Last Updated**: January 12, 2026 22:50 UTC
+**Last Updated**: January 12, 2026 23:04 UTC
 
-## Current Status: SESSION 30 - STRATEGY ANALYSIS COMPLETE ✅
+## Current Status: SESSION 30 - SIMULATION IMPROVEMENTS ✅
 
-Comprehensive 162-hand session analysis. Fixed overpair detection bug, created 2nl_exploit strategy, improved win rate from +26.72 to +28.50 BB/100.
+Added maniac archetype, realistic 2NL player distribution, 8 bot strategies now tested.
 
 ## What Works
 
@@ -70,33 +70,49 @@ cd client
 python3 poker_sim.py 150000  # Run 150k hands simulation
 ```
 
-### Bot Strategies (6 in sim)
-- gpt3, gpt4, sonnet, kiro_optimal, aggressive, 2nl_exploit
+### Bot Strategies (8 in sim)
+- gpt3, gpt4, sonnet, kiro_optimal, kiro5, kiro_v2, aggressive, 2nl_exploit
 
-### Player Archetypes (4 total)
-- fish (loose passive), nit (ultra tight), lag (loose aggressive), tag (tight aggressive)
+### Player Archetypes (5 total)
+- fish (loose passive), nit (ultra tight), lag (loose aggressive), tag (tight aggressive), maniac (overbets 100%+ pot)
 
 ### Strategy-Specific Postflop
 | Strategy | Style | Key Differences |
 |----------|-------|-----------------|
 | gpt3/gpt4 | Board texture aware | Small c-bets (25-35%) on dry boards |
-| sonnet/kiro_optimal | Big value bets | 75-85% pot sizing, overpair logic |
-| 2nl_exploit | Sonnet postflop | Wider 3-bet calling range |
+| sonnet/kiro_optimal/kiro5/kiro_v2 | Big value bets | 75-85% pot sizing, overpair logic |
+| aggressive/2nl_exploit | Sonnet postflop | Wider ranges, falls through to default |
 
-### Latest Results (50k hands x 3 trials)
+### Latest Results (30k hands x 3 trials, with maniac)
 | Rank | Strategy | BB/100 | StdDev |
 |------|----------|--------|--------|
-| 1 | sonnet | +33.15 | 3.31 |
-| 2 | 2nl_exploit | +28.50 | 6.43 |
-| 3 | gpt4 | +26.81 | 6.58 |
-| 4 | aggressive | +26.20 | 8.44 |
-| 5 | kiro_optimal | +23.47 | 19.91 |
-| 6 | gpt3 | +19.13 | 5.28 |
+| 1 | gpt4 | +43.12 | 22.47 |
+| 2 | 2nl_exploit | +39.51 | 34.44 |
+| 3 | aggressive | +32.76 | 36.63 |
+| 4 | gpt3 | +31.35 | 12.03 |
+| 5 | kiro_v2 | +29.31 | 33.28 |
+| 6 | kiro_optimal | +24.04 | 26.91 |
+| 7 | kiro5 | +19.50 | 15.44 |
+| 8 | sonnet | +9.17 | 11.79 |
 
 ## Session Log
 
 ### Session 30 (January 12, 2026)
-- **STRATEGY ANALYSIS**: Comprehensive 162-hand session analysis ⭐
+- **SIMULATION IMPROVEMENTS**: Based on real 162-hand session analysis ⭐
+  - Added maniac archetype (overbets 100%+ pot, wide 3-bets)
+  - Fish now limp 30% of weak hands, 60% limp-call raises
+  - Maniacs use variable 3-bet sizing (3x-5x)
+  - Updated player distribution: 30% fish, 20% TAG, 15% nit, 20% LAG, 15% maniac
+- **STRATEGY CLEANUP**:
+  - Added kiro5 and kiro_v2 to simulator (8 bot strategies total)
+  - Created pokerstrategy_aggressive file
+  - Removed pokerstrategy_gpt2 (unused)
+- **OVERPAIR FIX**: Fixed detection bug (AA on 789 was "top pair weak kicker")
+- **2NL_EXPLOIT STRATEGY**: Wider 3-bet calling range
+- Commits: 3b98235, a81cbd7, 2be7d0d
+
+### Session 30 Earlier (January 12, 2026)
+- **STRATEGY ANALYSIS**: Comprehensive 162-hand session analysis
   - Identified 3-bet defense leak (folding too many hands)
   - Created 2nl_exploit strategy with wider call_3bet range
   - Fixed overpair detection bug (AA on 789 was "top pair weak kicker")
