@@ -52,12 +52,12 @@ class HelperBar:
         screen_w = self.root.winfo_screenwidth()
         screen_h = self.root.winfo_screenheight()
 
-        # Helper bar: full width, 220px height, docked to bottom
-        bar_height = 220
+        # Helper bar: full width, 880px height (4x original), docked to bottom
+        bar_height = 880
         self.root.geometry(f"{screen_w}x{bar_height}+0+{screen_h - bar_height - 40}")
 
-        # Remove window decorations, keep resizable
-        self.root.overrideredirect(True)
+        # Keep window decorations for resizing
+        self.root.overrideredirect(False)
         
         # Always on top
         self.root.attributes('-topmost', True)
