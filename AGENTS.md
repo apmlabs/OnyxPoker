@@ -52,6 +52,23 @@ onyxpoker/                    # Main repo (GitHub: apmlabs/OnyxPoker)
 │   ├── send_logs.py          # Upload logs to server
 │   ├── requirements.txt
 │   └── pokerstrategy_*       # Strategy definition files
+├── server/
+│   ├── kiro_analyze.py       # Flask server on port 5001 (Kiro CLI integration)
+│   ├── app.py                # Old server code (not used)
+│   ├── requirements.txt
+│   └── uploads/              # Screenshots and logs from Windows client (gitignored)
+│       ├── *.png             # Uploaded screenshots
+│       ├── *.jsonl           # Uploaded test logs
+│       ├── ground_truth.json # Ground truth for testing
+│       └── compare_with_ground_truth.py # Comparison script
+└── docs/
+    ├── API.md
+    └── DEPLOYMENT.md
+```
+│   ├── test_screenshots.py   # Offline testing (--lite --strategy=X)
+│   ├── send_logs.py          # Upload logs to server
+│   ├── requirements.txt
+│   └── pokerstrategy_*       # Strategy definition files
 ├── docs/
 │   ├── API.md
 │   └── DEPLOYMENT.md
