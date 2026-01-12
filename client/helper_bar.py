@@ -20,6 +20,14 @@ import json
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 from vision_detector import VisionDetector, MODEL
 
+# Lite mode imports (gpt-5-nano + hardcoded strategy)
+LITE_MODE = os.getenv('POKER_LITE_MODE', '0') == '1'
+LITE_STRATEGY = os.getenv('POKER_STRATEGY', 'gpt3')
+
+if LITE_MODE:
+    from vision_detector_lite import VisionDetectorLite, MODEL as LITE_MODEL
+    from strategy_engine import StrategyEngine, get_available_strategies
+
 # Session log file
 LOG_DIR = os.path.join(os.path.dirname(__file__), 'logs')
 os.makedirs(LOG_DIR, exist_ok=True)
@@ -84,8 +92,14 @@ class HelperBar:
 
         tk.Frame(left, height=1, bg='#555').pack(fill='x', pady=5)
 
-        tk.Label(left, text=f"Model: {MODEL}", font=('Arial', 8),
-                bg='#2d2d2d', fg='#888').pack(pady=2)
+        if LITE_MODE:
+            tk.Label(left, text=f"LITE: {LITE_MODEL}", font=('Arial', 8),
+                    bg='#2d2d2d', fg='#ff8800').pack(pady=1)
+            tk.Label(left, text=f"Strat: {LITE_STRATEGY}", font=('Arial', 8),
+                    bg='#2d2d2d', fg='#00ff00').pack(pady=1)
+        else:
+            tk.Label(left, text=f"Model: {MODEL}", font=('Arial', 8),
+                    bg='#2d2d2d', fg='#888').pack(pady=2)
 
         # === CENTER: Live Log (expandable) ===
         center = tk.Frame(main, bg='#1a1a1a')
@@ -250,11 +264,28 @@ class HelperBar:
 
             try:
                 # AI analysis
-                self.root.after(0, lambda: self.log(f"API call ({MODEL})...", "DEBUG"))
-                api_start = time.time()
-                vision = VisionDetector(logger=lambda m, l="DEBUG": self.root.after(0, lambda: self.log(m, l)))
-                result = vision.detect_poker_elements(temp_path, include_decision=True)
-                api_time = time.time() - api_start
+                if LITE_MODE:
+                    # Lite mode: gpt-5-nano for table data, hardcoded strategy for action
+                    self.root.after(0, lambda: self.log(f"API call ({LITE_MODEL})...", "DEBUG"))
+                    api_start = time.time()
+                    vision = VisionDetectorLite(logger=lambda m, l="DEBUG": self.root.after(0, lambda: self.log(m, l)))
+                    table_data = vision.detect_table(temp_path)
+                    api_time = time.time() - api_start
+                    
+                    # Apply hardcoded strategy
+                    engine = StrategyEngine(LITE_STRATEGY)
+                    decision = engine.get_action(table_data)
+                    
+                    # Merge table data with decision
+                    result = {**table_data, **decision}
+                    result['api_time'] = api_time
+                else:
+                    # Full mode: gpt-5.2 for everything
+                    self.root.after(0, lambda: self.log(f"API call ({MODEL})...", "DEBUG"))
+                    api_start = time.time()
+                    vision = VisionDetector(logger=lambda m, l="DEBUG": self.root.after(0, lambda: self.log(m, l)))
+                    result = vision.detect_poker_elements(temp_path, include_decision=True)
+                    api_time = time.time() - api_start
 
                 elapsed = time.time() - start
                 self.root.after(0, lambda t=api_time: self.log(f"API done: {t:.1f}s", "DEBUG"))

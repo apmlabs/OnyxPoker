@@ -592,77 +592,59 @@ if __name__ == '__main__':
     print(f"Testing {len(bot_strategies)} bot strategies against player archetypes")
     print(f"Bots: {', '.join(bot_strategies)}")
     print(f"Players: {', '.join(player_archetypes)}")
-    print(f"REALISTIC ZOOM 2NL-5NL: ~40% fish, ~25% nit/tag, ~10% LAG")
-    print(f"Avg table: 2-3 fish, 1-2 nit/tag, 0-1 LAG, 1 bot\n", flush=True)
+    print(f"REALISTIC ZOOM 2NL-5NL (based on research):")
+    print(f"~40% fish, ~25% TAG, ~20% nit, ~10% LAG, 1 bot per table\n", flush=True)
     
-    # Generate table combinations
-    # REALISTIC ZOOM 2NL-5NL: ~40% fish, ~25% nit, ~25% tag, ~10% LAG
+    # Generate table combinations based on research
+    # Zoom 2NL-5NL: heavy recreational, but Zoom drives fish away faster
+    # Realistic: 2-3 fish, 1-2 tag, 1-2 nit, 0-1 lag per table
     from itertools import combinations
     
     valid_tables = []
     
-    # Weight tables by frequency (more common = more entries)
-    
-    # === SOFT TABLES (no LAG) - 50% of tables ===
-    # 3 fish + 1 nit + 1 tag + 1 bot (very soft)
-    for bot in bot_strategies:
-        for _ in range(3):  # 3x weight
-            valid_tables.append(['fish', 'fish', 'fish', 'nit', 'tag', bot])
-    
-    # 2 fish + 2 nit + 1 tag + 1 bot
-    for bot in bot_strategies:
-        for _ in range(2):
-            valid_tables.append(['fish', 'fish', 'nit', 'nit', 'tag', bot])
-    
-    # 2 fish + 1 nit + 2 tag + 1 bot
-    for bot in bot_strategies:
-        for _ in range(2):
-            valid_tables.append(['fish', 'fish', 'nit', 'tag', 'tag', bot])
-    
-    # 2 fish + 3 nit + 1 bot (nitty soft)
-    for bot in bot_strategies:
-        valid_tables.append(['fish', 'fish', 'nit', 'nit', 'nit', bot])
-    
-    # 2 fish + 3 tag + 1 bot (reg heavy soft)
-    for bot in bot_strategies:
-        valid_tables.append(['fish', 'fish', 'tag', 'tag', 'tag', bot])
-    
-    # === TABLES WITH LAG - 40% of tables ===
-    # 2 fish + 1 nit + 1 tag + 1 lag + 1 bot (standard)
+    # === SOFT TABLES - 50% (no LAG, more fish) ===
+    # 3 fish + 1 tag + 1 nit + 1 bot (very soft)
     for bot in bot_strategies:
         for _ in range(3):
-            valid_tables.append(['fish', 'fish', 'nit', 'tag', 'lag', bot])
+            valid_tables.append(['fish', 'fish', 'fish', 'tag', 'nit', bot])
     
-    # 2 fish + 2 nit + 1 lag + 1 bot
+    # 2 fish + 2 tag + 1 nit + 1 bot
+    for bot in bot_strategies:
+        for _ in range(3):
+            valid_tables.append(['fish', 'fish', 'tag', 'tag', 'nit', bot])
+    
+    # 2 fish + 1 tag + 2 nit + 1 bot
     for bot in bot_strategies:
         for _ in range(2):
-            valid_tables.append(['fish', 'fish', 'nit', 'nit', 'lag', bot])
+            valid_tables.append(['fish', 'fish', 'tag', 'nit', 'nit', bot])
+    
+    # === STANDARD TABLES WITH LAG - 35% ===
+    # 2 fish + 1 tag + 1 nit + 1 lag + 1 bot
+    for bot in bot_strategies:
+        for _ in range(3):
+            valid_tables.append(['fish', 'fish', 'tag', 'nit', 'lag', bot])
     
     # 2 fish + 2 tag + 1 lag + 1 bot
     for bot in bot_strategies:
         for _ in range(2):
             valid_tables.append(['fish', 'fish', 'tag', 'tag', 'lag', bot])
     
-    # 3 fish + 1 nit + 1 lag + 1 bot (soft with lag)
-    for bot in bot_strategies:
-        valid_tables.append(['fish', 'fish', 'fish', 'nit', 'lag', bot])
-    
-    # 3 fish + 1 tag + 1 lag + 1 bot
+    # 3 fish + 1 tag + 1 lag + 1 bot (soft with lag)
     for bot in bot_strategies:
         valid_tables.append(['fish', 'fish', 'fish', 'tag', 'lag', bot])
     
-    # === TOUGH TABLES - 10% of tables ===
-    # 1 fish + 2 tag + 1 nit + 1 lag + 1 bot (reg battle)
+    # === TOUGHER TABLES - 15% (fewer fish) ===
+    # 1 fish + 2 tag + 1 nit + 1 lag + 1 bot
     for bot in bot_strategies:
         valid_tables.append(['fish', 'tag', 'tag', 'nit', 'lag', bot])
+    
+    # 1 fish + 2 tag + 2 nit + 1 bot
+    for bot in bot_strategies:
+        valid_tables.append(['fish', 'tag', 'tag', 'nit', 'nit', bot])
     
     # 1 fish + 1 tag + 2 nit + 1 lag + 1 bot
     for bot in bot_strategies:
         valid_tables.append(['fish', 'tag', 'nit', 'nit', 'lag', bot])
-    
-    # 1 fish + 2 tag + 2 nit + 1 bot (no lag, reg heavy)
-    for bot in bot_strategies:
-        valid_tables.append(['fish', 'tag', 'tag', 'nit', 'nit', bot])
     
     print(f"Generated {len(valid_tables)} valid table configurations", flush=True)
     

@@ -1,8 +1,8 @@
 # OnyxPoker - Status Tracking
 
-**Last Updated**: January 12, 2026 12:20 UTC
+**Last Updated**: January 12, 2026 12:49 UTC
 
-## Current Status: STRATEGY SIMULATION - SESSION 26
+## Current Status: LITE MODE IMPLEMENTATION - SESSION 27
 
 Built poker strategy simulator to compare 7 bot strategies against realistic player pools.
 
@@ -53,6 +53,14 @@ python3 poker_sim.py 150000  # Run 150k hands simulation
 | 8 | opus2 | +15.79 |
 
 ## Session Log
+
+### Session 27 (January 12, 2026)
+- **LITE MODE**: Created alternative analysis pipeline
+  - `vision_detector_lite.py`: Uses gpt-5-nano for table data extraction only (cheaper/faster)
+  - `strategy_engine.py`: Hardcoded top 4 strategies (gpt3, gpt4, sonnet, kiro_optimal)
+- **Updated test_screenshots.py**: Added `--lite` and `--strategy=X` flags
+- **Updated helper_bar.py**: Set `POKER_LITE_MODE=1` env var to use lite mode
+- **Usage**: `python test_screenshots.py --lite --strategy=gpt3`
 
 ### Session 26 (January 12, 2026)
 - **STRATEGY SIMULATOR**: Built poker_sim.py to compare preflop strategies

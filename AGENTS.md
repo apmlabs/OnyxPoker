@@ -71,6 +71,7 @@ onyxpoker/
 ### Strategy Files
 - 7 bot strategies: kiro_v2, sonnet, kiro_optimal, kiro5, gpt4, gpt3, opus2
 - 4 player archetypes: fish, nit, lag, tag
+- `strategy_engine.py`: Hardcoded top 4 strategies for lite mode
 
 ### What's Not Implemented
 - Turn detection, action execution - LOW PRIORITY
