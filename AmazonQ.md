@@ -1,48 +1,45 @@
 # OnyxPoker - Status Tracking
 
-**Last Updated**: January 12, 2026 19:17 UTC
+**Last Updated**: January 12, 2026 20:05 UTC
 
-## Current Status: SESSION 28 - GROUND TRUTH COMPLETE ✅
+## Current Status: SESSION 29 - UI IMPROVEMENTS + KIRO OPTIMIZATION ✅
 
-Built 50-screenshot ground truth dataset. GPT-5.2 wins: 91% card accuracy vs Kiro's 61%. Production recommendation: Use GPT-5.2.
+Removed position detection (unreliable 7-31%). Added manual position selector to UI. Optimized Kiro with Sonnet 4.5 + prompt caching.
 
 ## What Works
 
 | Component | Status | Notes |
 |-----------|--------|-------|
-| helper_bar.py | ✅ Ready | Main UI, F9 screenshots active window |
+| helper_bar.py | ✅ Ready | Draggable UI, manual position selector at top |
 | vision_detector.py | ✅ Ready | Full mode: GPT-5.2 for vision + decisions |
 | vision_detector_lite.py | ✅ Ready | Lite mode: gpt-4o-mini for vision only |
 | strategy_engine.py | ✅ Ready | Lite mode: applies strategy-specific postflop |
 | poker_logic.py | ✅ Ready | Shared logic with strategy-specific postflop |
 | poker_sim.py | ✅ Ready | Full postflop simulation |
-| Server | ✅ Running | 54.80.204.92:5001 receives uploads |
+| Server | ✅ Running | 54.80.204.92:5001 with Kiro Sonnet 4.5 |
 
 ## Architecture
 
-### Full Mode (gpt-5.2)
+### Full Mode (gpt-5.2) - DEFAULT
 ```
 F9 → screenshot → vision_detector.py (gpt-5.2) → action + reasoning
+Position: Manual selection from UI radio buttons
 ```
 
 ### Lite Mode (gpt-4o-mini + hardcoded strategy)
 ```
 F9 → screenshot → vision_detector_lite.py (gpt-4o-mini) → table data
                 → strategy_engine.py → poker_logic.py → action + reasoning
+Position: Manual selection from UI radio buttons
 ```
 
-### Postflop Logic Architecture
-```
-postflop_action(archetype=None, strategy=None)
-         ↓
-    ┌────┴────┐
-archetype    strategy
-(fish/nit/   (gpt3/gpt4/
-tag/lag)     sonnet/kiro)
-    ↓            ↓
-archetype    _postflop_gpt() or _postflop_sonnet()
-logic
-```
+## UI Features
+
+- **Draggable**: Click top bar to move window
+- **Position Selector**: 6 buttons (UTG/MP/CO/BTN/SB/BB) at top
+- **No Window Decorations**: Clean, minimal interface
+- **Resizable**: Drag borders to resize
+- **Hotkeys**: F9=Advice, F10=Bot, F11=Stop, F12=Hide
 
 ## Server Locations
 

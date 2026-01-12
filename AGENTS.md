@@ -98,23 +98,27 @@ onyxpoker/                    # Main repo (GitHub: apmlabs/OnyxPoker)
 ## ✅ CURRENT STATE
 
 ### What Works
-- `helper_bar.py` - Wide bar UI docked to bottom, screenshots active window on F9
-- `vision_detector.py` - GPT-5.2 API for card/board/pot detection + decisions (91% card accuracy)
+- `helper_bar.py` - Draggable UI with manual position selector, no window decorations
+- `vision_detector.py` - GPT-5.2 API for vision + decisions (95% card accuracy)
+- `vision_detector_lite.py` - gpt-4o-mini for vision only
 - `poker_sim.py` - Full postflop simulation with strategy-specific logic
 - `strategy_engine.py` - Lite mode with strategy-specific postflop
 - Screenshot saving - Auto-saves to client/screenshots/ folder
 - Test mode - test_screenshots.py for offline testing
-- Kiro server - Flask app on port 5001 for remote analysis
+- Kiro server - Flask app on port 5001 with Sonnet 4.5
 - Hotkeys: F9=Advice, F10=Bot loop, F11=Stop, F12=Hide
 - Ground truth testing - 50 verified screenshots for model comparison
+- Manual position selection - 6 radio buttons (UTG/MP/CO/BTN/SB/BB)
 
-### Vision Model Comparison (50 Screenshots)
-| Model | Cards | Board | Position | Pot | Speed |
-|-------|-------|-------|----------|-----|-------|
-| **GPT-5.2** | **91%** ✅ | **100%** ✅ | 44% ❌ | **100%** ✅ | 6-9s |
-| Kiro-server | 61% ⚠️ | 88% ⚠️ | 50% ❌ | 100% ✅ | 4-5s |
+### Vision Model Comparison (Latest: 26 Screenshots)
+| Model | Cards | Board | Pot | Speed |
+|-------|-------|-------|-----|-------|
+| **GPT-5.2** | **95%** ✅ | **100%** ✅ | **100%** ✅ | 6-9s |
+| Kiro-Sonnet | 80% ⚠️ | 100% ✅ | 100% ✅ | ~12s |
 
-**Production Decision**: Use GPT-5.2 (card accuracy is critical, wrong cards = wrong decisions)
+**Production Decision**: Use GPT-5.2 (card accuracy is critical)
+
+**Position Detection**: REMOVED - Both models failed (7-31% accuracy). Now using manual selection via UI radio buttons.
 
 ### Strategy Files
 - 4 bot strategies in sim: gpt3, gpt4, sonnet, kiro_optimal
@@ -128,7 +132,6 @@ onyxpoker/                    # Main repo (GitHub: apmlabs/OnyxPoker)
 | sonnet/kiro_optimal | Big value bets | 75-85% pot sizing, overpair logic |
 
 ### What's Not Implemented
-- Position detection - BOTH MODELS FAIL (44-50% accuracy) - Don't use in production
 - Turn detection, action execution - LOW PRIORITY
 
 ## 🚀 NEXT STEPS
