@@ -396,7 +396,8 @@ class HelperBar:
             # If we have all position results (preflop), show them
             all_positions = result.get('all_positions')
             if all_positions and not board:  # Preflop only
-                self.log("=== PREFLOP ACTIONS BY POSITION ===", "DECISION")
+                # Build one-line summary
+                pos_actions = []
                 for pos in ['UTG', 'MP', 'CO', 'BTN', 'SB', 'BB']:
                     pos_result = all_positions[pos]
                     action = pos_result.get('action', 'fold')
@@ -407,7 +408,9 @@ class HelperBar:
                     else:
                         action_str = action.upper()
                     
-                    self.log(f"{pos:4s}: {action_str}", "DECISION")
+                    pos_actions.append(f"{pos}:{action_str}")
+                
+                self.log(" | ".join(pos_actions), "DECISION")
             else:
                 # Postflop or AI-only mode - show single decision
                 decision_str = f"=> {action.upper()}"
