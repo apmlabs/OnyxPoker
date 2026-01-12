@@ -49,19 +49,37 @@ Return JSON:
 }
 
 READING THE TABLE:
-- hero_cards: TWO face-up cards at BOTTOM. Format: As=Ace spades, Kh=King hearts, Tc=Ten clubs, 5d=Five diamonds. null if no cards visible.
+- hero_cards: TWO face-up cards at BOTTOM. If only ONE card visible, return null (do NOT guess second card). Format: As=Ace spades, Kh=King hearts, Tc=Ten clubs, 5d=Five diamonds. null if no cards visible or face-down.
 - community_cards: Cards in CENTER of table. Empty [] if preflop (no board cards yet).
 - pot: Read EXACT amount with decimals from "Pot: €X.XX" text.
 - hero_stack: Hero's stack amount at bottom.
 - to_call: Amount on CALL button, 0 if CHECK available, null if no buttons.
 - is_hero_turn: TRUE if LARGE RED action buttons visible (Fold/Call/Raise), FALSE if only checkboxes or waiting.
 
-SUIT SYMBOLS (CRITICAL):
-- Spades (♠): BLACK suit with pointed bottom
-- Clubs (♣): BLACK suit with rounded clover shape  
-- Hearts (♥): RED suit with rounded top
-- Diamonds (♦): RED suit with pointed corners
-DO NOT confuse black suits (♠ vs ♣) or red suits (♥ vs ♦)!
+SUIT IDENTIFICATION (CRITICAL - VERIFY TWICE):
+Step 1: Check COLOR first
+- BLACK cards = Spades or Clubs ONLY
+- RED cards = Hearts or Diamonds ONLY
+
+Step 2: Check SHAPE within color group
+BLACK SUITS:
+- Spades (♠): Upside-down heart shape with STEM at bottom (looks like ♠)
+- Clubs (♣): Three-leaf clover shape, NO stem (looks like ♣)
+
+RED SUITS:
+- Hearts (♥): Rounded heart shape, point at BOTTOM (looks like ♥)
+- Diamonds (♦): Four-pointed diamond/rhombus shape (looks like ♦)
+
+Step 3: VERIFY each card
+- Look at EACH card individually
+- Confirm color matches suit (black=♠♣, red=♥♦)
+- Confirm shape matches suit description
+- If uncertain, look at multiple instances of same card
+
+COMMON MISTAKES TO AVOID:
+- J♣ misread as J♠ (clubs have clover, spades have stem)
+- Q♦ misread as Q♥ (diamonds are pointed, hearts are rounded)
+- K♠ misread as K♣ (spades have stem at bottom)
 
 CRITICAL - SUITED VS OFFSUIT:
 Before ANY preflop decision, check BOTH card suits:
