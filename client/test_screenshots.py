@@ -13,6 +13,7 @@ Available vision models for --lite mode:
   gpt-5-mini      - GPT-5 with reasoning control
   gpt-5-nano      - Cheapest GPT-5
   gpt-5.2         - Best accuracy (full mode default)
+  kiro-server     - Kiro CLI via server subprocess (validation)
   
 Note: GPT-5 models automatically use reasoning="none" for vision tasks (faster, cheaper)
 """
@@ -20,6 +21,7 @@ Note: GPT-5 models automatically use reasoning="none" for vision tasks (faster, 
 import os
 import sys
 import json
+import requests
 from datetime import datetime
 
 # Parse args
@@ -36,7 +38,8 @@ ALL_VISION_MODELS = [
     'gpt-5-mini',       # GPT-5 family with reasoning control
     'gpt-5-nano',       # Cheapest GPT-5
     'gpt-5.1',          # GPT-5.1 with reasoning_effort="none"
-    'gpt-5.2'           # Best accuracy (current full mode)
+    'gpt-5.2',          # Best accuracy (current full mode)
+    'kiro-server'       # Kiro CLI via server subprocess
 ]
 
 for arg in sys.argv:
@@ -55,6 +58,24 @@ else:
     from vision_detector import VisionDetector
 
 LOG_FILE = None
+KIRO_SERVER_URL = os.getenv('KIRO_SERVER_URL', 'http://54.80.204.92:5001')
+
+def validate_with_kiro_server(table_data):
+    """Validate poker state using Kiro CLI via server"""
+    try:
+        response = requests.post(
+            f'{KIRO_SERVER_URL}/validate-state',
+            json={'state': table_data},
+            timeout=180
+        )
+        return response.json()
+    except Exception as e:
+        return {
+            'understood': False,
+            'confidence': 0.0,
+            'interpretation': f'Error: {str(e)}',
+            'concerns': [str(e)]
+        }
 
 def test_screenshot(path, index=None, total=None, model_override=None):
     global LOG_FILE
@@ -65,13 +86,33 @@ def test_screenshot(path, index=None, total=None, model_override=None):
     
     try:
         if LITE_MODE:
-            detector = VisionDetectorLite(model=model_override or VISION_MODEL)
-            table_data = detector.detect_table(path)
-            
-            engine = StrategyEngine(STRATEGY)
-            decision = engine.get_action(table_data)
-            
-            result = {**table_data, **decision}
+            # Use kiro-server for validation if specified
+            if model_override == 'kiro-server':
+                # First get table data with default vision model
+                detector = VisionDetectorLite(model='gpt-4o-mini')
+                table_data = detector.detect_table(path)
+                
+                # Then validate with Kiro server
+                validation = validate_with_kiro_server(table_data)
+                
+                # Combine results
+                result = {
+                    **table_data,
+                    'model': 'kiro-server',
+                    'validation': validation,
+                    'action': 'validated' if validation.get('understood') else 'invalid',
+                    'reasoning': validation.get('interpretation', ''),
+                    'confidence': validation.get('confidence', 0.0)
+                }
+            else:
+                # Normal vision + strategy flow
+                detector = VisionDetectorLite(model=model_override or VISION_MODEL)
+                table_data = detector.detect_table(path)
+                
+                engine = StrategyEngine(STRATEGY)
+                decision = engine.get_action(table_data)
+                
+                result = {**table_data, **decision}
         else:
             detector = VisionDetector()
             result = detector.detect_poker_elements(path, include_decision=True)
