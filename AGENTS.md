@@ -160,9 +160,9 @@ onyxpoker-server/             # Separate folder on EC2 (NOT in GitHub repo)
 
 ## 📖 SESSION HISTORY & LESSONS LEARNED
 
-### Session 28: GPT-5 Model Testing & Vision Prompt Improvement (January 12, 2026)
+### Session 28: GPT-5 Model Testing & Vision Prompt Improvement + Kiro Vision Integration (January 12, 2026)
 
-**Challenge**: Test all GPT-5 models and improve vision accuracy for card/position detection.
+**Challenge**: Test all GPT-5 models, improve vision accuracy, and integrate Kiro CLI for vision analysis.
 
 **Key Findings - Model Testing**:
 - GPT-5 family has different reasoning_effort support across versions
@@ -176,7 +176,7 @@ Model           Cards    Board    Position  Pot
 gpt-5.2         100% ⭐  90.9% ⭐  37.5%     100% ⭐  BEST OVERALL
 gpt-5.1         75.0%    81.8%    25.0%     100%     Good alternative
 gpt-4o          75.0%    63.6%    37.5%     100%     Decent
-gpt-5-mini      62.5%    60.0%    0.0% ❌   100%     Unreliable
+gpt-5-mini      62.5%    60.0%    0.0% ❌   100%     Kept for testing
 gpt-5           62.5%    81.8%    12.5%     100%     Removed from testing
 gpt-5-nano      28.6%    44.4%    0.0% ❌   57.1% ❌  BROKEN - Removed
 gpt-4o-mini     12.5% ❌  54.5%    0.0% ❌   100%     BROKEN - Removed
@@ -199,18 +199,27 @@ gpt-4o-mini     12.5% ❌  54.5%    0.0% ❌   100%     BROKEN - Removed
 - Created compare_with_ground_truth.py for automated accuracy testing
 - Can now test prompt improvements without re-analyzing images
 
-**Kiro Server Integration**:
-- Added /validate-state endpoint to kiro_analyze.py (calls kiro-cli via subprocess)
-- Integrated kiro-server as model option in test_screenshots.py
-- Architecture: gpt-4o-mini reads screenshot → server validates via Kiro CLI
+**Kiro Server Integration** (NEW ARCHITECTURE):
+- Added `/analyze-screenshot` endpoint - Kiro CLI does vision analysis directly
+- Added `/validate-state` endpoint - Kiro CLI validates poker states
+- Client sends screenshot → Server calls `kiro-cli chat --image` → Returns poker state
+- Comprehensive debug logging on both client and server
+- Fixed PATH issue: using full path `/home/ubuntu/.local/bin/kiro-cli`
+
+**Architecture Evolution**:
+```
+OLD: Screenshot → gpt-4o-mini (vision) → Kiro CLI (validation) → Result
+NEW: Screenshot → Kiro CLI (vision + analysis) → Result
+```
 
 **Production Recommendations**:
 - ✅ Use gpt-5.2 for production (100% cards, 91% board)
 - ✅ gpt-5.1 as cheaper alternative (75% cards, 82% board)
+- ✅ kiro-server for Kiro CLI vision analysis (experimental)
 - ❌ Removed gpt-5, gpt-5-nano, gpt-4o-mini from testing (too unreliable)
 - ❌ Position detection needs different approach (prompt improvements didn't help)
 
-**Critical Lesson**: Detailed suit instructions work. Position detection requires visual approach (not text instructions).
+**Critical Lesson**: Detailed suit instructions work. Position detection requires visual approach (not text instructions). Kiro CLI can do vision analysis directly via --image flag.
 
 ---
 

@@ -91,6 +91,12 @@ python3 poker_sim.py 150000  # Run 150k hands simulation
 ## Session Log
 
 ### Session 28 (January 12, 2026)
+- **KIRO VISION INTEGRATION**: Kiro CLI now does vision analysis directly ⭐
+  - Added /analyze-screenshot endpoint (sends image to kiro-cli --image)
+  - Added /validate-state endpoint (validates poker states)
+  - Architecture: Screenshot → Kiro CLI vision → Poker state
+  - Comprehensive debug logging on client and server
+  - Fixed PATH issue for kiro-cli subprocess calls
 - **VISION PROMPT IMPROVEMENT**: Improved prompt with detailed suit/position detection
   - Added explicit suit symbol descriptions (♠♥♦♣)
   - Added step-by-step position detection (count clockwise from button)
@@ -104,10 +110,7 @@ python3 poker_sim.py 150000  # Run 150k hands simulation
   - **gpt-4o**: 75% cards, 64% board
   - **gpt-5-mini**: 62.5% cards, 60% board (kept for testing)
   - **Removed from testing**: gpt-5, gpt-5-nano, gpt-4o-mini (too unreliable)
-- **KIRO SERVER INTEGRATION**: Added /validate-state endpoint
-  - Calls kiro-cli via subprocess for AI validation
-  - Integrated as model option in test_screenshots.py
-- Commits: 2fcf2fa, 636e0dd, 609d1df, d353009, c84d71f, d81145c
+- Commits: 2fcf2fa, 636e0dd, 609d1df, d353009, c84d71f, d81145c, d3fd49a, b618d09, 7aa46e7
 
 ### Session 27 (January 12, 2026)
 - **STRATEGY-SPECIFIC POSTFLOP**: Each bot strategy now uses its own postflop logic
