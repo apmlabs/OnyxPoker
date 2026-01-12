@@ -113,14 +113,10 @@ def analyze_screenshot():
         
         # Build analysis prompt with image path
         start = time.time()
-        prompt = f"""Look at this poker screenshot: {temp_path}
+        prompt = f"""Analyze poker screenshot: {temp_path}
 
-Extract the game state and give me JSON with these fields:
-- hero_cards: array of 2 cards (format: "Ah", "Kd", "Tc", etc.)
-- community_cards: array of board cards
-- pot: number (just the number, no currency symbol)
-- position: string (UTG/MP/CO/BTN/SB/BB)
-- is_hero_turn: boolean"""
+Return JSON only:
+{{"hero_cards": ["Ah","Kd"], "community_cards": [], "pot": 100, "position": "BTN", "is_hero_turn": true}}"""
         timings['prompt_build'] = time.time() - start
         
         logger.info(f"Calling kiro-cli with prompt including image path")

@@ -1,10 +1,10 @@
 # OnyxPoker - Status Tracking
 
-**Last Updated**: January 12, 2026 17:51 UTC
+**Last Updated**: January 12, 2026 17:58 UTC
 
 ## Current Status: SESSION 28 - KIRO CLI SPEED OPTIMIZATION
 
-Optimized Kiro CLI from 12.7s → 8.2s (35% faster) by switching to claude-haiku-4 model.
+Optimized Kiro CLI from 12.7s → 4.3s (66% faster!) via model fix + prompt simplification.
 
 ## What Works
 
@@ -104,11 +104,12 @@ python3 poker_sim.py 150000  # Run 150k hands simulation
   - Architecture: Screenshot → Kiro CLI vision → Poker state
   - Comprehensive debug logging on client and server
   - Fixed: Include image path in prompt (not --image flag)
-- **KIRO CLI SPEED OPTIMIZATION**: 35% faster with model tuning ⚡
-  - Changed poker-vision agent from claude-sonnet-4.5 → claude-haiku-4
-  - Speed: 12.7s → 8.2s (35% improvement)
+- **KIRO CLI SPEED OPTIMIZATION**: 66% faster with model tuning + prompt simplification ⚡
+  - Fixed model name: claude-haiku-4 → claude-haiku-4.5 (12.7s → 5.9s)
+  - Simplified prompt with JSON example (5.9s → 4.3s)
+  - Speed: 12.7s → 4.3s (66% improvement)
   - Breakdown: 99.9% time in Kiro CLI, 0.01s server overhead
-  - Model selection in agent config is critical for performance
+  - Model selection + prompt design critical for performance
 - **VISION PROMPT IMPROVEMENT**: Improved prompt with detailed suit/position detection
   - Added explicit suit symbol descriptions (♠♥♦♣)
   - Added step-by-step position detection (count clockwise from button)

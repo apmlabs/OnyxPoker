@@ -242,8 +242,9 @@ gpt-4o-mini     12.5% ❌  54.5%    0.0% ❌   100%     BROKEN - Removed
 
 **Kiro CLI Speed Optimization** (NEW):
 - **Problem**: poker-vision agent was defaulting to claude-sonnet-4.5 (slow)
-- **Solution**: Set explicit model in agent config: `"model": "claude-haiku-4"`
-- **Results**: 12.7s → 8.2s (35% faster) ⚡
+- **Solution 1**: Fixed model name from claude-haiku-4 → claude-haiku-4.5 (12.7s → 5.9s)
+- **Solution 2**: Simplified prompt with JSON example (5.9s → 4.3s)
+- **Results**: 12.7s → 4.3s (66% faster!) ⚡
 - **Breakdown**: 99.9% of time is Kiro CLI execution, server overhead only 0.01s
 
 **Architecture Evolution**:
@@ -259,7 +260,7 @@ NEW: Screenshot → Kiro CLI (vision + analysis) → Result
 - ❌ Removed gpt-5, gpt-5-nano, gpt-4o-mini from testing (too unreliable)
 - ❌ Position detection needs different approach (prompt improvements didn't help)
 
-**Critical Lesson**: Detailed suit instructions work. Position detection requires visual approach (not text instructions). Kiro CLI can do vision analysis directly via --image flag. Model selection in agent config is critical for speed - claude-haiku-4 is 35% faster than claude-sonnet-4.5.
+**Critical Lesson**: Detailed suit instructions work. Position detection requires visual approach (not text instructions). Kiro CLI can do vision analysis directly via --image flag. Model selection in agent config is critical for speed - claude-haiku-4.5 with simplified prompt is 66% faster than claude-sonnet-4.5.
 
 ---
 
