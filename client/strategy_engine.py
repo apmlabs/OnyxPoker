@@ -138,7 +138,8 @@ class StrategyEngine:
         is_aggressor = True  # Assume we were aggressor preflop
         
         action, bet_size, reasoning = postflop_action(
-            hole_cards, board_cards, pot, to_call, street, is_ip, is_aggressor
+            hole_cards, board_cards, pot, to_call, street, is_ip, is_aggressor,
+            strategy=self.strategy_name
         )
         
         return {

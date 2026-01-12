@@ -92,3 +92,36 @@ VS 4-BET (DEFAULT AT ZOOM NL5 WITHOUT READS)
 - Stack off: KK+
 - Continue sometimes: QQ and AKs only if you have evidence villain 4-bets wider
 - Fold: everything else
+
+
+====================================
+POSTFLOP — SIMPLE, ROBUST FRAMEWORK
+====================================
+
+GENERAL PRIORITIES (NL5 Zoom)
+- Win by: value betting correctly + avoiding big mistakes in 3-bet pots + overfolding rivers vs raises
+- Default: under-bluff rivers; use bluffs mainly on flop/turn with equity or strong blockers
+
+SINGLE-RAISED POTS (SRP) — C-BET RULES
+- Dry high-card boards where you have range advantage (Axx/Kxx/Qxx, paired boards): c-bet small 25–35% often
+- Low, connected, two-tone boards (987/876/765): check more; bet when you have strong equity (TP+good kicker, big draws)
+- Multiway: reduce c-bets sharply; bet mostly for value + strong draws
+
+VALUE SIZING (SRP baseline)
+- Versus "calls too much" profiles: use bigger sizes on flop/turn (50–80%) with strong value
+- TPTK: usually 2 streets for value; 3 streets mainly vs stations and on safe runouts
+- Weak top pair: bet once, then check/call small; fold to big turn/river pressure
+
+DRAWS
+- Bet/semi-bluff when you have: nut FD, strong OESD, combo draw, or good overcards + FD
+- Avoid pure low-equity barrels (gutshot no overcards) unless villain overfolds (HUD trigger)
+
+3-BET POTS (MOST IMPORTANT NODE AT NL5)
+- As 3-bettor IP on dry boards: small c-bet 25–33% very often
+- As caller OOP: check a lot; continue with strong pairs, good draws, and strong backdoors
+- One-pair in 3-bet pot: do not stack off without a clear reason (runout + villain profile)
+
+FACING AGGRESSION (DEFAULT POPULATION)
+- Flop raises are value-heavy: continue mainly with strong top pair+, big draws
+- Turn raises: fold most one-pair
+- River raises: fold almost all one-pair; call with very strong hands only

@@ -148,9 +148,14 @@ def simulate_hand(players, dealer_pos):
             is_ip = positions[p.name] in ['BTN', 'CO']
             is_agg = (p == opener) or (p == three_bettor)
             
+            # Determine archetype vs bot strategy
+            base = p.base_strategy if hasattr(p, 'base_strategy') else p.name
+            archetype = base if base in ['fish', 'nit', 'tag', 'lag'] else None
+            strategy = base if base in ['gpt3', 'gpt4', 'sonnet', 'kiro_optimal'] else None
+            
             action, bet_size, _ = postflop_action(
                 list(p.cards), board, pot, to_call, street_name, is_ip, is_agg,
-                archetype=p.base_strategy if hasattr(p, 'base_strategy') else p.name
+                archetype=archetype, strategy=strategy
             )
             
             if action == 'fold':

@@ -386,11 +386,12 @@ def check_draws(hole_cards: List[Tuple[str, str]], board: List[Tuple[str, str]])
 # Postflop decision logic - matches strategy files exactly
 def postflop_action(hole_cards: List[Tuple[str, str]], board: List[Tuple[str, str]], 
                     pot: float, to_call: float, street: str, is_ip: bool,
-                    is_aggressor: bool, archetype: str = None) -> Tuple[str, float, str]:
+                    is_aggressor: bool, archetype: str = None, strategy: str = None) -> Tuple[str, float, str]:
     """
     Postflop decision based on strategy file rules.
     Returns (action, bet_size, reasoning).
     archetype: 'fish', 'nit', 'tag', 'lag' for special behavior
+    strategy: 'gpt3', 'gpt4', 'sonnet', 'kiro_optimal' for bot-specific logic
     """
     strength, desc, kicker = evaluate_hand(hole_cards, board)
     draws = check_draws(hole_cards, board)
@@ -402,14 +403,28 @@ def postflop_action(hole_cards: List[Tuple[str, str]], board: List[Tuple[str, st
     has_any_draw = has_flush_draw or has_oesd or has_gutshot
     has_pair = strength >= 2
     
+    # Check for overpair and pocket pair below ace
+    if len(board) >= 3:
+        board_ranks = [RANK_VAL[c[0]] for c in board]
+        hole_ranks = [RANK_VAL[c[0]] for c in hole_cards]
+        is_pocket_pair = (hole_ranks[0] == hole_ranks[1])
+        is_overpair = (is_pocket_pair and hole_ranks[0] > max(board_ranks) and strength == 2)
+        board_has_ace = any(c[0] == 'A' for c in board)
+        # Big pocket pair (TT+) below ace on board
+        is_underpair_to_ace = (is_pocket_pair and board_has_ace and 
+                               hole_ranks[0] >= RANK_VAL['T'] and hole_ranks[0] < RANK_VAL['A'])
+    else:
+        is_overpair = False
+        board_has_ace = False
+        is_underpair_to_ace = False
+    
     # FISH: Calls with any pair/draw, never folds top pair, stations
     if archetype == 'fish':
         if to_call == 0 or to_call is None:
-            if strength >= 3:  # Two pair+
+            if strength >= 3:
                 return ('bet', round(pot * 0.5, 2), f"{desc} - fish bets small")
             return ('check', 0, "fish checks")
         else:
-            # Fish calls with any pair or draw
             if has_pair or has_any_draw:
                 return ('call', 0, f"{desc} - fish calls")
             return ('fold', 0, "fish folds air")
@@ -417,14 +432,13 @@ def postflop_action(hole_cards: List[Tuple[str, str]], board: List[Tuple[str, st
     # NIT: Only continues top pair+, folds to aggression, never bluffs
     if archetype == 'nit':
         if to_call == 0 or to_call is None:
-            if strength >= 4:  # Set+
+            if strength >= 4:
                 return ('bet', round(pot * 0.65, 2), f"{desc} - nit value bets")
             if strength == 3 or "top pair" in desc:
                 return ('bet', round(pot * 0.5, 2), f"{desc} - nit bets")
             return ('check', 0, "nit checks weak hand")
         else:
-            # Nit folds to aggression without strong hand
-            if strength >= 4:  # Set+
+            if strength >= 4:
                 return ('call', 0, f"{desc} - nit calls")
             if strength == 3 and street == 'flop':
                 return ('call', 0, f"{desc} - nit calls flop")
@@ -435,7 +449,7 @@ def postflop_action(hole_cards: List[Tuple[str, str]], board: List[Tuple[str, st
     # TAG: C-bets 65%, gives up without equity, folds to raises
     if archetype == 'tag':
         if to_call == 0 or to_call is None:
-            if strength >= 3:  # Two pair+
+            if strength >= 3:
                 return ('bet', round(pot * 0.65, 2), f"{desc} - tag value bets")
             if "top pair" in desc or "pair" in desc:
                 if street == 'flop' and random.random() < 0.65:
@@ -478,54 +492,109 @@ def postflop_action(hole_cards: List[Tuple[str, str]], board: List[Tuple[str, st
                 return ('call', 0, "lag calls with draw")
             return ('fold', 0, f"{desc} - lag folds")
     
-    # DEFAULT (bot strategies) - original logic
-    s = {
-        'flop': {'nuts': 1.0, 'set': 0.85, 'twopair': 0.80, 'tptk': 0.75, 'tpgk': 0.70, 'tpwk': 0.65},
-        'turn': {'nuts': 1.0, 'set': 0.85, 'twopair': 0.80, 'tptk': 0.70, 'tpgk': 0.60, 'tpwk': 0.0},
-        'river': {'nuts': 1.0, 'set': 0.85, 'twopair': 0.80, 'tptk': 0.60, 'tpgk': 0.50, 'tpwk': 0.0},
-    }.get(street, {})
+    # BOT STRATEGIES - strategy-specific postflop logic
+    # gpt3/gpt4: Board texture aware, smaller c-bets, 3-bet pot adjustments
+    # sonnet/kiro_optimal: Bigger value bets, overpair logic
+    
+    if strategy in ['gpt3', 'gpt4']:
+        return _postflop_gpt(hole_cards, board, pot, to_call, street, is_ip, 
+                            is_aggressor, strength, desc, draws, combo_draw,
+                            has_flush_draw, has_oesd, has_gutshot)
+    
+    if strategy in ['sonnet', 'kiro_optimal']:
+        return _postflop_sonnet(hole_cards, board, pot, to_call, street, is_ip,
+                               is_aggressor, strength, desc, draws, combo_draw,
+                               has_flush_draw, has_oesd, is_overpair, board_has_ace,
+                               is_underpair_to_ace)
+    
+    # DEFAULT fallback (same as sonnet)
+    return _postflop_sonnet(hole_cards, board, pot, to_call, street, is_ip,
+                           is_aggressor, strength, desc, draws, combo_draw,
+                           has_flush_draw, has_oesd, is_overpair, board_has_ace,
+                           is_underpair_to_ace)
+
+
+def _postflop_gpt(hole_cards, board, pot, to_call, street, is_ip, is_aggressor,
+                  strength, desc, draws, combo_draw, has_flush_draw, has_oesd, has_gutshot):
+    """
+    GPT3/GPT4 postflop: Board texture aware, smaller c-bets on dry boards.
+    From strategy file:
+    - Dry boards (Axx/Kxx/Qxx): c-bet small 25-35%
+    - Wet boards (connected/two-tone): check more, bet with equity
+    - 3-bet pots: small c-bet 25-33%
+    - TPTK: 2 streets value, 3 vs stations
+    - Weak TP: bet once, check-call, fold to pressure
+    """
+    # Check board texture
+    board_ranks = sorted([RANK_VAL[c[0]] for c in board], reverse=True)
+    board_suits = [c[1] for c in board]
+    is_dry = (board_ranks[0] >= RANK_VAL['Q'] and  # High card board
+              len(set(board_suits)) >= 2 and  # Not monotone
+              (len(board_ranks) < 2 or board_ranks[0] - board_ranks[-1] > 4))  # Not connected
+    is_wet = (len(set(board_suits)) <= 2 or  # Two-tone or monotone
+              (len(board_ranks) >= 3 and board_ranks[0] - board_ranks[2] <= 4))  # Connected
     
     if to_call == 0 or to_call is None:
-        if strength >= 5:
-            return ('bet', round(pot * s.get('nuts', 1.0), 2), f"{desc} - bet 100%")
-        if strength == 4:
-            return ('bet', round(pot * s.get('set', 0.85), 2), f"{desc} - bet 85%")
-        if strength == 3:
-            return ('bet', round(pot * s.get('twopair', 0.80), 2), f"{desc} - bet 80%")
+        # Betting logic
+        if strength >= 5:  # Nuts
+            return ('bet', round(pot * 1.0, 2), f"{desc} - bet 100%")
+        if strength == 4:  # Sets
+            return ('bet', round(pot * 0.75, 2), f"{desc} - bet 75%")
+        if strength == 3:  # Two pair
+            return ('bet', round(pot * 0.70, 2), f"{desc} - bet 70%")
+        
+        # Top pair - board texture matters
         if "top pair good kicker" in desc:
-            return ('bet', round(pot * s.get('tptk', 0.75), 2), f"{desc} - value bet")
-        if "top pair weak kicker" in desc and street == 'flop':
-            return ('bet', round(pot * s.get('tpwk', 0.65), 2), f"{desc} - bet flop")
+            if is_dry:
+                size = 0.33 if street == 'flop' else 0.50
+            else:
+                size = 0.55 if street == 'flop' else 0.60
+            if street != 'river':
+                return ('bet', round(pot * size, 2), f"{desc} - value bet")
+            return ('check', 0, f"{desc} - check river")
+        
+        if "top pair" in desc and street == 'flop':
+            size = 0.30 if is_dry else 0.50
+            return ('bet', round(pot * size, 2), f"{desc} - c-bet")
+        
+        # Draws - semi-bluff with equity
         if combo_draw:
-            return ('bet', round(pot * 0.70, 2), "combo draw - semi-bluff")
+            return ('bet', round(pot * 0.65, 2), "combo draw - semi-bluff")
+        if has_flush_draw and is_aggressor and street == 'flop':
+            return ('bet', round(pot * 0.50, 2), "flush draw - semi-bluff")
+        if has_oesd and is_aggressor and street == 'flop':
+            return ('bet', round(pot * 0.45, 2), "OESD - semi-bluff")
+        
+        # C-bet air on dry boards only
+        if is_aggressor and street == 'flop' and is_dry and random.random() < 0.55:
+            return ('bet', round(pot * 0.30, 2), "c-bet dry board")
+        
         return ('check', 0, f"{desc} - check")
     
-    # Facing bet - default logic (from strategy files)
-    # TPTK: 2-3 streets of value, call down
-    # Two pair: call all streets except big river raises
-    # Sets+: always call/raise
+    # Facing bet
     if strength >= 5:
         return ('call', 0, f"{desc} - call")
     if strength == 4:
         return ('call', 0, f"{desc} - call")
     if strength == 3:
         return ('call', 0, f"{desc} - call")
+    
     if "top pair good kicker" in desc:
-        # TPTK calls flop and turn, folds to big river bets
         if street in ['flop', 'turn']:
             return ('call', 0, f"{desc} - call {street}")
-        # River: call small, fold big
         pot_odds = to_call / (pot + to_call) if pot > 0 else 1
         if pot_odds <= 0.40:
             return ('call', 0, f"{desc} - call small river")
-        return ('fold', 0, f"{desc} - fold big river bet")
+        return ('fold', 0, f"{desc} - fold big river")
+    
     if "top pair" in desc:
-        # Weak kicker: call flop only
         if street == 'flop':
             return ('call', 0, f"{desc} - call flop")
         return ('fold', 0, f"{desc} - fold {street}")
+    
     if "pair" in desc and street == 'flop':
         return ('call', 0, f"{desc} - call flop")
+    
     if has_flush_draw:
         pot_odds = to_call / (pot + to_call) if pot > 0 else 1
         if pot_odds <= 0.40:
@@ -534,6 +603,122 @@ def postflop_action(hole_cards: List[Tuple[str, str]], board: List[Tuple[str, st
         pot_odds = to_call / (pot + to_call) if pot > 0 else 1
         if pot_odds <= 0.33:
             return ('call', 0, "OESD - call")
+    if has_gutshot:
+        return ('fold', 0, "gutshot - fold")
+    
+    return ('fold', 0, f"{desc} - fold")
+
+
+def _postflop_sonnet(hole_cards, board, pot, to_call, street, is_ip, is_aggressor,
+                     strength, desc, draws, combo_draw, has_flush_draw, has_oesd,
+                     is_overpair, board_has_ace, is_underpair_to_ace=False):
+    """
+    Sonnet/Kiro_optimal postflop: Bigger value bets, overpair logic.
+    From strategy file:
+    - Nuts: 100% pot all streets
+    - Sets: 85% pot all streets
+    - Two pair: 80% pot all streets
+    - TPTK: 75/70/60%
+    - TPGK: 70/60/50%
+    - TPWK: 65% flop, check-call later
+    - Overpair: 70/60/50%
+    - Overpair on Axx (KK on Axx): check-call only
+    - Middle pair: check-call once, fold turn
+    """
+    s = {
+        'flop': {'nuts': 1.0, 'set': 0.85, 'twopair': 0.80, 'tptk': 0.75, 'tpgk': 0.70, 'tpwk': 0.65, 'overpair': 0.70},
+        'turn': {'nuts': 1.0, 'set': 0.85, 'twopair': 0.80, 'tptk': 0.70, 'tpgk': 0.60, 'tpwk': 0.0, 'overpair': 0.60},
+        'river': {'nuts': 1.0, 'set': 0.85, 'twopair': 0.80, 'tptk': 0.60, 'tpgk': 0.50, 'tpwk': 0.0, 'overpair': 0.50},
+    }.get(street, {})
+    
+    if to_call == 0 or to_call is None:
+        # Betting logic
+        if strength >= 5:
+            return ('bet', round(pot * s.get('nuts', 1.0), 2), f"{desc} - bet 100%")
+        if strength == 4:
+            return ('bet', round(pot * s.get('set', 0.85), 2), f"{desc} - bet 85%")
+        if strength == 3:
+            return ('bet', round(pot * s.get('twopair', 0.80), 2), f"{desc} - bet 80%")
+        
+        # Big pocket pair below ace (KK/QQ/JJ/TT on Axx) - check-call only
+        if is_underpair_to_ace:
+            return ('check', 0, f"{desc} - check (pocket pair below ace)")
+        
+        # True overpair (QQ on J85)
+        if is_overpair:
+            return ('bet', round(pot * s.get('overpair', 0.70), 2), f"{desc} overpair - bet")
+        
+        if "top pair good kicker" in desc:
+            return ('bet', round(pot * s.get('tptk', 0.75), 2), f"{desc} - value bet")
+        if "top pair" in desc and "weak" not in desc:
+            return ('bet', round(pot * s.get('tpgk', 0.70), 2), f"{desc} - value bet")
+        if "top pair weak kicker" in desc and street == 'flop':
+            return ('bet', round(pot * s.get('tpwk', 0.65), 2), f"{desc} - bet flop")
+        
+        if combo_draw:
+            return ('bet', round(pot * 0.70, 2), "combo draw - semi-bluff 70%")
+        if has_flush_draw and is_aggressor:
+            return ('bet', round(pot * 0.50, 2), "flush draw - semi-bluff")
+        
+        return ('check', 0, f"{desc} - check")
+    
+    # Facing bet
+    if strength >= 5:
+        return ('call', 0, f"{desc} - call")
+    if strength == 4:
+        return ('call', 0, f"{desc} - call")
+    if strength == 3:
+        return ('call', 0, f"{desc} - call")
+    
+    # Big pocket pair below ace - check-call
+    if is_underpair_to_ace:
+        if street == 'flop':
+            return ('call', 0, f"{desc} - call flop (pocket pair below ace)")
+        pot_odds = to_call / (pot + to_call) if pot > 0 else 1
+        if pot_odds <= 0.35:
+            return ('call', 0, f"{desc} - call small bet")
+        return ('fold', 0, f"{desc} - fold big bet (ace on board)")
+    
+    # True overpair facing bet
+    if is_overpair:
+        if street != 'river':
+            return ('call', 0, f"{desc} overpair - call")
+        pot_odds = to_call / (pot + to_call) if pot > 0 else 1
+        if pot_odds <= 0.35:
+            return ('call', 0, f"{desc} overpair - call small river")
+        return ('fold', 0, f"{desc} overpair - fold big river")
+    
+    if "top pair good kicker" in desc:
+        if street in ['flop', 'turn']:
+            return ('call', 0, f"{desc} - call {street}")
+        pot_odds = to_call / (pot + to_call) if pot > 0 else 1
+        if pot_odds <= 0.40:
+            return ('call', 0, f"{desc} - call small river")
+        return ('fold', 0, f"{desc} - fold big river bet")
+    
+    if "top pair" in desc:
+        if street == 'flop':
+            return ('call', 0, f"{desc} - call flop")
+        return ('fold', 0, f"{desc} - fold {street}")
+    
+    # Middle pair: check-call once, fold turn
+    if "middle pair" in desc or ("pair" in desc and "top" not in desc and "bottom" not in desc):
+        if street == 'flop':
+            return ('call', 0, f"{desc} - call flop once")
+        return ('fold', 0, f"{desc} - fold {street}")
+    
+    if "pair" in desc and street == 'flop':
+        return ('call', 0, f"{desc} - call flop")
+    
+    if has_flush_draw:
+        pot_odds = to_call / (pot + to_call) if pot > 0 else 1
+        if pot_odds <= 0.40:
+            return ('call', 0, "flush draw - call <=40%")
+    if has_oesd:
+        pot_odds = to_call / (pot + to_call) if pot > 0 else 1
+        if pot_odds <= 0.33:
+            return ('call', 0, "OESD - call <=33%")
+    
     return ('fold', 0, f"{desc} - fold")
 
 
