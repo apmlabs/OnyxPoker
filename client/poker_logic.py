@@ -370,15 +370,33 @@ def evaluate_hand(hole_cards: List[Tuple[str, str]], board: List[Tuple[str, str]
         pr = pair_ranks[0]
         board_ranks = [c[0] for c in board] if board else []
         board_vals = sorted([RANK_VAL[r] for r in board_ranks], reverse=True)
+        hero_vals = [RANK_VAL[r] for r in hero_ranks]
+        
+        # Check for pocket pair (both hole cards same rank)
+        is_pocket_pair = len(hole_cards) == 2 and hole_cards[0][0] == hole_cards[1][0]
         
         if pr in hero_ranks:
+            # OVERPAIR: Pocket pair higher than all board cards
+            if is_pocket_pair and board_vals and RANK_VAL[pr] > board_vals[0]:
+                return (2, f"overpair {pr}{pr}", RANK_VAL[pr] * 100 + RANK_VAL[pr])
+            
+            # UNDERPAIR TO ACE: Big pocket pair (TT+) but ace on board
+            if is_pocket_pair and board_vals and any(v == RANK_VAL['A'] for v in board_vals):
+                if RANK_VAL[pr] >= RANK_VAL['T'] and RANK_VAL[pr] < RANK_VAL['A']:
+                    return (2, f"underpair {pr}{pr} (ace on board)", RANK_VAL[pr] * 100 + RANK_VAL[pr])
+            
+            # TOP PAIR
             if board_vals and RANK_VAL[pr] >= board_vals[0]:
                 kicker = max(RANK_VAL[r] for r in hero_ranks if r != pr) if len(hero_ranks) > 1 else 0
                 if kicker >= RANK_VAL['T']:
                     return (2, "top pair good kicker", RANK_VAL[pr] * 100 + kicker)
                 return (2, "top pair weak kicker", RANK_VAL[pr] * 100 + kicker)
+            
+            # MIDDLE PAIR
             elif board_vals and len(board_vals) > 1 and RANK_VAL[pr] >= board_vals[1]:
                 return (2, "middle pair", RANK_VAL[pr])
+            
+            # BOTTOM PAIR / UNDERPAIR
             return (2, "bottom pair", RANK_VAL[pr])
         return (2, "pair", RANK_VAL[pr])
     
@@ -546,7 +564,8 @@ def postflop_action(hole_cards: List[Tuple[str, str]], board: List[Tuple[str, st
     if strategy in ['gpt3', 'gpt4']:
         return _postflop_gpt(hole_cards, board, pot, to_call, street, is_ip, 
                             is_aggressor, strength, desc, draws, combo_draw,
-                            has_flush_draw, has_oesd, has_gutshot, is_multiway)
+                            has_flush_draw, has_oesd, has_gutshot, is_overpair,
+                            is_underpair_to_ace, is_multiway)
     
     if strategy in ['sonnet', 'kiro_optimal']:
         return _postflop_sonnet(hole_cards, board, pot, to_call, street, is_ip,
@@ -563,7 +582,7 @@ def postflop_action(hole_cards: List[Tuple[str, str]], board: List[Tuple[str, st
 
 def _postflop_gpt(hole_cards, board, pot, to_call, street, is_ip, is_aggressor,
                   strength, desc, draws, combo_draw, has_flush_draw, has_oesd, has_gutshot,
-                  is_multiway=False):
+                  is_overpair=False, is_underpair_to_ace=False, is_multiway=False):
     """
     GPT3/GPT4 postflop: Board texture aware, smaller c-bets on dry boards.
     From strategy file:
@@ -572,6 +591,8 @@ def _postflop_gpt(hole_cards, board, pot, to_call, street, is_ip, is_aggressor,
     - 3-bet pots: small c-bet 25-33%
     - TPTK: 2 streets value, 3 vs stations
     - Weak TP: bet once, check-call, fold to pressure
+    - Overpair: bet 65-70% pot
+    - Underpair to ace: check-call
     - Multiway: reduce c-bets sharply, bet mostly for value + strong draws
     """
     # Check board texture
@@ -601,6 +622,15 @@ def _postflop_gpt(hole_cards, board, pot, to_call, street, is_ip, is_aggressor,
             return ('bet', round(pot * 0.75, 2), f"{desc} - bet 75%")
         if strength == 3:  # Two pair
             return ('bet', round(pot * 0.70, 2), f"{desc} - bet 70%")
+        
+        # OVERPAIR (QQ on J85) - bet for value
+        if is_overpair or "overpair" in desc:
+            size = 0.65 if street == 'flop' else (0.60 if street == 'turn' else 0.50)
+            return ('bet', round(pot * size, 2), f"{desc} - overpair value bet")
+        
+        # UNDERPAIR TO ACE (KK on Axx) - check-call
+        if is_underpair_to_ace or "underpair" in desc:
+            return ('check', 0, f"{desc} - check (ace on board)")
         
         # Top pair - board texture matters
         if "top pair good kicker" in desc:
@@ -637,6 +667,24 @@ def _postflop_gpt(hole_cards, board, pot, to_call, street, is_ip, is_aggressor,
         return ('call', 0, f"{desc} - call")
     if strength == 3:
         return ('call', 0, f"{desc} - call")
+    
+    # OVERPAIR facing bet - call down
+    if is_overpair or "overpair" in desc:
+        if street != 'river':
+            return ('call', 0, f"{desc} - call {street}")
+        pot_odds = to_call / (pot + to_call) if pot > 0 else 1
+        if pot_odds <= 0.35:
+            return ('call', 0, f"{desc} - call small river")
+        return ('fold', 0, f"{desc} - fold big river")
+    
+    # UNDERPAIR TO ACE facing bet - call flop, fold turn/river
+    if is_underpair_to_ace or "underpair" in desc:
+        if street == 'flop':
+            return ('call', 0, f"{desc} - call flop")
+        pot_odds = to_call / (pot + to_call) if pot > 0 else 1
+        if pot_odds <= 0.25:
+            return ('call', 0, f"{desc} - call small bet")
+        return ('fold', 0, f"{desc} - fold (ace on board)")
     
     if "top pair good kicker" in desc:
         if street in ['flop', 'turn']:
