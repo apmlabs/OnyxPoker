@@ -10,7 +10,7 @@ import time
 from typing import Dict, Any, Optional
 from openai import OpenAI
 
-MODEL = "gpt-4.1-nano"  # gpt-5-nano is slow due to reasoning, use 4.1-nano instead
+MODEL = "gpt-4o-mini"  # Good balance of speed and vision accuracy
 
 class VisionDetectorLite:
     def __init__(self, api_key: Optional[str] = None, logger=None):
