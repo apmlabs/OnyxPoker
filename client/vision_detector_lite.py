@@ -31,7 +31,7 @@ class VisionDetectorLite:
         with open(screenshot_path, 'rb') as f:
             image_data = base64.b64encode(f.read()).decode('utf-8')
         
-        prompt = """Read this PokerStars 6-max table screenshot. Return ONLY table data as JSON:
+        prompt = """Read this PokerStars 6-max table screenshot. Return ONLY valid JSON:
 
 {
   "hero_cards": ["As", "Kh"],
@@ -52,71 +52,64 @@ READING RULES:
 - to_call: Amount on CALL button, 0 if CHECK available, null if no buttons.
 - is_hero_turn: TRUE if LARGE RED buttons visible, FALSE if only checkboxes.
 - position: UTG/MP/CO/BTN/SB/BB based on dealer button location relative to hero.
-- num_players: Count of players still in hand (have cards or chips committed).
-- facing_raise: TRUE if someone raised before hero, FALSE if first to act or facing limp.
+- num_players: Count of players still in hand.
+- facing_raise: TRUE if someone raised before hero.
 
-SUIT CHECK: As=Ace spades, Ah=Ace hearts, Ad=Ace diamonds, Ac=Ace clubs.
+Return ONLY the JSON object, nothing else."""
 
-Return ONLY JSON, no explanation."""
-
-        json_schema = {
-            "type": "object",
-            "properties": {
-                "hero_cards": {"type": ["array", "null"], "items": {"type": "string"}},
-                "community_cards": {"type": "array", "items": {"type": "string"}},
-                "pot": {"type": ["number", "null"]},
-                "hero_stack": {"type": ["number", "null"]},
-                "to_call": {"type": ["number", "null"]},
-                "is_hero_turn": {"type": "boolean"},
-                "position": {"type": ["string", "null"]},
-                "num_players": {"type": ["integer", "null"]},
-                "facing_raise": {"type": "boolean"}
-            },
-            "required": ["hero_cards", "community_cards", "pot", "hero_stack", "to_call", "is_hero_turn", "position", "num_players", "facing_raise"],
-            "additionalProperties": False
-        }
-        
         t = time.time()
-        response = self.client.responses.create(
-            model=self.model,
-            input=[{
-                "role": "user",
-                "content": [
-                    {"type": "input_text", "text": prompt},
-                    {"type": "input_image", "image_url": f"data:image/png;base64,{image_data}"}
-                ]
-            }],
-            text={"format": {"type": "json_schema", "name": "table_data", "schema": json_schema}}
-        )
-        api_time = time.time() - t
-        
-        # Extract response - gpt-5-nano returns output as string or in output array
-        result_text = None
-        if hasattr(response, 'output'):
-            if isinstance(response.output, str):
-                result_text = response.output
-            elif isinstance(response.output, list):
-                for item in response.output:
-                    if hasattr(item, 'content'):
-                        for content in item.content:
-                            if hasattr(content, 'text'):
-                                result_text = content.text
-                                break
-                    if result_text:
-                        break
-        
-        if not result_text:
-            raise ValueError("No text in response")
-        
-        result_text = result_text.strip()
-        if result_text.startswith('```'):
-            result_text = result_text.split('```')[1]
-            if result_text.startswith('json'):
-                result_text = result_text[4:]
+        try:
+            response = self.client.responses.create(
+                model=self.model,
+                input=[{
+                    "role": "user",
+                    "content": [
+                        {"type": "input_text", "text": prompt},
+                        {"type": "input_image", "image_url": f"data:image/png;base64,{image_data}"}
+                    ]
+                }]
+            )
+            api_time = time.time() - t
+            
+            # Debug: print response structure
+            self.log(f"Response type: {type(response)}", "DEBUG")
+            self.log(f"Response: {response}", "DEBUG")
+            
+            # Extract response text
+            result_text = None
+            if hasattr(response, 'output_text'):
+                result_text = response.output_text
+            elif hasattr(response, 'output'):
+                if isinstance(response.output, str):
+                    result_text = response.output
+                elif isinstance(response.output, list):
+                    for item in response.output:
+                        if hasattr(item, 'content'):
+                            for content in item.content:
+                                if hasattr(content, 'text'):
+                                    result_text = content.text
+                                    break
+                        if result_text:
+                            break
+            
+            if not result_text:
+                raise ValueError(f"No text in response. Response keys: {dir(response)}")
+            
+            self.log(f"Raw response: {result_text[:200]}...", "DEBUG")
+            
+            # Clean up JSON
             result_text = result_text.strip()
-        
-        result = json.loads(result_text)
-        result['api_time'] = api_time
-        result['model'] = self.model
-        
-        return result
+            if result_text.startswith('```'):
+                lines = result_text.split('\n')
+                result_text = '\n'.join(lines[1:-1] if lines[-1] == '```' else lines[1:])
+                result_text = result_text.strip()
+            
+            result = json.loads(result_text)
+            result['api_time'] = api_time
+            result['model'] = self.model
+            
+            return result
+            
+        except Exception as e:
+            self.log(f"API Error: {e}", "ERROR")
+            raise
