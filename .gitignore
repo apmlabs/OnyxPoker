@@ -40,6 +40,10 @@ wheels/
 venv/
 env/
 ENV/
+server/venv/
+
+# Server uploads (test logs and screenshots)
+server/uploads/
 
 # IDE
 .vscode/
