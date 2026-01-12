@@ -32,6 +32,7 @@ TEST_ALL_MODELS = '--test-all-models' in sys.argv
 ALL_VISION_MODELS = [
     'gpt-4o',           # Best vision specialist (94% accuracy)
     'gpt-4o-mini',      # Budget vision (89% accuracy)
+    'gpt-5',            # Base GPT-5 with reasoning_effort="minimal"
     'gpt-5-mini',       # GPT-5 family with reasoning control
     'gpt-5-nano',       # Cheapest GPT-5
     'gpt-5.1',          # GPT-5.1 with reasoning_effort="none"
