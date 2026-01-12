@@ -116,13 +116,12 @@ def analyze_screenshot():
         prompt = f"""Analyze this PokerStars 6-max table screenshot: {temp_path}
 
 Return JSON:
-{{"hero_cards": ["As", "Kh"], "community_cards": ["Qd", "Jc", "Ts"], "pot": 0.15, "position": "BTN", "is_hero_turn": true}}
+{{"hero_cards": ["As", "Kh"], "community_cards": ["Qd", "Jc", "Ts"], "pot": 0.15, "is_hero_turn": true}}
 
 READING THE TABLE:
 - hero_cards: TWO face-up cards at BOTTOM. Format: As=Ace spades, Kh=King hearts, Tc=Ten clubs, 5d=Five diamonds. null if no cards visible.
 - community_cards: Cards in CENTER of table. Empty [] if preflop (no board cards yet).
 - pot: Read EXACT amount with decimals from "Pot: €X.XX" text.
-- position: Count clockwise from dealer button. UTG/MP/CO/BTN/SB/BB.
 - is_hero_turn: TRUE if LARGE RED action buttons visible (Fold/Call/Raise), FALSE if only checkboxes or waiting.
 
 SUIT SYMBOLS (CRITICAL):
