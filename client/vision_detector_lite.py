@@ -72,9 +72,13 @@ Return ONLY the JSON object, nothing else."""
                 "response_format": {"type": "json_object"}
             }
             
-            # For GPT-5 models, disable reasoning for vision tasks
-            if self.model.startswith('gpt-5'):
-                api_params["reasoning"] = {"effort": "none"}
+            # For GPT-5 models, minimize reasoning for vision tasks
+            # gpt-5.1: supports "none" (no reasoning at all)
+            # gpt-5/gpt-5-mini/gpt-5-nano/gpt-5.2: don't support "none", use "minimal"
+            if self.model.startswith('gpt-5.1'):
+                api_params["reasoning_effort"] = "none"
+            elif self.model.startswith('gpt-5'):
+                api_params["reasoning_effort"] = "minimal"
             
             response = self.client.chat.completions.create(**api_params)
             api_time = time.time() - t
