@@ -8,10 +8,8 @@ Usage:
   python test_screenshots.py --lite --test-all-models    # Test all vision models
   
 Available vision models for --lite mode:
-  gpt-4o          - Best vision specialist
-  gpt-4o-mini     - Budget vision (current default)
-  gpt-4.1-mini    - Code-focused but has vision
-  gpt-4.1-nano    - Fastest 4.1 with vision
+  gpt-4o          - Best vision specialist (94% accuracy)
+  gpt-4o-mini     - Budget vision (89% accuracy, current default)
   gpt-5-mini      - GPT-5 with reasoning control
   gpt-5-nano      - Cheapest GPT-5
   gpt-5.2         - Best accuracy (full mode default)
@@ -32,10 +30,8 @@ TEST_ALL_MODELS = '--test-all-models' in sys.argv
 
 # All available vision models to test
 ALL_VISION_MODELS = [
-    'gpt-4o',           # Best vision specialist
-    'gpt-4o-mini',      # Budget vision (current default)
-    'gpt-4.1-mini',     # Code-focused but has vision
-    'gpt-4.1-nano',     # Fastest 4.1 with vision
+    'gpt-4o',           # Best vision specialist (94% accuracy)
+    'gpt-4o-mini',      # Budget vision (89% accuracy)
     'gpt-5-mini',       # GPT-5 family with reasoning control
     'gpt-5-nano',       # Cheapest GPT-5
     'gpt-5.2'           # Best accuracy (current full mode)
