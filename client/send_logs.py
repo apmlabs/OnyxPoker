@@ -20,13 +20,14 @@ if __name__ == '__main__':
     if len(sys.argv) > 1:
         send_log(sys.argv[1])
     else:
-        # Send latest log
+        # Send latest log by modification time
         log_dir = os.path.join(os.path.dirname(__file__), 'logs')
         if os.path.isdir(log_dir):
-            logs = sorted([f for f in os.listdir(log_dir) if f.endswith('.jsonl')])
+            logs = [f for f in os.listdir(log_dir) if f.endswith('.jsonl')]
             if logs:
-                print(f"Sending latest: {logs[-1]}")
-                send_log(os.path.join(log_dir, logs[-1]))
+                latest = max(logs, key=lambda f: os.path.getmtime(os.path.join(log_dir, f)))
+                print(f"Sending latest: {latest}")
+                send_log(os.path.join(log_dir, latest))
             else:
                 print("No logs found")
         else:
