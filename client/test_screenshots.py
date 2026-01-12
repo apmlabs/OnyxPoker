@@ -128,25 +128,23 @@ def main():
         os.makedirs(logs_dir, exist_ok=True)
         
         if TEST_ALL_MODELS and LITE_MODE:
-            # Test all models on all screenshots
-            for model in ALL_VISION_MODELS:
-                mode_suffix = f"lite_{STRATEGY}_{model.replace('.', '_').replace('-', '_')}"
-                log_path = os.path.join(logs_dir, f"test_{mode_suffix}_{datetime.now().strftime('%Y%m%d_%H%M%S')}.jsonl")
-                LOG_FILE = open(log_path, 'w')
-                
-                print(f"\n{'='*80}")
-                print(f"Testing {len(files)} screenshots with {model}")
-                print(f"Logging to: {log_path}")
-                print(f"{'='*80}\n")
-                
-                for i, f in enumerate(files, 1):
-                    test_screenshot(os.path.join(screenshots_dir, f), i, len(files), model_override=model)
-                
-                LOG_FILE.close()
-                print(f"\nDone with {model}! Results saved to: {log_path}")
+            # Test all models on each screenshot (side-by-side comparison)
+            mode_suffix = f"lite_{STRATEGY}_all_models"
+            log_path = os.path.join(logs_dir, f"test_{mode_suffix}_{datetime.now().strftime('%Y%m%d_%H%M%S')}.jsonl")
+            LOG_FILE = open(log_path, 'w')
             
+            print(f"Testing {len(files)} screenshots with {len(ALL_VISION_MODELS)} models each")
+            print(f"Logging to: {log_path}\n")
+            
+            for i, f in enumerate(files, 1):
+                print(f"\n[{i}/{len(files)}] {f}")
+                for model in ALL_VISION_MODELS:
+                    test_screenshot(os.path.join(screenshots_dir, f), model_override=model)
+            
+            LOG_FILE.close()
             print(f"\n{'='*80}")
-            print(f"ALL MODELS TESTED! Upload logs with: python send_logs.py")
+            print(f"Done! Results saved to: {log_path}")
+            print(f"Upload with: python send_logs.py")
             print(f"{'='*80}")
         else:
             # Single model test
