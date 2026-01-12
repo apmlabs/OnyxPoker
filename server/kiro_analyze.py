@@ -106,21 +106,14 @@ def analyze_screenshot():
         logger.info(f"Saved screenshot to: {temp_path}")
         
         # Build analysis prompt with image path
-        prompt = f"""Analyze this poker screenshot: {temp_path}
+        prompt = f"""Look at this poker screenshot: {temp_path}
 
-CRITICAL: Return ONLY the JSON object below with actual values. No explanation, no markdown, no code blocks.
-
-{{
-  "hero_cards": ["Ah", "Kd"],
-  "community_cards": ["Qh", "Jc", "Ts"],
-  "pot": 1.25,
-  "position": "BTN",
-  "is_hero_turn": true
-}}
-
-Card format: rank (A/K/Q/J/T/9-2) + suit (h/d/c/s)
-Position: UTG/MP/CO/BTN/SB/BB
-"""
+Extract the game state and give me JSON with these fields:
+- hero_cards: array of 2 cards (format: "Ah", "Kd", "Tc", etc.)
+- community_cards: array of board cards
+- pot: number (just the number, no currency symbol)
+- position: string (UTG/MP/CO/BTN/SB/BB)
+- is_hero_turn: boolean"""
         
         logger.info(f"Calling kiro-cli with prompt including image path")
         
@@ -128,12 +121,13 @@ Position: UTG/MP/CO/BTN/SB/BB
         kiro_cli_path = '/home/ubuntu/.local/bin/kiro-cli'
         
         # Call Kiro CLI with prompt (image path is in the prompt)
+        # Remove --no-interactive as it causes early exit (exit code 1)
         result = subprocess.run(
-            [kiro_cli_path, 'chat', prompt],
+            [kiro_cli_path, 'chat', '--trust-all-tools', prompt],
             capture_output=True,
             text=True,
             timeout=180,
-            input='\n'  # Send newline to skip any prompts
+            input=''  # Empty input to let it complete
         )
         
         # Clean up temp file
@@ -146,7 +140,13 @@ Position: UTG/MP/CO/BTN/SB/BB
             logger.warning(f"Stderr: {result.stderr[:200]}")
         
         response = result.stdout.strip()
-        logger.info(f"Response preview: {response[:200]}...")
+        
+        # Strip ANSI color codes
+        import re
+        ansi_escape = re.compile(r'\x1B(?:[@-Z\\-_]|\[[0-?]*[ -/]*[@-~])')
+        response = ansi_escape.sub('', response)
+        
+        logger.info(f"Response preview (cleaned): {response[:200]}...")
         
         # Try to parse JSON response
         import json
