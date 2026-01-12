@@ -1,0 +1,76 @@
+LAG - Loose Aggressive Regular
+
+PROFILE:
+- VPIP: 28-35%
+- PFR: 24-30%
+- 3-bet: 9-12%
+- Opens wide, 3-bets wide
+- Applies maximum pressure
+- Hard to play against
+- Exploitable if you fight back
+
+OPEN RAISE (2.5bb) - Very wide
+
+UTG (18%):
+66+, A9s+, A5s-A2s, KTs+, QTs+, JTs, ATo+, KQo
+
+MP (24%):
+55+, A7s+, A5s-A2s, K9s+, Q9s+, J9s+, T9s, 98s, ATo+, KJo+, QJo
+
+CO (35%):
+33+, A2s+, K7s+, Q8s+, J8s+, T8s+, 97s+, 86s+, 76s, 65s, 54s, A8o+, KTo+, QTo+, JTo
+
+BTN (52%):
+22+, A2s+, K4s+, Q6s+, J7s+, T7s+, 96s+, 85s+, 74s+, 64s+, 53s+, A5o+, K8o+, Q9o+, J9o+, T9o
+
+SB (38%):
+22+, A2s+, K6s+, Q8s+, J8s+, T8s+, 97s+, 86s+, 76s, 65s, A7o+, K9o+, QTo+
+
+VS SINGLE OPEN - Aggressive 3-betting
+
+3-bet value:
+vs UTG: QQ+, AKs, AKo
+vs MP: JJ+, AKs, AKo, AQs
+vs CO: TT+, AQs+, AKo
+vs BTN: 99+, AJs+, AQo+, KQs
+
+3-bet bluff (wide):
+A5s-A2s, K9s-K7s, Q9s, J9s, T9s, 98s, 87s, 76s
+
+Call (positional):
+vs UTG: TT-77, AQs-AJs, KQs
+vs MP: 99-66, AJs-ATs, KQs-KJs, QJs, JTs
+vs CO: 88-44, ATs-A7s, KJs-KTs, QJs-QTs, JTs, T9s, 98s
+vs BTN: 77-22, A9s-A5s, KTs-K8s, QTs-Q9s, JTs-J9s, T9s, 98s, 87s, 76s
+
+BB DEFENSE (defends wide, 3-bets a lot)
+
+vs BTN:
+- 3-bet: 88+, ATs+, AJo+, KQs, A5s-A2s, K9s, Q9s, J9s
+- Call: 77-22, A9s-A2s, KJs-K7s, Q8s+, J8s+, T8s+, 97s+, 86s+, 76s, 65s, A9o+, KTo+, QTo+, JTo
+- Fold: trash
+
+vs CO:
+- 3-bet: TT+, AQs+, AKo, A5s-A4s
+- Call: 99-44, AJs-A7s, KQs-KTs, QJs-QTs, JTs, T9s, 98s, 87s
+- Fold: rest
+
+VS 3-BET (doesn't fold easily)
+
+4-bet value: QQ+, AKs
+4-bet bluff: A5s-A4s, K9s
+Call: JJ, TT, AKo, AQs, AQo, KQs
+Fold: rest
+
+VS 4-BET
+
+All-in: KK+, AKs
+Call: QQ, AKo
+Fold: rest
+
+POSTFLOP TENDENCIES:
+- C-bets 70%+ of flops
+- Double barrels with any equity
+- Bluffs rivers with blockers
+- Hard to put on a hand
+- Will fight for pots

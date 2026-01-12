@@ -1,0 +1,58 @@
+FISH - Loose Passive Recreational Player
+
+PROFILE:
+- VPIP: 45-55%
+- PFR: 8-12%
+- 3-bet: 2-3%
+- Calls way too much preflop and postflop
+- Rarely folds to aggression
+- Plays any ace, any suited, any connected
+- Limps a lot (we model as wide calls)
+
+OPEN RAISE (2.5bb) - Rarely opens, prefers limping
+
+UTG (15%):
+88+, ATs+, KQs, AJo+
+
+MP (18%):
+77+, A9s+, KJs+, QJs, ATo+, KQo
+
+CO (22%):
+66+, A7s+, KTs+, QTs+, JTs, ATo+, KJo+
+
+BTN (28%):
+55+, A5s+, K9s+, Q9s+, J9s+, T9s, 98s, A9o+, KTo+, QJo
+
+SB (20%):
+66+, A7s+, K9s+, Q9s+, JTs, A9o+, KJo+
+
+VS SINGLE OPEN - Calls everything playable
+
+3-bet value (very tight):
+QQ+, AKs
+
+3-bet bluff:
+(none - fish don't bluff 3-bet)
+
+Call (way too wide):
+22+, A2s+, K5s+, Q7s+, J8s+, T8s+, 97s+, 86s+, 76s, 65s, 54s
+A2o+, K9o+, Q9o+, J9o+, T9o
+
+BB DEFENSE (calls everything)
+
+vs any open:
+- 3-bet: QQ+, AKs
+- Call: 22+, A2s+, K2s+, Q5s+, J7s+, T7s+, 96s+, 85s+, 75s+, 64s+, 54s, A2o+, K7o+, Q9o+, J9o+, T9o
+
+VS 3-BET (doesn't fold enough)
+
+4-bet: AA, KK
+Call: QQ, JJ, TT, AKs, AKo, AQs, AQo, AJs, KQs
+Fold: rest (but reluctantly)
+
+POSTFLOP TENDENCIES:
+- Calls with any pair
+- Calls with any draw
+- Rarely bluffs
+- Never folds top pair
+- Stations down with middle pair

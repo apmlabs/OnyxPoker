@@ -1,0 +1,68 @@
+NIT - Ultra-Tight Passive Player
+
+PROFILE:
+- VPIP: 10-14%
+- PFR: 8-12%
+- 3-bet: 3-4% (only premiums)
+- Only plays premium hands
+- Folds to any aggression without the nuts
+- Easy to bluff but hard to get value from
+- When they bet, they have it
+
+OPEN RAISE (2.5bb) - Very selective
+
+UTG (9%):
+TT+, AQs+, AKo
+
+MP (11%):
+99+, AJs+, KQs, AQo+
+
+CO (14%):
+88+, ATs+, KQs, AJo+, KQo
+
+BTN (18%):
+77+, A9s+, KJs+, QJs, ATo+, KJo+
+
+SB (15%):
+88+, ATs+, KQs, AJo+
+
+VS SINGLE OPEN - Tight and straightforward
+
+3-bet value:
+QQ+, AKs, AKo
+
+3-bet bluff:
+(none - nits don't bluff)
+
+Call (tight):
+JJ-99, AQs, AJs, KQs
+
+BB DEFENSE (folds too much)
+
+vs BTN:
+- 3-bet: QQ+, AKs, AKo
+- Call: JJ-77, AQs-ATs, KQs-KJs, QJs
+- Fold: everything else
+
+vs CO/MP/UTG:
+- 3-bet: QQ+, AKs, AKo
+- Call: JJ-88, AQs-AJs, KQs
+- Fold: everything else
+
+VS 3-BET (folds too much)
+
+4-bet: KK+
+Call: QQ, AKs
+Fold: JJ, TT, AKo, AQs, everything else
+
+VS 4-BET
+
+All-in: AA
+Fold: everything including KK sometimes
+
+POSTFLOP TENDENCIES:
+- Only continues with top pair+
+- Folds to any aggression without strong hand
+- Never bluffs
+- Easy to push off medium hands
+- When they raise, they have the nuts
