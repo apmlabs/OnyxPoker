@@ -83,16 +83,23 @@ onyxpoker-server/             # Separate folder on EC2 (NOT in GitHub repo)
 ### What Works
 - `helper_bar.py` - Wide bar UI docked to bottom, screenshots active window on F9
 - `vision_detector.py` - GPT-5.2 API for card/board/pot detection + decisions
-- `poker_sim.py` - Strategy simulator comparing 7 bot strategies vs 4 player archetypes
+- `poker_sim.py` - Full postflop simulation with strategy-specific logic
+- `strategy_engine.py` - Lite mode with strategy-specific postflop
 - Screenshot saving - Auto-saves to client/screenshots/ folder
 - Test mode - test_screenshots.py for offline testing
 - Kiro server - Flask app on port 5001 for remote analysis
 - Hotkeys: F9=Advice, F10=Bot loop, F11=Stop, F12=Hide
 
 ### Strategy Files
-- 7 bot strategies: kiro_v2, sonnet, kiro_optimal, kiro5, gpt4, gpt3, opus2
+- 4 bot strategies in sim: gpt3, gpt4, sonnet, kiro_optimal
 - 4 player archetypes: fish, nit, lag, tag
-- `strategy_engine.py`: Hardcoded top 4 strategies for lite mode
+- Each bot strategy has its own postflop logic
+
+### Strategy-Specific Postflop
+| Strategy | Style | Key Differences |
+|----------|-------|-----------------|
+| gpt3/gpt4 | Board texture aware | Small c-bets (25-35%) on dry boards |
+| sonnet/kiro_optimal | Big value bets | 75-85% pot sizing, overpair logic |
 
 ### What's Not Implemented
 - Turn detection, action execution - LOW PRIORITY
@@ -152,6 +159,36 @@ onyxpoker-server/             # Separate folder on EC2 (NOT in GitHub repo)
 ---
 
 ## 📖 SESSION HISTORY & LESSONS LEARNED
+
+### Session 27: Strategy-Specific Postflop (January 12, 2026)
+
+**Challenge**: All bot strategies were using identical postflop logic, but strategy files have different approaches.
+
+**Key Findings**:
+- gpt3 had NO postflop section (preflop only)
+- gpt4 has board-texture aware c-betting (25-35% on dry boards)
+- sonnet/kiro_optimal have bigger value bets (75-85% pot)
+
+**Implementation**:
+1. Added `strategy=` parameter to `postflop_action()`
+2. Created `_postflop_gpt()` for gpt3/gpt4 (board texture aware)
+3. Created `_postflop_sonnet()` for sonnet/kiro_optimal (big value bets)
+4. Added postflop section to pokerstrategy_gpt3 file
+5. Fixed pocket pair below ace (KK on Axx = check-call)
+
+**Results** (50k hands):
+- sonnet/kiro_optimal: +29.85 BB/100 (bigger bets extract more value)
+- gpt3/gpt4: +14-21 BB/100 (smaller bets = less value)
+
+**Architecture Clarification**:
+- `archetype=` param for fish/nit/tag/lag (player simulation)
+- `strategy=` param for gpt3/gpt4/sonnet/kiro_optimal (bot logic)
+- Live play uses `strategy=` only (we're the bot)
+- Simulation uses both (bots vs archetypes)
+
+**Critical Lesson**: Strategy files are the source of truth. Code must match them exactly.
+
+---
 
 ### Session 20: Strategy Optimization + Position Detection Fix (January 8, 2026)
 

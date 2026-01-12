@@ -1,10 +1,10 @@
 # OnyxPoker - Status Tracking
 
-**Last Updated**: January 12, 2026 13:42 UTC
+**Last Updated**: January 12, 2026 14:31 UTC
 
-## Current Status: LITE MODE + SHARED POKER LOGIC - SESSION 27
+## Current Status: STRATEGY-SPECIFIC POSTFLOP - SESSION 27
 
-Built lite mode with shared poker_logic.py for both testing and live play.
+Full postflop implementation with strategy-specific logic for all bot strategies.
 
 ## What Works
 
@@ -13,9 +13,9 @@ Built lite mode with shared poker_logic.py for both testing and live play.
 | helper_bar.py | ✅ Ready | Main UI, F9 screenshots active window |
 | vision_detector.py | ✅ Ready | Full mode: GPT-5.2 for vision + decisions |
 | vision_detector_lite.py | ✅ Ready | Lite mode: gpt-4o-mini for vision only |
-| strategy_engine.py | ✅ Ready | Lite mode: applies hardcoded strategy |
-| poker_logic.py | ✅ NEW | Shared logic for sim + engine |
-| poker_sim.py | ⚠️ Needs update | Still preflop-only, needs postflop |
+| strategy_engine.py | ✅ Ready | Lite mode: applies strategy-specific postflop |
+| poker_logic.py | ✅ Ready | Shared logic with strategy-specific postflop |
+| poker_sim.py | ✅ Ready | Full postflop simulation |
 | Server | ✅ Running | 54.80.204.92:5001 receives uploads |
 
 ## Architecture
@@ -31,13 +31,24 @@ F9 → screenshot → vision_detector_lite.py (gpt-4o-mini) → table data
                 → strategy_engine.py → poker_logic.py → action + reasoning
 ```
 
+### Postflop Logic Architecture
+```
+postflop_action(archetype=None, strategy=None)
+         ↓
+    ┌────┴────┐
+archetype    strategy
+(fish/nit/   (gpt3/gpt4/
+tag/lag)     sonnet/kiro)
+    ↓            ↓
+archetype    _postflop_gpt() or _postflop_sonnet()
+logic
+```
+
 ## Server Locations
 
 **Windows Client**: C:\aws\onyx-client\
 **EC2 Server**: /home/ubuntu/mcpprojects/onyxpoker-server/
 **Uploads**: /home/ubuntu/mcpprojects/onyxpoker-server/server/uploads/
-  - *.png = screenshots from client
-  - *.jsonl = test logs from client
 
 ## Quick Start
 
@@ -57,52 +68,55 @@ cd client
 python3 poker_sim.py 150000  # Run 150k hands simulation
 ```
 
-### Bot Strategies (7 total)
-- kiro_v2, sonnet, kiro_optimal, kiro5, gpt4, gpt3, opus2
+### Bot Strategies (4 in sim)
+- gpt3, gpt4, sonnet, kiro_optimal
 
 ### Player Archetypes (4 total)
 - fish (loose passive), nit (ultra tight), lag (loose aggressive), tag (tight aggressive)
 
-### Latest Results (Realistic Zoom 2NL-5NL)
+### Strategy-Specific Postflop
+| Strategy | Style | Key Differences |
+|----------|-------|-----------------|
+| gpt3/gpt4 | Board texture aware | Small c-bets (25-35%) on dry boards |
+| sonnet/kiro_optimal | Big value bets | 75-85% pot sizing, overpair logic |
+
+### Latest Results (50k hands with strategy-specific postflop)
 | Rank | Strategy | BB/100 |
 |------|----------|--------|
-| 1 | gpt3 | +21.72 |
-| 2 | sonnet | +20.75 |
-| 3 | kiro5 | +20.70 |
-| 4 | lag | +20.09 |
-| 5 | gpt4 | +20.02 |
-| 6 | kiro_v2 | +19.59 |
-| 7 | kiro_optimal | +19.23 |
-| 8 | opus2 | +15.79 |
+| 1 | kiro_optimal | +29.85 |
+| 2 | sonnet | +29.52 |
+| 3 | gpt3 | +21.54 |
+| 4 | gpt4 | +14.79 |
 
 ## Session Log
 
 ### Session 27 (January 12, 2026)
-- **LITE MODE**: Created alternative analysis pipeline
-  - `vision_detector_lite.py`: Uses gpt-5-nano for table data extraction only (cheaper/faster)
-  - `strategy_engine.py`: Hardcoded top 4 strategies (gpt3, gpt4, sonnet, kiro_optimal)
-- **Updated test_screenshots.py**: Added `--lite` and `--strategy=X` flags
-- **Updated helper_bar.py**: Set `POKER_LITE_MODE=1` env var to use lite mode
-- **Usage**: `python test_screenshots.py --lite --strategy=gpt3`
+- **STRATEGY-SPECIFIC POSTFLOP**: Each bot strategy now uses its own postflop logic
+  - gpt3/gpt4: Board texture aware, smaller c-bets on dry boards (25-35%)
+  - sonnet/kiro_optimal: Bigger value bets (75-85%), overpair logic
+- **Added postflop to pokerstrategy_gpt3**: Was preflop only, now has full postflop
+- **Fixed pocket pair below ace**: KK on Axx = check-call (not bet)
+- **Architecture**: `postflop_action()` now takes `strategy=` param for bot-specific logic
+- **Results**: sonnet/kiro_optimal outperform gpt3/gpt4 due to bigger value bets
+- Commits: 9a8b2b1, 85e713c
+
+### Session 27 Earlier (January 12, 2026)
+- **FULL POSTFLOP SIMULATION**: Rewrote poker_sim.py to deal actual boards
+- **ARCHETYPE POSTFLOP**: fish/nit/tag/lag have distinct postflop behavior
+- **FIXED TPTK**: Now calls 2-3 streets per strategy files (was folding turn)
+- **LITE MODE**: Created vision_detector_lite.py + strategy_engine.py pipeline
+- Commits: 996e3f8, 1fc49fc
 
 ### Session 26 (January 12, 2026)
 - **STRATEGY SIMULATOR**: Built poker_sim.py to compare preflop strategies
 - **8 STRATEGY FILES ANALYZED**: Ranked from best to worst for Blitz 6-max
 - **4 PLAYER ARCHETYPES CREATED**: fish, nit, lag, tag
-- **REALISTIC TABLE COMPOSITION**: 147 table configs based on actual Zoom pool research
-  - ~40% fish, ~25% nit, ~25% tag, ~10% LAG per table
-- **KEY FINDINGS**:
-  - All bot strategies profitable (+15 to +22 BB/100) in realistic pool
-  - LAG archetype competitive with bots (+20 BB/100)
-  - opus2 (tightest) underperforms - too passive
-  - gpt3/sonnet/kiro5 top performers
 - Commits: 665ddcf, 81088eb
 
 ### Session 22 (January 9, 2026)
 - **INFRASTRUCTURE CLEANUP**: Removed redundant old server
 - Stopped and disabled onyxpoker.service (old Flask API server)
 - Only kiro-server.service running now (Kiro analysis server on port 5001)
-- Server infrastructure now clean and minimal
 
 ### Session 21 (January 8, 2026)
 - **CRITICAL FIX**: JSON schema field name mismatch causing 100% strategy parsing failures
