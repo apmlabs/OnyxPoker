@@ -146,6 +146,27 @@ STRATEGIES = {
         'call_3bet': expand_range('QQ,JJ,AKo,AQs'),
         '4bet': expand_range('KK+,AKs'),
     },
+    'aggressive': {
+        'name': 'Aggressive 2NL',
+        'open': {
+            'UTG': expand_range('77+,ATs+,KQs,AJo+'),
+            'MP': expand_range('66+,A9s+,A5s-A2s,KJs+,QJs,JTs,AJo+,KQo'),
+            'CO': expand_range('44+,A2s+,K9s+,Q9s+,J9s+,T8s+,97s+,86s+,76s,65s,ATo+,KJo+,QJo'),
+            'BTN': expand_range('22+,A2s+,K5s+,Q7s+,J7s+,T7s+,96s+,85s+,75s+,64s+,54s,A5o+,K9o+,QTo+,JTo,T9o'),
+            'SB': expand_range('55+,A2s+,K8s+,Q9s+,J9s+,T8s+,98s,87s,A9o+,KTo+'),
+        },
+        '3bet_vs': {
+            'UTG': expand_range('QQ+,AKs,AKo'),
+            'MP': expand_range('JJ+,AKs,AKo,AQs'),
+            'CO': expand_range('TT+,AQs+,AKo,AJs'),
+            'BTN': expand_range('99+,AQs+,AKo,AJs,KQs'),
+        },
+        '3bet_bluff': expand_range('A5s-A2s,K9s'),
+        'call_open_ip': expand_range('99-22,AJs-A9s,KQs-KTs,QJs-QTs,JTs,T9s,98s,87s,76s'),
+        'bb_defend': expand_range('99-22,A2s+,K8s+,Q9s+,J9s+,T8s+,97s+,86s+,76s,65s,54s,A8o+,KTo+,QTo+,JTo,T9o,98o'),
+        'call_3bet': expand_range('JJ,TT,99,88,AQs,AQo,AJs,KQs'),
+        '4bet': expand_range('QQ+,AKs,AKo'),
+    },
 }
 
 # Player archetypes

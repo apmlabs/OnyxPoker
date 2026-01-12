@@ -213,7 +213,7 @@ def run_simulation(num_hands=100000):
     """Run simulation with realistic table compositions."""
     random.seed(42)
     
-    bot_strategies = ['gpt3', 'gpt4', 'sonnet', 'kiro_optimal']
+    bot_strategies = ['gpt3', 'gpt4', 'sonnet', 'kiro_optimal', 'aggressive']
     player_archetypes = ['fish', 'nit', 'lag', 'tag']
     all_strategies = bot_strategies + player_archetypes
     
