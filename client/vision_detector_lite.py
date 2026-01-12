@@ -73,9 +73,9 @@ Return ONLY the JSON object, nothing else."""
             }
             
             # For GPT-5 models, minimize reasoning for vision tasks
-            # gpt-5.1: supports "none" (no reasoning at all)
-            # gpt-5/gpt-5-mini/gpt-5-nano/gpt-5.2: don't support "none", use "minimal"
-            if self.model.startswith('gpt-5.1'):
+            # gpt-5.1 and gpt-5.2: support "none" (no reasoning at all)
+            # gpt-5/gpt-5-mini/gpt-5-nano: use "minimal"
+            if self.model.startswith('gpt-5.1') or self.model.startswith('gpt-5.2'):
                 api_params["reasoning_effort"] = "none"
             elif self.model.startswith('gpt-5'):
                 api_params["reasoning_effort"] = "minimal"
