@@ -49,14 +49,20 @@ Return JSON:
 }
 
 READING THE TABLE:
-- hero_cards: TWO face-up cards at BOTTOM. Format: As=Ace spades, Kh=King hearts. null if no cards.
-- community_cards: Cards in CENTER. Empty [] if preflop.
-- pot/hero_stack/to_call: Read EXACT amounts with decimals.
+- hero_cards: TWO face-up cards at BOTTOM. Format: As=Ace spades, Kh=King hearts, Tc=Ten clubs, 5d=Five diamonds. null if no cards visible.
+- community_cards: Cards in CENTER of table. Empty [] if preflop (no board cards yet).
+- pot: Read EXACT amount with decimals from "Pot: €X.XX" text.
+- hero_stack: Hero's stack amount at bottom.
 - to_call: Amount on CALL button, 0 if CHECK available, null if no buttons.
-- is_hero_turn: TRUE if LARGE RED buttons visible, FALSE if only checkboxes.
-- action: fold/check/call/bet/raise. NEVER fold when check is free!
-- bet_size: When action is bet/raise, specify the amount in euros. Use 2.5-3x BB preflop, 65-75% pot postflop.
-- reasoning: Focus on WHAT to do and WHY.
+- is_hero_turn: TRUE if LARGE RED action buttons visible (Fold/Call/Raise), FALSE if only checkboxes or waiting.
+- position: Count clockwise from dealer button. UTG/MP/CO/BTN/SB/BB.
+
+SUIT SYMBOLS (CRITICAL):
+- Spades (♠): BLACK suit with pointed bottom
+- Clubs (♣): BLACK suit with rounded clover shape  
+- Hearts (♥): RED suit with rounded top
+- Diamonds (♦): RED suit with pointed corners
+DO NOT confuse black suits (♠ vs ♣) or red suits (♥ vs ♦)!
 
 CRITICAL - SUITED VS OFFSUIT:
 Before ANY preflop decision, check BOTH card suits:
