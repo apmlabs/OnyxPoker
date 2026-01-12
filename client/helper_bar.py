@@ -48,6 +48,9 @@ class HelperBar:
         bar_height = 220
         self.root.geometry(f"{screen_w}x{bar_height}+0+{screen_h - bar_height - 40}")
 
+        # Remove window decorations, keep resizable
+        self.root.overrideredirect(True)
+        
         # Always on top
         self.root.attributes('-topmost', True)
         self.root.attributes('-alpha', 0.95)
@@ -58,6 +61,10 @@ class HelperBar:
         self.last_screenshot = None
         self.bot_running = False
         self.position_var = tk.StringVar(value='BTN')  # Default position
+        
+        # Drag state
+        self._drag_start_x = 0
+        self._drag_start_y = 0
 
         self.create_ui()
         self.register_hotkeys()
@@ -70,8 +77,36 @@ class HelperBar:
         main = tk.Frame(self.root, bg='#1e1e1e')
         main.pack(fill='both', expand=True)
 
+        # === TOP: Position selector bar (draggable) ===
+        top_bar = tk.Frame(main, bg='#2d2d2d', height=30)
+        top_bar.pack(side='top', fill='x')
+        top_bar.pack_propagate(False)
+        
+        # Make draggable
+        top_bar.bind('<Button-1>', self._start_drag)
+        top_bar.bind('<B1-Motion>', self._on_drag)
+        
+        tk.Label(top_bar, text="Position:", font=('Arial', 9, 'bold'),
+                bg='#2d2d2d', fg='#aaa').pack(side='left', padx=5)
+        
+        for pos in ['UTG', 'MP', 'CO', 'BTN', 'SB', 'BB']:
+            tk.Radiobutton(top_bar, text=pos, variable=self.position_var, value=pos,
+                          font=('Arial', 8), bg='#2d2d2d', fg='#fff', 
+                          selectcolor='#444', activebackground='#2d2d2d',
+                          indicatoron=0, width=4, relief='flat', 
+                          highlightthickness=0).pack(side='left', padx=1)
+        
+        # Close button on right
+        tk.Button(top_bar, text="✕", font=('Arial', 10, 'bold'),
+                 bg='#2d2d2d', fg='#ff4444', relief='flat', padx=5,
+                 command=self.root.quit).pack(side='right', padx=2)
+
+        # === BOTTOM: Three columns ===
+        bottom = tk.Frame(main, bg='#1e1e1e')
+        bottom.pack(side='top', fill='both', expand=True)
+
         # === LEFT: Status & Hotkeys (150px) ===
-        left = tk.Frame(main, bg='#2d2d2d', width=150)
+        left = tk.Frame(bottom, bg='#2d2d2d', width=150)
         left.pack(side='left', fill='y', padx=2, pady=2)
         left.pack_propagate(False)
 
@@ -81,18 +116,6 @@ class HelperBar:
         self.status_label = tk.Label(left, text="Ready", font=('Arial', 10, 'bold'),
                                     bg='#2d2d2d', fg='#00ff00')
         self.status_label.pack(pady=2)
-
-        tk.Frame(left, height=1, bg='#555').pack(fill='x', pady=5)
-
-        # Position selector
-        tk.Label(left, text="Position:", font=('Arial', 9, 'bold'),
-                bg='#2d2d2d', fg='#aaa').pack()
-        pos_frame = tk.Frame(left, bg='#2d2d2d')
-        pos_frame.pack(pady=2)
-        for pos in ['UTG', 'MP', 'CO', 'BTN', 'SB', 'BB']:
-            tk.Radiobutton(pos_frame, text=pos, variable=self.position_var, value=pos,
-                          font=('Arial', 8), bg='#2d2d2d', fg='#fff', 
-                          selectcolor='#444', activebackground='#2d2d2d').pack(side='left')
 
         tk.Frame(left, height=1, bg='#555').pack(fill='x', pady=5)
 
@@ -116,7 +139,7 @@ class HelperBar:
                     bg='#2d2d2d', fg='#888').pack(pady=2)
 
         # === CENTER: Live Log (expandable) ===
-        center = tk.Frame(main, bg='#1a1a1a')
+        center = tk.Frame(bottom, bg='#1a1a1a')
         center.pack(side='left', fill='both', expand=True, padx=2, pady=2)
 
         # Log buttons
@@ -144,7 +167,7 @@ class HelperBar:
         self.log_text.tag_configure('DECISION', foreground='#ffff00', font=('Courier', 11, 'bold'))
 
         # === RIGHT: Last Result (400px) ===
-        right = tk.Frame(main, bg='#2d2d2d', width=400)
+        right = tk.Frame(bottom, bg='#2d2d2d', width=400)
         right.pack(side='right', fill='y', padx=2, pady=2)
         right.pack_propagate(False)
 
@@ -437,6 +460,17 @@ class HelperBar:
             self.log("Window shown", "DEBUG")
         else:
             self.root.withdraw()
+
+    def _start_drag(self, event):
+        """Start dragging window"""
+        self._drag_start_x = event.x
+        self._drag_start_y = event.y
+
+    def _on_drag(self, event):
+        """Drag window"""
+        x = self.root.winfo_x() + event.x - self._drag_start_x
+        y = self.root.winfo_y() + event.y - self._drag_start_y
+        self.root.geometry(f"+{x}+{y}")
 
     def run(self):
         """Start the application"""
