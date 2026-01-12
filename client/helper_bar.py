@@ -23,7 +23,7 @@ sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 import argparse
 parser = argparse.ArgumentParser(description='OnyxPoker Helper Bar')
 parser.add_argument('--ai-only', action='store_true', help='Use AI for both vision and decisions (old mode)')
-parser.add_argument('--strategy', type=str, default='aggressive', help='Strategy to use (default: aggressive)')
+parser.add_argument('--strategy', type=str, default='2nl_exploit', help='Strategy to use (default: 2nl_exploit)')
 args = parser.parse_args()
 
 # Default: gpt-5.2 vision + strategy_engine (hardcoded strategy)
