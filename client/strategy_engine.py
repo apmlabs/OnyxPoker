@@ -9,7 +9,7 @@ from poker_logic import (
     evaluate_hand, check_draws, postflop_action, preflop_action
 )
 
-DEFAULT_STRATEGY = 'gpt3'
+DEFAULT_STRATEGY = 'value_max'
 
 
 def get_hand_notation(cards: List[str]) -> str:
