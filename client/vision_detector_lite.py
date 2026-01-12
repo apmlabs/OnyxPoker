@@ -59,17 +59,24 @@ Return ONLY the JSON object, nothing else."""
 
         t = time.time()
         try:
-            response = self.client.chat.completions.create(
-                model=self.model,
-                messages=[{
+            # Build API call parameters
+            api_params = {
+                "model": self.model,
+                "messages": [{
                     "role": "user",
                     "content": [
                         {"type": "text", "text": prompt},
                         {"type": "image_url", "image_url": {"url": f"data:image/png;base64,{image_data}"}}
                     ]
                 }],
-                response_format={"type": "json_object"}
-            )
+                "response_format": {"type": "json_object"}
+            }
+            
+            # For GPT-5 models, disable reasoning for vision tasks
+            if self.model.startswith('gpt-5'):
+                api_params["reasoning"] = {"effort": "none"}
+            
+            response = self.client.chat.completions.create(**api_params)
             api_time = time.time() - t
             
             result_text = response.choices[0].message.content

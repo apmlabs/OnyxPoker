@@ -8,10 +8,15 @@ Usage:
   python test_screenshots.py --lite --test-all-models    # Test all vision models
   
 Available vision models for --lite mode:
-  gpt-4o          - Better vision than 4o-mini
-  gpt-4o-mini     - Current lite default, fast and cheap
-  gpt-4.1-mini    - Newer, better instruction following
-  gpt-4.1-nano    - Fastest, cheapest
+  gpt-4o          - Best vision specialist
+  gpt-4o-mini     - Budget vision (current default)
+  gpt-4.1-mini    - Code-focused but has vision
+  gpt-4.1-nano    - Fastest 4.1 with vision
+  gpt-5-mini      - GPT-5 with reasoning control
+  gpt-5-nano      - Cheapest GPT-5
+  gpt-5.2         - Best accuracy (full mode default)
+  
+Note: GPT-5 models automatically use reasoning="none" for vision tasks (faster, cheaper)
 """
 
 import os
@@ -26,7 +31,15 @@ VISION_MODEL = None  # None = use default for mode
 TEST_ALL_MODELS = '--test-all-models' in sys.argv
 
 # All available vision models to test
-ALL_VISION_MODELS = ['gpt-4o', 'gpt-4o-mini', 'gpt-4.1-mini', 'gpt-4.1-nano']
+ALL_VISION_MODELS = [
+    'gpt-4o',           # Best vision specialist
+    'gpt-4o-mini',      # Budget vision (current default)
+    'gpt-4.1-mini',     # Code-focused but has vision
+    'gpt-4.1-nano',     # Fastest 4.1 with vision
+    'gpt-5-mini',       # GPT-5 family with reasoning control
+    'gpt-5-nano',       # Cheapest GPT-5
+    'gpt-5.2'           # Best accuracy (current full mode)
+]
 
 for arg in sys.argv:
     if arg.startswith('--strategy='):
