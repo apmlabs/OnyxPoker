@@ -79,7 +79,9 @@ class StrategyEngine:
             opener_pos = None
         elif to_call <= 0.20:  # Facing open (2-4bb)
             facing = 'open'
-            opener_pos = 'BTN'  # Assume late position open
+            # Conservative: assume early position open when unknown
+            # This uses tighter 3-bet ranges (safer)
+            opener_pos = 'MP'
         elif to_call <= 0.60:  # Facing 3-bet
             facing = '3bet'
             opener_pos = None
@@ -137,9 +139,12 @@ class StrategyEngine:
         is_ip = position in ['BTN', 'CO']
         is_aggressor = True  # Assume we were aggressor preflop
         
+        # Default to heads-up (vision detector should provide num_players in future)
+        num_opponents = 1
+        
         action, bet_size, reasoning = postflop_action(
             hole_cards, board_cards, pot, to_call, street, is_ip, is_aggressor,
-            strategy=self.strategy_name
+            strategy=self.strategy_name, num_opponents=num_opponents
         )
         
         return {

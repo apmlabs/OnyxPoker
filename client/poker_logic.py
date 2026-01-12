@@ -386,12 +386,14 @@ def check_draws(hole_cards: List[Tuple[str, str]], board: List[Tuple[str, str]])
 # Postflop decision logic - matches strategy files exactly
 def postflop_action(hole_cards: List[Tuple[str, str]], board: List[Tuple[str, str]], 
                     pot: float, to_call: float, street: str, is_ip: bool,
-                    is_aggressor: bool, archetype: str = None, strategy: str = None) -> Tuple[str, float, str]:
+                    is_aggressor: bool, archetype: str = None, strategy: str = None,
+                    num_opponents: int = 1) -> Tuple[str, float, str]:
     """
     Postflop decision based on strategy file rules.
     Returns (action, bet_size, reasoning).
     archetype: 'fish', 'nit', 'tag', 'lag' for special behavior
     strategy: 'gpt3', 'gpt4', 'sonnet', 'kiro_optimal' for bot-specific logic
+    num_opponents: number of active opponents (1=heads-up, 2+=multiway)
     """
     strength, desc, kicker = evaluate_hand(hole_cards, board)
     draws = check_draws(hole_cards, board)
@@ -402,6 +404,9 @@ def postflop_action(hole_cards: List[Tuple[str, str]], board: List[Tuple[str, st
     combo_draw = has_flush_draw and (has_oesd or has_gutshot)
     has_any_draw = has_flush_draw or has_oesd or has_gutshot
     has_pair = strength >= 2
+    
+    # Multiway pot adjustments (3+ players)
+    is_multiway = num_opponents >= 2
     
     # Check for overpair and pocket pair below ace
     if len(board) >= 3:
@@ -499,23 +504,24 @@ def postflop_action(hole_cards: List[Tuple[str, str]], board: List[Tuple[str, st
     if strategy in ['gpt3', 'gpt4']:
         return _postflop_gpt(hole_cards, board, pot, to_call, street, is_ip, 
                             is_aggressor, strength, desc, draws, combo_draw,
-                            has_flush_draw, has_oesd, has_gutshot)
+                            has_flush_draw, has_oesd, has_gutshot, is_multiway)
     
     if strategy in ['sonnet', 'kiro_optimal']:
         return _postflop_sonnet(hole_cards, board, pot, to_call, street, is_ip,
                                is_aggressor, strength, desc, draws, combo_draw,
                                has_flush_draw, has_oesd, is_overpair, board_has_ace,
-                               is_underpair_to_ace)
+                               is_underpair_to_ace, is_multiway)
     
     # DEFAULT fallback (same as sonnet)
     return _postflop_sonnet(hole_cards, board, pot, to_call, street, is_ip,
                            is_aggressor, strength, desc, draws, combo_draw,
                            has_flush_draw, has_oesd, is_overpair, board_has_ace,
-                           is_underpair_to_ace)
+                           is_underpair_to_ace, is_multiway)
 
 
 def _postflop_gpt(hole_cards, board, pot, to_call, street, is_ip, is_aggressor,
-                  strength, desc, draws, combo_draw, has_flush_draw, has_oesd, has_gutshot):
+                  strength, desc, draws, combo_draw, has_flush_draw, has_oesd, has_gutshot,
+                  is_multiway=False):
     """
     GPT3/GPT4 postflop: Board texture aware, smaller c-bets on dry boards.
     From strategy file:
@@ -524,6 +530,7 @@ def _postflop_gpt(hole_cards, board, pot, to_call, street, is_ip, is_aggressor,
     - 3-bet pots: small c-bet 25-33%
     - TPTK: 2 streets value, 3 vs stations
     - Weak TP: bet once, check-call, fold to pressure
+    - Multiway: reduce c-bets sharply, bet mostly for value + strong draws
     """
     # Check board texture
     board_ranks = sorted([RANK_VAL[c[0]] for c in board], reverse=True)
@@ -535,7 +542,17 @@ def _postflop_gpt(hole_cards, board, pot, to_call, street, is_ip, is_aggressor,
               (len(board_ranks) >= 3 and board_ranks[0] - board_ranks[2] <= 4))  # Connected
     
     if to_call == 0 or to_call is None:
-        # Betting logic
+        # Multiway: only bet strong value + strong draws
+        if is_multiway:
+            if strength >= 4:  # Sets+
+                return ('bet', round(pot * 0.75, 2), f"{desc} - multiway value")
+            if strength == 3:  # Two pair
+                return ('bet', round(pot * 0.65, 2), f"{desc} - multiway value")
+            if combo_draw:
+                return ('bet', round(pot * 0.60, 2), "combo draw - multiway semi-bluff")
+            return ('check', 0, f"{desc} - check multiway")
+        
+        # Heads-up betting logic
         if strength >= 5:  # Nuts
             return ('bet', round(pot * 1.0, 2), f"{desc} - bet 100%")
         if strength == 4:  # Sets
@@ -611,7 +628,7 @@ def _postflop_gpt(hole_cards, board, pot, to_call, street, is_ip, is_aggressor,
 
 def _postflop_sonnet(hole_cards, board, pot, to_call, street, is_ip, is_aggressor,
                      strength, desc, draws, combo_draw, has_flush_draw, has_oesd,
-                     is_overpair, board_has_ace, is_underpair_to_ace=False):
+                     is_overpair, board_has_ace, is_underpair_to_ace=False, is_multiway=False):
     """
     Sonnet/Kiro_optimal postflop: Bigger value bets, overpair logic.
     From strategy file:
@@ -624,6 +641,7 @@ def _postflop_sonnet(hole_cards, board, pot, to_call, street, is_ip, is_aggresso
     - Overpair: 70/60/50%
     - Overpair on Axx (KK on Axx): check-call only
     - Middle pair: check-call once, fold turn
+    - Multiway: reduce c-bets sharply, bet mostly for value + strong draws
     """
     s = {
         'flop': {'nuts': 1.0, 'set': 0.85, 'twopair': 0.80, 'tptk': 0.75, 'tpgk': 0.70, 'tpwk': 0.65, 'overpair': 0.70},
@@ -632,7 +650,17 @@ def _postflop_sonnet(hole_cards, board, pot, to_call, street, is_ip, is_aggresso
     }.get(street, {})
     
     if to_call == 0 or to_call is None:
-        # Betting logic
+        # Multiway: only bet strong value + strong draws
+        if is_multiway:
+            if strength >= 4:  # Sets+
+                return ('bet', round(pot * s.get('set', 0.85), 2), f"{desc} - multiway value")
+            if strength == 3:  # Two pair
+                return ('bet', round(pot * 0.70, 2), f"{desc} - multiway value")
+            if combo_draw:
+                return ('bet', round(pot * 0.65, 2), "combo draw - multiway semi-bluff")
+            return ('check', 0, f"{desc} - check multiway")
+        
+        # Heads-up betting logic
         if strength >= 5:
             return ('bet', round(pot * s.get('nuts', 1.0), 2), f"{desc} - bet 100%")
         if strength == 4:

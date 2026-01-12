@@ -59,42 +59,20 @@ Return ONLY the JSON object, nothing else."""
 
         t = time.time()
         try:
-            response = self.client.responses.create(
+            response = self.client.chat.completions.create(
                 model=self.model,
-                input=[{
+                messages=[{
                     "role": "user",
                     "content": [
-                        {"type": "input_text", "text": prompt},
-                        {"type": "input_image", "image_url": f"data:image/png;base64,{image_data}"}
+                        {"type": "text", "text": prompt},
+                        {"type": "image_url", "image_url": {"url": f"data:image/png;base64,{image_data}"}}
                     ]
-                }]
+                }],
+                response_format={"type": "json_object"}
             )
             api_time = time.time() - t
             
-            # Debug: print response structure
-            self.log(f"Response type: {type(response)}", "DEBUG")
-            self.log(f"Response: {response}", "DEBUG")
-            
-            # Extract response text
-            result_text = None
-            if hasattr(response, 'output_text'):
-                result_text = response.output_text
-            elif hasattr(response, 'output'):
-                if isinstance(response.output, str):
-                    result_text = response.output
-                elif isinstance(response.output, list):
-                    for item in response.output:
-                        if hasattr(item, 'content'):
-                            for content in item.content:
-                                if hasattr(content, 'text'):
-                                    result_text = content.text
-                                    break
-                        if result_text:
-                            break
-            
-            if not result_text:
-                raise ValueError(f"No text in response. Response keys: {dir(response)}")
-            
+            result_text = response.choices[0].message.content
             self.log(f"Raw response: {result_text[:200]}...", "DEBUG")
             
             # Clean up JSON
