@@ -45,15 +45,49 @@ class VisionDetectorLite:
   "facing_raise": false
 }
 
+CRITICAL - CARD SUIT DETECTION:
+Look VERY carefully at card suits. Do NOT guess or assume:
+- ♠ SPADES = black pointy symbol (s)
+- ♥ HEARTS = red heart symbol (h)  
+- ♦ DIAMONDS = red diamond symbol (d)
+- ♣ CLUBS = black clover symbol (c)
+
+COMMON MISTAKES TO AVOID:
+- Confusing ♥ hearts with ♦ diamonds (both red)
+- Confusing ♠ spades with ♣ clubs (both black)
+- Hallucinating cards that aren't visible
+- Mixing up card order
+
 READING RULES:
-- hero_cards: TWO face-up cards at BOTTOM. Format: As=Ace spades, Kh=King hearts. null if no cards.
-- community_cards: Cards in CENTER. Empty [] if preflop.
-- pot/hero_stack/to_call: Read EXACT amounts with decimals.
-- to_call: Amount on CALL button, 0 if CHECK available, null if no buttons.
-- is_hero_turn: TRUE if LARGE RED buttons visible, FALSE if only checkboxes.
-- position: UTG/MP/CO/BTN/SB/BB based on dealer button location relative to hero.
-- num_players: Count of players still in hand.
-- facing_raise: TRUE if someone raised before hero.
+- hero_cards: TWO face-up cards at BOTTOM CENTER. Format: As=Ace spades, Kh=King hearts, Td=Ten diamonds. null if no visible cards or cards face-down.
+- community_cards: Cards in CENTER of table. Empty [] if preflop (no board yet).
+- pot: Total pot amount shown in CENTER. Read exact decimal value.
+- hero_stack: Hero's chip stack at BOTTOM. Read exact decimal value.
+- to_call: Amount shown on CALL button. 0 if CHECK button visible. null if no action buttons.
+- is_hero_turn: TRUE if LARGE RED action buttons (FOLD/CHECK/CALL/RAISE) visible. FALSE if only small checkboxes.
+
+POSITION DETECTION (6-max table):
+Look for the white DEALER BUTTON chip (marked "D" or "DEALER"):
+1. Find hero's seat (bottom center with face-up cards)
+2. Find the dealer button chip on the table
+3. Count positions CLOCKWISE from dealer button:
+   - Dealer button seat = BTN (button)
+   - 1 seat after button = SB (small blind) 
+   - 2 seats after button = BB (big blind)
+   - 3 seats after button = UTG (under the gun)
+   - 4 seats after button = MP (middle position)
+   - 5 seats after button = CO (cutoff)
+
+POSITION EXAMPLES:
+- If dealer button is at hero's seat → position = "BTN"
+- If dealer button is 1 seat before hero (clockwise) → position = "SB"
+- If dealer button is 2 seats before hero → position = "BB"
+- If dealer button is 3 seats before hero → position = "UTG"
+- If dealer button is across from hero → position = "MP" or "CO"
+
+OTHER FIELDS:
+- num_players: Count active players still in the hand (not folded).
+- facing_raise: TRUE if someone raised before hero's turn. FALSE if just blinds or limps.
 
 Return ONLY the JSON object, nothing else."""
 
