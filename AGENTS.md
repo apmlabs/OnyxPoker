@@ -35,27 +35,48 @@ PokerStars/Simulator Window
 ## 📁 CURRENT FILE STRUCTURE
 
 ```
-onyxpoker/
-├── AGENTS.md              # Agent memory (NEVER DELETE)
-├── AmazonQ.md             # Status tracking (NEVER DELETE)
-├── README.md              # Quick start (NEVER DELETE)
+onyxpoker/                    # Main repo (GitHub: apmlabs/OnyxPoker)
+├── AGENTS.md                 # Agent memory (NEVER DELETE)
+├── AmazonQ.md                # Status tracking (NEVER DELETE)
+├── README.md                 # Quick start (NEVER DELETE)
 ├── .gitignore
 ├── .env.example
 ├── client/
-│   ├── helper_bar.py      # Main UI (380 lines)
-│   ├── vision_detector.py # GPT-5.2 API wrapper (130 lines)
+│   ├── helper_bar.py         # Main UI (F9=advice, F10=bot, F11=stop, F12=hide)
+│   ├── vision_detector.py    # Full mode: gpt-5.2 for vision + decisions
+│   ├── vision_detector_lite.py # Lite mode: gpt-4o-mini for vision only
+│   ├── strategy_engine.py    # Lite mode: applies hardcoded strategy
+│   ├── poker_logic.py        # Shared: hand eval, preflop/postflop logic
+│   ├── poker_sim.py          # Strategy simulator (1M hand tests)
+│   ├── test_screenshots.py   # Offline testing (--lite --strategy=X)
+│   ├── send_logs.py          # Upload logs to server
 │   ├── requirements.txt
-│   └── setup.bat
-├── server/                # Placeholder for future
-│   ├── app.py
-│   ├── poker_strategy.py
-│   ├── manage.sh
-│   ├── setup.sh
-│   └── requirements.txt
-└── docs/
-    ├── API.md
-    └── DEPLOYMENT.md
+│   └── pokerstrategy_*       # Strategy definition files
+├── docs/
+│   ├── API.md
+│   └── DEPLOYMENT.md
 ```
+
+```
+onyxpoker-server/             # Separate folder on EC2 (NOT in GitHub repo)
+├── server/
+│   ├── kiro_analyze.py       # Flask server on port 5001
+│   └── uploads/              # Screenshots and logs from Windows client
+│       ├── *.png             # Uploaded screenshots
+│       └── *.jsonl           # Uploaded test logs
+```
+
+## 🖥️ CLIENT-SERVER ARCHITECTURE
+
+**Windows Client** (C:\aws\onyx-client\)
+- User runs helper_bar.py or test_screenshots.py
+- Screenshots taken locally
+- `send_logs.py` uploads to server
+
+**EC2 Server** (54.80.204.92:5001)
+- Receives uploads at POST /logs
+- Stores in /home/ubuntu/mcpprojects/onyxpoker-server/server/uploads/
+- Agent can view screenshots and analyze logs here
 
 ## ✅ CURRENT STATE
 

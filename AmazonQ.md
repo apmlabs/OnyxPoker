@@ -1,20 +1,43 @@
 # OnyxPoker - Status Tracking
 
-**Last Updated**: January 12, 2026 12:49 UTC
+**Last Updated**: January 12, 2026 13:42 UTC
 
-## Current Status: LITE MODE IMPLEMENTATION - SESSION 27
+## Current Status: LITE MODE + SHARED POKER LOGIC - SESSION 27
 
-Built poker strategy simulator to compare 7 bot strategies against realistic player pools.
+Built lite mode with shared poker_logic.py for both testing and live play.
 
 ## What Works
 
 | Component | Status | Notes |
 |-----------|--------|-------|
 | helper_bar.py | ✅ Ready | Main UI, F9 screenshots active window |
-| vision_detector.py | ✅ Ready | GPT-5.2 API wrapper, no position detection |
-| poker_sim.py | ✅ NEW | Strategy simulator - pits strategies against each other |
-| Hotkeys | ✅ Ready | F9=Advice, F10=Bot, F11=Stop, F12=Hide |
-| Server | ⏸️ Placeholder | Not needed for current workflow |
+| vision_detector.py | ✅ Ready | Full mode: GPT-5.2 for vision + decisions |
+| vision_detector_lite.py | ✅ Ready | Lite mode: gpt-4o-mini for vision only |
+| strategy_engine.py | ✅ Ready | Lite mode: applies hardcoded strategy |
+| poker_logic.py | ✅ NEW | Shared logic for sim + engine |
+| poker_sim.py | ⚠️ Needs update | Still preflop-only, needs postflop |
+| Server | ✅ Running | 54.80.204.92:5001 receives uploads |
+
+## Architecture
+
+### Full Mode (gpt-5.2)
+```
+F9 → screenshot → vision_detector.py (gpt-5.2) → action + reasoning
+```
+
+### Lite Mode (gpt-4o-mini + hardcoded strategy)
+```
+F9 → screenshot → vision_detector_lite.py (gpt-4o-mini) → table data
+                → strategy_engine.py → poker_logic.py → action + reasoning
+```
+
+## Server Locations
+
+**Windows Client**: C:\aws\onyx-client\
+**EC2 Server**: /home/ubuntu/mcpprojects/onyxpoker-server/
+**Uploads**: /home/ubuntu/mcpprojects/onyxpoker-server/server/uploads/
+  - *.png = screenshots from client
+  - *.jsonl = test logs from client
 
 ## Quick Start
 
