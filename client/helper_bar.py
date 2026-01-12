@@ -57,6 +57,7 @@ class HelperBar:
         self._analyzing = False
         self.last_screenshot = None
         self.bot_running = False
+        self.position_var = tk.StringVar(value='BTN')  # Default position
 
         self.create_ui()
         self.register_hotkeys()
@@ -80,6 +81,18 @@ class HelperBar:
         self.status_label = tk.Label(left, text="Ready", font=('Arial', 10, 'bold'),
                                     bg='#2d2d2d', fg='#00ff00')
         self.status_label.pack(pady=2)
+
+        tk.Frame(left, height=1, bg='#555').pack(fill='x', pady=5)
+
+        # Position selector
+        tk.Label(left, text="Position:", font=('Arial', 9, 'bold'),
+                bg='#2d2d2d', fg='#aaa').pack()
+        pos_frame = tk.Frame(left, bg='#2d2d2d')
+        pos_frame.pack(pady=2)
+        for pos in ['UTG', 'MP', 'CO', 'BTN', 'SB', 'BB']:
+            tk.Radiobutton(pos_frame, text=pos, variable=self.position_var, value=pos,
+                          font=('Arial', 8), bg='#2d2d2d', fg='#fff', 
+                          selectcolor='#444', activebackground='#2d2d2d').pack(side='left')
 
         tk.Frame(left, height=1, bg='#555').pack(fill='x', pady=5)
 
@@ -264,6 +277,9 @@ class HelperBar:
                 delete_temp = True
 
             try:
+                # Get manual position from UI
+                manual_position = self.position_var.get()
+                
                 # AI analysis
                 if LITE_MODE:
                     # Lite mode: gpt-5-nano for table data, hardcoded strategy for action
@@ -272,6 +288,9 @@ class HelperBar:
                     vision = VisionDetectorLite(logger=lambda m, l="DEBUG": self.root.after(0, lambda: self.log(m, l)))
                     table_data = vision.detect_table(temp_path)
                     api_time = time.time() - api_start
+                    
+                    # Override position with manual selection
+                    table_data['position'] = manual_position
                     
                     # Apply hardcoded strategy
                     engine = StrategyEngine(LITE_STRATEGY)
@@ -287,6 +306,9 @@ class HelperBar:
                     vision = VisionDetector(logger=lambda m, l="DEBUG": self.root.after(0, lambda: self.log(m, l)))
                     result = vision.detect_poker_elements(temp_path, include_decision=True)
                     api_time = time.time() - api_start
+                    
+                    # Override position with manual selection
+                    result['position'] = manual_position
 
                 elapsed = time.time() - start
                 self.root.after(0, lambda t=api_time: self.log(f"API done: {t:.1f}s", "DEBUG"))

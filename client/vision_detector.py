@@ -55,7 +55,6 @@ READING THE TABLE:
 - hero_stack: Hero's stack amount at bottom.
 - to_call: Amount on CALL button, 0 if CHECK available, null if no buttons.
 - is_hero_turn: TRUE if LARGE RED action buttons visible (Fold/Call/Raise), FALSE if only checkboxes or waiting.
-- position: Count clockwise from dealer button. UTG/MP/CO/BTN/SB/BB.
 
 SUIT SYMBOLS (CRITICAL):
 - Spades (♠): BLACK suit with pointed bottom

@@ -40,7 +40,6 @@ class VisionDetectorLite:
   "hero_stack": 5.00,
   "to_call": 0.02,
   "is_hero_turn": true,
-  "position": "BTN",
   "num_players": 3,
   "facing_raise": false
 }
@@ -65,25 +64,6 @@ READING RULES:
 - hero_stack: Hero's chip stack at BOTTOM. Read exact decimal value.
 - to_call: Amount shown on CALL button. 0 if CHECK button visible. null if no action buttons.
 - is_hero_turn: TRUE if LARGE RED action buttons (FOLD/CHECK/CALL/RAISE) visible. FALSE if only small checkboxes.
-
-POSITION DETECTION (6-max table):
-Look for the white DEALER BUTTON chip (marked "D" or "DEALER"):
-1. Find hero's seat (bottom center with face-up cards)
-2. Find the dealer button chip on the table
-3. Count positions CLOCKWISE from dealer button:
-   - Dealer button seat = BTN (button)
-   - 1 seat after button = SB (small blind) 
-   - 2 seats after button = BB (big blind)
-   - 3 seats after button = UTG (under the gun)
-   - 4 seats after button = MP (middle position)
-   - 5 seats after button = CO (cutoff)
-
-POSITION EXAMPLES:
-- If dealer button is at hero's seat → position = "BTN"
-- If dealer button is 1 seat before hero (clockwise) → position = "SB"
-- If dealer button is 2 seats before hero → position = "BB"
-- If dealer button is 3 seats before hero → position = "UTG"
-- If dealer button is across from hero → position = "MP" or "CO"
 
 OTHER FIELDS:
 - num_players: Count active players still in the hand (not folded).
