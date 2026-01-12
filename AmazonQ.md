@@ -1,10 +1,10 @@
 # OnyxPoker - Status Tracking
 
-**Last Updated**: January 12, 2026 20:35 UTC
+**Last Updated**: January 12, 2026 22:50 UTC
 
-## Current Status: SESSION 29 - ARCHITECTURE FINALIZED ✅
+## Current Status: SESSION 30 - STRATEGY ANALYSIS COMPLETE ✅
 
-Strategy engine is now the default. GPT-5.2 for vision, hardcoded poker logic for decisions. AI-only mode available via `--ai-only` flag.
+Comprehensive 162-hand session analysis. Fixed overpair detection bug, created 2nl_exploit strategy, improved win rate from +26.72 to +28.50 BB/100.
 
 ## What Works
 
@@ -70,8 +70,8 @@ cd client
 python3 poker_sim.py 150000  # Run 150k hands simulation
 ```
 
-### Bot Strategies (4 in sim)
-- gpt3, gpt4, sonnet, kiro_optimal
+### Bot Strategies (6 in sim)
+- gpt3, gpt4, sonnet, kiro_optimal, aggressive, 2nl_exploit
 
 ### Player Archetypes (4 total)
 - fish (loose passive), nit (ultra tight), lag (loose aggressive), tag (tight aggressive)
@@ -81,16 +81,37 @@ python3 poker_sim.py 150000  # Run 150k hands simulation
 |----------|-------|-----------------|
 | gpt3/gpt4 | Board texture aware | Small c-bets (25-35%) on dry boards |
 | sonnet/kiro_optimal | Big value bets | 75-85% pot sizing, overpair logic |
+| 2nl_exploit | Sonnet postflop | Wider 3-bet calling range |
 
-### Latest Results (50k hands with strategy-specific postflop)
-| Rank | Strategy | BB/100 |
-|------|----------|--------|
-| 1 | kiro_optimal | +29.85 |
-| 2 | sonnet | +29.52 |
-| 3 | gpt3 | +21.54 |
-| 4 | gpt4 | +14.79 |
+### Latest Results (50k hands x 3 trials)
+| Rank | Strategy | BB/100 | StdDev |
+|------|----------|--------|--------|
+| 1 | sonnet | +33.15 | 3.31 |
+| 2 | 2nl_exploit | +28.50 | 6.43 |
+| 3 | gpt4 | +26.81 | 6.58 |
+| 4 | aggressive | +26.20 | 8.44 |
+| 5 | kiro_optimal | +23.47 | 19.91 |
+| 6 | gpt3 | +19.13 | 5.28 |
 
 ## Session Log
+
+### Session 30 (January 12, 2026)
+- **STRATEGY ANALYSIS**: Comprehensive 162-hand session analysis ⭐
+  - Identified 3-bet defense leak (folding too many hands)
+  - Created 2nl_exploit strategy with wider call_3bet range
+  - Fixed overpair detection bug (AA on 789 was "top pair weak kicker")
+  - Added overpair/underpair handling to _postflop_gpt()
+- **OVERPAIR FIX**: +1.78 BB/100 improvement after fix
+  - evaluate_hand() now detects overpairs (QQ on J85)
+  - evaluate_hand() now detects underpair to ace (KK on Axx)
+  - _postflop_gpt() bets 65/60/50% pot with overpairs
+  - Underpair to ace: check-call flop, fold to big bets
+- **2NL_EXPLOIT STRATEGY**: New strategy for 2NL exploitation
+  - Wider 3-bet calling: QQ-88, AQs, AQo, AJs, KQs
+  - Uses sonnet postflop (falls through to default)
+  - Created pokerstrategy_2nl_exploit file
+- **SIMULATION RESULTS**: sonnet leads at +33.15 BB/100
+- Commits: faabb0e, 7b80d02
 
 ### Session 29 (January 12, 2026)
 - **ARCHITECTURE FINALIZED**: Strategy engine is now the default ⭐
