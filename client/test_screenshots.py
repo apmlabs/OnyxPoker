@@ -59,14 +59,37 @@ KIRO_SERVER_URL = os.getenv('KIRO_SERVER_URL', 'http://54.80.204.92:5001')
 
 def validate_with_kiro_server(table_data):
     """Validate poker state using Kiro CLI via server"""
+    print(f"\n{'='*80}")
+    print(f"KIRO-SERVER VALIDATION START")
+    print(f"{'='*80}")
+    print(f"Sending to server: {KIRO_SERVER_URL}/validate-state")
+    print(f"State: cards={table_data.get('hero_cards')}, board={table_data.get('community_cards')}, pot={table_data.get('pot')}, pos={table_data.get('position')}")
+    
     try:
+        import time
+        start = time.time()
+        
         response = requests.post(
             f'{KIRO_SERVER_URL}/validate-state',
             json={'state': table_data},
             timeout=180
         )
-        return response.json()
+        
+        elapsed = time.time() - start
+        print(f"Response received in {elapsed:.2f}s")
+        print(f"Status code: {response.status_code}")
+        
+        result = response.json()
+        print(f"Understood: {result.get('understood')}")
+        print(f"Confidence: {result.get('confidence')}")
+        print(f"Interpretation preview: {result.get('interpretation', '')[:100]}...")
+        print(f"Concerns: {result.get('concerns')}")
+        print(f"{'='*80}\n")
+        
+        return result
     except Exception as e:
+        print(f"ERROR: {str(e)}")
+        print(f"{'='*80}\n")
         return {
             'understood': False,
             'confidence': 0.0,
