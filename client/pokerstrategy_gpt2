@@ -1,0 +1,83 @@
+BLITZ / ZOOM 6-MAX PREFLOP (100bb default)
+
+Critical rules
+- Same suit = suited (s). Different suits = offsuit (o)
+- No limping. First-in = raise or fold
+- Out of position (especially SB vs open): prefer 3-bet or fold (avoid flatting)
+- Default sizes: Open 2.0–2.3bb (SB 2.5–3.0bb). 3-bet ~3.5–4x IP, ~4–4.5x OOP
+
+OPEN RAISE (RFI)
+
+UTG
+- Raise: 77+, ATs+, KQs, AJo+, AQo+
+
+MP
+- Raise: 66+, ATs+, A5s-A2s, KJs+, QJs, JTs, KQo, AJo+, AQo+
+
+CO
+- Raise: 55+, A8s+, A5s-A2s, KTs+, QTs+, JTs, T9s, 98s, 87s, ATo+, KJo+, QJo
+
+BTN
+- Raise: 22+, A2s+, K7s+, Q8s+, J8s+, T8s+, 97s+, 86s+, 75s+, 65s, 54s,
+         A2o+, KTo+, QTo+, JTo, T9o, 98o
+
+SB vs BB (raise-or-fold)
+- Raise: 22+, A2s+, K6s+, Q7s+, J7s+, T7s+, 97s+, 86s+, 75s+, 65s, 54s,
+         ATo+, KJo+, QJo, JTo
+- Fold: everything else (no completes)
+
+VS A SINGLE OPEN (no callers)
+
+3-BET FOR VALUE
+- Vs UTG: QQ+, AKs, AKo (add JJ if opener is loose)
+- Vs MP: JJ+, AKs, AKo, AQs
+- Vs CO: TT+, AJs+, AQo+, KQs
+- Vs BTN: TT+, AJs+, AQo+, KQs
+
+3-BET BLUFFS (small set; mainly vs CO/BTN opens)
+- A5s-A2s
+- KTs-K9s
+- QTs, JTs (optional; drop if villains call 3-bets too much)
+
+CALLING OPENS (default: call mostly in position)
+
+Call IP vs UTG/MP
+- 99-22, AQs-AJs, KQs, QJs, JTs, T9s, 98s (fold the weakest if rake is brutal)
+
+Call IP vs CO/BTN
+- 99-22, AJs-ATs, KQs-KJs, QJs, JTs, T9s, 98s, 87s, 76s (be tighter if 3-bets are frequent)
+
+Call OOP (SB)
+- Default: do not flat opens (3-bet or fold)
+
+BB DEFENSE vs BTN MIN-RAISE (2.0–2.3bb)
+
+3-BET (value)
+- TT+, AJs+, AQo+, KQs
+
+3-BET (bluff mix)
+- A5s-A2s, K9s-K8s, QTs (optional)
+
+CALL (playable, rake-aware)
+- All suited aces A2s+
+- Offsuit aces A8o+
+- Suited kings K8s+
+- Offsuit broadways KTo+, QTo+, JTo
+- Suited queens Q9s+
+- Suited jacks J9s+
+- Suited connectors 54s+, plus 64s+, 75s+, 86s+, 97s+, T8s+, J9s+
+- Offsuit connectors T9o, 98o
+
+Fold
+- Dominated offsuit trash (low K/Q/J offsuit, weak offsuit aces below A8o, etc.)
+
+FACING A 3-BET (after you opened)
+
+4-BET FOR VALUE
+- QQ+, AKs, AKo
+
+CALL (mainly in position; be much tighter OOP)
+- JJ-TT, AQs (optional: 99 / AJs / KQs only if 3-bettor is likely wide and you are IP)
+
+FOLD
+- Most other hands, especially dominated offsuit broadways (AJo, KQo, QJo), small suited junk, and small pairs OOP

@@ -1,0 +1,207 @@
+BLITZ 6-MAX OPTIMAL EXPLOITATIVE STRATEGY (2NL-10NL)
+
+SUIT CHECK: Same suit = suited (s). Different = offsuit (o).
+
+BLITZ POOL EXPLOITS (PRINT MONEY HERE)
+- Blinds fold 65-75% to BTN/CO steals → steal relentlessly
+- 3-bets are 88-92% value → respect and fold marginal hands
+- Turn raises are 95% value, river raises are 98% value → fold one pair
+- Players underfold to value bets → bet bigger with made hands
+- Almost no river bluffs → don't hero call without showdown value
+- Multi-way pots go to showdown → tighten up, value bet only
+
+OPEN RAISE (2.5bb) - POSITION IS PROFIT
+
+UTG (12% range - tight is right):
+77+, ATs+, KQs, AQo+
+
+MP (16% range - add suited wheel aces):
+66+, A9s+, A5s-A2s, KJs+, QJs, JTs, AJo+, KQo
+
+CO (28% range - steal mode activated):
+44+, A2s+, K9s+, Q9s+, J9s+, T8s+, 97s+, 86s+, 76s, 65s, ATo+, KJo+, QJo
+
+BTN (48% range - maximum aggression):
+22+, A2s+, K6s+, Q7s+, J7s+, T7s+, 96s+, 85s+, 75s+, 64s+, 54s, A7o+, K9o+, QTo+, JTo
+
+SB (22% range - raise or fold, never complete):
+55+, A2s+, K8s+, Q9s+, J9s+, T8s+, 98s, 87s, A9o+, KTo+
+
+WHY THESE RANGES? Blinds overfold. Every fold you generate is +EV.
+
+VS SINGLE OPEN - RESPECT STRENGTH
+
+3-bet for value:
+vs UTG/MP: QQ+, AKs, AKo
+vs CO: JJ+, AQs+, AKo
+vs BTN: TT+, AQs+, AKo
+
+3-bet bluff (blockers + foldability):
+vs CO (from BTN/SB): A5s-A4s, K9s-K8s (blocks AK/AQ, folds better)
+vs BTN (from SB/BB): A5s-A2s, K9s (high fold equity)
+
+Call IP (set mine + playability):
+vs UTG/MP: JJ-88, AQs-AJs, KQs
+vs CO: TT-66, AJs-ATs, KQs-KJs, QJs, JTs, T9s
+vs BTN: 99-44, ATs-A8s, KJs-KTs, QJs-QTs, JTs, T9s, 98s, 87s
+
+SB: 3-bet or fold (flatting = -EV)
+
+BB DEFENSE - DEFEND FREQUENCY MATTERS
+
+vs BTN (defend 55-60%):
+3-bet: TT+, AQs+, AKo, A5s-A4s, K9s
+Call: 99-22, AJs-A2s, KTs+, Q9s+, J9s+, T8s+, 97s+, 86s+, 76s, 65s, 54s, A9o+, KJo, QJo, JTo
+Fold: K8o-, Q9o-, J9o-, T9o, weak offsuit
+
+vs CO (defend 48-52%):
+3-bet: QQ+, AKs, AKo
+Call: JJ-44, AQs-A7s, KQs-KTs, QJs-QTs, JTs, T9s, 98s, AJo, KJo
+Fold: rest
+
+vs MP (defend 42-46%):
+3-bet: QQ+, AKs, AKo
+Call: JJ-66, AQs-A9s, KQs-KJs, QJs, JTs, AJo
+Fold: rest
+
+vs UTG (defend 38-42%):
+3-bet: QQ+, AKs, AKo
+Call: JJ-77, AQs-ATs, KQs, AJo
+Fold: rest
+
+VS 3-BET - THEY HAVE IT
+
+4-bet/call: KK+, AKs
+4-bet/fold: AKo (vs UTG/MP 3-bet, fold to 5-bet)
+Call IP only: QQ, JJ, AQs
+Fold: TT-, AJo, KQo, all suited connectors, all small pairs OOP
+
+WHY FOLD SO MUCH? Blitz 3-bets are real. Calling AJo vs QQ+ is burning money.
+
+VS 4-BET
+
+All-in: KK+
+Call: AKs (if <100bb effective)
+Fold: QQ, AKo (unless specific read)
+
+POSTFLOP - VALUE BET BIGGER
+
+Made hands (they call light, charge them):
+Nuts (straights/flushes/boats): 100% pot all streets
+Sets: 85% pot all streets
+Two pair: 80% pot all streets
+Top pair top kicker (AK on Axx): 75%/70%/60% (flop/turn/river)
+Top pair good kicker (AQ on Axx): 70%/65%/50%
+Top pair weak kicker (K7 on Kxx): 65% flop, check-call turn/river
+Overpair (QQ on J85): 70%/60%/50%
+Overpair on ace-high board (KK on Axx): check-call only
+
+Draws (semi-bluff with fold equity):
+Combo draws (flush+straight, flush+pair): 70% pot
+Flush draw alone: check if free, call ≤40% pot, bet if checked to
+Straight draw alone: check if free, call ≤35% pot
+Gutshot: check-fold unless combo draw
+
+Weak hands (minimize losses):
+Bottom pair: check-fold
+Middle pair weak kicker: check-call once, fold to turn bet
+Ace-high/king-high: check-fold (don't bluff)
+
+FACING AGGRESSION - BELIEVE THEM
+
+Flop raise: Continue with top pair top kicker+, fold rest
+Turn raise: Continue with two pair+, fold one pair
+River raise: Continue with straights+, fold everything else
+
+MULTI-WAY POTS (3+ players)
+
+Preflop: Tighten by 20% (fold small pairs, suited connectors)
+Postflop: Value bet only, no bluffs
+Showdown: Expect to see strong hands
+
+STACK DEPTH ADJUSTMENTS
+
+<50bb (short stack):
+- Tighten opens by 15%
+- 3-bet shove: 99+, AJs+, AQo+
+- Fold small pairs (no implied odds)
+
+50-100bb (standard):
+- Use default ranges
+
+>100bb (deep stack):
+- Widen calls with suited connectors/small pairs
+- Avoid marginal all-ins
+- Play more postflop
+
+RAKE CONSIDERATIONS (2NL-5NL)
+
+High rake = tighten up:
+- Fold marginal calls (87s, 76s, small pairs OOP)
+- Don't bluff (rake makes pots less profitable)
+- Value bet bigger (need to overcome rake)
+
+DYNAMIC ADJUSTMENTS
+
+If blinds fold >70% to your steals:
+Open 100% from BTN, add K4s+, Q6s+, J7s+, T7s+, 97s+, A5o+, K7o+ from CO
+
+If blinds 3-bet <8%:
+Never fold 99+, AQs+, AKo to 3-bet
+Call more: 88-77, AJs, KQs
+
+If villain opens >40% from CO/BTN:
+3-bet wider: add AQo, KQs, A3s-A2s, K8s
+Call wider: add 33-22, A7s-A6s, K9s, Q9s
+
+If villain folds to 3-bet >70%:
+3-bet any two from BTN vs CO/SB opens
+3-bet K4s+, Q7s+, J8s+, T8s+, 98s from SB vs BTN
+
+AUTO-FOLD (ALWAYS)
+
+Preflop opens from EP/MP:
+A6o-A2o, K9o-K2o, Q9o-Q2o, J9o-J2o, T8o-T2o
+Suited gappers <65s (75s, 64s, 53s)
+
+Facing 3-bet:
+AJo, ATo, KQo, KJo, QJo (dominated)
+TT-22 out of position
+99-22 vs UTG/MP 3-bet
+All suited connectors (98s, 87s, 76s, 65s)
+
+Facing turn raise:
+One pair any kicker
+Two pair if board has straight/flush
+
+Facing river raise:
+Anything below straights
+Straights if board paired (they have boat)
+
+MENTAL GAME
+
+Every hand = new opponent (no reads)
+Play fundamentals, not exploits
+When they show strength, believe them
+When you have it, bet big
+Variance is high, focus on long-term EV
+Track steal success rate (target >65%)
+
+WIN RATE FORMULA
+
+Your profit comes from:
+40% - Stealing blinds (open wider from BTN/CO)
+35% - Value betting made hands (bet bigger)
+15% - Folding to aggression (don't pay off)
+10% - Not bluffing rivers (they call)
+
+KEY PRINCIPLES
+
+1. STEAL BLINDS - They fold too much, open wider late position
+2. RESPECT 3-BETS - They're not bluffing, fold marginal hands
+3. VALUE BET BIGGER - They call light, charge them
+4. FOLD TO AGGRESSION - Turn/river raises are real
+5. POSITION IS EVERYTHING - Play tight OOP, wide IP
+6. DON'T BLUFF RIVERS - They don't fold, save chips
+7. DON'T HERO CALL - When in doubt, fold
+8. MULTI-WAY = TIGHTEN - More players = stronger hands shown down
