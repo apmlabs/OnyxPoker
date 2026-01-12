@@ -215,6 +215,29 @@ STRATEGIES = {
         'call_3bet': expand_range('QQ,JJ,TT,99,88,AQs,AQo,AJs,KQs'),
         '4bet': expand_range('KK+,AKs'),
     },
+    # VALUE_MAX: Smart preflop (2nl_exploit) + Maniac-style postflop (big bets, more aggression)
+    'value_max': {
+        'name': 'Value Max',
+        'open': {
+            'UTG': expand_range('77+,ATs+,KQs,AJo+'),
+            'MP': expand_range('66+,A9s+,A5s-A2s,KJs+,QJs,JTs,AJo+,KQo'),
+            'CO': expand_range('44+,A2s+,K9s+,Q9s+,J9s+,T8s+,97s+,86s+,76s,65s,ATo+,KJo+,QJo'),
+            'BTN': expand_range('22+,A2s+,K5s+,Q7s+,J7s+,T7s+,96s+,85s+,75s+,64s+,54s,A5o+,K9o+,QTo+,JTo,T9o'),
+            'SB': expand_range('55+,A2s+,K8s+,Q9s+,J9s+,T8s+,98s,87s,A9o+,KTo+'),
+        },
+        '3bet_vs': {
+            'UTG': expand_range('QQ+,AKs,AKo'),
+            'MP': expand_range('JJ+,AKs,AKo,AQs'),
+            'CO': expand_range('TT+,AQs+,AKo,AJs'),
+            'BTN': expand_range('99+,AQs+,AKo,AJs,KQs'),
+        },
+        '3bet_bluff': expand_range('A5s-A2s,K9s'),
+        'call_open_ip': expand_range('JJ-44,AJs-A7s,KQs-K9s,QJs-Q9s,JTs-J9s,T9s,98s,87s,76s'),
+        'bb_defend': expand_range('99-22,A2s+,K8s+,Q9s+,J9s+,T8s+,97s+,86s+,76s,65s,54s,A8o+,KTo+,QTo+,JTo,T9o,98o'),
+        'call_3bet': expand_range('QQ,JJ,TT,99,88,AQs,AQo,AJs,KQs'),
+        '4bet': expand_range('KK+,AKs'),
+        'overbet': True,  # Flag for maniac-style postflop
+    },
 }
 
 # Player archetypes
@@ -640,6 +663,12 @@ def postflop_action(hole_cards: List[Tuple[str, str]], board: List[Tuple[str, st
     # BOT STRATEGIES - strategy-specific postflop logic
     # gpt3/gpt4: Board texture aware, smaller c-bets, 3-bet pot adjustments
     # sonnet/kiro_optimal: Bigger value bets, overpair logic
+    # value_max: Maniac-style big bets but smarter (doesn't bluff as much)
+    
+    if strategy == 'value_max':
+        return _postflop_value_max(hole_cards, board, pot, to_call, street, is_ip,
+                                   is_aggressor, strength, desc, draws, combo_draw,
+                                   has_flush_draw, has_oesd, has_any_draw)
     
     if strategy in ['gpt3', 'gpt4']:
         return _postflop_gpt(hole_cards, board, pot, to_call, street, is_ip, 
@@ -658,6 +687,66 @@ def postflop_action(hole_cards: List[Tuple[str, str]], board: List[Tuple[str, st
                            is_aggressor, strength, desc, draws, combo_draw,
                            has_flush_draw, has_oesd, is_overpair, board_has_ace,
                            is_underpair_to_ace, is_multiway)
+
+
+def _postflop_value_max(hole_cards, board, pot, to_call, street, is_ip, is_aggressor,
+                        strength, desc, draws, combo_draw, has_flush_draw, has_oesd, has_any_draw):
+    """
+    VALUE_MAX: Smart preflop + Maniac-style postflop.
+    Key differences from other strategies:
+    - Bet 85-100% pot for value (not 50-75%)
+    - Bet more often when checked to (don't give free cards)
+    - Raise more instead of calling with strong hands
+    - Less bluffing than maniac (smarter hand selection)
+    """
+    if to_call == 0 or to_call is None:
+        # VALUE HANDS - bet big
+        if strength >= 5:  # Straights+
+            return ('bet', round(pot * 1.0, 2), f"{desc} - value_max pots it")
+        if strength >= 4:  # Sets, two pair
+            return ('bet', round(pot * 0.9, 2), f"{desc} - value_max bets big")
+        if strength >= 3 or "top pair" in desc:
+            size = {
+                'flop': 0.85,
+                'turn': 0.80,
+                'river': 0.75
+            }.get(street, 0.75)
+            return ('bet', round(pot * size, 2), f"{desc} - value_max value bets")
+        
+        # OVERPAIR - bet big
+        if "overpair" in desc.lower():
+            return ('bet', round(pot * 0.85, 2), f"{desc} - value_max bets overpair")
+        
+        # DRAWS - semi-bluff with good draws
+        if combo_draw:
+            return ('bet', round(pot * 0.8, 2), "value_max semi-bluffs combo draw")
+        if has_flush_draw and street == 'flop':
+            return ('bet', round(pot * 0.7, 2), "value_max semi-bluffs flush draw")
+        if has_oesd and street == 'flop':
+            return ('bet', round(pot * 0.65, 2), "value_max semi-bluffs OESD")
+        
+        # WEAK HANDS - c-bet flop if aggressor, otherwise check
+        if is_aggressor and street == 'flop':
+            return ('bet', round(pot * 0.6, 2), "value_max c-bets")
+        
+        return ('check', 0, f"{desc} - value_max checks")
+    
+    else:
+        # FACING A BET - call/raise with strong hands, fold weak
+        if strength >= 5:  # Straights+
+            return ('raise', round(pot * 2.5, 2), f"{desc} - value_max raises for value")
+        if strength >= 4:  # Sets, two pair
+            if street == 'river':
+                return ('call', 0, f"{desc} - value_max calls river")
+            return ('raise', round(pot * 2.2, 2), f"{desc} - value_max raises")
+        if strength >= 3 or "top pair good kicker" in desc:
+            return ('call', 0, f"{desc} - value_max calls")
+        if "top pair" in desc and street == 'flop':
+            return ('call', 0, f"{desc} - value_max calls flop")
+        if has_flush_draw or has_oesd:
+            if to_call <= pot * 0.5:  # Good odds
+                return ('call', 0, "value_max calls with draw")
+        return ('fold', 0, f"{desc} - value_max folds")
 
 
 def _postflop_gpt(hole_cards, board, pot, to_call, street, is_ip, is_aggressor,

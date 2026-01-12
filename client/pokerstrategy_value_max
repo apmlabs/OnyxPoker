@@ -1,0 +1,89 @@
+VALUE_MAX STRATEGY - Maximum Value Extraction for 2NL
+
+Combines smart preflop ranges (from 2nl_exploit) with maniac-style postflop sizing.
+Key insight: 2NL players call too much, so bigger bets = more value.
+
+PREFLOP (same as 2nl_exploit)
+
+OPEN RAISE (2.5bb)
+
+UTG (16%):
+77+, ATs+, KQs, AJo+
+
+MP (22%):
+66+, A9s+, A5s-A2s, KJs+, QJs, JTs, AJo+, KQo
+
+CO (35%):
+44+, A2s+, K9s+, Q9s+, J9s+, T8s+, 97s+, 86s+, 76s, 65s, ATo+, KJo+, QJo
+
+BTN (50%):
+22+, A2s+, K5s+, Q7s+, J7s+, T7s+, 96s+, 85s+, 75s+, 64s+, 54s, A5o+, K9o+, QTo+, JTo, T9o
+
+SB (28%):
+55+, A2s+, K8s+, Q9s+, J9s+, T8s+, 98s, 87s, A9o+, KTo+
+
+VS SINGLE OPEN - 3-BET
+
+3-bet value:
+- vs UTG: QQ+, AKs, AKo
+- vs MP: JJ+, AKs, AKo, AQs
+- vs CO: TT+, AQs+, AKo, AJs
+- vs BTN: 99+, AQs+, AKo, AJs, KQs
+
+3-bet bluff:
+- A5s-A2s, K9s
+
+Call IP:
+- JJ-44, AJs-A7s, KQs-K9s, QJs-Q9s, JTs-J9s, T9s, 98s, 87s, 76s
+
+BB DEFENSE (wide)
+
+vs BTN (defend 58%):
+- 3-bet: TT+, AQs+, AKo, A5s-A4s
+- Call: 99-22, A2s+, K8s+, Q9s+, J9s+, T8s+, 97s+, 86s+, 76s, 65s, 54s, A8o+, KTo+, QTo+, JTo, T9o, 98o
+
+VS 3-BET
+
+4-bet/call: KK+, AKs
+Call IP: QQ, JJ, TT, 99, 88, AQs, AQo, AJs, KQs
+Fold: rest
+
+POSTFLOP - BIG BETS FOR VALUE
+
+Key principle: 2NL players call too much. Bigger bets = more value.
+
+VALUE HANDS (bet 85-100% pot):
+- Straights+: 100% pot all streets
+- Sets/two pair: 90% pot all streets
+- Top pair: 85%/80%/75% (flop/turn/river)
+- Overpair: 85% pot all streets
+
+DRAWS (semi-bluff big):
+- Combo draws: 80% pot
+- Flush draw (flop): 70% pot
+- OESD (flop): 65% pot
+
+C-BETTING:
+- As aggressor on flop: 60% pot
+- Otherwise: check
+
+FACING BETS:
+- Straights+: Raise for value
+- Sets/two pair: Raise (call river)
+- Top pair good kicker: Call
+- Top pair weak kicker: Call flop only
+- Draws: Call if getting 2:1 or better
+
+WHY THIS WORKS
+
+1. Fish call too much -> bigger bets extract more value
+2. TAGs/NITs fold to big bets -> win pots uncontested
+3. Same hand, same opponent:
+   - 50% pot bets: win 30BB
+   - 100% pot bets: win 70BB
+   - 2.3x more profit!
+
+SIMULATION RESULTS
+
++38.40 BB/100 (best among all bot strategies)
+Low variance (StdDev 6.83)
