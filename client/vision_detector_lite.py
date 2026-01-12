@@ -87,7 +87,7 @@ Return ONLY JSON, no explanation."""
                 ]
             }],
             max_output_tokens=300,
-            reasoning={"effort": "none"},
+            reasoning={"effort": "minimal"},
             text={"format": {"type": "json_schema", "name": "table_data", "schema": json_schema}}
         )
         api_time = time.time() - t
