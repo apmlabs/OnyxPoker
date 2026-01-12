@@ -57,6 +57,56 @@ else:
 LOG_FILE = None
 KIRO_SERVER_URL = os.getenv('KIRO_SERVER_URL', 'http://54.80.204.92:5001')
 
+def analyze_with_kiro_server(screenshot_path):
+    """Analyze screenshot using Kiro CLI via server (sends image)"""
+    print(f"\n{'='*80}")
+    print(f"KIRO-SERVER SCREENSHOT ANALYSIS START")
+    print(f"{'='*80}")
+    print(f"Sending screenshot to: {KIRO_SERVER_URL}/analyze-screenshot")
+    print(f"Screenshot: {screenshot_path}")
+    
+    try:
+        import time
+        import base64
+        
+        # Read and encode screenshot
+        with open(screenshot_path, 'rb') as f:
+            img_data = base64.b64encode(f.read()).decode('utf-8')
+        
+        print(f"Image size: {len(img_data)} bytes (base64)")
+        
+        start = time.time()
+        
+        response = requests.post(
+            f'{KIRO_SERVER_URL}/analyze-screenshot',
+            json={'image': img_data},
+            timeout=180
+        )
+        
+        elapsed = time.time() - start
+        print(f"Response received in {elapsed:.2f}s")
+        print(f"Status code: {response.status_code}")
+        
+        result = response.json()
+        
+        if 'error' in result:
+            print(f"ERROR: {result['error']}")
+            print(f"{'='*80}\n")
+            return None
+        
+        print(f"Cards: {result.get('hero_cards')}")
+        print(f"Board: {result.get('community_cards')}")
+        print(f"Pot: {result.get('pot')}")
+        print(f"Position: {result.get('position')}")
+        print(f"Hero turn: {result.get('is_hero_turn')}")
+        print(f"{'='*80}\n")
+        
+        return result
+    except Exception as e:
+        print(f"ERROR: {str(e)}")
+        print(f"{'='*80}\n")
+        return None
+
 def validate_with_kiro_server(table_data):
     """Validate poker state using Kiro CLI via server"""
     print(f"\n{'='*80}")
@@ -106,24 +156,18 @@ def test_screenshot(path, index=None, total=None, model_override=None):
     
     try:
         if LITE_MODE:
-            # Use kiro-server for validation if specified
+            # Use kiro-server for vision if specified
             if model_override == 'kiro-server':
-                # First get table data with default vision model
-                detector = VisionDetectorLite(model='gpt-4o-mini')
-                table_data = detector.detect_table(path)
+                # Send screenshot to Kiro server for analysis
+                result = analyze_with_kiro_server(path)
                 
-                # Then validate with Kiro server
-                validation = validate_with_kiro_server(table_data)
+                if result is None:
+                    print("| ERROR: Kiro server analysis failed")
+                    return None
                 
-                # Combine results
-                result = {
-                    **table_data,
-                    'model': 'kiro-server',
-                    'validation': validation,
-                    'action': 'validated' if validation.get('understood') else 'invalid',
-                    'reasoning': validation.get('interpretation', ''),
-                    'confidence': validation.get('confidence', 0.0)
-                }
+                # Add metadata
+                result['model'] = 'kiro-server'
+                result['strategy'] = 'kiro-vision'
             else:
                 # Normal vision + strategy flow
                 detector = VisionDetectorLite(model=model_override or VISION_MODEL)
