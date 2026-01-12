@@ -1,63 +1,77 @@
-# Project Cleanup Plan
-**Date**: January 12, 2026
+# Project Cleanup - COMPLETED ✅
+**Date**: January 12, 2026 18:45 UTC
 
-## Files to DELETE
+## Cleanup Summary
 
-### Root Directory
-- [x] FIXES_PLAN.md - Temporary, issues already fixed
+**Deleted**: 14 temporary files
+- 1 from root (FIXES_PLAN.md)
+- 1 from server/uploads/ (PROMPT_UPDATE_SUMMARY.md)
+- 12 from /tmp/ (all .md, .json, .py analysis files)
 
-### server/uploads/
-- [x] PROMPT_UPDATE_SUMMARY.md - Temporary summary, info in AGENTS.md
+**Result**: Clean, organized project with only essential files
 
-### /tmp/ (all temporary analysis files)
-- [x] /tmp/NEW_API_KEY.md
-- [x] /tmp/PHASE1_COMPLETE.md
-- [x] /tmp/SERVER_QUICK_REFERENCE.md
-- [x] /tmp/SERVER_TEST_REPORT.md
-- [x] /tmp/VISION_COMPARISON_REPORT.md (duplicate, kept in server/uploads/)
-- [x] /tmp/amazonq_update.md
-- [x] /tmp/analysis_data.json
-- [x] /tmp/analyze_all.py
-- [x] /tmp/ground_truth_manual.json
-- [x] /tmp/kiro_vs_gpt52_comparison.json
-- [x] /tmp/model_comparison.json
-- [x] /tmp/test_same_prompt.py
+## Final Project Structure
 
-## Files to KEEP
-
-### Core Documentation (NEVER DELETE)
-- AGENTS.md - Agent memory
-- AmazonQ.md - Status tracking
-- README.md - User guide
-
-### Technical Documentation
-- docs/DEPLOYMENT.md - Setup guide
-- docs/ANALYSIS_NOTES.md - GPT decision analysis (useful reference)
-
-### Testing Infrastructure
-- server/uploads/VISION_COMPARISON_REPORT.md - Model comparison results
-- server/uploads/compare_with_ground_truth.py - Testing script
-- server/uploads/ground_truth.json - Test data
-
-### Python Code (all .py files in client/ and server/)
-- All production code
-
-## Cleanup Commands
-
-```bash
-# Delete temporary files
-rm /home/ubuntu/mcpprojects/onyxpoker/FIXES_PLAN.md
-rm /home/ubuntu/mcpprojects/onyxpoker/server/uploads/PROMPT_UPDATE_SUMMARY.md
-rm /tmp/*.md /tmp/*.json /tmp/*.py
-
-# Commit cleanup
-cd /home/ubuntu/mcpprojects/onyxpoker
-git add -A
-git commit -m "Clean up temporary files and documentation"
-git push origin main
+```
+onyxpoker/
+├── AGENTS.md                    # Agent memory (NEVER DELETE)
+├── AmazonQ.md                   # Status tracking (NEVER DELETE)
+├── README.md                    # User guide (NEVER DELETE)
+├── CLEANUP_PLAN.md              # This file
+├── .env.example                 # Environment template
+│
+├── client/                      # Windows client code
+│   ├── helper_bar.py            # Main UI
+│   ├── vision_detector.py       # Full mode (gpt-5.2)
+│   ├── vision_detector_lite.py  # Lite mode (gpt-4o-mini)
+│   ├── vision_detector_test.py  # Testing detector
+│   ├── strategy_engine.py       # Lite mode strategy
+│   ├── poker_logic.py           # Hand evaluation + decisions
+│   ├── poker_sim.py             # Strategy simulator
+│   ├── test_screenshots.py      # Offline testing
+│   ├── send_to_kiro.py          # Upload to server
+│   ├── send_logs.py             # Upload logs
+│   └── requirements.txt
+│
+├── server/                      # EC2 server code
+│   ├── kiro_analyze.py          # Kiro CLI server (port 5001)
+│   ├── app.py                   # Old server (not used)
+│   ├── poker_strategy.py        # Strategy logic
+│   ├── analyze_session.py       # Log analysis
+│   ├── requirements.txt
+│   └── uploads/                 # Screenshots + logs (gitignored)
+│       ├── VISION_COMPARISON_REPORT.md  # Model comparison
+│       ├── compare_with_ground_truth.py # Testing script
+│       ├── ground_truth.json            # Test data
+│       ├── *.png                        # Screenshots (gitignored)
+│       └── *.jsonl                      # Logs (gitignored)
+│
+└── docs/
+    ├── DEPLOYMENT.md            # Setup guide
+    └── ANALYSIS_NOTES.md        # GPT decision analysis
 ```
 
-## Summary
+## Code Statistics
 
-**Deleting**: 14 temporary files (1 in root, 1 in server/uploads, 12 in /tmp)
-**Keeping**: 3 core docs + 2 technical docs + 3 testing files + all code
+**Total**: ~2,606 lines of actual code (excluding comments/blanks)
+
+### By Component
+- **Core Logic**: 664 lines (poker_logic.py)
+- **UI & Testing**: 784 lines (helper_bar, poker_sim, test_screenshots)
+- **Vision & Strategy**: 447 lines (3 vision detectors + strategy engine)
+- **Server**: 711 lines (kiro_analyze, app, analysis tools)
+
+## Repository Status
+
+- ✅ Both folders (client + server) in same GitHub repo
+- ✅ All temporary files removed
+- ✅ Only essential documentation kept
+- ✅ Clean commit history
+- ✅ Ready for continued development
+
+## Next Steps
+
+1. Pull latest on Windows: `git pull`
+2. Test both models: `python test_screenshots.py --lite --test-all-models`
+3. Upload logs: `python send_logs.py`
+4. Analyze results on server
