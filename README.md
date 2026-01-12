@@ -39,6 +39,17 @@ python helper_bar.py
 - **AI Decision** with reasoning (fold/call/raise)
 - **6-9 seconds** per analysis
 
+## Strategy Simulator
+
+Test strategies against realistic player pools:
+
+```bash
+cd client
+python3 poker_sim.py 50000  # Run 50k hands
+```
+
+Results show BB/100 win rate for each strategy.
+
 ## Cost
 
 ~$2 per 1000 hands (GPT-5.2 API)
@@ -47,9 +58,13 @@ python helper_bar.py
 
 ```
 client/
-  helper_bar.py      # Main UI
-  vision_detector.py # GPT-5.2 API wrapper
-  requirements.txt   # Dependencies
+  helper_bar.py        # Main UI
+  vision_detector.py   # GPT-5.2 API wrapper
+  poker_logic.py       # Hand evaluation + decisions
+  poker_sim.py         # Strategy simulator
+  strategy_engine.py   # Lite mode strategy
+  pokerstrategy_*      # Strategy definition files
+  requirements.txt     # Dependencies
 ```
 
 ## Legal
