@@ -149,7 +149,8 @@ def simulate_hand(players, dealer_pos):
             is_agg = (p == opener) or (p == three_bettor)
             
             action, bet_size, _ = postflop_action(
-                list(p.cards), board, pot, to_call, street_name, is_ip, is_agg
+                list(p.cards), board, pot, to_call, street_name, is_ip, is_agg,
+                archetype=p.base_strategy if hasattr(p, 'base_strategy') else p.name
             )
             
             if action == 'fold':

@@ -386,10 +386,11 @@ def check_draws(hole_cards: List[Tuple[str, str]], board: List[Tuple[str, str]])
 # Postflop decision logic - matches strategy files exactly
 def postflop_action(hole_cards: List[Tuple[str, str]], board: List[Tuple[str, str]], 
                     pot: float, to_call: float, street: str, is_ip: bool,
-                    is_aggressor: bool) -> Tuple[str, float, str]:
+                    is_aggressor: bool, archetype: str = None) -> Tuple[str, float, str]:
     """
     Postflop decision based on strategy file rules.
     Returns (action, bet_size, reasoning).
+    archetype: 'fish', 'nit', 'tag', 'lag' for special behavior
     """
     strength, desc, kicker = evaluate_hand(hole_cards, board)
     draws = check_draws(hole_cards, board)
@@ -398,100 +399,141 @@ def postflop_action(hole_cards: List[Tuple[str, str]], board: List[Tuple[str, st
     has_oesd = "oesd" in draws
     has_gutshot = "gutshot" in draws
     combo_draw = has_flush_draw and (has_oesd or has_gutshot)
+    has_any_draw = has_flush_draw or has_oesd or has_gutshot
+    has_pair = strength >= 2
     
-    # Street-specific sizing from strategy files
-    sizing = {
+    # FISH: Calls with any pair/draw, never folds top pair, stations
+    if archetype == 'fish':
+        if to_call == 0 or to_call is None:
+            if strength >= 3:  # Two pair+
+                return ('bet', round(pot * 0.5, 2), f"{desc} - fish bets small")
+            return ('check', 0, "fish checks")
+        else:
+            # Fish calls with any pair or draw
+            if has_pair or has_any_draw:
+                return ('call', 0, f"{desc} - fish calls")
+            return ('fold', 0, "fish folds air")
+    
+    # NIT: Only continues top pair+, folds to aggression, never bluffs
+    if archetype == 'nit':
+        if to_call == 0 or to_call is None:
+            if strength >= 4:  # Set+
+                return ('bet', round(pot * 0.65, 2), f"{desc} - nit value bets")
+            if strength == 3 or "top pair" in desc:
+                return ('bet', round(pot * 0.5, 2), f"{desc} - nit bets")
+            return ('check', 0, "nit checks weak hand")
+        else:
+            # Nit folds to aggression without strong hand
+            if strength >= 4:  # Set+
+                return ('call', 0, f"{desc} - nit calls")
+            if strength == 3 and street == 'flop':
+                return ('call', 0, f"{desc} - nit calls flop")
+            if "top pair good kicker" in desc and street == 'flop':
+                return ('call', 0, f"{desc} - nit calls flop")
+            return ('fold', 0, f"{desc} - nit folds to aggression")
+    
+    # TAG: C-bets 65%, gives up without equity, folds to raises
+    if archetype == 'tag':
+        if to_call == 0 or to_call is None:
+            if strength >= 3:  # Two pair+
+                return ('bet', round(pot * 0.65, 2), f"{desc} - tag value bets")
+            if "top pair" in desc or "pair" in desc:
+                if street == 'flop' and random.random() < 0.65:
+                    return ('bet', round(pot * 0.5, 2), f"{desc} - tag c-bets")
+                if street == 'turn' and strength >= 2 and "top" in desc:
+                    return ('bet', round(pot * 0.55, 2), f"{desc} - tag barrels")
+            if combo_draw and street == 'flop':
+                return ('bet', round(pot * 0.5, 2), "tag semi-bluffs draw")
+            return ('check', 0, f"{desc} - tag checks")
+        else:
+            if strength >= 4:
+                return ('call', 0, f"{desc} - tag calls")
+            if strength == 3 and street != 'river':
+                return ('call', 0, f"{desc} - tag calls")
+            if "top pair" in desc and street == 'flop':
+                return ('call', 0, f"{desc} - tag calls flop")
+            return ('fold', 0, f"{desc} - tag folds")
+    
+    # LAG: C-bets 75%, double barrels, bluffs rivers
+    if archetype == 'lag':
+        if to_call == 0 or to_call is None:
+            if strength >= 3:
+                return ('bet', round(pot * 0.75, 2), f"{desc} - lag value bets big")
+            if "pair" in desc:
+                if street in ['flop', 'turn'] and random.random() < 0.75:
+                    return ('bet', round(pot * 0.6, 2), f"{desc} - lag barrels")
+            if has_any_draw:
+                return ('bet', round(pot * 0.65, 2), "lag semi-bluffs")
+            if street == 'flop' and random.random() < 0.70:
+                return ('bet', round(pot * 0.5, 2), "lag c-bets air")
+            if street == 'river' and random.random() < 0.25:
+                return ('bet', round(pot * 0.6, 2), "lag river bluff")
+            return ('check', 0, f"{desc} - lag checks")
+        else:
+            if strength >= 3:
+                return ('call', 0, f"{desc} - lag calls")
+            if "pair" in desc and street != 'river':
+                return ('call', 0, f"{desc} - lag floats")
+            if has_flush_draw or has_oesd:
+                return ('call', 0, "lag calls with draw")
+            return ('fold', 0, f"{desc} - lag folds")
+    
+    # DEFAULT (bot strategies) - original logic
+    s = {
         'flop': {'nuts': 1.0, 'set': 0.85, 'twopair': 0.80, 'tptk': 0.75, 'tpgk': 0.70, 'tpwk': 0.65},
         'turn': {'nuts': 1.0, 'set': 0.85, 'twopair': 0.80, 'tptk': 0.70, 'tpgk': 0.60, 'tpwk': 0.0},
         'river': {'nuts': 1.0, 'set': 0.85, 'twopair': 0.80, 'tptk': 0.60, 'tpgk': 0.50, 'tpwk': 0.0},
-    }
-    s = sizing.get(street, sizing['flop'])
+    }.get(street, {})
     
-    # No bet to call - betting decisions
     if to_call == 0 or to_call is None:
-        # Nuts (straights/flushes/boats): 100% pot
-        if strength >= 5:  # Straight+
-            bet = round(pot * s['nuts'], 2)
-            return ('bet', bet, f"{desc} - bet 100% pot")
-        # Sets: 85% pot
+        if strength >= 5:
+            return ('bet', round(pot * s.get('nuts', 1.0), 2), f"{desc} - bet 100%")
         if strength == 4:
-            bet = round(pot * s['set'], 2)
-            return ('bet', bet, f"{desc} - bet 85% pot")
-        # Two pair: 80% pot
+            return ('bet', round(pot * s.get('set', 0.85), 2), f"{desc} - bet 85%")
         if strength == 3:
-            bet = round(pot * s['twopair'], 2)
-            return ('bet', bet, f"{desc} - bet 80% pot")
-        # Top pair top kicker
+            return ('bet', round(pot * s.get('twopair', 0.80), 2), f"{desc} - bet 80%")
         if "top pair good kicker" in desc:
-            bet = round(pot * s['tptk'], 2)
-            return ('bet', bet, f"{desc} - bet {int(s['tptk']*100)}%")
-        # Top pair weak kicker: bet flop only, check-call later
-        if "top pair weak kicker" in desc:
-            if street == 'flop':
-                bet = round(pot * s['tpwk'], 2)
-                return ('bet', bet, f"{desc} - bet 65% flop")
-            return ('check', 0, f"{desc} - check-call {street}")
-        # Overpair
-        if "pair" in desc and kicker > 1000:  # Encoded as rank*100+kicker
-            bet = round(pot * s['tpgk'], 2)
-            return ('bet', bet, f"{desc} - bet {int(s['tpgk']*100)}%")
-        
-        # Draws: check if free (from strategy files)
+            return ('bet', round(pot * s.get('tptk', 0.75), 2), f"{desc} - value bet")
+        if "top pair weak kicker" in desc and street == 'flop':
+            return ('bet', round(pot * s.get('tpwk', 0.65), 2), f"{desc} - bet flop")
         if combo_draw:
-            bet = round(pot * 0.70, 2)
-            return ('bet', bet, "combo draw - semi-bluff 70%")
-        if has_flush_draw or has_oesd:
-            return ('check', 0, f"draw - check free")
-        
-        # Weak hands: check-fold
+            return ('bet', round(pot * 0.70, 2), "combo draw - semi-bluff")
         return ('check', 0, f"{desc} - check")
     
-    # FACING AGGRESSION - from strategy files:
-    # Flop raise: continue TPTK+, fold rest
-    # Turn raise: continue two pair+, fold one pair  
-    # River raise: continue straights+, fold everything else
-    
-    # Straights+ always call/raise
+    # Facing bet - default logic (from strategy files)
+    # TPTK: 2-3 streets of value, call down
+    # Two pair: call all streets except big river raises
+    # Sets+: always call/raise
     if strength >= 5:
         return ('call', 0, f"{desc} - call")
-    
-    # Sets/trips - call flop/turn, call river
     if strength == 4:
         return ('call', 0, f"{desc} - call")
-    
-    # Two pair - call flop/turn, fold to river raise
     if strength == 3:
-        if street == 'river':
-            return ('fold', 0, f"{desc} - fold to river raise")
         return ('call', 0, f"{desc} - call")
-    
-    # Top pair top kicker - call flop only
     if "top pair good kicker" in desc:
+        # TPTK calls flop and turn, folds to big river bets
+        if street in ['flop', 'turn']:
+            return ('call', 0, f"{desc} - call {street}")
+        # River: call small, fold big
+        pot_odds = to_call / (pot + to_call) if pot > 0 else 1
+        if pot_odds <= 0.40:
+            return ('call', 0, f"{desc} - call small river")
+        return ('fold', 0, f"{desc} - fold big river bet")
+    if "top pair" in desc:
+        # Weak kicker: call flop only
         if street == 'flop':
             return ('call', 0, f"{desc} - call flop")
-        return ('fold', 0, f"{desc} - fold to {street} aggression")
-    
-    # One pair - fold to any raise (per strategy files)
-    if "pair" in desc:
-        if street == 'flop':
-            return ('call', 0, f"{desc} - call flop once")
-        return ('fold', 0, f"{desc} - fold to {street} bet")
-    
-    # Draws - call with correct odds
+        return ('fold', 0, f"{desc} - fold {street}")
+    if "pair" in desc and street == 'flop':
+        return ('call', 0, f"{desc} - call flop")
     if has_flush_draw:
         pot_odds = to_call / (pot + to_call) if pot > 0 else 1
-        if pot_odds <= 0.40:  # ~40% pot or less
+        if pot_odds <= 0.40:
             return ('call', 0, "flush draw - call")
-        return ('fold', 0, "flush draw - fold bad odds")
     if has_oesd:
         pot_odds = to_call / (pot + to_call) if pot > 0 else 1
         if pot_odds <= 0.33:
             return ('call', 0, "OESD - call")
-        return ('fold', 0, "OESD - fold bad odds")
-    if has_gutshot:
-        return ('fold', 0, "gutshot - check-fold")
-    
-    # Nothing - fold
     return ('fold', 0, f"{desc} - fold")
 
 
