@@ -1,10 +1,10 @@
 # OnyxPoker - Status Tracking
 
-**Last Updated**: January 13, 2026 01:15 UTC
+**Last Updated**: January 13, 2026 03:03 UTC
 
-## Current Status: SESSION 31 - SMART POSTFLOP FIXES ✅
+## Current Status: SESSION 32 - POSTFLOP EQUITY UI ✅
 
-Fixed critical bugs: board pair detection, weak kicker sizing, pot odds. value_max now #1 at +46.82 BB/100.
+Added real-time equity, outs, draws, and pot odds display to helper bar for postflop decisions.
 
 ## What Works
 
@@ -96,6 +96,19 @@ python3 poker_sim.py 150000  # Run 150k hands simulation
 | 8 | sonnet | +9.17 | 11.79 |
 
 ## Session Log
+
+### Session 32 (January 13, 2026)
+- **POSTFLOP EQUITY UI**: Added real-time equity display to helper bar ⭐
+  - `calculate_equity()`: Monte Carlo simulation (500 iterations)
+  - `count_outs()`: Counts flush (9), OESD (8), gutshot (4), pair improvement (5)
+  - `get_hand_info()`: Returns equity, outs, draws, pot_odds
+  - UI shows: "Win: 67.6% | Outs: 9 (flush) | Odds: 33.3%"
+  - Session logs now include equity, hand_desc, draws, outs, pot_odds
+- **14-HAND SESSION ANALYSIS**: Found issues with current postflop logic
+  - Qd2d on 4s4c6d: Missed flush draw (3 diamonds), said "high card"
+  - 44 on 789-5: Has set + OESD, said "bottom pair"
+  - Ad3s on QK2: Has gutshot, said "no equity"
+- Commits: 5d2f3d8, bfd6b55
 
 ### Session 31 (January 13, 2026)
 - **SMART POSTFLOP FIXES**: Analyzed 245-hand session log, found critical bugs ⭐
