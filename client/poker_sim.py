@@ -227,27 +227,28 @@ def get_table_configs(difficulty):
     """Return table compositions for a difficulty level."""
     if difficulty == 'easy':
         # Fish-heavy tables (60% fish, 20% nit, 20% tag)
+        # Easy: 70% fish, 20% nit, 10% tag (very soft)
         return [
-            ['fish', 'fish', 'fish', 'nit', 'tag'],
             ['fish', 'fish', 'fish', 'fish', 'nit'],
-            ['fish', 'fish', 'nit', 'nit', 'tag'],
-            ['fish', 'fish', 'fish', 'tag', 'nit'],
+            ['fish', 'fish', 'fish', 'nit', 'tag'],
+            ['fish', 'fish', 'fish', 'nit', 'nit'],
+            ['fish', 'fish', 'fish', 'fish', 'tag'],
         ]
     elif difficulty == 'medium':
-        # Mixed tables (30% fish, 30% tag, 20% lag, 20% nit)
+        # Medium: 50% fish, 25% tag, 15% nit, 10% lag (average 2NL)
         return [
-            ['fish', 'fish', 'tag', 'lag', 'nit'],
-            ['fish', 'tag', 'tag', 'lag', 'nit'],
-            ['fish', 'tag', 'lag', 'lag', 'nit'],
-            ['fish', 'fish', 'tag', 'tag', 'lag'],
+            ['fish', 'fish', 'fish', 'tag', 'nit'],
+            ['fish', 'fish', 'tag', 'tag', 'nit'],
+            ['fish', 'fish', 'fish', 'tag', 'lag'],
+            ['fish', 'fish', 'tag', 'nit', 'lag'],
         ]
     else:  # tough
-        # Aggressive regs (30% lag, 25% maniac, 25% tag, 10% fish, 10% nit)
+        # Tough: 40% fish, 30% tag, 20% lag, 10% nit (toughest realistic 2NL)
         return [
-            ['lag', 'lag', 'maniac', 'tag', 'nit'],
-            ['lag', 'maniac', 'maniac', 'tag', 'fish'],
-            ['lag', 'lag', 'tag', 'tag', 'maniac'],
-            ['maniac', 'maniac', 'lag', 'tag', 'nit'],
+            ['fish', 'fish', 'tag', 'tag', 'lag'],
+            ['fish', 'fish', 'tag', 'lag', 'nit'],
+            ['fish', 'tag', 'tag', 'lag', 'lag'],
+            ['fish', 'fish', 'tag', 'tag', 'nit'],
         ]
 
 
@@ -261,7 +262,7 @@ def run_simulation(num_hands=100000):
     
     print(f"Testing {len(bot_strategies)} bots across 3 difficulty levels")
     print(f"Hands per difficulty: {hands_per_diff:,}")
-    print(f"Easy: Fish-heavy | Medium: Mixed | Tough: LAG/Maniac-heavy\n", flush=True)
+    print(f"Easy: 70% fish | Medium: 50% fish | Tough: 40% fish, more TAGs\n", flush=True)
     
     # Results: {bot: {difficulty: [trial_results]}}
     results = {bot: {d: [] for d in difficulties} for bot in bot_strategies}
