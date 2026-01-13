@@ -197,6 +197,11 @@ class HelperBar:
                                       bg='#2d2d2d', fg='#00ff00')
         self.decision_label.pack(pady=5)
 
+        # Equity/hand info line
+        self.equity_label = tk.Label(right, text="", font=('Courier', 10),
+                                    bg='#2d2d2d', fg='#ff88ff')
+        self.equity_label.pack(pady=2)
+
         # To call info
         self.maxcall_label = tk.Label(right, text="", font=('Arial', 12),
                                      bg='#2d2d2d', fg='#ffff00')
@@ -383,6 +388,14 @@ class HelperBar:
             'confidence': confidence,
             'elapsed': round(elapsed, 2)
         }
+        # Add postflop info if available
+        if board:
+            log_entry['equity'] = result.get('equity', 0)
+            log_entry['hand_desc'] = result.get('hand_desc', '')
+            log_entry['draws'] = result.get('draws', [])
+            log_entry['outs'] = result.get('outs', 0)
+            log_entry['pot_odds'] = result.get('pot_odds', 0)
+        
         with open(SESSION_LOG, 'a') as f:
             f.write(json.dumps(log_entry) + '\n')
 
@@ -427,9 +440,32 @@ class HelperBar:
         # Update right panel
         is_hero_turn = result.get('is_hero_turn', True)
         
+        # Build equity/info string for postflop
+        equity_str = ""
+        if board:  # Postflop
+            equity = result.get('equity', 0)
+            outs = result.get('outs', 0)
+            draws = result.get('draws', [])
+            pot_odds = result.get('pot_odds', 0)
+            hand_desc = result.get('hand_desc', '')
+            
+            parts = []
+            if equity > 0:
+                parts.append(f"Win: {equity}%")
+            if outs > 0:
+                out_types = result.get('out_types', [])
+                parts.append(f"Outs: {outs} ({', '.join(out_types)})" if out_types else f"Outs: {outs}")
+            if pot_odds > 0:
+                parts.append(f"Odds: {pot_odds}%")
+            if draws:
+                parts.append(' '.join(d.replace('_', ' ') for d in draws))
+            
+            equity_str = " | ".join(parts) if parts else hand_desc
+        
         if is_hero_turn:
             self.cards_label.config(text=cards_str)
             self.decision_label.config(text=action.upper())
+            self.equity_label.config(text=equity_str)
             self.maxcall_label.config(text="")
         else:
             # Not hero's turn - show to_call and pre-action status

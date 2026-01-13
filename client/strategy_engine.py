@@ -6,7 +6,8 @@ Takes table data from vision API and returns action + reasoning.
 from typing import Dict, Any, List
 from poker_logic import (
     STRATEGIES, RANK_VAL, parse_card, hand_to_str,
-    evaluate_hand, check_draws, postflop_action, preflop_action
+    evaluate_hand, check_draws, postflop_action, preflop_action,
+    get_hand_info
 )
 
 DEFAULT_STRATEGY = 'value_max'
@@ -156,11 +157,20 @@ class StrategyEngine:
             strategy=self.strategy_name, num_opponents=num_opponents
         )
         
+        # Get enhanced hand info
+        hand_info = get_hand_info(hole_cards, board_cards, pot, to_call, num_opponents)
+        
         return {
             'action': action,
             'bet_size': bet_size if bet_size > 0 else None,
             'reasoning': reasoning,
-            'strategy': self.strategy_name
+            'strategy': self.strategy_name,
+            'equity': hand_info['equity'],
+            'hand_desc': hand_info['hand_desc'],
+            'draws': hand_info['draws'],
+            'outs': hand_info['outs'],
+            'out_types': hand_info['out_types'],
+            'pot_odds': hand_info['pot_odds']
         }
 
 

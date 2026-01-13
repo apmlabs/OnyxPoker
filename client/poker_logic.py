@@ -5,6 +5,7 @@ Contains hand evaluation, postflop decisions, and strategy definitions.
 
 from typing import Dict, List, Set, Tuple, Optional
 import random
+from itertools import combinations
 
 # Card constants
 RANKS = '23456789TJQKA'
@@ -524,6 +525,110 @@ def check_draws(hole_cards: List[Tuple[str, str]], board: List[Tuple[str, str]])
             break
     
     return draws
+
+
+def calculate_equity(hole_cards: List[Tuple[str, str]], board: List[Tuple[str, str]], 
+                     num_opponents: int = 1, simulations: int = 1000) -> float:
+    """Monte Carlo equity calculation. Returns win probability 0-100."""
+    if len(board) < 3:
+        return 0.0  # Preflop - don't calculate
+    
+    # Build deck minus known cards
+    deck = [(r, s) for r in RANKS for s in SUITS]
+    known = set(hole_cards + board)
+    deck = [c for c in deck if c not in known]
+    
+    wins = 0
+    ties = 0
+    
+    for _ in range(simulations):
+        # Deal remaining board cards
+        cards_needed = 5 - len(board)
+        random.shuffle(deck)
+        full_board = board + deck[:cards_needed]
+        remaining = deck[cards_needed:]
+        
+        # Deal opponent hands
+        opp_hands = []
+        idx = 0
+        for _ in range(num_opponents):
+            opp_hands.append([remaining[idx], remaining[idx+1]])
+            idx += 2
+        
+        # Evaluate all hands
+        hero_rank = evaluate_hand(hole_cards, full_board)
+        opp_ranks = [evaluate_hand(oh, full_board) for oh in opp_hands]
+        
+        best_opp = max(opp_ranks, key=lambda x: (x[0], x[2]))
+        
+        if (hero_rank[0], hero_rank[2]) > (best_opp[0], best_opp[2]):
+            wins += 1
+        elif (hero_rank[0], hero_rank[2]) == (best_opp[0], best_opp[2]):
+            ties += 0.5
+    
+    return round((wins + ties) / simulations * 100, 1)
+
+
+def count_outs(hole_cards: List[Tuple[str, str]], board: List[Tuple[str, str]]) -> Tuple[int, List[str]]:
+    """Count outs to improve hand. Returns (num_outs, list of out types)."""
+    if len(board) < 3:
+        return (0, [])
+    
+    outs = 0
+    out_types = []
+    draws = check_draws(hole_cards, board)
+    
+    if "flush_draw" in draws:
+        outs += 9
+        out_types.append("9 flush")
+    if "oesd" in draws:
+        outs += 8 if "flush_draw" not in draws else 6  # Discount overlapping
+        out_types.append("8 straight" if "flush_draw" not in draws else "6 straight")
+    elif "gutshot" in draws:
+        outs += 4
+        out_types.append("4 gutshot")
+    
+    # Pair outs (6 outs to two pair/trips if we have a pair)
+    rank, desc, _ = evaluate_hand(hole_cards, board)
+    if rank == 2 and "top pair" in desc:
+        outs += 5  # Trips or two pair
+        out_types.append("5 improve pair")
+    
+    return (outs, out_types)
+
+
+def get_hand_info(hole_cards: List[Tuple[str, str]], board: List[Tuple[str, str]], 
+                  pot: float, to_call: float, num_opponents: int = 1) -> Dict:
+    """Get comprehensive hand info for display."""
+    rank, desc, kicker = evaluate_hand(hole_cards, board)
+    draws = check_draws(hole_cards, board)
+    outs, out_types = count_outs(hole_cards, board)
+    
+    # Equity (only postflop)
+    equity = calculate_equity(hole_cards, board, num_opponents, 500) if board else 0
+    
+    # Pot odds
+    pot_odds = round(to_call / (pot + to_call) * 100, 1) if to_call > 0 else 0
+    
+    # Implied odds needed
+    implied_needed = 0
+    if outs > 0 and to_call > 0:
+        # Rule of 2 and 4
+        draw_equity = outs * 2 if len(board) == 4 else outs * 4
+        if draw_equity < pot_odds:
+            # Need implied odds - how much more do we need to win?
+            implied_needed = round((to_call / (draw_equity/100)) - pot, 2)
+    
+    return {
+        'hand_rank': rank,
+        'hand_desc': desc,
+        'draws': draws,
+        'outs': outs,
+        'out_types': out_types,
+        'equity': equity,
+        'pot_odds': pot_odds,
+        'implied_needed': implied_needed
+    }
 
 
 # Postflop decision logic - matches strategy files exactly
