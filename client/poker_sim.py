@@ -234,30 +234,29 @@ def run_simulation(num_hands=100000):
     print(f"Testing {len(bot_strategies)} bot strategies with full postflop play")
     print(f"Bots: {', '.join(bot_strategies)}")
     print(f"Players: {', '.join(player_archetypes)}")
-    print(f"~25% fish, ~20% TAG, ~5% nit, ~25% LAG, ~25% maniac per table (from 407-hand analysis)\n", flush=True)
+    print(f"TOUGH TABLES: 30% LAG, 25% Maniac, 20% TAG, 15% Fish, 10% Nit (from 795-hand analysis)\n", flush=True)
     
-    # Generate table configs - updated based on real 2NL data
-    # Updated distribution based on 407-hand analysis:
-    # - 0% limps (removed fish limping)
-    # - 18.9% 3bet frequency (more maniacs/LAGs)
-    # - 28% overbets (more maniacs)
+    # Generate table configs - TOUGHER based on real 2NL Blitz data
+    # 795-hand analysis: 72% open rate, 11.3% 3bet rate = aggressive tables
+    # New distribution: 30% LAG, 25% Maniac, 20% TAG, 15% Fish, 10% Nit
     valid_tables = []
     for bot in bot_strategies:
-        # Maniac-heavy tables (40%) - matches 18.9% 3bet, 28% overbet
+        # LAG/Maniac heavy (50%) - tough aggressive tables
         for _ in range(3):
-            valid_tables.append(['fish', 'fish', 'tag', 'maniac', 'maniac', bot])
+            valid_tables.append(['lag', 'lag', 'maniac', 'tag', 'nit', bot])
         for _ in range(2):
-            valid_tables.append(['fish', 'lag', 'tag', 'maniac', 'maniac', bot])
-        valid_tables.append(['fish', 'fish', 'lag', 'maniac', 'maniac', bot])
-        # LAG tables (30%)
+            valid_tables.append(['lag', 'maniac', 'maniac', 'tag', 'fish', bot])
+        valid_tables.append(['lag', 'lag', 'maniac', 'maniac', 'tag', bot])
+        # TAG heavy (25%) - solid regs
         for _ in range(2):
-            valid_tables.append(['fish', 'fish', 'tag', 'lag', 'maniac', bot])
+            valid_tables.append(['tag', 'tag', 'lag', 'maniac', 'fish', bot])
+        valid_tables.append(['tag', 'tag', 'tag', 'lag', 'nit', bot])
+        valid_tables.append(['tag', 'tag', 'lag', 'fish', 'nit', bot])
+        # Mixed (25%) - some fish but still tough
         for _ in range(2):
-            valid_tables.append(['fish', 'tag', 'lag', 'lag', 'maniac', bot])
-        valid_tables.append(['fish', 'fish', 'lag', 'lag', 'maniac', bot])
-        # Standard tables (30%)
-        for _ in range(2):
-            valid_tables.append(['fish', 'fish', 'tag', 'tag', 'lag', bot])
+            valid_tables.append(['fish', 'tag', 'lag', 'maniac', 'nit', bot])
+        valid_tables.append(['fish', 'fish', 'tag', 'lag', 'maniac', bot])
+        valid_tables.append(['fish', 'tag', 'tag', 'lag', 'lag', bot])
         valid_tables.append(['fish', 'tag', 'tag', 'lag', 'nit', bot])
         valid_tables.append(['fish', 'tag', 'nit', 'lag', 'maniac', bot])
         valid_tables.append(['fish', 'fish', 'tag', 'lag', 'nit', bot])

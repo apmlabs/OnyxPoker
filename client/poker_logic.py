@@ -974,72 +974,41 @@ def _postflop_value_max(hole_cards, board, pot, to_call, street, is_ip, is_aggre
         return ('check', 0, f"{desc} - check")
     
     else:
-        # === FACING A BET ===
+        # === FACING A BET - EQUITY-BASED DECISIONS ===
         
         # 4-flush on board and we don't have it - fold (unless we have full house+)
         if board_has_4flush and not hero_has_flush_card and strength < 7:
             return ('fold', 0, f"{desc} - fold (4-flush on board)")
         
-        # MONSTERS - raise for value
+        # MONSTERS (str >= 5) - always raise
         if strength >= 5:
             return ('raise', round(pot * 2.0, 2), f"{desc} - raise for value")
         
-        # SETS - raise or call based on street
+        # SETS (str == 4) - raise or call
         if strength == 4:
             if street == 'river':
                 return ('call', 0, f"{desc} - call river")
             return ('raise', round(pot * 2.0, 2), f"{desc} - raise for value")
         
-        # TWO PAIR - check if strong or weak based on board pairs
-        if strength == 3:
-            # River with paired board = villain likely has trips/full house - FOLD
-            if street == 'river' and num_board_pairs >= 1:
-                return ('fold', 0, f"{desc} - fold river ({num_board_pairs} pair(s) on board)")
-            # Board has pair(s) = our two pair is weak - only call small bets
-            if num_board_pairs >= 1:
-                if pot_odds <= 0.25:
-                    return ('call', 0, f"{desc} - call (board paired)")
-                return ('fold', 0, f"{desc} - fold (board paired, bet too big)")
-            # Strong two pair (no board pair) - call big bets
-            if pot_odds <= 0.45:
-                return ('call', 0, f"{desc} - call (good odds)")
-            return ('fold', 0, f"{desc} - fold (bet too big)")
+        # === EQUITY-BASED CALLING FOR ALL OTHER HANDS ===
+        # Call if equity > pot_odds, fold otherwise
         
-        # TOP PAIR - call if bet is reasonable
-        if "top pair" in desc:
-            if pot_odds <= 0.33:  # Calling up to 50% pot
-                return ('call', 0, f"{desc} - call (good odds)")
-            if "good kicker" in desc and pot_odds <= 0.4:
-                return ('call', 0, f"{desc} - call TPGK")
-            return ('fold', 0, f"{desc} - fold (bet too big)")
+        # TWO PAIR on paired board river - be cautious (villain likely has trips+)
+        if strength == 3 and street == 'river' and num_board_pairs >= 1:
+            # Still call if equity is way higher than pot odds
+            if equity > pot_odds + 0.20:
+                return ('call', 0, f"{desc} - call ({equity*100:.0f}% eq vs {pot_odds*100:.0f}% odds)")
+            return ('fold', 0, f"{desc} - fold river (board paired)")
         
-        # OVERPAIR - call reasonable bets
-        if "overpair" in desc.lower():
-            if pot_odds <= 0.35:
-                return ('call', 0, f"{desc} - call overpair")
-            return ('fold', 0, f"{desc} - fold overpair to big bet")
+        # For all hands with equity > pot_odds: CALL
+        if equity > pot_odds:
+            # Raise with very strong equity advantage
+            if equity > pot_odds + 0.30 and strength >= 3:
+                return ('raise', round(pot * 2.0, 2), f"{desc} - raise ({equity*100:.0f}% eq vs {pot_odds*100:.0f}% odds)")
+            return ('call', 0, f"{desc} - call ({equity*100:.0f}% eq vs {pot_odds*100:.0f}% odds)")
         
-        # MEDIUM PAIR - only call small bets
-        if "pair" in desc:
-            if pot_odds <= 0.25:  # Only call up to 33% pot
-                return ('call', 0, f"{desc} - call small bet")
-            return ('fold', 0, f"{desc} - fold weak pair")
-        
-        # DRAWS - call with odds
-        if has_flush_draw or has_oesd:
-            # Use actual equity if available, else estimate
-            draw_equity = equity if equity > 0 else (0.35 if has_flush_draw else 0.32)
-            if combo_draw and equity == 0:
-                draw_equity = 0.45
-            if pot_odds <= draw_equity:
-                return ('call', 0, f"draw - call ({draw_equity*100:.0f}% equity vs {pot_odds*100:.0f}% odds)")
-            return ('fold', 0, f"draw - fold (no odds)")
-        
-        # HIGH CARD with equity - call if equity > pot odds
-        if equity > 0 and equity > pot_odds:
-            return ('call', 0, f"{desc} - call ({equity*100:.0f}% equity vs {pot_odds*100:.0f}% odds)")
-        
-        return ('fold', 0, f"{desc} - fold")
+        # Equity <= pot_odds: FOLD
+        return ('fold', 0, f"{desc} - fold ({equity*100:.0f}% eq vs {pot_odds*100:.0f}% odds)")
 
 
 def _postflop_gpt(hole_cards, board, pot, to_call, street, is_ip, is_aggressor,

@@ -56,8 +56,8 @@ class HelperBar:
         bar_height = 880
         self.root.geometry(f"{screen_w}x{bar_height}+0+{screen_h - bar_height - 40}")
 
-        # Keep window decorations for resizing
-        self.root.overrideredirect(False)
+        # No window decorations
+        self.root.overrideredirect(True)
         
         # Always on top
         self.root.attributes('-topmost', True)
@@ -72,12 +72,19 @@ class HelperBar:
         # Drag state
         self._drag_start_x = 0
         self._drag_start_y = 0
+        
+        # Resize state
+        self._resize_edge = None
+        self._resize_start_x = 0
+        self._resize_start_y = 0
+        self._resize_start_w = 0
+        self._resize_start_h = 0
 
         self.create_ui()
         self.register_hotkeys()
         self.update_log_display()
 
-        self.log("OnyxPoker ready - Press F9 for advice", "INFO")
+        self.log("OnyxPoker ready | F9=Advice F10=Bot F11=Stop F12=Hide", "INFO")
 
     def create_ui(self):
         """Three-column layout: Status | Log | Result"""
@@ -105,40 +112,7 @@ class HelperBar:
         bottom = tk.Frame(main, bg='#1e1e1e')
         bottom.pack(side='top', fill='both', expand=True)
 
-        # === LEFT: Status & Hotkeys (150px) ===
-        left = tk.Frame(bottom, bg='#2d2d2d', width=150)
-        left.pack(side='left', fill='y', padx=2, pady=2)
-        left.pack_propagate(False)
-
-        tk.Label(left, text="OnyxPoker", font=('Arial', 12, 'bold'),
-                bg='#2d2d2d', fg='#00ffff').pack(pady=5)
-
-        self.status_label = tk.Label(left, text="Ready", font=('Arial', 10, 'bold'),
-                                    bg='#2d2d2d', fg='#00ff00')
-        self.status_label.pack(pady=2)
-
-        tk.Frame(left, height=1, bg='#555').pack(fill='x', pady=5)
-
-        # Hotkey hints
-        hints = [("F9", "Advice"), ("F10", "Bot"), ("F11", "Stop"), ("F12", "Hide")]
-        for key, action in hints:
-            f = tk.Frame(left, bg='#2d2d2d')
-            f.pack(fill='x', padx=5)
-            tk.Label(f, text=key, font=('Courier', 9, 'bold'), bg='#2d2d2d', fg='#ffff00', width=4).pack(side='left')
-            tk.Label(f, text=action, font=('Arial', 9), bg='#2d2d2d', fg='#aaa').pack(side='left')
-
-        tk.Frame(left, height=1, bg='#555').pack(fill='x', pady=5)
-
-        if AI_ONLY_MODE:
-            tk.Label(left, text=f"AI ONLY: {MODEL}", font=('Arial', 8),
-                    bg='#2d2d2d', fg='#ff8800').pack(pady=1)
-        else:
-            tk.Label(left, text=f"Vision: {DEFAULT_MODEL}", font=('Arial', 8),
-                    bg='#2d2d2d', fg='#888').pack(pady=1)
-            tk.Label(left, text=f"Strategy: {STRATEGY}", font=('Arial', 8),
-                    bg='#2d2d2d', fg='#00ff00').pack(pady=1)
-
-        # === CENTER: Live Log (expandable) ===
+        # === LEFT: Live Log (expandable) ===
         center = tk.Frame(bottom, bg='#1a1a1a')
         center.pack(side='left', fill='both', expand=True, padx=2, pady=2)
 
@@ -166,8 +140,8 @@ class HelperBar:
         self.log_text.tag_configure('ERROR', foreground='#ff4444', font=('Courier', 10, 'bold'))
         self.log_text.tag_configure('DECISION', foreground='#ffff00', font=('Courier', 11, 'bold'))
 
-        # === RIGHT: Last Result (400px) ===
-        right = tk.Frame(bottom, bg='#2d2d2d', width=400)
+        # === RIGHT: Last Result (800px) ===
+        right = tk.Frame(bottom, bg='#2d2d2d', width=800)
         right.pack(side='right', fill='y', padx=2, pady=2)
         right.pack_propagate(False)
 
@@ -254,7 +228,7 @@ class HelperBar:
             return
 
         self._analyzing = True
-        self.status_label.config(text="Analyzing...", fg='#ffff00')
+        #self.status_label.config(text="Analyzing...", fg='#ffff00')
         self.log("F9: Analyzing...", "INFO")
 
         thread = threading.Thread(target=self._analyze_thread, daemon=True)
@@ -352,7 +326,7 @@ class HelperBar:
             self.root.after(0, lambda: self.log(traceback.format_exc(), "DEBUG"))
         finally:
             self._analyzing = False
-            self.root.after(0, lambda: self.status_label.config(text="Ready", fg='#00ff00'))
+            self.root.after(0, lambda: #self.status_label.config(text="Ready", fg='#00ff00'))
 
     def _display_result(self, result, elapsed, screenshot, screenshot_name=None):
         """Display analysis result"""
@@ -504,11 +478,11 @@ class HelperBar:
         """Toggle bot mode"""
         if self.bot_running:
             self.bot_running = False
-            self.status_label.config(text="Stopped", fg='#ff8800')
+            #self.status_label.config(text="Stopped", fg='#ff8800')
             self.log("Bot stopped", "INFO")
         else:
             self.bot_running = True
-            self.status_label.config(text="Bot Running", fg='#00ffff')
+            #self.status_label.config(text="Bot Running", fg='#00ffff')
             self.log("Bot started (F11 to stop)", "INFO")
             thread = threading.Thread(target=self._bot_loop, daemon=True)
             thread.start()
@@ -527,7 +501,7 @@ class HelperBar:
         """Emergency stop"""
         self.bot_running = False
         self._analyzing = False
-        self.status_label.config(text="STOPPED", fg='#ff4444')
+        #self.status_label.config(text="STOPPED", fg='#ff4444')
         self.log("F11: Emergency stop!", "ERROR")
 
     def on_f12(self):
@@ -549,8 +523,75 @@ class HelperBar:
         y = self.root.winfo_y() + event.y - self._drag_start_y
         self.root.geometry(f"+{x}+{y}")
 
+    def _check_resize_edge(self, event):
+        """Check if mouse is near edge for resize"""
+        w, h = self.root.winfo_width(), self.root.winfo_height()
+        x, y = event.x, event.y
+        edge = 8
+        
+        on_left = x < edge
+        on_right = x > w - edge
+        on_top = y < edge
+        on_bottom = y > h - edge
+        
+        if on_top and on_left: return 'nw'
+        if on_top and on_right: return 'ne'
+        if on_bottom and on_left: return 'sw'
+        if on_bottom and on_right: return 'se'
+        if on_top: return 'n'
+        if on_bottom: return 's'
+        if on_left: return 'w'
+        if on_right: return 'e'
+        return None
+
+    def _start_resize(self, event):
+        """Start resize if on edge"""
+        self._resize_edge = self._check_resize_edge(event)
+        if self._resize_edge:
+            self._resize_start_x = event.x_root
+            self._resize_start_y = event.y_root
+            self._resize_start_w = self.root.winfo_width()
+            self._resize_start_h = self.root.winfo_height()
+            self._resize_start_geo_x = self.root.winfo_x()
+            self._resize_start_geo_y = self.root.winfo_y()
+
+    def _do_resize(self, event):
+        """Resize window"""
+        if not self._resize_edge:
+            return
+        dx = event.x_root - self._resize_start_x
+        dy = event.y_root - self._resize_start_y
+        
+        x, y = self._resize_start_geo_x, self._resize_start_geo_y
+        w, h = self._resize_start_w, self._resize_start_h
+        
+        if 'e' in self._resize_edge: w += dx
+        if 's' in self._resize_edge: h += dy
+        if 'w' in self._resize_edge: w -= dx; x += dx
+        if 'n' in self._resize_edge: h -= dy; y += dy
+        
+        w, h = max(400, w), max(200, h)
+        self.root.geometry(f"{w}x{h}+{x}+{y}")
+
+    def _end_resize(self, event):
+        """End resize"""
+        self._resize_edge = None
+
+    def _update_cursor(self, event):
+        """Update cursor based on edge"""
+        edge = self._check_resize_edge(event)
+        cursors = {'n': 'top_side', 's': 'bottom_side', 'e': 'right_side', 'w': 'left_side',
+                   'nw': 'top_left_corner', 'ne': 'top_right_corner', 
+                   'sw': 'bottom_left_corner', 'se': 'bottom_right_corner'}
+        self.root.config(cursor=cursors.get(edge, ''))
+
     def run(self):
         """Start the application"""
+        # Bind resize to root window
+        self.root.bind('<Motion>', self._update_cursor)
+        self.root.bind('<Button-1>', self._start_resize)
+        self.root.bind('<B1-Motion>', self._do_resize)
+        self.root.bind('<ButtonRelease-1>', self._end_resize)
         self.root.mainloop()
 
 
