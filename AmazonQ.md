@@ -2,9 +2,9 @@
 
 **Last Updated**: January 13, 2026 16:00 UTC
 
-## Current Status: SESSION 34 - VALUE_MANIAC AS DEFAULT ✅
+## Current Status: SESSION 34 - PREFLOP CALL THRESHOLDS ✅
 
-Evaluated all strategies on 715 real hands. value_maniac wins with +23.5 BB/100. Set as default strategy.
+Added call threshold info to preflop UI. Now shows how much you can call vs raises.
 
 ## What Works
 
@@ -107,6 +107,10 @@ Table: 60% fish, 25% nit, 15% tag
 ## Session Log
 
 ### Session 34 (January 13, 2026)
+- **PREFLOP CALL THRESHOLDS**: Added to UI
+  - Shows "vs raise: {threshold}" on second line for preflop
+  - Thresholds: ALL-IN ok / call 3bet (15bb) / call open (4bb) / fold
+  - Position-aware: BB defend vs IP calling ranges
 - **VALUE_MANIAC AS DEFAULT**: Set as default strategy in strategy_engine.py
   - +23.5 BB/100 on 715 real hands (best of all strategies)
   - 94% c-bet, 0 bad folds, 27 value raises
