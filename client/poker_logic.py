@@ -463,15 +463,9 @@ def evaluate_hand(hole_cards: List[Tuple[str, str]], board: List[Tuple[str, str]
             # No board pair = strong (we made both pairs)
             if len(board_pairs) == 0:
                 return (3, "two pair", RANK_VAL[pair_ranks[0]])
-            # Board pair exists - check if our pair is higher
-            our_pair_val = max(RANK_VAL[p] for p in hero_pairs)
-            board_pair_val = max(RANK_VAL[p] for p in board_pairs)
-            if our_pair_val > board_pair_val:
-                # Our pair is higher (TT on 944) = strong
-                return (3, "two pair", RANK_VAL[pair_ranks[0]])
-            else:
-                # Board pair is higher (22 on 994) = weak
-                return (3, "two pair (board paired)", RANK_VAL[pair_ranks[0]])
+            # Board pair exists - ALWAYS mark as "board paired" since villain can have trips
+            # Even KK on JJ board loses to any Jx
+            return (3, "two pair (board paired)", RANK_VAL[pair_ranks[0]])
     
     # One pair
     if pair_ranks:
@@ -819,14 +813,33 @@ def postflop_action(hole_cards: List[Tuple[str, str]], board: List[Tuple[str, st
     # sonnet/kiro_optimal: Bigger value bets, overpair logic
     # value_max: Maniac-style big bets but smarter (doesn't bluff as much)
     # value_maniac: Exact maniac postflop (overbets, calls wide)
+    # BUT with paired board protection (learned from KK on JJ disaster)
     
     if strategy == 'value_maniac':
+        # Check for paired board - need to be careful with two pair
+        from collections import Counter
+        board_ranks = [c[0] for c in board] if board else []
+        rank_counts = Counter(board_ranks)
+        paired_ranks = [r for r, c in rank_counts.items() if c >= 2]
+        is_paired_board = len(paired_ranks) > 0
+        
+        # HIGH pair (T+) is dangerous - many hands contain these cards
+        # LOW pair (2-9) is less dangerous - few hands contain these cards
+        high_pair_ranks = {'T', 'J', 'Q', 'K', 'A'}
+        is_dangerous_pair = any(r in high_pair_ranks for r in paired_ranks)
+        
         # Maniac postflop: overbets for value, calls wide
         if to_call == 0 or to_call is None:
             # No bet to call - bet for value
             if strength >= 4:
                 return ('bet', round(pot * 1.25, 2), f"{desc} - overbet value")
             if strength >= 3:
+                # Two pair on HIGH paired board = pot control (KK on JJ)
+                # Two pair on LOW paired board = still value bet (A7 on A722)
+                if is_paired_board and "board paired" in desc and is_dangerous_pair:
+                    if street == 'flop':
+                        return ('bet', round(pot * 0.33, 2), f"{desc} - small bet (pot control)")
+                    return ('check', 0, f"{desc} - check (vulnerable to trips)")
                 return ('bet', round(pot * 1.1, 2), f"{desc} - bet big")
             if "pair" in desc:
                 if street in ['flop', 'turn'] and random.random() < 0.85:
@@ -844,9 +857,20 @@ def postflop_action(hole_cards: List[Tuple[str, str]], board: List[Tuple[str, st
             return ('check', 0, f"{desc} - check")
         else:
             # Facing bet - raise monsters, call pairs, fold air
+            # BUT be careful on HIGH paired boards with two pair
             if strength >= 6:  # Quads, full house, straight flush
                 return ('raise', round(to_call * 3, 2), f"{desc} - raise monster")
-            if strength >= 3:  # Two pair+, flush, straight, set
+            if strength >= 4:  # Set, flush, straight
+                return ('raise', round(to_call * 2.5, 2), f"{desc} - raise strong")
+            if strength == 3:  # Two pair
+                if is_paired_board and "board paired" in desc and is_dangerous_pair:
+                    # Two pair on HIGH paired board - villain likely has trips
+                    is_big_bet = to_call >= pot * 0.5
+                    if is_big_bet:
+                        return ('fold', 0, f"{desc} - fold (two pair vs big bet on paired board)")
+                    if street == 'river':
+                        return ('fold', 0, f"{desc} - fold (two pair on paired board river)")
+                    return ('call', 0, f"{desc} - call (but fold to more aggression)")
                 return ('raise', round(to_call * 2.5, 2), f"{desc} - raise strong")
             if "pair" in desc:
                 return ('call', 0, f"{desc} - call any pair")
@@ -931,8 +955,11 @@ def _postflop_value_max(hole_cards, board, pot, to_call, street, is_ip, is_aggre
         if strength == 4:
             return ('bet', round(pot * (0.85 if is_vulnerable else 0.75), 2), f"{desc} - value bet")
         if strength == 3:
-            if "board paired" in desc and street != 'flop':
-                return ('check', 0, f"{desc} - check (weak two pair)")
+            if "board paired" in desc:
+                # On paired board, two pair is vulnerable to trips
+                if street == 'flop':
+                    return ('bet', round(pot * 0.33, 2), f"{desc} - small bet (pot control)")
+                return ('check', 0, f"{desc} - check (vulnerable to trips)")
             return ('bet', round(pot * 0.7, 2), f"{desc} - value bet")
         if "top pair good kicker" in desc:
             if is_paired_board and street != 'flop':
@@ -990,8 +1017,14 @@ def _postflop_value_max(hole_cards, board, pot, to_call, street, is_ip, is_aggre
         
         # Two pair
         if strength == 3:
-            if "board paired" in desc and street == 'river' and is_big_bet:
-                return ('fold', 0, f"{desc} - fold (weak two pair vs big river bet)")
+            if "board paired" in desc:
+                # On paired board, villain often has trips when betting/raising
+                if is_big_bet:
+                    return ('fold', 0, f"{desc} - fold (two pair vs big bet on paired board)")
+                if street == 'river':
+                    return ('fold', 0, f"{desc} - fold (two pair on paired board river)")
+                # Flop/turn small bet - call once
+                return ('call', 0, f"{desc} - call (but fold to more aggression)")
             return ('call', 0, f"{desc} - call")
         
         # Top pair good kicker - call flop/turn, careful on river
