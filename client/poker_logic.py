@@ -424,10 +424,27 @@ def evaluate_hand(hole_cards: List[Tuple[str, str]], board: List[Tuple[str, str]
         is_set = trips[0] in hero_ranks and len(hero_ranks) == 1
         return (4, f"set of {trips[0]}s" if is_set else f"trips {trips[0]}s", RANK_VAL[trips[0]])
     
-    # Two pair
+    # Two pair - check if strong or weak
     pair_ranks = sorted([r for r, c in rank_counts.items() if c >= 2], key=lambda r: RANK_VAL[r], reverse=True)
     if len(pair_ranks) >= 2:
-        return (3, "two pair", RANK_VAL[pair_ranks[0]])
+        # Check which pairs we contribute to
+        hero_pairs = [pr for pr in pair_ranks if pr in hero_ranks]
+        board_only_ranks = [c[0] for c in board] if board else []
+        board_pairs = [pr for pr in pair_ranks if board_only_ranks.count(pr) >= 2]
+        
+        if len(hero_pairs) >= 1:
+            # No board pair = strong (we made both pairs)
+            if len(board_pairs) == 0:
+                return (3, "two pair", RANK_VAL[pair_ranks[0]])
+            # Board pair exists - check if our pair is higher
+            our_pair_val = max(RANK_VAL[p] for p in hero_pairs)
+            board_pair_val = max(RANK_VAL[p] for p in board_pairs)
+            if our_pair_val > board_pair_val:
+                # Our pair is higher (TT on 944) = strong
+                return (3, "two pair", RANK_VAL[pair_ranks[0]])
+            else:
+                # Board pair is higher (22 on 994) = weak
+                return (3, "two pair (board paired)", RANK_VAL[pair_ranks[0]])
     
     # One pair
     if pair_ranks:
@@ -734,10 +751,16 @@ def _postflop_value_max(hole_cards, board, pot, to_call, street, is_ip, is_aggre
             size = 0.9 if is_vulnerable else 0.75
             return ('bet', round(pot * size, 2), f"{desc} - value bet")
         
-        # TWO PAIR - bet for value on all streets
+        # TWO PAIR - check if strong or weak
         if strength == 3:  # Two pair
             if board_has_4flush and not hero_has_flush_card:
                 return ('check', 0, f"{desc} - check (4-flush on board)")
+            # Weak two pair (board paired higher) - smaller bet, more cautious
+            if "board paired" in desc:
+                if street == 'river':
+                    return ('check', 0, f"{desc} - check (weak two pair)")
+                return ('bet', round(pot * 0.5, 2), f"{desc} - thin value bet")
+            # Strong two pair - bet for value
             size = 0.7 if street == 'river' else 0.75
             return ('bet', round(pot * size, 2), f"{desc} - value bet")
         
@@ -804,8 +827,14 @@ def _postflop_value_max(hole_cards, board, pot, to_call, street, is_ip, is_aggre
                 return ('call', 0, f"{desc} - call river")
             return ('raise', round(pot * 2.0, 2), f"{desc} - raise for value")
         
-        # TWO PAIR - call big bets, we're strong
+        # TWO PAIR - check if strong or weak
         if strength == 3:
+            # Weak two pair (board paired) - only call small bets
+            if "board paired" in desc:
+                if pot_odds <= 0.30:
+                    return ('call', 0, f"{desc} - call (weak two pair)")
+                return ('fold', 0, f"{desc} - fold (weak two pair)")
+            # Strong two pair - call big bets
             if pot_odds <= 0.45:  # Call up to pot-sized bet
                 return ('call', 0, f"{desc} - call (good odds)")
             return ('fold', 0, f"{desc} - fold (bet too big)")
