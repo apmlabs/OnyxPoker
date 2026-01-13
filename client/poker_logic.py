@@ -341,7 +341,7 @@ STRATEGIES['maniac'] = {
     },
     '3bet_vs': {'UTG': expand_range('TT+,AQs+,AKo,AJs,KQs'), 'MP': expand_range('99+,AJs+,AKo,AQo,KQs,QJs'), 'CO': expand_range('88+,ATs+,AJo+,KQs,KJs,QJs,JTs'), 'BTN': expand_range('77+,A9s+,ATo+,KJs+,KQo,QJs,JTs,T9s')},
     '3bet_bluff': expand_range('A5s-A2s,K9s-K6s,Q9s-Q8s,J9s,T9s,98s,87s,76s,65s,54s'),
-    'call_open_ip': expand_range('TT-22,AJs-A5s,KQs-K9s,QJs-Q9s,JTs-J9s,T9s,98s,87s,76s'),
+    'call_open_ip': expand_range('TT-22,AJs-A5s,KQs-K9s,QJs-Q9s,JTs-J9s,T9s,98s,87s,76s,AQo,AJo,ATo,KQo,KJo,QJo'),
     'bb_defend': expand_range('22+,A2s+,K4s+,Q6s+,J7s+,T7s+,96s+,85s+,75s,64s+,54s,A5o+,K9o+,QTo+,JTo,T9o'),
     'call_3bet': expand_range('JJ,TT,99,AKo,AQs,AQo,AJs,KQs'),
     '4bet': expand_range('QQ+,AKs,AKo'),
@@ -463,9 +463,14 @@ def evaluate_hand(hole_cards: List[Tuple[str, str]], board: List[Tuple[str, str]
             # No board pair = strong (we made both pairs)
             if len(board_pairs) == 0:
                 return (3, "two pair", RANK_VAL[pair_ranks[0]])
-            # Board pair exists - ALWAYS mark as "board paired" since villain can have trips
-            # Even KK on JJ board loses to any Jx
-            return (3, "two pair (board paired)", RANK_VAL[pair_ranks[0]])
+            # Board pair exists - danger depends on board pair rank
+            # HIGH board pair (T+): Many hands contain these, villain likely has trips
+            # LOW board pair (2-9): Fewer hands contain these, less likely trips
+            board_pair_val = max(RANK_VAL[p] for p in board_pairs)
+            if board_pair_val >= 8:  # T=8, J=9, Q=10, K=11, A=12
+                return (3, "two pair (board paired)", RANK_VAL[pair_ranks[0]])
+            else:
+                return (3, "two pair (low board pair)", RANK_VAL[pair_ranks[0]])
     
     # One pair
     if pair_ranks:
