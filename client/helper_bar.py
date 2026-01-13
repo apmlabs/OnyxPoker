@@ -433,6 +433,26 @@ class HelperBar:
             
             if reasoning:
                 self.log(reasoning, "DEBUG")
+            
+            # Log equity info for postflop
+            if board:
+                equity = result.get('equity', 0)
+                outs = result.get('outs', 0)
+                draws = result.get('draws', [])
+                pot_odds = result.get('pot_odds', 0)
+                
+                info_parts = []
+                if equity > 0:
+                    info_parts.append(f"Win: {equity:.0f}%")
+                if outs > 0:
+                    info_parts.append(f"Outs: {outs}")
+                if pot_odds > 0:
+                    info_parts.append(f"Pot odds: {pot_odds:.0f}%")
+                if draws:
+                    info_parts.append(' '.join(d.replace('_', ' ') for d in draws))
+                
+                if info_parts:
+                    self.log(" | ".join(info_parts), "INFO")
         else:
             decision_str = "No poker table detected"
             self.log(decision_str, "ERROR")
