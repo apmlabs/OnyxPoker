@@ -259,6 +259,34 @@ cd client && python3 poker_sim.py 200000
 
 ## 📖 SESSION HISTORY & LESSONS LEARNED
 
+### Session 38: Equity vs Random Bug Fix (January 13, 2026)
+
+**Challenge**: Disaster hand analysis revealed fundamental flaw - equity vs random hands was being used for river defense decisions, but villain's range is never random when they bet/raise.
+
+**Root Cause**: Monte Carlo equity calculation assumes villain has random hands. When facing a bet (especially a big river bet), villain's range is much narrower and stronger than random.
+
+**Solution**: Two-pronged approach:
+1. **Made hands**: Use hand strength thresholds instead of equity
+   - One pair (TPGK) folds to 10+ BB bets
+   - Overpairs can call up to 20 BB bets
+   - Two pair+ calls
+2. **Draws**: Use conservative pot odds thresholds (draws have known outs, making math more reliable)
+   - Nut flush draw: 41% (implied odds at 2NL)
+   - Non-nut flush draw: 25%
+   - OESD: 22%
+   - Gutshot: 12%
+
+**Applied to all strategies**: gpt, sonnet, value_max, sonnet_max - consistent thresholds everywhere.
+
+**Results**:
+- Disaster hand (AQ TPGK vs 44 BB river bet) now correctly FOLDS
+- audit_strategies.py: 21/21 PASS
+- value_maniac: +23.4 BB/100
+
+**Critical Lesson**: Equity vs random is fundamentally wrong for facing bets. Hand strength categories ("need two pair+ to call river raise") match human thinking better than equity math. When villain bets, they have something - adjust accordingly.
+
+---
+
 ### Session 37: eval_strategies Position Fix + Range Verification (January 13, 2026)
 
 **Challenge**: eval_strategies.py was defaulting to BTN position for all preflop hands, biasing results toward wider ranges.

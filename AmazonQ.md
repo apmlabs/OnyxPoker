@@ -1,21 +1,28 @@
 # OnyxPoker - Status Tracking
 
-**Last Updated**: January 13, 2026 22:14 UTC
+**Last Updated**: January 13, 2026 23:50 UTC
 
-## Current Status: SESSION 37 - EVAL_STRATEGIES POSITION FIX + VERIFICATION ✅
+## Current Status: SESSION 38 - EQUITY VS RANDOM BUG FIX ✅
 
-Fixed eval_strategies.py to use neutral position cycling for preflop evaluation, and verified position-specific ranges match strategy files.
+Fixed fundamental bug where equity vs random hands was used for river defense decisions. Villain's range is never random when they bet/raise.
 
 **Key Changes This Session**:
-1. Fixed eval_strategies.py preflop evaluation - now cycles through positions (UTG/MP/CO/BTN/SB/BB) instead of defaulting to BTN
-2. Verified position-specific open ranges match strategy files (value_maniac, gpt4 confirmed)
-3. Confirmed both advice path (strategy_engine.py) and simulation (poker_sim.py) use position correctly
+1. River defense now uses hand strength + BB-based bet sizing (not equity vs random)
+   - One pair folds to 10+ BB bets
+   - Overpairs call up to 20 BB bets
+   - Two pair+ calls
+2. Conservative draw thresholds with nut flush distinction:
+   - Nut flush draw: 41% pot odds
+   - Non-nut flush draw: 25%
+   - OESD: 22%
+   - Gutshot: 12%
+3. Applied consistent thresholds across ALL strategies (gpt, sonnet, value_max, sonnet_max)
+4. Added `is_nut_flush_draw` detection to `analyze_hand()`
 
 **Results**: 
-- eval_strategies.py: value_maniac #1 at +23.5 BB/100 (3 bad folds)
-- value_max #11 at +10.3 BB/100 (32 bad folds - sb_defend still needs tuning)
+- Disaster hand (AQ TPGK vs 44 BB river bet) now correctly FOLDS - saves 100 BBs
 - audit_strategies.py: 21/21 PASS
-- Position ranges verified: UTG tight (16-34 hands) → BTN wide (68-94 hands)
+- value_maniac: +23.4 BB/100 (5 bad folds, 4 bad calls)
 
 ## What Works
 
@@ -132,6 +139,21 @@ Table: 60% fish, 25% nit, 15% tag
 | 12 | nit | -3.42 | 1.43 |
 
 ## Session Log
+
+### Session 38 (January 13, 2026)
+- **EQUITY VS RANDOM BUG FIX**: Fundamental fix for river defense
+  - Bug: Equity vs random hands was used for facing bets (villain's range is never random)
+  - Fix: Use hand strength + BB-based bet sizing for river defense
+  - One pair folds to 10+ BB bets, overpairs call up to 20 BB, two pair+ calls
+- **CONSERVATIVE DRAW THRESHOLDS**: Applied across all strategies
+  - Nut flush draw: 41% pot odds (implied odds at 2NL)
+  - Non-nut flush draw: 25%
+  - OESD: 22%
+  - Gutshot: 12%
+- **NUT FLUSH DRAW DETECTION**: Added `is_nut_flush_draw` to `analyze_hand()`
+- **DISASTER HAND NOW FOLDS**: AQ TPGK vs 44 BB river bet correctly folds (saves 100 BBs)
+- **RESULTS**: audit_strategies.py 21/21 PASS, value_maniac +23.4 BB/100
+- Commits: 335d3a4
 
 ### Session 37 (January 13, 2026)
 - **EVAL_STRATEGIES POSITION FIX**: Preflop now uses neutral position cycling
