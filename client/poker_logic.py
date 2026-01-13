@@ -12,6 +12,116 @@ RANKS = '23456789TJQKA'
 SUITS = 'shdc'
 RANK_VAL = {r: i for i, r in enumerate(RANKS)}
 
+
+# =============================================================================
+# HAND ANALYSIS HELPERS - Compute properties directly from cards, not strings
+# =============================================================================
+
+def analyze_hand(hole_cards: List[Tuple[str, str]], board: List[Tuple[str, str]]) -> dict:
+    """
+    Analyze hand properties directly from cards.
+    Returns dict with all relevant hand info for decision making.
+    """
+    from collections import Counter
+    
+    if not hole_cards or len(hole_cards) != 2:
+        return {'valid': False}
+    
+    hero_ranks = [c[0] for c in hole_cards]
+    hero_vals = sorted([RANK_VAL[r] for r in hero_ranks], reverse=True)
+    board_ranks = [c[0] for c in board] if board else []
+    board_vals = sorted([RANK_VAL[r] for r in board_ranks], reverse=True) if board else []
+    
+    # Is hero holding a pocket pair?
+    is_pocket_pair = hero_ranks[0] == hero_ranks[1]
+    pocket_val = hero_vals[0] if is_pocket_pair else None
+    
+    # Board pair detection
+    board_rank_counts = Counter(board_ranks)
+    board_pairs = [r for r, c in board_rank_counts.items() if c >= 2]
+    board_trips = [r for r, c in board_rank_counts.items() if c >= 3]
+    has_board_pair = len(board_pairs) > 0
+    board_pair_val = max(RANK_VAL[r] for r in board_pairs) if board_pairs else None
+    
+    # All cards combined
+    all_ranks = hero_ranks + board_ranks
+    all_rank_counts = Counter(all_ranks)
+    
+    # What pairs/trips/quads do we have?
+    our_pairs = [r for r, c in all_rank_counts.items() if c >= 2]
+    our_trips = [r for r, c in all_rank_counts.items() if c >= 3]
+    our_quads = [r for r, c in all_rank_counts.items() if c >= 4]
+    
+    # Did hero's cards hit the board?
+    hero_hit_board = [r for r in hero_ranks if r in board_ranks]
+    
+    # Overpair: pocket pair higher than all board cards
+    is_overpair = is_pocket_pair and board_vals and pocket_val > max(board_vals)
+    
+    # Underpair to ace: pocket pair but ace on board
+    has_ace_on_board = 'A' in board_ranks
+    is_underpair_to_ace = is_pocket_pair and has_ace_on_board and pocket_val < 12
+    
+    # Top pair detection
+    top_board_val = board_vals[0] if board_vals else None
+    has_top_pair = top_board_val is not None and any(RANK_VAL[r] == top_board_val for r in hero_ranks)
+    
+    # Kicker for top pair
+    if has_top_pair:
+        other_ranks = [RANK_VAL[r] for r in hero_ranks if RANK_VAL[r] != top_board_val]
+        kicker_val = max(other_ranks) if other_ranks else hero_vals[0]
+        has_good_kicker = kicker_val >= 9  # T or higher
+    else:
+        kicker_val = None
+        has_good_kicker = False
+    
+    # Two pair analysis
+    num_pairs = len(our_pairs)
+    has_two_pair = num_pairs >= 2
+    
+    # Two pair type (only if we have two pair)
+    two_pair_type = None
+    if has_two_pair:
+        if is_pocket_pair and has_board_pair:
+            # Pocket pair + board pair
+            if pocket_val > board_pair_val:
+                two_pair_type = 'pocket_over_board'  # KK on JJ = strong
+            else:
+                two_pair_type = 'pocket_under_board'  # 66 on JJ = weak
+        elif len(hero_hit_board) == 2:
+            two_pair_type = 'both_cards_hit'  # A7 on A72 = strong
+        elif has_board_pair:
+            two_pair_type = 'one_card_board_pair'  # K2 on K22 = depends on board pair rank
+    
+    # Set detection
+    has_set = len(our_trips) > 0 and is_pocket_pair  # Set = pocket pair hit board
+    has_trips = len(our_trips) > 0 and not is_pocket_pair  # Trips = board pair + one card
+    
+    # Any pair at all
+    has_any_pair = num_pairs >= 1
+    
+    return {
+        'valid': True,
+        'is_pocket_pair': is_pocket_pair,
+        'pocket_val': pocket_val,
+        'has_board_pair': has_board_pair,
+        'board_pair_val': board_pair_val,
+        'is_overpair': is_overpair,
+        'is_underpair_to_ace': is_underpair_to_ace,
+        'has_top_pair': has_top_pair,
+        'has_good_kicker': has_good_kicker,
+        'kicker_val': kicker_val,
+        'has_two_pair': has_two_pair,
+        'two_pair_type': two_pair_type,
+        'has_set': has_set,
+        'has_trips': has_trips,
+        'has_any_pair': has_any_pair,
+        'has_ace_on_board': has_ace_on_board,
+        'hero_vals': hero_vals,
+        'board_vals': board_vals,
+        'top_board_val': top_board_val,
+    }
+
 def expand_range(range_str: str) -> Set[str]:
     """Expand range notation to set of hands."""
     hands = set()
@@ -467,10 +577,16 @@ def evaluate_hand(hole_cards: List[Tuple[str, str]], board: List[Tuple[str, str]
             if len(board_pairs) == 0:
                 return (3, "two pair", RANK_VAL[pair_ranks[0]])
             
-            # POCKET PAIR + BOARD PAIR = strong two pair (66 on JJ board)
-            # We have a real pair, not just one card hitting the board
+            # POCKET PAIR + BOARD PAIR - strength depends on which pair is higher
             if is_pocket_pair:
-                return (3, "two pair (pocket+board)", RANK_VAL[pair_ranks[0]])
+                pocket_val = RANK_VAL[hole_cards[0][0]]
+                board_pair_val = max(RANK_VAL[p] for p in board_pairs)
+                if pocket_val > board_pair_val:
+                    # KK on JJ = strong (only JJ beats us)
+                    return (3, "two pair (pocket+board strong)", RANK_VAL[pair_ranks[0]])
+                else:
+                    # 66 on JJ = weak (any Jx has trips)
+                    return (3, "two pair (pocket+board weak)", RANK_VAL[pair_ranks[0]])
             
             # ONE CARD + BOARD PAIR = weak (K2 on J2 board)
             # Board pair exists - danger depends on board pair rank
@@ -835,32 +951,25 @@ def postflop_action(hole_cards: List[Tuple[str, str]], board: List[Tuple[str, st
     # BUT with paired board protection (learned from KK on JJ disaster)
     
     if strategy == 'value_maniac':
-        # Check for paired board - need to be careful with two pair
-        from collections import Counter
-        board_ranks = [c[0] for c in board] if board else []
-        rank_counts = Counter(board_ranks)
-        paired_ranks = [r for r, c in rank_counts.items() if c >= 2]
-        is_paired_board = len(paired_ranks) > 0
+        # Use analyze_hand() for all hand analysis - no string matching
+        hand_info = analyze_hand(hole_cards, board)
         
-        # HIGH pair (T+) is dangerous - many hands contain these cards
-        # LOW pair (2-9) is less dangerous - few hands contain these cards
-        high_pair_ranks = {'T', 'J', 'Q', 'K', 'A'}
-        is_dangerous_pair = any(r in high_pair_ranks for r in paired_ranks)
+        is_big_bet = to_call >= pot * 0.5 if to_call else False
+        is_dangerous_board_pair = hand_info['board_pair_val'] is not None and hand_info['board_pair_val'] >= 8  # T+
         
         # Maniac postflop: overbets for value, calls wide
         if to_call == 0 or to_call is None:
             # No bet to call - bet for value
-            if strength >= 4:
+            if strength >= 4:  # Set+
                 return ('bet', round(pot * 1.25, 2), f"{desc} - overbet value")
-            if strength >= 3:
-                # Two pair on HIGH paired board = pot control (KK on JJ)
-                # Two pair on LOW paired board = still value bet (A7 on A722)
-                if is_paired_board and "board paired" in desc and is_dangerous_pair:
+            if strength >= 3:  # Two pair
+                # Two pair with one card + HIGH board pair = pot control
+                if hand_info['two_pair_type'] == 'one_card_board_pair' and is_dangerous_board_pair:
                     if street == 'flop':
                         return ('bet', round(pot * 0.33, 2), f"{desc} - small bet (pot control)")
                     return ('check', 0, f"{desc} - check (vulnerable to trips)")
                 return ('bet', round(pot * 1.1, 2), f"{desc} - bet big")
-            if "pair" in desc:
+            if hand_info['has_any_pair']:
                 if street in ['flop', 'turn'] and random.random() < 0.85:
                     return ('bet', round(pot * 1.0, 2), f"{desc} - overbet")
                 if street == 'river' and random.random() < 0.5:
@@ -876,37 +985,38 @@ def postflop_action(hole_cards: List[Tuple[str, str]], board: List[Tuple[str, st
             return ('check', 0, f"{desc} - check")
         else:
             # Facing bet - raise monsters, call pairs, fold air
-            # BUT be careful on HIGH paired boards with two pair
             if strength >= 6:  # Quads, full house, straight flush
                 return ('raise', round(to_call * 3, 2), f"{desc} - raise monster")
             if strength >= 4:  # Set, flush, straight
                 return ('raise', round(to_call * 2.5, 2), f"{desc} - raise strong")
             if strength == 3:  # Two pair
-                # POCKET PAIR + BOARD PAIR = strong, play it
-                if "pocket+board" in desc:
+                # Pocket pair > board pair = strong (KK on JJ)
+                if hand_info['two_pair_type'] == 'pocket_over_board':
                     return ('raise', round(to_call * 2.5, 2), f"{desc} - raise strong")
-                # ONE CARD + HIGH BOARD PAIR = weak, be careful
-                if is_paired_board and "board paired" in desc and is_dangerous_pair:
-                    # Two pair on HIGH paired board - villain likely has trips
-                    is_big_bet = to_call >= pot * 0.5
+                # Pocket pair < board pair = weak (66 on JJ)
+                if hand_info['two_pair_type'] == 'pocket_under_board':
                     if is_big_bet:
-                        return ('fold', 0, f"{desc} - fold (two pair vs big bet on paired board)")
-                    if street == 'river':
-                        return ('fold', 0, f"{desc} - fold (two pair on paired board river)")
+                        return ('fold', 0, f"{desc} - fold (weak two pair vs big bet)")
+                    return ('call', 0, f"{desc} - call (weak two pair)")
+                # Both cards hit = strong (A7 on A72)
+                if hand_info['two_pair_type'] == 'both_cards_hit':
+                    return ('raise', round(to_call * 2.5, 2), f"{desc} - raise strong")
+                # One card + HIGH board pair = weak
+                if hand_info['two_pair_type'] == 'one_card_board_pair' and is_dangerous_board_pair:
+                    if is_big_bet or street == 'river':
+                        return ('fold', 0, f"{desc} - fold (two pair on dangerous board)")
                     return ('call', 0, f"{desc} - call (but fold to more aggression)")
                 return ('raise', round(to_call * 2.5, 2), f"{desc} - raise strong")
-            # POCKET PAIR (underpair) - call, don't fold
-            if "pocket pair" in desc:
+            # Pocket pair (underpair) - call, don't fold
+            if hand_info['is_pocket_pair']:
                 return ('call', 0, f"{desc} - call pocket pair")
-            if "pair" in desc:
+            if hand_info['has_any_pair']:
                 return ('call', 0, f"{desc} - call any pair")
             if has_any_draw and street != 'river':
                 return ('call', 0, "call with draw")
             # Call with overcards on flop (AK, AQ type hands)
-            if street == 'flop' and "high card" in desc:
-                hole_ranks = [c[0] for c in hole_cards]
-                if 'A' in hole_ranks or 'K' in hole_ranks:
-                    return ('call', 0, "call overcards")
+            if street == 'flop' and hand_info['hero_vals'][0] >= 11:  # K or A
+                return ('call', 0, "call overcards")
             if street == 'flop' and random.random() < 0.4:
                 return ('call', 0, "float flop")
             return ('fold', 0, f"{desc} - fold")
@@ -945,11 +1055,11 @@ def postflop_action(hole_cards: List[Tuple[str, str]], board: List[Tuple[str, st
 def _postflop_value_max(hole_cards, board, pot, to_call, street, is_ip, is_aggressor,
                         strength, desc, draws, combo_draw, has_flush_draw, has_oesd, has_any_draw, equity=0):
     """
-    VALUE_MAX postflop - Session 33 fixes:
-    1. NEVER call with high card on paired boards (KQ on AA99, AK on 2265)
-    2. Don't bet TPGK when board pairs and villain showed strength
-    3. Don't bet "thin value" with middle pair on river
+    VALUE_MAX postflop - Uses analyze_hand() for all hand analysis.
     """
+    # Use analyze_hand() for all hand analysis
+    hand_info = analyze_hand(hole_cards, board)
+    
     # Board analysis
     from collections import Counter
     board_ranks = sorted([RANK_VAL[c[0]] for c in board], reverse=True) if board else []
@@ -980,33 +1090,33 @@ def _postflop_value_max(hole_cards, board, pot, to_call, street, is_ip, is_aggre
             return ('bet', round(pot * 1.0, 2), f"{desc} - bet for value")
         if strength == 4:
             return ('bet', round(pot * (0.85 if is_vulnerable else 0.75), 2), f"{desc} - value bet")
-        if strength == 3:
-            if "board paired" in desc:
-                # On paired board, two pair is vulnerable to trips
+        if strength == 3:  # Two pair
+            # Weak two pair types = pot control
+            if hand_info['two_pair_type'] in ['pocket_under_board', 'one_card_board_pair']:
                 if street == 'flop':
                     return ('bet', round(pot * 0.33, 2), f"{desc} - small bet (pot control)")
-                return ('check', 0, f"{desc} - check (vulnerable to trips)")
+                return ('check', 0, f"{desc} - check (vulnerable)")
             return ('bet', round(pot * 0.7, 2), f"{desc} - value bet")
-        if "top pair good kicker" in desc:
+        if hand_info['has_top_pair'] and hand_info['has_good_kicker']:
             if is_paired_board and street != 'flop':
                 return ('check', 0, f"{desc} - check (board paired)")
             if street in ['flop', 'turn']:
                 return ('bet', round(pot * 0.55, 2), f"{desc} - value bet")
             return ('check', 0, f"{desc} - check river")
-        if "top pair weak kicker" in desc:
+        if hand_info['has_top_pair'] and not hand_info['has_good_kicker']:
             if street == 'flop':
                 return ('bet', round(pot * 0.35, 2), f"{desc} - small c-bet")
             return ('check', 0, f"{desc} - check (weak kicker)")
-        if "overpair" in desc.lower():
+        if hand_info['is_overpair']:
             if is_paired_board:
                 return ('check', 0, f"{desc} - check (board paired)")
             return ('bet', round(pot * 0.55, 2), f"{desc} - value bet")
-        if "underpair" in desc.lower():
+        if hand_info['is_underpair_to_ace']:
             if combo_draw:
                 return ('bet', round(pot * 0.55, 2), f"{desc} + draw - semi-bluff")
             return ('check', 0, f"{desc} - check underpair")
         # Middle/bottom pair - check, don't bet for "thin value"
-        if "pair" in desc:
+        if hand_info['has_any_pair']:
             return ('check', 0, f"{desc} - check weak pair")
         # Draws
         if combo_draw:
@@ -1023,11 +1133,11 @@ def _postflop_value_max(hole_cards, board, pot, to_call, street, is_ip, is_aggre
     else:
         # === FACING BET ===
         
-        # FIX #1: HIGH CARD ON PAIRED BOARD = FOLD (the KQ/AK/A9 leaks)
+        # HIGH CARD ON PAIRED BOARD = FOLD
         if strength <= 1 and is_paired_board:
             return ('fold', 0, f"{desc} - fold (high card on paired board)")
         
-        # FIX #2: DOUBLE PAIRED BOARD = need full house+
+        # DOUBLE PAIRED BOARD = need full house+
         if is_double_paired and strength < 7:
             return ('fold', 0, f"{desc} - fold (double paired board)")
         
@@ -1043,18 +1153,15 @@ def _postflop_value_max(hole_cards, board, pot, to_call, street, is_ip, is_aggre
         
         # Two pair
         if strength == 3:
-            if "board paired" in desc:
-                # On paired board, villain often has trips when betting/raising
-                if is_big_bet:
-                    return ('fold', 0, f"{desc} - fold (two pair vs big bet on paired board)")
-                if street == 'river':
-                    return ('fold', 0, f"{desc} - fold (two pair on paired board river)")
-                # Flop/turn small bet - call once
+            # Weak two pair types on paired board = careful
+            if hand_info['two_pair_type'] in ['pocket_under_board', 'one_card_board_pair']:
+                if is_big_bet or street == 'river':
+                    return ('fold', 0, f"{desc} - fold (weak two pair)")
                 return ('call', 0, f"{desc} - call (but fold to more aggression)")
             return ('call', 0, f"{desc} - call")
         
         # Top pair good kicker - call flop/turn, careful on river
-        if "top pair good kicker" in desc:
+        if hand_info['has_top_pair'] and hand_info['has_good_kicker']:
             if street in ['flop', 'turn']:
                 return ('call', 0, f"{desc} - call {street}")
             if pot_odds <= 0.35:
@@ -1062,23 +1169,29 @@ def _postflop_value_max(hole_cards, board, pot, to_call, street, is_ip, is_aggre
             return ('fold', 0, f"{desc} - fold big river bet")
         
         # Top pair weak kicker - call flop only
-        if "top pair weak kicker" in desc:
+        if hand_info['has_top_pair'] and not hand_info['has_good_kicker']:
             if street == 'flop' and pot_odds <= 0.35:
                 return ('call', 0, f"{desc} - call flop")
             return ('fold', 0, f"{desc} - fold")
         
         # Overpair/underpair - call down reasonably
-        if "overpair" in desc.lower():
+        if hand_info['is_overpair']:
             if street == 'river' and is_big_bet:
                 return ('fold', 0, f"{desc} - fold big river bet")
             return ('call', 0, f"{desc} - call")
-        if "underpair" in desc.lower():
+        if hand_info['is_underpair_to_ace']:
             if street == 'flop' and pot_odds <= 0.30:
                 return ('call', 0, f"{desc} - call flop")
             return ('fold', 0, f"{desc} - fold")
         
-        # Middle/bottom pair - call flop only
-        if "pair" in desc:
+        # Pocket pair (not overpair/underpair) - call flop
+        if hand_info['is_pocket_pair']:
+            if street == 'flop' and pot_odds <= 0.30:
+                return ('call', 0, f"{desc} - call flop")
+            return ('fold', 0, f"{desc} - fold")
+        
+        # Any other pair - call flop only
+        if hand_info['has_any_pair']:
             if street == 'flop' and pot_odds <= 0.30:
                 return ('call', 0, f"{desc} - call flop")
             return ('fold', 0, f"{desc} - fold")

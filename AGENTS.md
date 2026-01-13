@@ -27,24 +27,28 @@ PokerStars/Simulator Window
          ↓
    Strategy Engine (strategy_engine.py)
          ↓
-   poker_logic.py (value_maniac strategy)
+   poker_logic.py
+     ├── analyze_hand() - Card-based hand analysis (no string matching)
+     ├── evaluate_hand() - Hand strength + description
+     ├── preflop_action() - Position-based ranges
+     └── postflop_action() - Strategy-specific logic
+         ├── value_maniac: Wide ranges, overbets, paired board protection
+         ├── value_max: Smart aggression with pot odds
+         ├── gpt3/gpt4: Board texture aware
+         └── sonnet: Big value bets
          ↓
    Decision + Reasoning
          ↓
     Helper Bar UI (advice display)
 ```
 
-**Default Strategy**: `value_maniac` (+23.5 BB/100 on real hands)
-- C-bets 94%, calls any pair, raises strong hands
-- Never folds >50% equity hands
+**Default Strategy**: `value_maniac` (+41 BB/100 in simulation)
+- Wide preflop ranges (same as maniac archetype)
+- Overbets for value, c-bets wide
+- Calls any pair facing bet
+- Paired board protection (folds weak two pair vs aggression)
 
-**Default approach**:
-- **Vision**: GPT-5.2 reads table (cards, pot, stacks)
-- **Decision**: strategy_engine.py applies value_maniac logic
-- **Manual position**: UI radio buttons (UTG/MP/CO/BTN/SB/BB)
-
-**AI-Only mode** (use `--ai-only` flag):
-- GPT-5.2 does both vision + decision in one call
+**Key Design Principle**: All hand analysis uses `analyze_hand()` which computes properties directly from cards - NO string matching on descriptions.
 
 Server runs on EC2 (54.80.204.92:5001) for log collection.
 
@@ -61,22 +65,21 @@ onyxpoker/                    # Main repo (GitHub: apmlabs/OnyxPoker)
 │   ├── vision_detector_lite.py # Lite mode: gpt-5.2 for vision only
 │   ├── strategy_engine.py    # Applies strategy (default: value_maniac)
 │   ├── poker_logic.py        # Hand eval, preflop/postflop logic, all strategies
+│   │   └── analyze_hand()    # Card-based analysis (no string matching)
 │   ├── poker_sim.py          # Monte Carlo simulator (200k+ hands)
+│   ├── audit_strategies.py   # Strategy file vs code verification (21 tests)
 │   ├── test_strategy_engine.py # Live code path tests (55 scenarios)
 │   ├── test_postflop.py      # Edge case tester (67 scenarios)
-│   ├── eval_strategies.py    # Real hand evaluator (943 hands from logs)
+│   ├── eval_strategies.py    # Real hand evaluator (1000+ hands from logs)
 │   ├── replay_logs.py        # Replay session logs through strategies
 │   ├── test_screenshots.py   # Offline vision testing
 │   ├── send_logs.py          # Upload logs to server
 │   ├── requirements.txt
-│   └── pokerstrategy_*       # Strategy definition files
+│   └── pokerstrategy_*       # Strategy definition files (16 files)
 ├── server/
 │   ├── kiro_analyze.py       # Flask server on port 5001
 │   ├── requirements.txt
 │   └── uploads/              # Screenshots and logs (gitignored)
-│       ├── *.png             # Screenshots
-│       ├── session_*.jsonl   # Session logs (943 hands)
-│       └── ground_truth.json # Vision testing ground truth
 └── docs/
     ├── DEPLOYMENT.md         # Setup guide
     └── ANALYSIS_NOTES.md     # GPT decision analysis
@@ -88,18 +91,10 @@ onyxpoker/                    # Main repo (GitHub: apmlabs/OnyxPoker)
 - User runs helper_bar.py or test_screenshots.py
 - Screenshots taken locally
 - `send_logs.py` uploads to server
-- **TESTING**: All test_screenshots.py tests run on CLIENT (not server)
 
 **EC2 Server** (54.80.204.92:5001)
 - Receives uploads at POST /logs
-- Analyzes screenshots with Kiro CLI at POST /analyze-screenshot
-- Validates poker states at POST /validate-state
 - Stores in /home/ubuntu/mcpprojects/onyxpoker/server/uploads/
-- Agent can view screenshots and analyze logs here (for analysis only, NOT testing)
-
-**Server Code Location**: `/home/ubuntu/mcpprojects/onyxpoker/server/`
-- Now part of main GitHub repo (consolidated January 12, 2026)
-- Previously was in separate onyxpoker-server/ folder
 
 ## ✅ CURRENT STATE
 
@@ -108,43 +103,38 @@ onyxpoker/                    # Main repo (GitHub: apmlabs/OnyxPoker)
 - `vision_detector_lite.py` - GPT-5.2 for vision only
 - `strategy_engine.py` - Applies value_maniac strategy (default)
 - `poker_sim.py` - Monte Carlo simulation (200k hands)
-- `test_postflop.py` - 67 edge case scenarios
-- `eval_strategies.py` - Real hand evaluation (715 hands)
+- `analyze_hand()` - Card-based hand analysis
+- All test suites passing
 - Hotkeys: F9=Advice, F10=Bot loop, F11=Stop, F12=Hide
 
-### Strategy Rankings (on 715 real 2NL hands)
-| Rank | Strategy | Est BB/100 | Key Trait |
-|------|----------|------------|-----------|
-| 1 | **value_maniac** | +23.5 | 94% c-bet, 0 bad folds, 27 raises |
-| 2 | gpt4 | +13.1 | Balanced |
-| 3 | gpt3 | +12.2 | Tight |
-| 4 | value_max | +11.2 | Folds too much |
-| 5 | sonnet | +10.8 | Very tight |
+### Strategy Rankings (100k hands simulation)
+| Rank | Strategy | BB/100 | Key Trait |
+|------|----------|--------|-----------|
+| 1 | **value_maniac** | +41.12 | Wide ranges, overbets, paired board protection |
+| 2 | maniac | +29.96 | Ultra-aggressive archetype |
+| 3 | value_max | +26.81 | Smart aggression with pot odds |
+| 4 | sonnet_max | +20.29 | Sonnet preflop + optimized postflop |
+| 5 | gpt3 | +15.89 | Board texture aware |
 
 ### What's Not Implemented
 - Turn detection, action execution - LOW PRIORITY
 
 ## 🧪 TESTING FRAMEWORK
 
-### 1. Edge Case Testing (`test_postflop.py`)
-Tests 67 specific scenarios to catch strategy bugs.
+### 1. Strategy Audit (`audit_strategies.py`) - NEW
+Verifies code matches strategy file descriptions.
 
 ```bash
-cd client && python3 test_postflop.py [strategy_name]
+cd client && python3 audit_strategies.py
 ```
 
-**Scenarios tested:**
-- Monsters: quads, full house, straight flush (should raise)
-- Strong: sets, two pair, straights, flushes (should raise/bet)
-- Medium: overpairs, top pair, middle pair (should bet/call)
-- Draws: flush draws, OESDs, gutshots (should semi-bluff)
-- Weak: high card, air (should fold facing bets)
+**Tests 21 scenarios:**
+- Preflop ranges (open, 3bet)
+- Postflop value betting
+- Paired board handling (KK on JJ vs 66 on JJ)
+- Two pair strength detection
 
-**Issue detection:**
-- "QUESTIONABLE": Strong hand just calling (should raise)
-- "LEAK": Folding +EV hands or calling -EV hands
-
-**Target: 0-3 issues** (some edge cases are debatable)
+**Target: 21/21 PASS**
 
 ### 2. Live Code Path Testing (`test_strategy_engine.py`)
 Tests the ACTUAL code path used in live play (helper_bar.py).
@@ -168,7 +158,7 @@ cd client && python3 test_strategy_engine.py
 **MUST PASS before live play!**
 
 ### 3. Real Hand Evaluation (`eval_strategies.py`)
-Evaluates strategies on 943 real hands from session logs.
+Evaluates strategies on 1000+ real hands from session logs.
 
 ```bash
 cd client && python3 eval_strategies.py
@@ -196,7 +186,7 @@ Score = GoodFolds*2 - BadFolds*3 + GoodCalls*2 - BadCalls*2
 
 **Target: Score > +300, BadFolds = 0**
 
-### 5. Monte Carlo Simulation (`poker_sim.py`)
+### 4. Monte Carlo Simulation (`poker_sim.py`)
 Simulates 200k+ hands against realistic opponent archetypes.
 
 ```bash
@@ -212,11 +202,12 @@ cd client && python3 poker_sim.py 200000
 
 ### Testing Workflow
 1. Make strategy change in `poker_logic.py`
-2. Run `test_strategy_engine.py` → **MUST PASS** (live code path)
-3. Run `test_postflop.py` → fix any issues
-4. Run `eval_strategies.py` → check real hand performance
-5. Run `poker_sim.py 200000` → verify simulation results
-6. If all pass, commit changes
+2. Run `audit_strategies.py` → **MUST PASS** (code matches strategy files)
+3. Run `test_strategy_engine.py` → **MUST PASS** (live code path)
+4. Run `test_postflop.py` → fix any issues
+5. Run `eval_strategies.py` → check real hand performance
+6. Run `poker_sim.py 200000` → verify simulation results
+7. If all pass, commit changes
 
 ## 🧠 AGENT WORKFLOW
 
@@ -267,6 +258,37 @@ cd client && python3 poker_sim.py 200000
 ---
 
 ## 📖 SESSION HISTORY & LESSONS LEARNED
+
+### Session 35: analyze_hand() Refactor - No String Matching (January 13, 2026)
+
+**Challenge**: Code was using string matching on descriptions like `"pocket+board" in desc` which is fragile.
+
+**Solution**: Created `analyze_hand()` function that computes all hand properties directly from cards:
+- `is_pocket_pair`, `pocket_val`
+- `is_overpair`, `is_underpair_to_ace`
+- `has_top_pair`, `has_good_kicker`
+- `has_two_pair`, `two_pair_type`
+- `has_set`, `has_trips`, `has_any_pair`
+
+**Two Pair Types** (critical for paired board decisions):
+- `pocket_over_board`: KK on JJ = STRONG (only JJ beats us)
+- `pocket_under_board`: 66 on JJ = WEAK (any Jx has trips)
+- `both_cards_hit`: A7 on A72 = STRONG
+- `one_card_board_pair`: K2 on K22 = depends on board pair rank
+
+**Refactored**:
+- `value_maniac` postflop - uses `analyze_hand()`
+- `_postflop_value_max` - uses `analyze_hand()`
+
+**New Test**: `audit_strategies.py` (21 tests)
+- Verifies code matches strategy file descriptions
+- Tests preflop ranges, postflop betting, paired board handling
+
+**Results**: All tests pass, value_maniac +41 BB/100 in simulation
+
+**Critical Lesson**: Use card data directly, not string parsing. `analyze_hand()` is the single source of truth for hand properties.
+
+---
 
 ### Session 34: Strategy Engine Bug Fix + Test Coverage (January 13, 2026)
 

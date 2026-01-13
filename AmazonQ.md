@@ -1,18 +1,22 @@
 # OnyxPoker - Status Tracking
 
-**Last Updated**: January 13, 2026 19:33 UTC
+**Last Updated**: January 13, 2026 21:05 UTC
 
-## Current Status: SESSION 34 - STRATEGY ENGINE FIX ✅
+## Current Status: SESSION 35 - analyze_hand() REFACTOR ✅
 
-Fixed critical bug: preflop facing detection was using unreliable `facing_raise` flag from vision instead of `to_call` amount. K8s/J7s were incorrectly folding from BTN when first to act.
+Refactored all hand analysis to use `analyze_hand()` function - computes properties directly from cards instead of string matching on descriptions.
 
-**Key Fixes This Session**:
-1. Paired board logic: HIGH (T+) vs LOW (2-9) board pairs
-2. Expanded call_open_ip: Added AQo, AJo, ATo, KQo, KJo, QJo
-3. Fixed preflop facing detection: Use `to_call` not `facing_raise`
-4. Added test_strategy_engine.py: 55 tests for live code path
+**Key Changes This Session**:
+1. Created `analyze_hand()` - single source of truth for hand properties
+2. Refactored `value_maniac` postflop to use `analyze_hand()`
+3. Refactored `_postflop_value_max` to use `analyze_hand()`
+4. Created `pokerstrategy_value_maniac` file
+5. Created `audit_strategies.py` - 21 tests verifying code matches strategy files
 
-**Results**: value_maniac +23.5 BB/100 on 943 real hands
+**Results**: 
+- audit_strategies.py: 21/21 PASS
+- test_strategy_engine.py: 55/55 PASS
+- poker_sim.py: value_maniac +41.12 BB/100
 
 ## What Works
 
@@ -21,10 +25,11 @@ Fixed critical bug: preflop facing detection was using unreliable `facing_raise`
 | helper_bar.py | ✅ Ready | Borderless, resizable, edge-drag resize |
 | vision_detector.py | ✅ Ready | Full mode: GPT-5.2 for vision + decisions |
 | vision_detector_lite.py | ✅ Ready | Lite mode: GPT-5.2 for vision only |
-| strategy_engine.py | ✅ Fixed | Preflop facing detection now uses to_call |
-| poker_logic.py | ✅ Ready | Paired board logic, equity-based decisions |
+| strategy_engine.py | ✅ Ready | Preflop facing detection uses to_call |
+| poker_logic.py | ✅ Refactored | analyze_hand() for all hand analysis |
 | poker_sim.py | ✅ Ready | Full postflop simulation |
-| test_strategy_engine.py | ✅ NEW | 55 tests for live code path |
+| audit_strategies.py | ✅ NEW | 21 tests - code matches strategy files |
+| test_strategy_engine.py | ✅ Ready | 55 tests for live code path |
 | test_postflop.py | ✅ Ready | 67 edge case scenarios |
 | Server | ✅ Running | 54.80.204.92:5001 |
 
@@ -32,15 +37,17 @@ Fixed critical bug: preflop facing detection was using unreliable `facing_raise`
 
 | Test File | Tests | Coverage |
 |-----------|-------|----------|
+| audit_strategies.py | 21 | Code matches strategy file descriptions |
 | test_strategy_engine.py | 55 | Live code path (vision → engine → logic) |
 | test_postflop.py | 67 | Postflop edge cases |
-| eval_strategies.py | 943 | Real hands from session logs |
+| eval_strategies.py | 1000+ | Real hands from session logs |
 | poker_sim.py | 200k | Monte Carlo simulation |
 
 **Run all tests**:
 ```bash
 cd client
-python3 test_strategy_engine.py  # Must pass before live play
+python3 audit_strategies.py       # Code matches strategy files
+python3 test_strategy_engine.py   # Must pass before live play
 python3 test_postflop.py value_maniac
 python3 eval_strategies.py
 ```
@@ -58,30 +65,36 @@ F9 → screenshot → vision_detector_lite.py (GPT-5.2)
                     - Calls preflop_action() or postflop_action()
                          ↓
                    poker_logic.py
+                    - analyze_hand() - card-based analysis
                     - Hand evaluation
                     - Strategy-specific ranges
                          ↓
                    action + reasoning
 ```
 
-### Key Logic: Preflop Facing Detection
+### Key Logic: analyze_hand()
 ```python
-# strategy_engine.py - FIXED
-if to_call <= 0.02:      # No raise (just blinds)
-    facing = 'none'       # Use OPEN ranges
-elif to_call <= 0.25:    # Standard open
-    facing = 'open'       # Use call/3bet ranges
-elif to_call <= 0.80:    # 3-bet
-    facing = '3bet'       # Use 4bet/call ranges
+# poker_logic.py - NEW
+def analyze_hand(hole_cards, board):
+    """Compute all hand properties directly from cards."""
+    return {
+        'is_pocket_pair': ...,
+        'is_overpair': ...,
+        'has_top_pair': ...,
+        'has_good_kicker': ...,
+        'has_two_pair': ...,
+        'two_pair_type': ...,  # pocket_over_board, pocket_under_board, etc.
+        ...
+    }
 ```
 
-### Key Logic: Paired Board Detection
+### Key Logic: Two Pair Types
 ```python
-# poker_logic.py - FIXED
-if board_pair_val >= 8:  # T, J, Q, K, A
-    return "two pair (board paired)"  # HIGH - dangerous, check/fold
-else:
-    return "two pair (low board pair)"  # LOW - value bet
+# Determines how to play two pair on paired boards
+'pocket_over_board'    # KK on JJ = STRONG (raise)
+'pocket_under_board'   # 66 on JJ = WEAK (fold to big bet)
+'both_cards_hit'       # A7 on A72 = STRONG (raise)
+'one_card_board_pair'  # K2 on K22 = depends on board pair rank
 ```
 
 ## UI Features
@@ -95,30 +108,46 @@ else:
 ### Strategy-Specific Postflop
 | Strategy | Style | Key Differences |
 |----------|-------|-----------------|
+| value_maniac | Overbets + protection | Uses analyze_hand(), paired board protection |
+| value_max | Equity-based | Uses analyze_hand(), pot odds decisions |
 | gpt3/gpt4 | Board texture aware | Small c-bets (25-35%) on dry boards |
-| sonnet/kiro_optimal/kiro5/kiro_v2 | Big value bets | 75-85% pot sizing, overpair logic |
-| value_max | Equity-based | Calls when equity > pot odds, bets underpair+draw |
+| sonnet/kiro_optimal | Big value bets | 75-85% pot sizing, overpair logic |
 | aggressive/2nl_exploit | Sonnet postflop | Wider ranges, falls through to default |
 
-### Latest Results (200k hands x 3 trials, realistic 2NL table)
+### Latest Results (100k hands x 3 trials, realistic 2NL table)
 Table: 60% fish, 25% nit, 15% tag
 
 | Rank | Strategy | BB/100 | StdDev |
 |------|----------|--------|--------|
-| 1 | maniac | +34.41 | 1.81 |
-| 2 | value_max | +29.55 | 4.05 |
-| 3 | sonnet | +24.42 | 3.09 |
-| 4 | sonnet_max | +22.44 | 5.35 |
-| 5 | value_maniac | +21.86 | 15.03 |
-| 6 | aggressive | +20.18 | 5.76 |
-| 7 | gpt3 | +14.25 | 2.89 |
-| 8 | gpt4 | +13.75 | 3.72 |
-| 9 | tag | +5.63 | 2.65 |
-| 10 | lag | +4.88 | 0.63 |
-| 11 | nit | +0.44 | 1.43 |
-| 12 | fish | -1.66 | 2.24 |
+| 1 | value_maniac | +41.12 | 8.13 |
+| 2 | maniac | +29.96 | 1.07 |
+| 3 | value_max | +26.81 | 9.81 |
+| 4 | sonnet_max | +20.29 | 6.22 |
+| 5 | gpt3 | +15.89 | 6.62 |
+| 6 | aggressive | +14.98 | 12.05 |
+| 7 | gpt4 | +13.66 | 8.05 |
+| 8 | sonnet | +11.79 | 3.05 |
+| 9 | tag | +5.41 | 4.70 |
+| 10 | lag | +5.05 | 1.15 |
+| 11 | fish | -1.17 | 1.40 |
+| 12 | nit | -3.42 | 1.43 |
 
 ## Session Log
+
+### Session 35 (January 13, 2026)
+- **ANALYZE_HAND() REFACTOR**: No more string matching on descriptions
+  - Created `analyze_hand()` function - computes hand properties from cards
+  - Returns: is_pocket_pair, is_overpair, has_top_pair, has_two_pair, two_pair_type, etc.
+  - Refactored value_maniac and value_max postflop to use it
+- **TWO PAIR TYPES**: Critical for paired board decisions
+  - `pocket_over_board`: KK on JJ = STRONG (raise)
+  - `pocket_under_board`: 66 on JJ = WEAK (fold to big bet)
+  - `both_cards_hit`: A7 on A72 = STRONG (raise)
+  - `one_card_board_pair`: K2 on K22 = depends on board pair rank
+- **AUDIT_STRATEGIES.PY**: 21 tests verifying code matches strategy files
+- **POKERSTRATEGY_VALUE_MANIAC**: Created strategy file for documentation
+- **RESULTS**: value_maniac +41.12 BB/100 (now #1 in simulation)
+- Commits: [pending]
 
 ### Session 34 (January 13, 2026)
 - **PREFLOP FACING BUG FIX**: Critical fix for live play
