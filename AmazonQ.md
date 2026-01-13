@@ -1,10 +1,18 @@
 # OnyxPoker - Status Tracking
 
-**Last Updated**: January 13, 2026 16:00 UTC
+**Last Updated**: January 13, 2026 19:33 UTC
 
-## Current Status: SESSION 34 - PREFLOP CALL THRESHOLDS ✅
+## Current Status: SESSION 34 - STRATEGY ENGINE FIX ✅
 
-Added call threshold info to preflop UI. Now shows how much you can call vs raises.
+Fixed critical bug: preflop facing detection was using unreliable `facing_raise` flag from vision instead of `to_call` amount. K8s/J7s were incorrectly folding from BTN when first to act.
+
+**Key Fixes This Session**:
+1. Paired board logic: HIGH (T+) vs LOW (2-9) board pairs
+2. Expanded call_open_ip: Added AQo, AJo, ATo, KQo, KJo, QJo
+3. Fixed preflop facing detection: Use `to_call` not `facing_raise`
+4. Added test_strategy_engine.py: 55 tests for live code path
+
+**Results**: value_maniac +23.5 BB/100 on 943 real hands
 
 ## What Works
 
@@ -12,71 +20,77 @@ Added call threshold info to preflop UI. Now shows how much you can call vs rais
 |-----------|--------|-------|
 | helper_bar.py | ✅ Ready | Borderless, resizable, edge-drag resize |
 | vision_detector.py | ✅ Ready | Full mode: GPT-5.2 for vision + decisions |
-| vision_detector_lite.py | ✅ Ready | Lite mode: gpt-4o-mini for vision only |
-| strategy_engine.py | ✅ Ready | Lite mode: applies strategy-specific postflop |
-| poker_logic.py | ✅ Ready | Equity-based facing-bet decisions |
+| vision_detector_lite.py | ✅ Ready | Lite mode: GPT-5.2 for vision only |
+| strategy_engine.py | ✅ Fixed | Preflop facing detection now uses to_call |
+| poker_logic.py | ✅ Ready | Paired board logic, equity-based decisions |
 | poker_sim.py | ✅ Ready | Full postflop simulation |
-| test_postflop.py | ✅ NEW | 67 edge case scenarios for any strategy |
-| Server | ✅ Running | 54.80.204.92:5001 with Kiro Sonnet 4.5 |
+| test_strategy_engine.py | ✅ NEW | 55 tests for live code path |
+| test_postflop.py | ✅ Ready | 67 edge case scenarios |
+| Server | ✅ Running | 54.80.204.92:5001 |
+
+## Testing Framework
+
+| Test File | Tests | Coverage |
+|-----------|-------|----------|
+| test_strategy_engine.py | 55 | Live code path (vision → engine → logic) |
+| test_postflop.py | 67 | Postflop edge cases |
+| eval_strategies.py | 943 | Real hands from session logs |
+| poker_sim.py | 200k | Monte Carlo simulation |
+
+**Run all tests**:
+```bash
+cd client
+python3 test_strategy_engine.py  # Must pass before live play
+python3 test_postflop.py value_maniac
+python3 eval_strategies.py
+```
 
 ## Architecture
 
-### Default Mode (gpt-5.2 vision + strategy)
+### Live Code Path (helper_bar.py)
 ```
-F9 → screenshot → vision_detector_lite.py (gpt-5.2) → table data
-                → strategy_engine.py → poker_logic.py → action + reasoning
-Position: Manual selection from UI radio buttons
+F9 → screenshot → vision_detector_lite.py (GPT-5.2)
+                         ↓
+                   table_data (cards, board, pot, to_call)
+                         ↓
+                  strategy_engine.py
+                    - Determines facing (none/open/3bet) from to_call
+                    - Calls preflop_action() or postflop_action()
+                         ↓
+                   poker_logic.py
+                    - Hand evaluation
+                    - Strategy-specific ranges
+                         ↓
+                   action + reasoning
 ```
 
-### AI-Only Mode (--ai-only flag)
+### Key Logic: Preflop Facing Detection
+```python
+# strategy_engine.py - FIXED
+if to_call <= 0.02:      # No raise (just blinds)
+    facing = 'none'       # Use OPEN ranges
+elif to_call <= 0.25:    # Standard open
+    facing = 'open'       # Use call/3bet ranges
+elif to_call <= 0.80:    # 3-bet
+    facing = '3bet'       # Use 4bet/call ranges
 ```
-F9 → screenshot → vision_detector.py (gpt-5.2) → action + reasoning
-Position: Manual selection from UI radio buttons
+
+### Key Logic: Paired Board Detection
+```python
+# poker_logic.py - FIXED
+if board_pair_val >= 8:  # T, J, Q, K, A
+    return "two pair (board paired)"  # HIGH - dangerous, check/fold
+else:
+    return "two pair (low board pair)"  # LOW - value bet
 ```
 
 ## UI Features
 
-- **Borderless**: No Windows title bar (overrideredirect)
-- **Draggable**: Click top bar to move window
-- **Edge Resize**: Drag any edge or corner to resize
-- **Position Selector**: 6 buttons (UTG/MP/CO/BTN/SB/BB) at top
-- **Hotkeys**: F9=Advice F10=Bot F11=Stop F12=Hide (shown in startup log)
-- **Default Size**: Full width x 440px height
-
-## Server Locations
-
-**Windows Client**: C:\aws\onyx-client\
-**EC2 Server**: /home/ubuntu/mcpprojects/onyxpoker/server/
-**Uploads**: /home/ubuntu/mcpprojects/onyxpoker/server/uploads/ (471 screenshots, 13 logs, 177MB)
-
-**Note**: Server code is now part of main GitHub repo (consolidated January 12, 2026)
-**Uploads**: /home/ubuntu/mcpprojects/onyxpoker/server/uploads/
-
-**Note**: Server code is now part of main GitHub repo (consolidated January 12, 2026)
-
-## Quick Start
-
-```bash
-export OPENAI_API_KEY='sk-your-key'
-cd client
-pip install -r requirements.txt
-python helper_bar.py
-```
-
-Then: Focus poker window → Press F9 → See advice in helper bar
-
-## Strategy Simulator
-
-```bash
-cd client
-python3 poker_sim.py 200000  # Run 200k hands simulation
-```
-
-### Bot Strategies (9 in sim)
-- gpt3, gpt4, sonnet, kiro_optimal, kiro5, kiro_v2, aggressive, 2nl_exploit, value_max
-
-### Player Archetypes (5 total)
-- fish (loose passive), nit (ultra tight), lag (loose aggressive), tag (tight aggressive), maniac (overbets 100%+ pot)
+- **Borderless**: No Windows title bar
+- **Draggable**: Click top bar to move
+- **Edge Resize**: Drag any edge/corner
+- **Position Selector**: 6 buttons (UTG/MP/CO/BTN/SB/BB)
+- **Hotkeys**: F9=Advice F10=Bot F11=Stop F12=Hide
 
 ### Strategy-Specific Postflop
 | Strategy | Style | Key Differences |
@@ -107,29 +121,20 @@ Table: 60% fish, 25% nit, 15% tag
 ## Session Log
 
 ### Session 34 (January 13, 2026)
-- **PREFLOP CALL THRESHOLDS**: Added to UI
-  - Shows "vs raise: {threshold}" on second line for preflop
-  - Thresholds: ALL-IN ok / call 3bet (15bb) / call open (4bb) / fold
-  - Position-aware: BB defend vs IP calling ranges
-- **VALUE_MANIAC AS DEFAULT**: Set as default strategy in strategy_engine.py
-  - +23.5 BB/100 on 715 real hands (best of all strategies)
-  - 94% c-bet, 0 bad folds, 27 value raises
-  - Beats value_max by +12.3 BB/100
-- **VALUE_MANIAC FIXES**: Improved postflop logic
-  - Now raises with monsters (quads, full house, sets, two pair)
-  - Calls overcards on flop (AK/AQ type hands)
-  - Only 1 edge case issue (down from 11)
-- **EVAL_STRATEGIES.PY**: Created real hand evaluator
-  - Tracks VPIP, PFR, C-Bet, PostFold, Aggression
-  - Quality metrics: GoodFolds, BadFolds, GoodCalls, BadCalls, ValueRaises
-  - Score formula for ranking strategies
-- **REPLAY_LOGS.PY**: Created log replay tool
-- **REAL 2NL DATA ANALYSIS**: Analyzed 886 hands from 9 session files
-  - Opponents check 73% postflop (very passive)
-  - C-bet frequency only 21% (much lower than expected)
-- **ARCHETYPE TUNING**: Updated fish/nit/tag/lag/maniac to match real 2NL
-- **TABLE COMPOSITION**: Single realistic table (60% fish, 25% nit, 15% tag)
-- Commits: 714ca9b + pending
+- **PREFLOP FACING BUG FIX**: Critical fix for live play
+  - Bug: `facing_raise` flag from vision was unreliable
+  - K8s/J7s were folding from BTN when first to act (should raise)
+  - Fix: Use `to_call` amount as sole indicator of facing
+  - `to_call <= 0.02` = no raise = use OPEN ranges
+- **TEST_STRATEGY_ENGINE.PY**: 55 tests for live code path
+  - Tests vision → strategy_engine → poker_logic pipeline
+  - Catches bugs that simulations miss (they bypass strategy_engine)
+- **PAIRED BOARD LOGIC**: HIGH vs LOW board pairs
+  - HIGH (T, J, Q, K, A): Check/fold - villain likely has trips
+  - LOW (2-9): Value bet normally
+- **CALL_OPEN_IP EXPANDED**: Added AQo, AJo, ATo, KQo, KJo, QJo
+- **RESULTS**: value_maniac +23.5 BB/100 on 943 real hands
+- Commits: d2b6658, f73638d, 50bf9d6, 6be75a8
 
 ### Session 33 (January 13, 2026)
 - **POSTFLOP EDGE CASE TESTER**: Created test_postflop.py with 67 scenarios

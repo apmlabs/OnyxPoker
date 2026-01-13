@@ -62,8 +62,9 @@ onyxpoker/                    # Main repo (GitHub: apmlabs/OnyxPoker)
 │   ├── strategy_engine.py    # Applies strategy (default: value_maniac)
 │   ├── poker_logic.py        # Hand eval, preflop/postflop logic, all strategies
 │   ├── poker_sim.py          # Monte Carlo simulator (200k+ hands)
+│   ├── test_strategy_engine.py # Live code path tests (55 scenarios)
 │   ├── test_postflop.py      # Edge case tester (67 scenarios)
-│   ├── eval_strategies.py    # Real hand evaluator (715 hands from logs)
+│   ├── eval_strategies.py    # Real hand evaluator (943 hands from logs)
 │   ├── replay_logs.py        # Replay session logs through strategies
 │   ├── test_screenshots.py   # Offline vision testing
 │   ├── send_logs.py          # Upload logs to server
@@ -74,7 +75,7 @@ onyxpoker/                    # Main repo (GitHub: apmlabs/OnyxPoker)
 │   ├── requirements.txt
 │   └── uploads/              # Screenshots and logs (gitignored)
 │       ├── *.png             # Screenshots
-│       ├── session_*.jsonl   # Session logs (715 hands)
+│       ├── session_*.jsonl   # Session logs (943 hands)
 │       └── ground_truth.json # Vision testing ground truth
 └── docs/
     ├── DEPLOYMENT.md         # Setup guide
@@ -145,8 +146,29 @@ cd client && python3 test_postflop.py [strategy_name]
 
 **Target: 0-3 issues** (some edge cases are debatable)
 
-### 2. Real Hand Evaluation (`eval_strategies.py`)
-Evaluates strategies on 715 real hands from session logs.
+### 2. Live Code Path Testing (`test_strategy_engine.py`)
+Tests the ACTUAL code path used in live play (helper_bar.py).
+
+```bash
+cd client && python3 test_strategy_engine.py
+```
+
+**Why this matters:**
+- poker_sim.py and eval_strategies.py call poker_logic.py DIRECTLY
+- Live play goes: vision → strategy_engine.py → poker_logic.py
+- Bugs in strategy_engine.py are INVISIBLE to simulations!
+
+**Tests 55 scenarios:**
+- Preflop facing detection (none/open/3bet/4bet)
+- Buggy vision handling (facing_raise=True but to_call=0)
+- Position-specific ranges
+- Postflop action selection
+- Edge cases (None values, invalid positions)
+
+**MUST PASS before live play!**
+
+### 3. Real Hand Evaluation (`eval_strategies.py`)
+Evaluates strategies on 943 real hands from session logs.
 
 ```bash
 cd client && python3 eval_strategies.py
@@ -174,7 +196,7 @@ Score = GoodFolds*2 - BadFolds*3 + GoodCalls*2 - BadCalls*2
 
 **Target: Score > +300, BadFolds = 0**
 
-### 3. Monte Carlo Simulation (`poker_sim.py`)
+### 5. Monte Carlo Simulation (`poker_sim.py`)
 Simulates 200k+ hands against realistic opponent archetypes.
 
 ```bash
@@ -190,10 +212,11 @@ cd client && python3 poker_sim.py 200000
 
 ### Testing Workflow
 1. Make strategy change in `poker_logic.py`
-2. Run `test_postflop.py` → fix any issues
-3. Run `eval_strategies.py` → check real hand performance
-4. Run `poker_sim.py 200000` → verify simulation results
-5. If all pass, commit changes
+2. Run `test_strategy_engine.py` → **MUST PASS** (live code path)
+3. Run `test_postflop.py` → fix any issues
+4. Run `eval_strategies.py` → check real hand performance
+5. Run `poker_sim.py 200000` → verify simulation results
+6. If all pass, commit changes
 
 ## 🧠 AGENT WORKFLOW
 
@@ -245,7 +268,46 @@ cd client && python3 poker_sim.py 200000
 
 ## 📖 SESSION HISTORY & LESSONS LEARNED
 
-### Session 34: Real 2NL Data Analysis + Archetype Tuning (January 13, 2026)
+### Session 34: Strategy Engine Bug Fix + Test Coverage (January 13, 2026)
+
+**Challenge**: K8s/J7s were folding from BTN when first to act - should be raising.
+
+**Root Cause**: `strategy_engine.py` used `facing_raise` flag from vision to determine if someone raised. But vision sometimes returns `facing_raise=True` even when `to_call=0` (no actual raise).
+
+**The Testing Gap**:
+- `poker_sim.py` calls `preflop_action()` directly with `facing` parameter
+- `eval_strategies.py` calls `preflop_action()` directly
+- `test_postflop.py` only tests postflop
+- **NONE of these test `strategy_engine.py`** - the glue between vision and poker_logic!
+
+**Fix**: Use `to_call` as sole indicator of facing:
+```python
+if to_call <= 0.02:      # No raise (just blinds)
+    facing = 'none'       # Use OPEN ranges - ignore facing_raise flag
+```
+
+**New Test File**: `test_strategy_engine.py` (55 tests)
+- Tests the ACTUAL live code path: vision → strategy_engine → poker_logic
+- Catches bugs that simulations miss
+- **MUST PASS before live play**
+
+**Critical Lesson**: Simulations and offline tests can miss bugs in glue code. Always test the exact code path used in production.
+
+---
+
+### Session 34 Earlier: Paired Board Logic + call_open_ip (January 13, 2026)
+
+**Challenge**: KK on JJ board was betting 3 streets - disaster when any Jx has trips.
+
+**Fix**: Distinguish HIGH vs LOW board pairs:
+- HIGH (T, J, Q, K, A): Check/fold - villain likely has trips
+- LOW (2-9): Value bet normally - less likely villain has trips
+
+**Also Fixed**: Expanded `call_open_ip` range with broadway offsuit (AQo, AJo, ATo, KQo, KJo, QJo).
+
+---
+
+### Session 34 Earlier: Real 2NL Data Analysis + Archetype Tuning (January 13, 2026)
 
 **Challenge**: Simulation results didn't match real 2NL play. Archetypes were too aggressive.
 
