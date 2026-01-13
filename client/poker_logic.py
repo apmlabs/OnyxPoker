@@ -675,46 +675,53 @@ def postflop_action(hole_cards: List[Tuple[str, str]], board: List[Tuple[str, st
         board_has_ace = False
         is_underpair_to_ace = False
     
-    # FISH: Calls with any pair/draw, never folds top pair, stations
+    # ARCHETYPES TUNED TO REAL 2NL BLITZ DATA (886 hands):
+    # - C-bet freq: 21% (very low!)
+    # - Bet sizing: mostly 33-50% pot
+    # - Players check A LOT (79% of flops checked through)
+    
+    # FISH: Passive, checks a lot, calls with any pair/draw
     if archetype == 'fish':
         if to_call == 0 or to_call is None:
+            if strength >= 4:
+                return ('bet', round(pot * 0.4, 2), f"{desc} - fish bets small")
             if strength >= 3:
-                return ('bet', round(pot * 0.5, 2), f"{desc} - fish bets small")
+                if random.random() < 0.4:  # Only bets 40% of time
+                    return ('bet', round(pot * 0.35, 2), f"{desc} - fish bets small")
             return ('check', 0, "fish checks")
         else:
             if has_pair or has_any_draw:
                 return ('call', 0, f"{desc} - fish calls")
             return ('fold', 0, "fish folds air")
     
-    # NIT: Only continues top pair+, folds to aggression, never bluffs
+    # NIT: Very passive, only bets nuts, folds to aggression
     if archetype == 'nit':
         if to_call == 0 or to_call is None:
             if strength >= 4:
-                return ('bet', round(pot * 0.65, 2), f"{desc} - nit value bets")
-            if strength == 3 or "top pair" in desc:
-                return ('bet', round(pot * 0.5, 2), f"{desc} - nit bets")
-            return ('check', 0, "nit checks weak hand")
+                return ('bet', round(pot * 0.5, 2), f"{desc} - nit value bets")
+            if strength == 3 or "top pair good" in desc:
+                if random.random() < 0.3:  # Only bets 30%
+                    return ('bet', round(pot * 0.4, 2), f"{desc} - nit bets")
+            return ('check', 0, "nit checks")
         else:
             if strength >= 4:
                 return ('call', 0, f"{desc} - nit calls")
             if strength == 3 and street == 'flop':
                 return ('call', 0, f"{desc} - nit calls flop")
-            if "top pair good kicker" in desc and street == 'flop':
-                return ('call', 0, f"{desc} - nit calls flop")
-            return ('fold', 0, f"{desc} - nit folds to aggression")
+            return ('fold', 0, f"{desc} - nit folds")
     
-    # TAG: C-bets 65%, gives up without equity, folds to raises
+    # TAG: C-bets 35%, small sizing, gives up without equity
     if archetype == 'tag':
         if to_call == 0 or to_call is None:
             if strength >= 3:
-                return ('bet', round(pot * 0.65, 2), f"{desc} - tag value bets")
-            if "top pair" in desc or "pair" in desc:
-                if street == 'flop' and random.random() < 0.65:
-                    return ('bet', round(pot * 0.5, 2), f"{desc} - tag c-bets")
-                if street == 'turn' and strength >= 2 and "top" in desc:
-                    return ('bet', round(pot * 0.55, 2), f"{desc} - tag barrels")
-            if combo_draw and street == 'flop':
-                return ('bet', round(pot * 0.5, 2), "tag semi-bluffs draw")
+                return ('bet', round(pot * 0.45, 2), f"{desc} - tag value bets")
+            if "top pair" in desc or "overpair" in desc:
+                if street == 'flop' and random.random() < 0.35:  # 35% c-bet
+                    return ('bet', round(pot * 0.35, 2), f"{desc} - tag c-bets")
+                if street == 'turn' and random.random() < 0.25:
+                    return ('bet', round(pot * 0.4, 2), f"{desc} - tag barrels")
+            if combo_draw and street == 'flop' and random.random() < 0.4:
+                return ('bet', round(pot * 0.35, 2), "tag semi-bluffs")
             return ('check', 0, f"{desc} - tag checks")
         else:
             if strength >= 4:
@@ -725,20 +732,22 @@ def postflop_action(hole_cards: List[Tuple[str, str]], board: List[Tuple[str, st
                 return ('call', 0, f"{desc} - tag calls flop")
             return ('fold', 0, f"{desc} - tag folds")
     
-    # LAG: C-bets 75%, double barrels, bluffs rivers
+    # LAG: C-bets 50%, medium sizing, more aggressive than others
     if archetype == 'lag':
         if to_call == 0 or to_call is None:
             if strength >= 3:
-                return ('bet', round(pot * 0.75, 2), f"{desc} - lag value bets big")
+                return ('bet', round(pot * 0.5, 2), f"{desc} - lag value bets")
             if "pair" in desc:
-                if street in ['flop', 'turn'] and random.random() < 0.75:
-                    return ('bet', round(pot * 0.6, 2), f"{desc} - lag barrels")
-            if has_any_draw:
-                return ('bet', round(pot * 0.65, 2), "lag semi-bluffs")
-            if street == 'flop' and random.random() < 0.70:
-                return ('bet', round(pot * 0.5, 2), "lag c-bets air")
-            if street == 'river' and random.random() < 0.25:
-                return ('bet', round(pot * 0.6, 2), "lag river bluff")
+                if street == 'flop' and random.random() < 0.50:  # 50% c-bet
+                    return ('bet', round(pot * 0.4, 2), f"{desc} - lag c-bets")
+                if street == 'turn' and random.random() < 0.35:
+                    return ('bet', round(pot * 0.45, 2), f"{desc} - lag barrels")
+            if has_any_draw and random.random() < 0.5:
+                return ('bet', round(pot * 0.4, 2), "lag semi-bluffs")
+            if street == 'flop' and random.random() < 0.30:  # Air c-bet 30%
+                return ('bet', round(pot * 0.33, 2), "lag c-bets air")
+            if street == 'river' and random.random() < 0.15:
+                return ('bet', round(pot * 0.45, 2), "lag river bluff")
             return ('check', 0, f"{desc} - lag checks")
         else:
             if strength >= 3:
@@ -749,37 +758,37 @@ def postflop_action(hole_cards: List[Tuple[str, str]], board: List[Tuple[str, st
                 return ('call', 0, "lag calls with draw")
             return ('fold', 0, f"{desc} - lag folds")
     
-    # MANIAC: Overbets (100-150% pot), 3-barrels wide, rarely folds
+    # MANIAC: Most aggressive, overbets sometimes, but still realistic
     if archetype == 'maniac':
         if to_call == 0 or to_call is None:
             if strength >= 4:
-                # Overbet value hands
-                return ('bet', round(pot * 1.25, 2), f"{desc} - maniac overbets value")
+                return ('bet', round(pot * 0.75, 2), f"{desc} - maniac bets big")
             if strength >= 3:
-                return ('bet', round(pot * 1.1, 2), f"{desc} - maniac bets big")
+                return ('bet', round(pot * 0.6, 2), f"{desc} - maniac bets")
             if "pair" in desc:
-                if street in ['flop', 'turn'] and random.random() < 0.85:
-                    return ('bet', round(pot * 1.0, 2), f"{desc} - maniac overbets")
-                if street == 'river' and random.random() < 0.5:
-                    return ('bet', round(pot * 1.2, 2), f"{desc} - maniac river overbet")
+                if street == 'flop' and random.random() < 0.65:
+                    return ('bet', round(pot * 0.5, 2), f"{desc} - maniac c-bets")
+                if street == 'turn' and random.random() < 0.45:
+                    return ('bet', round(pot * 0.55, 2), f"{desc} - maniac barrels")
+                if street == 'river' and random.random() < 0.35:
+                    return ('bet', round(pot * 0.6, 2), f"{desc} - maniac river bet")
             if has_any_draw:
-                return ('bet', round(pot * 1.0, 2), "maniac overbets draw")
-            if street == 'flop' and random.random() < 0.80:
-                return ('bet', round(pot * 0.9, 2), "maniac c-bets big")
-            if street == 'turn' and random.random() < 0.60:
-                return ('bet', round(pot * 1.0, 2), "maniac barrels turn")
-            if street == 'river' and random.random() < 0.35:
-                return ('bet', round(pot * 1.1, 2), "maniac river bluff")
+                return ('bet', round(pot * 0.5, 2), "maniac semi-bluffs")
+            if street == 'flop' and random.random() < 0.50:
+                return ('bet', round(pot * 0.4, 2), "maniac c-bets air")
+            if street == 'turn' and random.random() < 0.30:
+                return ('bet', round(pot * 0.45, 2), "maniac barrels turn")
+            if street == 'river' and random.random() < 0.20:
+                return ('bet', round(pot * 0.5, 2), "maniac river bluff")
             return ('check', 0, f"{desc} - maniac checks")
         else:
-            # Maniac calls wide, rarely folds
             if strength >= 3:
                 return ('call', 0, f"{desc} - maniac calls")
             if "pair" in desc:
                 return ('call', 0, f"{desc} - maniac calls any pair")
             if has_any_draw:
                 return ('call', 0, "maniac calls with draw")
-            if street == 'flop' and random.random() < 0.5:
+            if street == 'flop' and random.random() < 0.35:
                 return ('call', 0, "maniac floats flop")
             return ('fold', 0, f"{desc} - maniac folds")
     
