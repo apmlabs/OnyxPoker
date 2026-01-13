@@ -461,18 +461,11 @@ class HelperBar:
             
             equity_str = " | ".join(parts) if parts else hand_desc
         
-        if is_hero_turn:
+        if True:  # Always show advice - removed unreliable is_hero_turn detection
             self.cards_label.config(text=cards_str)
             self.decision_label.config(text=action.upper())
             self.equity_label.config(text=equity_str)
             self.maxcall_label.config(text="")
-        else:
-            # Not hero's turn - show to_call and pre-action status
-            self.cards_label.config(text="[PRE-ACTION]")
-            self.decision_label.config(text=f"=> {action.upper()}")
-            to_call_str = f"To call: €{to_call}" if to_call else "To call: €0 (check)"
-            self.maxcall_label.config(text=to_call_str)
-            self.log(f"Pre-action | {to_call_str}", "INFO")
         
         self.board_label.config(text=f"Board: {board_str}")
         self.pot_label.config(text=f"Pot: €{pot}")
