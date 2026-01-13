@@ -1019,7 +1019,7 @@ def postflop_action(hole_cards: List[Tuple[str, str]], board: List[Tuple[str, st
         equity = calculate_equity(hole_cards, board, num_opponents, 200) / 100.0  # 0-1 scale
         return _postflop_value_max(hole_cards, board, pot, to_call, street, is_ip,
                                    is_aggressor, strength, desc, draws, combo_draw,
-                                   has_flush_draw, has_oesd, has_any_draw, equity)
+                                   has_flush_draw, has_oesd, has_gutshot, has_any_draw, equity)
     
     if strategy in ['gpt3', 'gpt4']:
         return _postflop_gpt(hole_cards, board, pot, to_call, street, is_ip, 
@@ -1107,7 +1107,7 @@ def _postflop_value_maniac(hole_cards, board, pot, to_call, street, strength, de
 
 
 def _postflop_value_max(hole_cards, board, pot, to_call, street, is_ip, is_aggressor,
-                        strength, desc, draws, combo_draw, has_flush_draw, has_oesd, has_any_draw, equity=0):
+                        strength, desc, draws, combo_draw, has_flush_draw, has_oesd, has_gutshot, has_any_draw, equity=0):
     """
     VALUE_MAX postflop - Uses analyze_hand() for all hand analysis.
     """
