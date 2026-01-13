@@ -830,7 +830,13 @@ def _postflop_value_max(hole_cards, board, pot, to_call, street, is_ip, is_aggre
     # Board texture analysis
     board_ranks = sorted([RANK_VAL[c[0]] for c in board], reverse=True) if board else []
     board_suits = [c[1] for c in board] if board else []
-    is_paired_board = len(board_ranks) != len(set(board_ranks))
+    
+    # Count pairs on board
+    from collections import Counter
+    board_rank_counts = Counter([c[0] for c in board]) if board else Counter()
+    num_board_pairs = sum(1 for c in board_rank_counts.values() if c >= 2)
+    is_paired_board = num_board_pairs >= 1
+    
     is_monotone = len(set(board_suits)) == 1 if len(board_suits) >= 3 else False
     is_two_tone = len(set(board_suits)) == 2 if len(board_suits) >= 3 else False
     has_straight_possible = (max(board_ranks) - min(board_ranks) <= 4) if len(board_ranks) >= 3 else False
@@ -947,18 +953,18 @@ def _postflop_value_max(hole_cards, board, pot, to_call, street, is_ip, is_aggre
                 return ('call', 0, f"{desc} - call river")
             return ('raise', round(pot * 2.0, 2), f"{desc} - raise for value")
         
-        # TWO PAIR - check if strong or weak
+        # TWO PAIR - check if strong or weak based on board pairs
         if strength == 3:
-            # River board paired = villain likely has trips/full house - FOLD
-            if street == 'river' and is_paired_board and "board paired" in desc:
-                return ('fold', 0, f"{desc} - fold river (board paired, likely beat)")
-            # Weak two pair (board paired) - only call small bets
-            if "board paired" in desc:
-                if pot_odds <= 0.25:  # Tighter threshold
-                    return ('call', 0, f"{desc} - call (weak two pair)")
-                return ('fold', 0, f"{desc} - fold (weak two pair)")
-            # Strong two pair - call big bets
-            if pot_odds <= 0.45:  # Call up to pot-sized bet
+            # River with paired board = villain likely has trips/full house - FOLD
+            if street == 'river' and num_board_pairs >= 1:
+                return ('fold', 0, f"{desc} - fold river ({num_board_pairs} pair(s) on board)")
+            # Board has pair(s) = our two pair is weak - only call small bets
+            if num_board_pairs >= 1:
+                if pot_odds <= 0.25:
+                    return ('call', 0, f"{desc} - call (board paired)")
+                return ('fold', 0, f"{desc} - fold (board paired, bet too big)")
+            # Strong two pair (no board pair) - call big bets
+            if pot_odds <= 0.45:
                 return ('call', 0, f"{desc} - call (good odds)")
             return ('fold', 0, f"{desc} - fold (bet too big)")
         
