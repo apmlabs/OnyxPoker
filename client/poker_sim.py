@@ -256,7 +256,7 @@ def run_simulation(num_hands=100000):
     """Run simulation across easy/medium/tough tables."""
     random.seed(None)
     
-    bot_strategies = ['gpt3', 'gpt4', 'sonnet', 'kiro_optimal', 'kiro5', 'kiro_v2', 'aggressive', '2nl_exploit', 'value_max', 'value_maniac']
+    bot_strategies = ['gpt3', 'gpt4', 'sonnet', 'sonnet_max', 'aggressive', 'value_max', 'value_maniac']
     difficulties = ['easy', 'medium', 'tough']
     hands_per_diff = num_hands // 3
     

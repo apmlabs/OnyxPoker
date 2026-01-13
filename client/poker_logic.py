@@ -234,6 +234,28 @@ STRATEGIES = {
         '4bet': expand_range('QQ+,AKs,AKo'),
         'overbet': True,
     },
+    # SONNET_MAX: Sonnet preflop + optimized postflop for 2NL fish-heavy tables
+    'sonnet_max': {
+        'name': 'Sonnet Max',
+        'open': {
+            'UTG': expand_range('77+,ATs+,KQs,AQo+'),
+            'MP': expand_range('66+,A9s+,A5s-A2s,KJs+,QJs,JTs,AJo+,KQo'),
+            'CO': expand_range('44+,A2s+,K9s+,Q9s+,J9s+,T8s+,97s+,86s+,76s,65s,ATo+,KJo+,QJo'),
+            'BTN': expand_range('22+,A2s+,K6s+,Q7s+,J7s+,T7s+,96s+,85s+,75s+,64s+,54s,A7o+,K9o+,QTo+,JTo'),
+            'SB': expand_range('55+,A2s+,K8s+,Q9s+,J9s+,T8s+,98s,87s,A9o+,KTo+'),
+        },
+        '3bet_vs': {
+            'UTG': expand_range('QQ+,AKs,AKo'),
+            'MP': expand_range('QQ+,AKs,AKo'),
+            'CO': expand_range('JJ+,AQs+,AKo'),
+            'BTN': expand_range('TT+,AQs+,AKo'),
+        },
+        '3bet_bluff': expand_range('A5s-A4s,K9s-K8s'),
+        'call_open_ip': expand_range('JJ-66,AJs-ATs,KQs-KJs,QJs,JTs,T9s,98s,87s'),
+        'bb_defend': expand_range('99-22,AJs-A2s,KTs+,Q9s+,J9s+,T8s+,97s+,86s+,76s,65s,54s,A9o+,KJo,QJo,JTo'),
+        'call_3bet': expand_range('QQ,JJ,AKo,AQs'),
+        '4bet': expand_range('KK+,AKs'),
+    },
 }
 
 # Player archetypes
@@ -830,6 +852,11 @@ def postflop_action(hole_cards: List[Tuple[str, str]], board: List[Tuple[str, st
                 return ('call', 0, "float flop")
             return ('fold', 0, f"{desc} - fold")
     
+    if strategy == 'sonnet_max':
+        return _postflop_sonnet_max(hole_cards, board, pot, to_call, street, is_ip,
+                                    is_aggressor, strength, desc, draws, combo_draw,
+                                    has_flush_draw, has_oesd, has_any_draw)
+    
     if strategy == 'value_max':
         # Calculate equity for smarter decisions
         equity = calculate_equity(hole_cards, board, num_opponents, 200) / 100.0  # 0-1 scale
@@ -1257,6 +1284,124 @@ def _postflop_sonnet(hole_cards, board, pot, to_call, street, is_ip, is_aggresso
             return ('call', 0, "OESD - call <=33%")
     
     return ('fold', 0, f"{desc} - fold")
+
+
+def _postflop_sonnet_max(hole_cards, board, pot, to_call, street, is_ip, is_aggressor,
+                         strength, desc, draws, combo_draw, has_flush_draw, has_oesd, has_any_draw):
+    """
+    SONNET_MAX: Sonnet postflop + Session 33 fixes for 2NL fish-heavy tables.
+    Key changes from sonnet:
+    - Fold high card on paired boards (the KQ/AK leak)
+    - Slightly smaller bet sizes (fish call anyway)
+    - No river value with TPGK
+    """
+    from collections import Counter
+    board_rank_counts = Counter([c[0] for c in board]) if board else Counter()
+    is_paired_board = any(c >= 2 for c in board_rank_counts.values())
+    is_double_paired = sum(1 for c in board_rank_counts.values() if c >= 2) >= 2
+    
+    pot_odds = to_call / (pot + to_call) if to_call and pot > 0 else 0
+    is_big_bet = to_call and pot > 0 and to_call >= pot * 0.6
+    
+    # Bet sizing (slightly smaller than sonnet - fish call anyway)
+    s = {
+        'flop': {'nuts': 1.0, 'set': 0.80, 'twopair': 0.70, 'tptk': 0.65, 'tpgk': 0.55, 'tpwk': 0.45, 'overpair': 0.60},
+        'turn': {'nuts': 1.0, 'set': 0.80, 'twopair': 0.70, 'tptk': 0.55, 'tpgk': 0.45, 'tpwk': 0.0, 'overpair': 0.50},
+        'river': {'nuts': 1.0, 'set': 0.80, 'twopair': 0.65, 'tptk': 0.45, 'tpgk': 0.0, 'tpwk': 0.0, 'overpair': 0.40},
+    }.get(street, {})
+    
+    if to_call == 0 or to_call is None:
+        # === BETTING ===
+        if strength >= 5:
+            return ('bet', round(pot * s.get('nuts', 1.0), 2), f"{desc} - bet for value")
+        if strength == 4:
+            return ('bet', round(pot * s.get('set', 0.80), 2), f"{desc} - value bet")
+        if strength == 3:
+            if "board paired" in desc and street == 'river':
+                return ('check', 0, f"{desc} - check (weak two pair)")
+            return ('bet', round(pot * s.get('twopair', 0.70), 2), f"{desc} - value bet")
+        
+        if "overpair" in desc.lower():
+            if is_paired_board:
+                return ('check', 0, f"{desc} - check (board paired)")
+            return ('bet', round(pot * s.get('overpair', 0.60), 2), f"{desc} - value bet")
+        
+        if "underpair" in desc.lower():
+            return ('check', 0, f"{desc} - check underpair")
+        
+        if "top pair good kicker" in desc:
+            if is_paired_board and street != 'flop':
+                return ('check', 0, f"{desc} - check (board paired)")
+            return ('bet', round(pot * s.get('tptk', 0.65), 2), f"{desc} - value bet")
+        
+        if "top pair" in desc and "weak" not in desc:
+            if street != 'river':
+                return ('bet', round(pot * s.get('tpgk', 0.55), 2), f"{desc} - value bet")
+            return ('check', 0, f"{desc} - check river")
+        
+        if "top pair weak kicker" in desc and street == 'flop':
+            return ('bet', round(pot * s.get('tpwk', 0.45), 2), f"{desc} - small bet")
+        
+        # Draws
+        if combo_draw:
+            return ('bet', round(pot * 0.60, 2), "combo draw - semi-bluff")
+        if has_flush_draw and street in ['flop', 'turn']:
+            return ('bet', round(pot * 0.50, 2), "flush draw - semi-bluff")
+        if has_oesd and street == 'flop':
+            return ('bet', round(pot * 0.45, 2), "OESD - semi-bluff")
+        
+        return ('check', 0, f"{desc} - check")
+    
+    else:
+        # === FACING BET - Session 33 fixes ===
+        
+        # FIX: High card on paired board = FOLD
+        if strength <= 1 and is_paired_board:
+            return ('fold', 0, f"{desc} - fold (high card on paired board)")
+        
+        # FIX: Double paired board = need full house+
+        if is_double_paired and strength < 7:
+            return ('fold', 0, f"{desc} - fold (double paired board)")
+        
+        # Strong hands
+        if strength >= 5:
+            return ('call', 0, f"{desc} - call")
+        if strength == 4:
+            return ('call', 0, f"{desc} - call")
+        if strength == 3:
+            if "board paired" in desc and street == 'river' and is_big_bet:
+                return ('fold', 0, f"{desc} - fold (weak two pair vs big bet)")
+            return ('call', 0, f"{desc} - call")
+        
+        # Top pair good kicker
+        if "top pair good kicker" in desc:
+            if street in ['flop', 'turn']:
+                return ('call', 0, f"{desc} - call {street}")
+            if pot_odds <= 0.35:
+                return ('call', 0, f"{desc} - call small river")
+            return ('fold', 0, f"{desc} - fold big river")
+        
+        # Top pair / overpair
+        if "top pair" in desc or "overpair" in desc.lower():
+            if street == 'flop':
+                return ('call', 0, f"{desc} - call flop")
+            if street == 'turn' and pot_odds <= 0.35:
+                return ('call', 0, f"{desc} - call small turn")
+            return ('fold', 0, f"{desc} - fold")
+        
+        # Middle/bottom pair - call flop only
+        if "pair" in desc:
+            if street == 'flop' and pot_odds <= 0.30:
+                return ('call', 0, f"{desc} - call flop")
+            return ('fold', 0, f"{desc} - fold")
+        
+        # Draws
+        if has_flush_draw and pot_odds <= 0.30:
+            return ('call', 0, "flush draw - call")
+        if has_oesd and pot_odds <= 0.25:
+            return ('call', 0, "OESD - call")
+        
+        return ('fold', 0, f"{desc} - fold")
 
 
 # Preflop decision logic

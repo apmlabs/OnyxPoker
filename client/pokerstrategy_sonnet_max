@@ -1,0 +1,94 @@
+SONNET_MAX - OPTIMIZED FOR 2NL BLITZ (Based on Sonnet + Session Analysis)
+
+KEY INSIGHT: Real 2NL is 70%+ fish who check 73% of the time postflop.
+Exploit by: value betting relentlessly, folding to aggression, never bluffing.
+
+=== PREFLOP (Same as Sonnet - proven ranges) ===
+
+OPEN RAISE (2.5bb):
+UTG: 77+, ATs+, KQs, AQo+
+MP: 66+, A9s+, A5s-A2s, KJs+, QJs, JTs, AJo+, KQo
+CO: 44+, A2s+, K9s+, Q9s+, J9s+, T8s+, 97s+, 86s+, 76s, 65s, ATo+, KJo+, QJo
+BTN: 22+, A2s+, K6s+, Q7s+, J7s+, T7s+, 96s+, 85s+, 75s+, 64s+, 54s, A7o+, K9o+, QTo+, JTo
+SB: 55+, A2s+, K8s+, Q9s+, J9s+, T8s+, 98s, 87s, A9o+, KTo+
+
+3-BET VALUE:
+vs UTG/MP: QQ+, AKs, AKo
+vs CO: JJ+, AQs+, AKo
+vs BTN: TT+, AQs+, AKo
+
+3-BET BLUFF: A5s-A4s, K9s-K8s (vs CO/BTN only)
+
+CALL IP: JJ-66, AJs-ATs, KQs-KJs, QJs, JTs, T9s, 98s, 87s
+
+BB DEFEND: 99-22, AJs-A2s, KTs+, Q9s+, J9s+, T8s+, 97s+, 86s+, 76s, 65s, 54s, A9o+, KJo, QJo
+
+VS 3-BET: 4-bet KK+, AKs | Call QQ, JJ, AKo, AQs | Fold rest
+VS 4-BET: All-in KK+ | Fold rest
+
+=== POSTFLOP (Optimized from session analysis) ===
+
+CORE PRINCIPLE: Fish check 73% of time. When checked to, BET FOR VALUE.
+When they bet, THEY HAVE IT - fold without strong hand.
+
+VALUE BETTING (checked to us):
+- Straights+: Bet 100% pot all streets
+- Sets: Bet 85% pot all streets  
+- Two pair: Bet 75% pot (not 80% - smaller vs passive)
+- TPTK: Bet 65%/55%/45% (flop/turn/river)
+- TPGK: Bet 55%/45%/check (don't thin value river)
+- TPWK: Bet 45% flop only, then check
+- Overpair: Bet 60%/50%/40%
+- Overpair on Axx: CHECK-CALL only (they have ace)
+
+DRAWS (semi-bluff when checked to):
+- Combo draw: Bet 60% pot
+- Flush draw: Bet 50% pot flop/turn
+- OESD: Bet 45% pot flop only
+- Gutshot: Check (no fold equity vs fish)
+
+WEAK HANDS:
+- Middle pair: Check, call small bets flop only
+- Bottom pair: Check-fold
+- High card: Check-fold (NEVER bluff)
+
+=== FACING BETS (Session 33 fixes) ===
+
+CRITICAL: When passive fish bet, BELIEVE THEM.
+
+PAIRED BOARD + HIGH CARD = FOLD (KQ on AA99, AK on 2265)
+DOUBLE PAIRED BOARD = Need full house+ to continue
+POT-SIZED RIVER BET = Need two pair+ to call
+
+Call with:
+- Sets+: Always call/raise
+- Two pair: Call (fold weak two pair vs big river bet)
+- TPTK: Call flop/turn, fold to big river bets
+- TPWK: Call flop only
+- Overpair: Call down, fold to pot-sized river
+- Flush draw: Call ≤30% pot
+- OESD: Call ≤25% pot
+
+Fold:
+- High card (no showdown value)
+- Bottom pair
+- Middle pair on turn/river
+- Any hand on paired board without trips+
+
+=== KEY DIFFERENCES FROM BASE SONNET ===
+
+1. SMALLER BET SIZES: 75% → 65% for two pair, etc. (fish call anyway)
+2. NO RIVER VALUE WITH TPGK: They only call river with better
+3. STRICTER FACING BETS: Fold high card on paired boards always
+4. NO BLUFFING: Fish don't fold, save your chips
+5. CHECK MORE WITH WEAK: Don't "thin value" middle pair
+
+=== WIN RATE FORMULA ===
+
+vs 70% fish tables:
+- 50% profit from value betting made hands
+- 30% profit from stealing blinds
+- 20% profit from folding to aggression (not paying off)
+- 0% from bluffing (they call)
+
+Expected: +30-35 BB/100 on easy tables
