@@ -223,122 +223,80 @@ def simulate_hand(players, dealer_pos):
             p.profit -= invested[p.name]
 
 
-def get_table_configs(difficulty):
-    """Return table compositions for a difficulty level."""
-    if difficulty == 'easy':
-        # Fish-heavy tables (60% fish, 20% nit, 20% tag)
-        # Easy: 70% fish, 20% nit, 10% tag (very soft)
-        return [
-            ['fish', 'fish', 'fish', 'fish', 'nit'],
-            ['fish', 'fish', 'fish', 'nit', 'tag'],
-            ['fish', 'fish', 'fish', 'nit', 'nit'],
-            ['fish', 'fish', 'fish', 'fish', 'tag'],
-        ]
-    elif difficulty == 'medium':
-        # Medium: 50% fish, 25% tag, 15% nit, 10% lag (average 2NL)
-        return [
-            ['fish', 'fish', 'fish', 'tag', 'nit'],
-            ['fish', 'fish', 'tag', 'tag', 'nit'],
-            ['fish', 'fish', 'fish', 'tag', 'lag'],
-            ['fish', 'fish', 'tag', 'nit', 'lag'],
-        ]
-    else:  # tough
-        # Tough: 40% fish, 30% tag, 20% lag, 10% nit (toughest realistic 2NL)
-        return [
-            ['fish', 'fish', 'tag', 'tag', 'lag'],
-            ['fish', 'fish', 'tag', 'lag', 'nit'],
-            ['fish', 'tag', 'tag', 'lag', 'lag'],
-            ['fish', 'fish', 'tag', 'tag', 'nit'],
-        ]
+def get_table_configs():
+    """Return realistic 2NL table compositions based on log analysis."""
+    # REALISTIC 2NL BLITZ: Based on 886 hands of log analysis
+    # - 73% check postflop (very passive)
+    # - 21% c-bet (low aggression)  
+    # - Estimated: 60% fish, 25% nit, 15% tag
+    return [
+        ['fish', 'fish', 'fish', 'nit', 'tag'],
+        ['fish', 'fish', 'fish', 'fish', 'nit'],
+        ['fish', 'fish', 'fish', 'nit', 'nit'],
+        ['fish', 'fish', 'nit', 'tag', 'fish'],
+    ]
 
 
 def run_simulation(num_hands=100000):
-    """Run simulation across easy/medium/tough tables."""
+    """Run simulation on realistic 2NL tables."""
     random.seed(None)
     
-    bot_strategies = ['gpt3', 'gpt4', 'sonnet', 'sonnet_max', 'aggressive', 'value_max', 'value_maniac']
-    difficulties = ['easy', 'medium', 'tough']
-    hands_per_diff = num_hands // 3
+    bot_strategies = ['sonnet_max', 'value_max', 'sonnet', 'gpt4', 'gpt3', 'aggressive', 'value_maniac', 'fish', 'nit', 'tag', 'lag', 'maniac']
+    tables = get_table_configs()
     
-    print(f"Testing {len(bot_strategies)} bots across 3 difficulty levels")
-    print(f"Hands per difficulty: {hands_per_diff:,}")
-    print(f"Easy: 70% fish | Medium: 50% fish | Tough: 40% fish, more TAGs\n", flush=True)
+    print(f"Testing {len(bot_strategies)} strategies")
+    print(f"Total hands: {num_hands:,}")
+    print(f"Table: 60% fish, 25% nit, 15% tag (realistic 2NL)\n", flush=True)
     
-    # Results: {bot: {difficulty: [trial_results]}}
-    results = {bot: {d: [] for d in difficulties} for bot in bot_strategies}
+    results = {bot: [] for bot in bot_strategies}
     
     for trial in range(3):
         print(f"--- Trial {trial+1}/3 ---", flush=True)
         
-        for diff in difficulties:
-            tables = get_table_configs(diff)
-            hands_per_table = hands_per_diff // (len(tables) * len(bot_strategies))
+        hands_per_table = num_hands // (len(tables) * len(bot_strategies))
+        
+        for bot in bot_strategies:
+            profit = 0.0
+            hands = 0
             
-            for bot in bot_strategies:
-                profit = 0.0
-                hands = 0
+            for table_comp in tables:
+                strats = table_comp + [bot]
+                name_counts = {}
+                players = []
+                for strat in strats:
+                    name_counts[strat] = name_counts.get(strat, 0) + 1
+                    unique_name = f"{strat}_{name_counts[strat]}" if strats.count(strat) > 1 else strat
+                    p = Player(unique_name, STRATEGIES[strat])
+                    p.base_strategy = strat
+                    players.append(p)
                 
-                for table_comp in tables:
-                    strats = table_comp + [bot]
-                    name_counts = {}
-                    players = []
-                    for strat in strats:
-                        name_counts[strat] = name_counts.get(strat, 0) + 1
-                        unique_name = f"{strat}_{name_counts[strat]}" if strats.count(strat) > 1 else strat
-                        p = Player(unique_name, STRATEGIES[strat])
-                        p.base_strategy = strat
-                        players.append(p)
-                    
-                    for i in range(hands_per_table):
-                        simulate_hand(players, i % 6)
-                    
-                    bot_player = players[-1]
-                    profit += bot_player.profit
-                    hands += bot_player.stats['hands']
+                for i in range(hands_per_table):
+                    simulate_hand(players, i % 6)
                 
-                bb100 = (profit / hands) * 100 if hands > 0 else 0
-                results[bot][diff].append(bb100)
+                bot_player = players[-1]
+                profit += bot_player.profit
+                hands += bot_player.stats['hands']
             
-            print(f"  {diff.capitalize()} tables complete", flush=True)
+            bb100 = (profit / hands) * 100 if hands > 0 else 0
+            results[bot].append(bb100)
+        
+        print("  Complete", flush=True)
     
     # Print results
-    print("\n" + "="*90)
-    print(f"RESULTS BY TABLE DIFFICULTY ({num_hands:,} hands, 3 trials avg)")
-    print("="*90)
+    print("\n" + "=" * 60)
+    print(f"RESULTS ({num_hands:,} hands, 3 trials avg)")
+    print("=" * 60)
+    print(f"\n{'Rank':<6} {'Strategy':<15} {'BB/100':>10} {'StdDev':>10}")
+    print("-" * 45)
     
-    for diff in difficulties:
-        print(f"\n{diff.upper()} TABLES:")
-        print(f"{'Strategy':<15} {'BB/100':>10} {'StdDev':>10}")
-        print("-"*35)
-        
-        ranked = []
-        for bot in bot_strategies:
-            trials = results[bot][diff]
-            avg = sum(trials) / len(trials)
-            std = (sum((x - avg)**2 for x in trials) / len(trials)) ** 0.5
-            ranked.append((bot, avg, std))
-        ranked.sort(key=lambda x: x[1], reverse=True)
-        
-        for bot, avg, std in ranked:
-            print(f"{bot:<15} {avg:>+10.2f} {std:>10.2f}")
-    
-    # Overall ranking
-    print("\n" + "="*90)
-    print("OVERALL RANKING (weighted avg: Easy 33%, Medium 33%, Tough 33%)")
-    print("="*90)
-    
-    overall = []
+    final = []
     for bot in bot_strategies:
-        total = 0
-        for diff in difficulties:
-            total += sum(results[bot][diff]) / len(results[bot][diff])
-        overall.append((bot, total / 3))
-    overall.sort(key=lambda x: x[1], reverse=True)
+        avg = sum(results[bot]) / len(results[bot])
+        std = (sum((x - avg) ** 2 for x in results[bot]) / len(results[bot])) ** 0.5
+        final.append((bot, avg, std))
     
-    print(f"\n{'Rank':<6} {'Strategy':<15} {'Avg BB/100':>12}")
-    print("-"*35)
-    for i, (bot, avg) in enumerate(overall, 1):
-        print(f"{i:<6} {bot:<15} {avg:>+12.2f}")
+    for rank, (bot, avg, std) in enumerate(sorted(final, key=lambda x: -x[1]), 1):
+        print(f"{rank:<6} {bot:<15} {avg:>+10.2f} {std:>10.2f}")
 
 
 if __name__ == '__main__':

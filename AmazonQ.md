@@ -1,10 +1,10 @@
 # OnyxPoker - Status Tracking
 
-**Last Updated**: January 13, 2026 11:59 UTC
+**Last Updated**: January 13, 2026 15:28 UTC
 
-## Current Status: SESSION 33 - POSTFLOP EDGE CASE TESTING ✅
+## Current Status: SESSION 34 - SONNET_MAX STRATEGY + ARCHETYPE TUNING ✅
 
-Created 67-scenario edge case tester. Fixed value_max equity-based leaks. UI cleanup (removed left sidebar, borderless window).
+Created sonnet_max strategy. Tuned archetypes to match real 2NL data (73% check rate, 21% c-bet). Updated table compositions.
 
 ## What Works
 
@@ -86,20 +86,47 @@ python3 poker_sim.py 200000  # Run 200k hands simulation
 | value_max | Equity-based | Calls when equity > pot odds, bets underpair+draw |
 | aggressive/2nl_exploit | Sonnet postflop | Wider ranges, falls through to default |
 
-### Latest Results (200k hands x 3 trials)
+### Latest Results (200k hands x 3 trials, realistic 2NL table)
+Table: 60% fish, 25% nit, 15% tag
+
 | Rank | Strategy | BB/100 | StdDev |
 |------|----------|--------|--------|
-| 1 | value_max | +31.62 | 8.41 |
-| 2 | sonnet | +17.79 | 0.72 |
-| 3 | kiro_optimal | +16.22 | 8.64 |
-| 4 | kiro5 | +16.19 | 9.23 |
-| 5 | gpt3 | +14.69 | 4.63 |
-| 6 | 2nl_exploit | +14.40 | 10.16 |
-| 7 | aggressive | +13.32 | 3.77 |
-| 8 | kiro_v2 | +10.83 | 0.44 |
-| 9 | gpt4 | +8.84 | 6.90 |
+| 1 | maniac | +34.41 | 1.81 |
+| 2 | value_max | +29.55 | 4.05 |
+| 3 | sonnet | +24.42 | 3.09 |
+| 4 | sonnet_max | +22.44 | 5.35 |
+| 5 | value_maniac | +21.86 | 15.03 |
+| 6 | aggressive | +20.18 | 5.76 |
+| 7 | gpt3 | +14.25 | 2.89 |
+| 8 | gpt4 | +13.75 | 3.72 |
+| 9 | tag | +5.63 | 2.65 |
+| 10 | lag | +4.88 | 0.63 |
+| 11 | nit | +0.44 | 1.43 |
+| 12 | fish | -1.66 | 2.24 |
 
 ## Session Log
+
+### Session 34 (January 13, 2026)
+- **SONNET_MAX STRATEGY**: Created new strategy combining sonnet preflop + session 33 fixes
+  - Smaller bet sizes (fish call anyway)
+  - No river value with TPGK
+  - Fold high card on paired boards
+  - Created pokerstrategy_sonnet_max file
+- **REAL 2NL DATA ANALYSIS**: Analyzed 886 hands from 9 session files
+  - Opponents check 73% postflop (very passive)
+  - C-bet frequency only 21% (much lower than expected)
+  - Bet sizing mostly 33-50% pot
+  - No limping (0%)
+  - Open raise avg: $0.05 (2.5bb)
+- **ARCHETYPE TUNING**: Updated fish/nit/tag/lag/maniac to match real 2NL
+  - Lowered c-bet frequencies (fish 40%, nit 30%, tag 35%, lag 50%, maniac 65%)
+  - Reduced bet sizes to 33-50% pot range
+- **TABLE COMPOSITION FIX**: Removed unrealistic "tough" tables
+  - Old: Easy/Medium/Tough with maniacs
+  - New: Single realistic table (60% fish, 25% nit, 15% tag)
+- **RESULTS**: maniac +34.41, value_max +29.55, sonnet +24.42, sonnet_max +22.44
+  - Maniac crushes passive tables (aggression exploits fish/nit)
+  - All bots beat passive archetypes
 
 ### Session 33 (January 13, 2026)
 - **POSTFLOP EDGE CASE TESTER**: Created test_postflop.py with 67 scenarios

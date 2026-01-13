@@ -198,6 +198,38 @@ onyxpoker/                    # Main repo (GitHub: apmlabs/OnyxPoker)
 
 ## 📖 SESSION HISTORY & LESSONS LEARNED
 
+### Session 34: Real 2NL Data Analysis + Archetype Tuning (January 13, 2026)
+
+**Challenge**: Simulation results didn't match real 2NL play. Archetypes were too aggressive.
+
+**Key Findings from 886 Real Hands**:
+- Opponents check 73% postflop (very passive)
+- C-bet frequency only 21% (sim had 50-80%)
+- Bet sizing mostly 33-50% pot
+- No limping (0%)
+- Open raise avg: $0.05 (2.5bb)
+
+**Changes Made**:
+1. **Archetype Tuning**: Lowered c-bet frequencies to match real data
+   - fish: 40% (was higher), nit: 30%, tag: 35%, lag: 50%, maniac: 65%
+   - Reduced bet sizes to 33-50% pot range
+2. **Table Composition**: Single realistic table (60% fish, 25% nit, 15% tag)
+   - Removed unrealistic "tough" tables with maniacs
+3. **sonnet_max Strategy**: Created combining sonnet preflop + session 33 fixes
+   - Smaller bet sizes (fish call anyway)
+   - No river value with TPGK
+   - Fold high card on paired boards
+
+**Results** (200k hands):
+- maniac +34.41 (aggression exploits passive tables)
+- value_max +29.55 (best bot)
+- sonnet +24.42
+- sonnet_max +22.44
+
+**Critical Lesson**: Real 2NL is EASY tables - mostly fish/passive players. Sim was modeling too-aggressive opponents.
+
+---
+
 ### Session 29: Architecture Finalization - Strategy Engine as Default (January 12, 2026)
 
 **Challenge**: Clarify and finalize the architecture - make strategy_engine the default, keep AI-only as fallback.
