@@ -1,10 +1,10 @@
 # OnyxPoker - Status Tracking
 
-**Last Updated**: January 13, 2026 03:03 UTC
+**Last Updated**: January 13, 2026 04:03 UTC
 
-## Current Status: SESSION 32 - POSTFLOP EQUITY UI ✅
+## Current Status: SESSION 32 - EQUITY-BASED DECISIONS ✅
 
-Added real-time equity, outs, draws, and pot odds display to helper bar for postflop decisions.
+Added equity-based calling logic. value_max now #1 at +31.62 BB/100 (200k hands).
 
 ## What Works
 
@@ -67,11 +67,11 @@ Then: Focus poker window → Press F9 → See advice in helper bar
 
 ```bash
 cd client
-python3 poker_sim.py 150000  # Run 150k hands simulation
+python3 poker_sim.py 200000  # Run 200k hands simulation
 ```
 
-### Bot Strategies (8 in sim)
-- gpt3, gpt4, sonnet, kiro_optimal, kiro5, kiro_v2, aggressive, 2nl_exploit
+### Bot Strategies (9 in sim)
+- gpt3, gpt4, sonnet, kiro_optimal, kiro5, kiro_v2, aggressive, 2nl_exploit, value_max
 
 ### Player Archetypes (5 total)
 - fish (loose passive), nit (ultra tight), lag (loose aggressive), tag (tight aggressive), maniac (overbets 100%+ pot)
@@ -81,19 +81,21 @@ python3 poker_sim.py 150000  # Run 150k hands simulation
 |----------|-------|-----------------|
 | gpt3/gpt4 | Board texture aware | Small c-bets (25-35%) on dry boards |
 | sonnet/kiro_optimal/kiro5/kiro_v2 | Big value bets | 75-85% pot sizing, overpair logic |
+| value_max | Equity-based | Calls when equity > pot odds, bets underpair+draw |
 | aggressive/2nl_exploit | Sonnet postflop | Wider ranges, falls through to default |
 
-### Latest Results (30k hands x 3 trials, with maniac)
+### Latest Results (200k hands x 3 trials)
 | Rank | Strategy | BB/100 | StdDev |
 |------|----------|--------|--------|
-| 1 | gpt4 | +43.12 | 22.47 |
-| 2 | 2nl_exploit | +39.51 | 34.44 |
-| 3 | aggressive | +32.76 | 36.63 |
-| 4 | gpt3 | +31.35 | 12.03 |
-| 5 | kiro_v2 | +29.31 | 33.28 |
-| 6 | kiro_optimal | +24.04 | 26.91 |
-| 7 | kiro5 | +19.50 | 15.44 |
-| 8 | sonnet | +9.17 | 11.79 |
+| 1 | value_max | +31.62 | 8.41 |
+| 2 | sonnet | +17.79 | 0.72 |
+| 3 | kiro_optimal | +16.22 | 8.64 |
+| 4 | kiro5 | +16.19 | 9.23 |
+| 5 | gpt3 | +14.69 | 4.63 |
+| 6 | 2nl_exploit | +14.40 | 10.16 |
+| 7 | aggressive | +13.32 | 3.77 |
+| 8 | kiro_v2 | +10.83 | 0.44 |
+| 9 | gpt4 | +8.84 | 6.90 |
 
 ## Session Log
 
