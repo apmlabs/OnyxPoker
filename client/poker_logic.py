@@ -895,6 +895,14 @@ def _postflop_value_max(hole_cards, board, pot, to_call, street, is_ip, is_aggre
         if "underpair" in desc.lower() and (combo_draw or has_oesd):
             return ('bet', round(pot * 0.6, 2), f"{desc} + draw - semi-bluff")
         
+        # UNDERPAIR with high equity (65%+) - bet for thin value
+        if "underpair" in desc.lower() and equity >= 0.65:
+            return ('bet', round(pot * 0.5, 2), f"{desc} - thin value ({equity*100:.0f}% equity)")
+        
+        # MEDIUM PAIR with high equity (70%+) - bet for thin value
+        if ("second pair" in desc or "middle pair" in desc) and equity >= 0.70:
+            return ('bet', round(pot * 0.5, 2), f"{desc} - thin value ({equity*100:.0f}% equity)")
+        
         # MEDIUM PAIR (second pair, pocket pair below top) - check/call line
         if "second pair" in desc or "middle pair" in desc:
             return ('check', 0, f"{desc} - check medium strength")
@@ -941,9 +949,12 @@ def _postflop_value_max(hole_cards, board, pot, to_call, street, is_ip, is_aggre
         
         # TWO PAIR - check if strong or weak
         if strength == 3:
+            # River board paired = villain likely has trips/full house - FOLD
+            if street == 'river' and is_paired_board and "board paired" in desc:
+                return ('fold', 0, f"{desc} - fold river (board paired, likely beat)")
             # Weak two pair (board paired) - only call small bets
             if "board paired" in desc:
-                if pot_odds <= 0.30:
+                if pot_odds <= 0.25:  # Tighter threshold
                     return ('call', 0, f"{desc} - call (weak two pair)")
                 return ('fold', 0, f"{desc} - fold (weak two pair)")
             # Strong two pair - call big bets
