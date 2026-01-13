@@ -25,23 +25,28 @@ PokerStars/Simulator Window
          ↓ F9 (screenshot active window)
     GPT-5.2 Vision (vision_detector_lite.py)
          ↓
-   Strategy Engine (poker_logic.py)
+   Strategy Engine (strategy_engine.py)
+         ↓
+   poker_logic.py (value_maniac strategy)
          ↓
    Decision + Reasoning
          ↓
     Helper Bar UI (advice display)
 ```
 
-**Default approach** (NEW):
+**Default Strategy**: `value_maniac` (+23.5 BB/100 on real hands)
+- C-bets 94%, calls any pair, raises strong hands
+- Never folds >50% equity hands
+
+**Default approach**:
 - **Vision**: GPT-5.2 reads table (cards, pot, stacks)
-- **Decision**: strategy_engine.py applies hardcoded poker logic
+- **Decision**: strategy_engine.py applies value_maniac logic
 - **Manual position**: UI radio buttons (UTG/MP/CO/BTN/SB/BB)
 
-**AI-Only mode** (OLD - use `--ai-only` flag):
+**AI-Only mode** (use `--ai-only` flag):
 - GPT-5.2 does both vision + decision in one call
-- No hardcoded strategy, AI decides everything
 
-Server runs on EC2 (54.80.204.92:5001) for Kiro CLI integration and log collection.
+Server runs on EC2 (54.80.204.92:5001) for log collection.
 
 ## 📁 CURRENT FILE STRUCTURE
 
@@ -50,34 +55,27 @@ onyxpoker/                    # Main repo (GitHub: apmlabs/OnyxPoker)
 ├── AGENTS.md                 # Agent memory (NEVER DELETE)
 ├── AmazonQ.md                # Status tracking (NEVER DELETE)
 ├── README.md                 # Quick start (NEVER DELETE)
-├── CLEANUP_PLAN.md           # Project cleanup documentation
-├── .gitignore
-├── .env.example
 ├── client/
 │   ├── helper_bar.py         # Main UI (F9=advice, F10=bot, F11=stop, F12=hide)
 │   ├── vision_detector.py    # Full mode: gpt-5.2 for vision + decisions
-│   ├── vision_detector_lite.py # Lite mode: gpt-4o-mini for vision only
-│   ├── vision_detector_test.py # Testing detector
-│   ├── strategy_engine.py    # Lite mode: applies hardcoded strategy
-│   ├── poker_logic.py        # Shared: hand eval, preflop/postflop logic
-│   ├── poker_sim.py          # Strategy simulator (1M hand tests)
-│   ├── test_screenshots.py   # Offline testing (--lite --test-all-models)
+│   ├── vision_detector_lite.py # Lite mode: gpt-5.2 for vision only
+│   ├── strategy_engine.py    # Applies strategy (default: value_maniac)
+│   ├── poker_logic.py        # Hand eval, preflop/postflop logic, all strategies
+│   ├── poker_sim.py          # Monte Carlo simulator (200k+ hands)
+│   ├── test_postflop.py      # Edge case tester (67 scenarios)
+│   ├── eval_strategies.py    # Real hand evaluator (715 hands from logs)
+│   ├── replay_logs.py        # Replay session logs through strategies
+│   ├── test_screenshots.py   # Offline vision testing
 │   ├── send_logs.py          # Upload logs to server
-│   ├── send_to_kiro.py       # Upload screenshots to server
 │   ├── requirements.txt
 │   └── pokerstrategy_*       # Strategy definition files
 ├── server/
-│   ├── kiro_analyze.py       # Flask server on port 5001 (Kiro CLI integration)
-│   ├── app.py                # Old server code (not used)
-│   ├── poker_strategy.py     # Strategy logic
-│   ├── analyze_session.py    # Log analysis
+│   ├── kiro_analyze.py       # Flask server on port 5001
 │   ├── requirements.txt
 │   └── uploads/              # Screenshots and logs (gitignored)
-│       ├── *.png             # 471 screenshots (177MB)
-│       ├── *.jsonl           # 13 test logs
-│       ├── ground_truth.json # Ground truth for testing
-│       ├── compare_with_ground_truth.py # Comparison script
-│       └── VISION_COMPARISON_REPORT.md  # Model comparison results
+│       ├── *.png             # Screenshots
+│       ├── session_*.jsonl   # Session logs (715 hands)
+│       └── ground_truth.json # Vision testing ground truth
 └── docs/
     ├── DEPLOYMENT.md         # Setup guide
     └── ANALYSIS_NOTES.md     # GPT decision analysis
@@ -105,48 +103,97 @@ onyxpoker/                    # Main repo (GitHub: apmlabs/OnyxPoker)
 ## ✅ CURRENT STATE
 
 ### What Works
-- `helper_bar.py` - Draggable UI with manual position selector, no window decorations
-- `vision_detector_lite.py` - GPT-5.2 for vision only (NEW DEFAULT)
-- `vision_detector.py` - GPT-5.2 for vision + decisions (--ai-only mode)
-- `strategy_engine.py` - Applies hardcoded strategy from poker_logic.py
-- `poker_sim.py` - Full postflop simulation with strategy-specific logic
-- `poker_logic.py` - Shared logic with strategy-specific postflop
-- Screenshot saving - Auto-saves to client/screenshots/ folder
-- Test mode - test_screenshots.py for offline testing
-- Kiro server - Flask app on port 5001 with Sonnet 4.5
+- `helper_bar.py` - Draggable UI with manual position selector
+- `vision_detector_lite.py` - GPT-5.2 for vision only
+- `strategy_engine.py` - Applies value_maniac strategy (default)
+- `poker_sim.py` - Monte Carlo simulation (200k hands)
+- `test_postflop.py` - 67 edge case scenarios
+- `eval_strategies.py` - Real hand evaluation (715 hands)
 - Hotkeys: F9=Advice, F10=Bot loop, F11=Stop, F12=Hide
-- Ground truth testing - 50 verified screenshots for model comparison
-- Manual position selection - 6 radio buttons (UTG/MP/CO/BTN/SB/BB)
 
-### Vision Model Comparison (Latest: 26 Screenshots)
-| Model | Cards | Board | Pot | Speed |
-|-------|-------|-------|-----|-------|
-| **GPT-5.2** | **95%** ✅ | **100%** ✅ | **100%** ✅ | 6-9s |
-| Kiro-Sonnet | 80% ⚠️ | 100% ✅ | 100% ✅ | ~12s |
-
-**Production Decision**: Use GPT-5.2 (card accuracy is critical)
-
-**Position Detection**: REMOVED - Both models failed (7-31% accuracy). Now using manual selection via UI radio buttons.
-
-### Strategy Files
-- 4 bot strategies in sim: gpt3, gpt4, sonnet, kiro_optimal
-- 4 player archetypes: fish, nit, lag, tag
-- Each bot strategy has its own postflop logic
-
-### Strategy-Specific Postflop
-| Strategy | Style | Key Differences |
-|----------|-------|-----------------|
-| gpt3/gpt4 | Board texture aware | Small c-bets (25-35%) on dry boards |
-| sonnet/kiro_optimal | Big value bets | 75-85% pot sizing, overpair logic |
+### Strategy Rankings (on 715 real 2NL hands)
+| Rank | Strategy | Est BB/100 | Key Trait |
+|------|----------|------------|-----------|
+| 1 | **value_maniac** | +23.5 | 94% c-bet, 0 bad folds, 27 raises |
+| 2 | gpt4 | +13.1 | Balanced |
+| 3 | gpt3 | +12.2 | Tight |
+| 4 | value_max | +11.2 | Folds too much |
+| 5 | sonnet | +10.8 | Very tight |
 
 ### What's Not Implemented
 - Turn detection, action execution - LOW PRIORITY
 
-## 🚀 NEXT STEPS
+## 🧪 TESTING FRAMEWORK
 
-### Priority 1: Strategy Refinement
-- [ ] Use simulation results to tune bot strategies
-- [ ] Test against different table compositions
+### 1. Edge Case Testing (`test_postflop.py`)
+Tests 67 specific scenarios to catch strategy bugs.
+
+```bash
+cd client && python3 test_postflop.py [strategy_name]
+```
+
+**Scenarios tested:**
+- Monsters: quads, full house, straight flush (should raise)
+- Strong: sets, two pair, straights, flushes (should raise/bet)
+- Medium: overpairs, top pair, middle pair (should bet/call)
+- Draws: flush draws, OESDs, gutshots (should semi-bluff)
+- Weak: high card, air (should fold facing bets)
+
+**Issue detection:**
+- "QUESTIONABLE": Strong hand just calling (should raise)
+- "LEAK": Folding +EV hands or calling -EV hands
+
+**Target: 0-3 issues** (some edge cases are debatable)
+
+### 2. Real Hand Evaluation (`eval_strategies.py`)
+Evaluates strategies on 715 real hands from session logs.
+
+```bash
+cd client && python3 eval_strategies.py
+```
+
+**Metrics tracked:**
+- **VPIP%**: Voluntarily put money in pot (preflop)
+- **PFR%**: Preflop raise frequency
+- **C-Bet%**: Continuation bet frequency
+- **PostFold%**: Postflop fold frequency
+- **Aggression%**: Bet+Raise / (Bet+Raise+Call+Check)
+
+**Quality metrics:**
+- **Good Folds**: Folding <30% equity hands
+- **Bad Folds**: Folding >50% equity hands (LEAK!)
+- **Good Calls**: Calling when equity > pot odds
+- **Bad Calls**: Calling when equity < pot odds
+- **Value Raises**: Raising with strong hands facing bets
+
+**Score formula:**
+```
+Score = GoodFolds*2 - BadFolds*3 + GoodCalls*2 - BadCalls*2 
+        + ValueBets*1 - Bluffs*0.5 + PreflopRaises*0.5
+```
+
+**Target: Score > +300, BadFolds = 0**
+
+### 3. Monte Carlo Simulation (`poker_sim.py`)
+Simulates 200k+ hands against realistic opponent archetypes.
+
+```bash
+cd client && python3 poker_sim.py 200000
+```
+
+**Table composition** (realistic 2NL):
+- 60% fish (loose passive)
+- 25% nit (ultra tight)
+- 15% tag (tight aggressive)
+
+**Output**: BB/100 win rate for each strategy
+
+### Testing Workflow
+1. Make strategy change in `poker_logic.py`
+2. Run `test_postflop.py` → fix any issues
+3. Run `eval_strategies.py` → check real hand performance
+4. Run `poker_sim.py 200000` → verify simulation results
+5. If all pass, commit changes
 
 ## 🧠 AGENT WORKFLOW
 

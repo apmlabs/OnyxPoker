@@ -821,8 +821,9 @@ def postflop_action(hole_cards: List[Tuple[str, str]], board: List[Tuple[str, st
     # value_maniac: Exact maniac postflop (overbets, calls wide)
     
     if strategy == 'value_maniac':
-        # Use exact maniac postflop logic
+        # Maniac postflop: overbets for value, calls wide
         if to_call == 0 or to_call is None:
+            # No bet to call - bet for value
             if strength >= 4:
                 return ('bet', round(pot * 1.25, 2), f"{desc} - overbet value")
             if strength >= 3:
@@ -842,13 +843,21 @@ def postflop_action(hole_cards: List[Tuple[str, str]], board: List[Tuple[str, st
                 return ('bet', round(pot * 1.1, 2), "river bluff")
             return ('check', 0, f"{desc} - check")
         else:
-            if strength >= 3:
-                return ('call', 0, f"{desc} - call")
+            # Facing bet - raise monsters, call pairs, fold air
+            if strength >= 6:  # Quads, full house, straight flush
+                return ('raise', round(to_call * 3, 2), f"{desc} - raise monster")
+            if strength >= 3:  # Two pair+, flush, straight, set
+                return ('raise', round(to_call * 2.5, 2), f"{desc} - raise strong")
             if "pair" in desc:
                 return ('call', 0, f"{desc} - call any pair")
-            if has_any_draw:
+            if has_any_draw and street != 'river':
                 return ('call', 0, "call with draw")
-            if street == 'flop' and random.random() < 0.5:
+            # Call with overcards on flop (AK, AQ type hands)
+            if street == 'flop' and "high card" in desc:
+                hole_ranks = [c[0] for c in hole_cards]
+                if 'A' in hole_ranks or 'K' in hole_ranks:
+                    return ('call', 0, "call overcards")
+            if street == 'flop' and random.random() < 0.4:
                 return ('call', 0, "float flop")
             return ('fold', 0, f"{desc} - fold")
     

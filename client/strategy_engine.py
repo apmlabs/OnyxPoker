@@ -10,7 +10,7 @@ from poker_logic import (
     get_hand_info
 )
 
-DEFAULT_STRATEGY = 'value_max'
+DEFAULT_STRATEGY = 'value_maniac'
 
 
 def get_hand_notation(cards: List[str]) -> str:

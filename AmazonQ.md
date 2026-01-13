@@ -1,10 +1,10 @@
 # OnyxPoker - Status Tracking
 
-**Last Updated**: January 13, 2026 15:28 UTC
+**Last Updated**: January 13, 2026 16:00 UTC
 
-## Current Status: SESSION 34 - SONNET_MAX STRATEGY + ARCHETYPE TUNING ✅
+## Current Status: SESSION 34 - VALUE_MANIAC AS DEFAULT ✅
 
-Created sonnet_max strategy. Tuned archetypes to match real 2NL data (73% check rate, 21% c-bet). Updated table compositions.
+Evaluated all strategies on 715 real hands. value_maniac wins with +23.5 BB/100. Set as default strategy.
 
 ## What Works
 
@@ -107,26 +107,25 @@ Table: 60% fish, 25% nit, 15% tag
 ## Session Log
 
 ### Session 34 (January 13, 2026)
-- **SONNET_MAX STRATEGY**: Created new strategy combining sonnet preflop + session 33 fixes
-  - Smaller bet sizes (fish call anyway)
-  - No river value with TPGK
-  - Fold high card on paired boards
-  - Created pokerstrategy_sonnet_max file
+- **VALUE_MANIAC AS DEFAULT**: Set as default strategy in strategy_engine.py
+  - +23.5 BB/100 on 715 real hands (best of all strategies)
+  - 94% c-bet, 0 bad folds, 27 value raises
+  - Beats value_max by +12.3 BB/100
+- **VALUE_MANIAC FIXES**: Improved postflop logic
+  - Now raises with monsters (quads, full house, sets, two pair)
+  - Calls overcards on flop (AK/AQ type hands)
+  - Only 1 edge case issue (down from 11)
+- **EVAL_STRATEGIES.PY**: Created real hand evaluator
+  - Tracks VPIP, PFR, C-Bet, PostFold, Aggression
+  - Quality metrics: GoodFolds, BadFolds, GoodCalls, BadCalls, ValueRaises
+  - Score formula for ranking strategies
+- **REPLAY_LOGS.PY**: Created log replay tool
 - **REAL 2NL DATA ANALYSIS**: Analyzed 886 hands from 9 session files
   - Opponents check 73% postflop (very passive)
   - C-bet frequency only 21% (much lower than expected)
-  - Bet sizing mostly 33-50% pot
-  - No limping (0%)
-  - Open raise avg: $0.05 (2.5bb)
 - **ARCHETYPE TUNING**: Updated fish/nit/tag/lag/maniac to match real 2NL
-  - Lowered c-bet frequencies (fish 40%, nit 30%, tag 35%, lag 50%, maniac 65%)
-  - Reduced bet sizes to 33-50% pot range
-- **TABLE COMPOSITION FIX**: Removed unrealistic "tough" tables
-  - Old: Easy/Medium/Tough with maniacs
-  - New: Single realistic table (60% fish, 25% nit, 15% tag)
-- **RESULTS**: maniac +34.41, value_max +29.55, sonnet +24.42, sonnet_max +22.44
-  - Maniac crushes passive tables (aggression exploits fish/nit)
-  - All bots beat passive archetypes
+- **TABLE COMPOSITION**: Single realistic table (60% fish, 25% nit, 15% tag)
+- Commits: 714ca9b + pending
 
 ### Session 33 (January 13, 2026)
 - **POSTFLOP EDGE CASE TESTER**: Created test_postflop.py with 67 scenarios
