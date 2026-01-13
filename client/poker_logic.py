@@ -850,165 +850,144 @@ def postflop_action(hole_cards: List[Tuple[str, str]], board: List[Tuple[str, st
 def _postflop_value_max(hole_cards, board, pot, to_call, street, is_ip, is_aggressor,
                         strength, desc, draws, combo_draw, has_flush_draw, has_oesd, has_any_draw, equity=0):
     """
-    VALUE_MAX: Smart postflop based on hand strength AND equity.
-    Key principles:
-    - Strong hands (sets+): bet big for value
-    - Medium hands (top pair): bet/call based on board texture
-    - Weak hands: check/fold, don't waste money
-    - Draws: semi-bluff with good equity, fold without odds
-    - USE EQUITY: call when equity > pot odds
+    VALUE_MAX postflop - Session 33 fixes:
+    1. NEVER call with high card on paired boards (KQ on AA99, AK on 2265)
+    2. Don't bet TPGK when board pairs and villain showed strength
+    3. Don't bet "thin value" with middle pair on river
     """
-    # Calculate pot odds when facing bet
-    if to_call and to_call > 0:
-        pot_odds = to_call / (pot + to_call)  # e.g., call 10 into 30 = 25%
-    else:
-        pot_odds = 0
-    
-    # Board texture analysis
+    # Board analysis
+    from collections import Counter
     board_ranks = sorted([RANK_VAL[c[0]] for c in board], reverse=True) if board else []
     board_suits = [c[1] for c in board] if board else []
-    
-    # Count pairs on board
-    from collections import Counter
     board_rank_counts = Counter([c[0] for c in board]) if board else Counter()
     num_board_pairs = sum(1 for c in board_rank_counts.values() if c >= 2)
     is_paired_board = num_board_pairs >= 1
+    is_double_paired = num_board_pairs >= 2
     
     is_monotone = len(set(board_suits)) == 1 if len(board_suits) >= 3 else False
     is_two_tone = len(set(board_suits)) == 2 if len(board_suits) >= 3 else False
-    has_straight_possible = (max(board_ranks) - min(board_ranks) <= 4) if len(board_ranks) >= 3 else False
+    is_vulnerable = is_two_tone or (len(board_ranks) >= 3 and board_ranks[0] - board_ranks[-1] <= 4)
+    is_scary_board = is_monotone or is_paired_board or (board_ranks and board_ranks[0] >= RANK_VAL['Q'])
     
-    # Check for 4-flush on board (we need to have the flush or fold)
-    suit_counts = {}
-    for s in board_suits:
-        suit_counts[s] = suit_counts.get(s, 0) + 1
+    # 4-flush detection
+    suit_counts = Counter(board_suits)
     board_has_4flush = any(c >= 4 for c in suit_counts.values())
     hero_suits = [c[1] for c in hole_cards]
     hero_has_flush_card = board_has_4flush and any(s in hero_suits for s in [k for k, v in suit_counts.items() if v >= 4])
     
-    # Determine if we likely have best hand
-    is_vulnerable = is_two_tone or has_straight_possible
-    is_scary_board = is_monotone or is_paired_board or (board_ranks and board_ranks[0] >= RANK_VAL['Q'])
+    # Pot odds
+    pot_odds = to_call / (pot + to_call) if to_call and pot > 0 else 0
+    is_big_bet = to_call and pot > 0 and to_call >= pot * 0.6
     
     if to_call == 0 or to_call is None:
-        # === BETTING (checked to us) ===
-        
-        # MONSTERS - always bet big
-        if strength >= 5:  # Straights+
+        # === BETTING ===
+        if strength >= 5:
             return ('bet', round(pot * 1.0, 2), f"{desc} - bet for value")
-        
-        # STRONG (sets) - bet for value
-        if strength == 4:  # Sets
-            size = 0.9 if is_vulnerable else 0.75
-            return ('bet', round(pot * size, 2), f"{desc} - value bet")
-        
-        # TWO PAIR - check if strong or weak
-        if strength == 3:  # Two pair
-            if board_has_4flush and not hero_has_flush_card:
-                return ('check', 0, f"{desc} - check (4-flush on board)")
-            # Weak two pair (board paired higher) - smaller bet, more cautious
-            if "board paired" in desc:
-                if street == 'river':
-                    return ('check', 0, f"{desc} - check (weak two pair)")
-                return ('bet', round(pot * 0.5, 2), f"{desc} - thin value bet")
-            # Strong two pair - bet for value
-            size = 0.7 if street == 'river' else 0.75
-            return ('bet', round(pot * size, 2), f"{desc} - value bet")
-        
-        # TOP PAIR GOOD KICKER - bet 2-3 streets
+        if strength == 4:
+            return ('bet', round(pot * (0.85 if is_vulnerable else 0.75), 2), f"{desc} - value bet")
+        if strength == 3:
+            if "board paired" in desc and street != 'flop':
+                return ('check', 0, f"{desc} - check (weak two pair)")
+            return ('bet', round(pot * 0.7, 2), f"{desc} - value bet")
         if "top pair good kicker" in desc:
+            if is_paired_board and street != 'flop':
+                return ('check', 0, f"{desc} - check (board paired)")
             if street in ['flop', 'turn']:
-                size = 0.7 if is_vulnerable else 0.6
-                return ('bet', round(pot * size, 2), f"{desc} - value bet")
-            else:  # river
-                return ('bet', round(pot * 0.5, 2), f"{desc} - thin value")
-        
-        # TOP PAIR WEAK KICKER - bet flop only, then check
+                return ('bet', round(pot * 0.55, 2), f"{desc} - value bet")
+            return ('check', 0, f"{desc} - check river")
         if "top pair weak kicker" in desc:
             if street == 'flop':
-                return ('bet', round(pot * 0.4, 2), f"{desc} - small value bet")
+                return ('bet', round(pot * 0.35, 2), f"{desc} - small c-bet")
             return ('check', 0, f"{desc} - check (weak kicker)")
-        
-        # OVERPAIR - bet for value
         if "overpair" in desc.lower():
-            size = 0.7 if is_vulnerable else 0.6
-            return ('bet', round(pot * size, 2), f"{desc} - value bet overpair")
-        
-        # UNDERPAIR with strong draw - bet for value (e.g. JJ on 98AT with OESD)
-        if "underpair" in desc.lower() and (combo_draw or has_oesd):
-            return ('bet', round(pot * 0.6, 2), f"{desc} + draw - semi-bluff")
-        
-        # UNDERPAIR with high equity (65%+) - bet for thin value
-        if "underpair" in desc.lower() and equity >= 0.65:
-            return ('bet', round(pot * 0.5, 2), f"{desc} - thin value ({equity*100:.0f}% equity)")
-        
-        # MEDIUM PAIR with high equity (70%+) - bet for thin value
-        if ("second pair" in desc or "middle pair" in desc) and equity >= 0.70:
-            return ('bet', round(pot * 0.5, 2), f"{desc} - thin value ({equity*100:.0f}% equity)")
-        
-        # MEDIUM PAIR (second pair, pocket pair below top) - check/call line
-        if "second pair" in desc or "middle pair" in desc:
-            return ('check', 0, f"{desc} - check medium strength")
-        
-        # WEAK PAIR (bottom pair, low pocket pair) - check, don't bet
-        if "pair" in desc and strength < 3:
+            if is_paired_board:
+                return ('check', 0, f"{desc} - check (board paired)")
+            return ('bet', round(pot * 0.55, 2), f"{desc} - value bet")
+        if "underpair" in desc.lower():
+            if combo_draw:
+                return ('bet', round(pot * 0.55, 2), f"{desc} + draw - semi-bluff")
+            return ('check', 0, f"{desc} - check underpair")
+        # Middle/bottom pair - check, don't bet for "thin value"
+        if "pair" in desc:
             return ('check', 0, f"{desc} - check weak pair")
-        
-        # STRONG DRAWS - semi-bluff on flop AND turn
+        # Draws
         if combo_draw:
-            return ('bet', round(pot * 0.7, 2), f"combo draw - semi-bluff")
+            return ('bet', round(pot * 0.65, 2), "combo draw - semi-bluff")
         if has_flush_draw and street in ['flop', 'turn']:
-            return ('bet', round(pot * 0.6, 2), f"flush draw - semi-bluff")
+            return ('bet', round(pot * 0.55, 2), "flush draw - semi-bluff")
         if has_oesd and street in ['flop', 'turn']:
-            return ('bet', round(pot * 0.55, 2), f"OESD - semi-bluff")
-        
-        # C-BET - only with equity or on dry boards
-        if is_aggressor and street == 'flop':
-            if not is_scary_board and not is_vulnerable:
-                return ('bet', round(pot * 0.33, 2), "c-bet dry board")
-            if has_any_draw:
-                return ('bet', round(pot * 0.5, 2), "c-bet with equity")
-            # Don't c-bet scary boards with air
-            return ('check', 0, "check - no equity on scary board")
-        
-        return ('check', 0, f"{desc} - check")
+            return ('bet', round(pot * 0.5, 2), "OESD - semi-bluff")
+        # C-bet
+        if is_aggressor and street == 'flop' and not is_scary_board:
+            return ('bet', round(pot * 0.33, 2), "c-bet dry board")
+        return ('check', 0, "check - no equity on scary board")
     
     else:
-        # === FACING A BET - EQUITY-BASED DECISIONS ===
+        # === FACING BET ===
         
-        # 4-flush on board and we don't have it - fold (unless we have full house+)
+        # FIX #1: HIGH CARD ON PAIRED BOARD = FOLD (the KQ/AK/A9 leaks)
+        if strength <= 1 and is_paired_board:
+            return ('fold', 0, f"{desc} - fold (high card on paired board)")
+        
+        # FIX #2: DOUBLE PAIRED BOARD = need full house+
+        if is_double_paired and strength < 7:
+            return ('fold', 0, f"{desc} - fold (double paired board)")
+        
+        # 4-flush without flush = fold
         if board_has_4flush and not hero_has_flush_card and strength < 7:
             return ('fold', 0, f"{desc} - fold (4-flush on board)")
         
-        # MONSTERS (str >= 5) - always raise
+        # Monsters
         if strength >= 5:
             return ('raise', round(pot * 2.0, 2), f"{desc} - raise for value")
-        
-        # SETS (str == 4) - raise or call
         if strength == 4:
-            if street == 'river':
-                return ('call', 0, f"{desc} - call river")
-            return ('raise', round(pot * 2.0, 2), f"{desc} - raise for value")
+            return ('call', 0, f"{desc} - call") if street == 'river' else ('raise', round(pot * 2.0, 2), f"{desc} - raise")
         
-        # === EQUITY-BASED CALLING FOR ALL OTHER HANDS ===
-        # Call if equity > pot_odds, fold otherwise
+        # Two pair
+        if strength == 3:
+            if "board paired" in desc and street == 'river' and is_big_bet:
+                return ('fold', 0, f"{desc} - fold (weak two pair vs big river bet)")
+            return ('call', 0, f"{desc} - call")
         
-        # TWO PAIR on paired board river - be cautious (villain likely has trips+)
-        if strength == 3 and street == 'river' and num_board_pairs >= 1:
-            # Still call if equity is way higher than pot odds
-            if equity > pot_odds + 0.20:
-                return ('call', 0, f"{desc} - call ({equity*100:.0f}% eq vs {pot_odds*100:.0f}% odds)")
-            return ('fold', 0, f"{desc} - fold river (board paired)")
+        # Top pair good kicker - call flop/turn, careful on river
+        if "top pair good kicker" in desc:
+            if street in ['flop', 'turn']:
+                return ('call', 0, f"{desc} - call {street}")
+            if pot_odds <= 0.35:
+                return ('call', 0, f"{desc} - call small river")
+            return ('fold', 0, f"{desc} - fold big river bet")
         
-        # For all hands with equity > pot_odds: CALL
-        if equity > pot_odds:
-            # Raise with very strong equity advantage
-            if equity > pot_odds + 0.30 and strength >= 3:
-                return ('raise', round(pot * 2.0, 2), f"{desc} - raise ({equity*100:.0f}% eq vs {pot_odds*100:.0f}% odds)")
-            return ('call', 0, f"{desc} - call ({equity*100:.0f}% eq vs {pot_odds*100:.0f}% odds)")
+        # Top pair weak kicker - call flop only
+        if "top pair weak kicker" in desc:
+            if street == 'flop' and pot_odds <= 0.35:
+                return ('call', 0, f"{desc} - call flop")
+            return ('fold', 0, f"{desc} - fold")
         
-        # Equity <= pot_odds: FOLD
-        return ('fold', 0, f"{desc} - fold ({equity*100:.0f}% eq vs {pot_odds*100:.0f}% odds)")
+        # Overpair/underpair - call down reasonably
+        if "overpair" in desc.lower():
+            if street == 'river' and is_big_bet:
+                return ('fold', 0, f"{desc} - fold big river bet")
+            return ('call', 0, f"{desc} - call")
+        if "underpair" in desc.lower():
+            if street == 'flop' and pot_odds <= 0.30:
+                return ('call', 0, f"{desc} - call flop")
+            return ('fold', 0, f"{desc} - fold")
+        
+        # Middle/bottom pair - call flop only
+        if "pair" in desc:
+            if street == 'flop' and pot_odds <= 0.30:
+                return ('call', 0, f"{desc} - call flop")
+            return ('fold', 0, f"{desc} - fold")
+        
+        # Draws with odds
+        if combo_draw and pot_odds <= 0.35:
+            return ('call', 0, "combo draw - call")
+        if has_flush_draw and pot_odds <= 0.30:
+            return ('call', 0, "flush draw - call")
+        if has_oesd and pot_odds <= 0.25:
+            return ('call', 0, "OESD - call")
+        
+        return ('fold', 0, f"{desc} - fold")
 
 
 def _postflop_gpt(hole_cards, board, pot, to_call, street, is_ip, is_aggressor,
