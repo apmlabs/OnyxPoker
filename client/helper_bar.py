@@ -53,7 +53,7 @@ class HelperBar:
         screen_h = self.root.winfo_screenheight()
 
         # Helper bar: full width, 880px height (4x original), docked to bottom
-        bar_height = 880
+        bar_height = 440
         self.root.geometry(f"{screen_w}x{bar_height}+0+{screen_h - bar_height - 40}")
 
         # No window decorations
