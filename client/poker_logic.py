@@ -326,6 +326,10 @@ STRATEGIES['maniac'] = {
     'overbet': True,  # Flag for postflop overbetting
 }
 
+# value_maniac: Exact copy of maniac but as a bot strategy (uses maniac postflop logic)
+STRATEGIES['value_maniac'] = STRATEGIES['maniac'].copy()
+STRATEGIES['value_maniac']['name'] = 'Value Maniac'
+
 
 # Hand evaluation
 def hand_to_str(cards: List[Tuple[str, str]]) -> str:
@@ -783,6 +787,39 @@ def postflop_action(hole_cards: List[Tuple[str, str]], board: List[Tuple[str, st
     # gpt3/gpt4: Board texture aware, smaller c-bets, 3-bet pot adjustments
     # sonnet/kiro_optimal: Bigger value bets, overpair logic
     # value_max: Maniac-style big bets but smarter (doesn't bluff as much)
+    # value_maniac: Exact maniac postflop (overbets, calls wide)
+    
+    if strategy == 'value_maniac':
+        # Use exact maniac postflop logic
+        if to_call == 0 or to_call is None:
+            if strength >= 4:
+                return ('bet', round(pot * 1.25, 2), f"{desc} - overbet value")
+            if strength >= 3:
+                return ('bet', round(pot * 1.1, 2), f"{desc} - bet big")
+            if "pair" in desc:
+                if street in ['flop', 'turn'] and random.random() < 0.85:
+                    return ('bet', round(pot * 1.0, 2), f"{desc} - overbet")
+                if street == 'river' and random.random() < 0.5:
+                    return ('bet', round(pot * 1.2, 2), f"{desc} - river overbet")
+            if has_any_draw:
+                return ('bet', round(pot * 1.0, 2), "overbet draw")
+            if street == 'flop' and random.random() < 0.80:
+                return ('bet', round(pot * 0.9, 2), "c-bet big")
+            if street == 'turn' and random.random() < 0.60:
+                return ('bet', round(pot * 1.0, 2), "barrel turn")
+            if street == 'river' and random.random() < 0.35:
+                return ('bet', round(pot * 1.1, 2), "river bluff")
+            return ('check', 0, f"{desc} - check")
+        else:
+            if strength >= 3:
+                return ('call', 0, f"{desc} - call")
+            if "pair" in desc:
+                return ('call', 0, f"{desc} - call any pair")
+            if has_any_draw:
+                return ('call', 0, "call with draw")
+            if street == 'flop' and random.random() < 0.5:
+                return ('call', 0, "float flop")
+            return ('fold', 0, f"{desc} - fold")
     
     if strategy == 'value_max':
         # Calculate equity for smarter decisions
