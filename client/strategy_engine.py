@@ -75,6 +75,9 @@ class StrategyEngine:
         """Preflop decision with call thresholds."""
         
         # Determine what we're facing
+        # Key insight: to_call is the most reliable indicator
+        # - to_call <= 0.02 means no raise (just blinds)
+        # - to_call > 0.02 means someone raised
         if position == 'BB':
             if to_call <= 0.01:
                 facing = 'none'
@@ -85,7 +88,7 @@ class StrategyEngine:
             else:
                 facing = '3bet'
                 opener_pos = None
-        elif to_call <= 0.02 and not facing_raise:
+        elif to_call <= 0.02:  # No raise - ignore facing_raise flag
             facing = 'none'
             opener_pos = None
         elif to_call <= 0.25:
