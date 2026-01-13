@@ -785,9 +785,11 @@ def postflop_action(hole_cards: List[Tuple[str, str]], board: List[Tuple[str, st
     # value_max: Maniac-style big bets but smarter (doesn't bluff as much)
     
     if strategy == 'value_max':
+        # Calculate equity for smarter decisions
+        equity = calculate_equity(hole_cards, board, num_opponents, 200) / 100.0  # 0-1 scale
         return _postflop_value_max(hole_cards, board, pot, to_call, street, is_ip,
                                    is_aggressor, strength, desc, draws, combo_draw,
-                                   has_flush_draw, has_oesd, has_any_draw)
+                                   has_flush_draw, has_oesd, has_any_draw, equity)
     
     if strategy in ['gpt3', 'gpt4']:
         return _postflop_gpt(hole_cards, board, pot, to_call, street, is_ip, 
@@ -809,14 +811,15 @@ def postflop_action(hole_cards: List[Tuple[str, str]], board: List[Tuple[str, st
 
 
 def _postflop_value_max(hole_cards, board, pot, to_call, street, is_ip, is_aggressor,
-                        strength, desc, draws, combo_draw, has_flush_draw, has_oesd, has_any_draw):
+                        strength, desc, draws, combo_draw, has_flush_draw, has_oesd, has_any_draw, equity=0):
     """
-    VALUE_MAX: Smart postflop based on hand strength vs board.
+    VALUE_MAX: Smart postflop based on hand strength AND equity.
     Key principles:
     - Strong hands (sets+): bet big for value
     - Medium hands (top pair): bet/call based on board texture
     - Weak hands: check/fold, don't waste money
     - Draws: semi-bluff with good equity, fold without odds
+    - USE EQUITY: call when equity > pot odds
     """
     # Calculate pot odds when facing bet
     if to_call and to_call > 0:
@@ -887,6 +890,10 @@ def _postflop_value_max(hole_cards, board, pot, to_call, street, is_ip, is_aggre
         if "overpair" in desc.lower():
             size = 0.7 if is_vulnerable else 0.6
             return ('bet', round(pot * size, 2), f"{desc} - value bet overpair")
+        
+        # UNDERPAIR with strong draw - bet for value (e.g. JJ on 98AT with OESD)
+        if "underpair" in desc.lower() and (combo_draw or has_oesd):
+            return ('bet', round(pot * 0.6, 2), f"{desc} + draw - semi-bluff")
         
         # MEDIUM PAIR (second pair, pocket pair below top) - check/call line
         if "second pair" in desc or "middle pair" in desc:
@@ -966,13 +973,17 @@ def _postflop_value_max(hole_cards, board, pot, to_call, street, is_ip, is_aggre
         
         # DRAWS - call with odds
         if has_flush_draw or has_oesd:
-            # Flush draw ~35% equity, OESD ~32% equity
-            equity = 0.35 if has_flush_draw else 0.32
-            if combo_draw:
-                equity = 0.45
-            if pot_odds <= equity:
-                return ('call', 0, f"draw - call (have odds)")
+            # Use actual equity if available, else estimate
+            draw_equity = equity if equity > 0 else (0.35 if has_flush_draw else 0.32)
+            if combo_draw and equity == 0:
+                draw_equity = 0.45
+            if pot_odds <= draw_equity:
+                return ('call', 0, f"draw - call ({draw_equity*100:.0f}% equity vs {pot_odds*100:.0f}% odds)")
             return ('fold', 0, f"draw - fold (no odds)")
+        
+        # HIGH CARD with equity - call if equity > pot odds
+        if equity > 0 and equity > pot_odds:
+            return ('call', 0, f"{desc} - call ({equity*100:.0f}% equity vs {pot_odds*100:.0f}% odds)")
         
         return ('fold', 0, f"{desc} - fold")
 
