@@ -1,5 +1,5 @@
 # VALUE_MAX Strategy - Smart aggression with pot odds
-# Based on Session 31 fixes: board texture, weak kicker sizing, pot odds
+# Based on Session 31-32 fixes: board texture, weak kicker, pot odds, two pair strength
 
 ## PREFLOP - Wide ranges (316 open combos)
 
@@ -28,29 +28,43 @@ QQ+, AKs, AKo
 ## POSTFLOP - Smart aggression with pot odds
 
 ### Board Texture Analysis
-- Paired board: Don't count as our pair
+- Paired board: Check if our pair is higher or lower
+- 4-flush on board: Fold without flush card (unless full house+)
 - Monotone: Scary, check without equity
 - Two-tone/connected: Vulnerable, bet bigger to protect
 - Dry (Axx rainbow): Safe to c-bet small
 
+### Two Pair Strength
+- STRONG: We made both pairs OR our pair > board pair
+  - TT on 944 = strong (TT > 44)
+  - J7 on 76J = strong (no board pair)
+- WEAK: Board pair higher than our pair
+  - 22 on 994 = weak (22 < 99)
+  - TT on JJ4 = weak (TT < JJ)
+
 ### Betting (checked to us)
 - Straights+: 100% pot
-- Sets/Two pair: 75-90% pot (bigger on wet boards)
+- Sets: 75-90% pot (bigger on wet boards)
+- Strong two pair: 75% pot (70% river)
+- Weak two pair: 50% pot flop/turn, CHECK river
 - Top pair good kicker: 60-70% pot flop/turn, 50% river
 - Top pair weak kicker: 40% pot FLOP ONLY, then check
 - Overpair: 60-70% pot
 - Medium pair (second pair): Check
 - Weak pair: Check
 - Combo draw: 70% pot semi-bluff
-- Flush draw (flop): 60% pot semi-bluff
-- OESD (flop): 55% pot semi-bluff
+- Flush draw (flop/turn): 60% pot semi-bluff
+- OESD (flop/turn): 55% pot semi-bluff
 - C-bet dry board: 33% pot
 - C-bet with equity: 50% pot
 - Scary board no equity: Check (don't c-bet air)
 
 ### Facing Bet (with pot odds)
+- 4-flush on board (no flush): FOLD
 - Straights+: RAISE 2x pot
-- Sets/Two pair: RAISE (call river)
+- Sets: RAISE (call river)
+- Strong two pair: CALL if pot odds <= 45%
+- Weak two pair: CALL if pot odds <= 30%
 - Top pair good kicker: CALL if pot odds <= 40%
 - Top pair: CALL if pot odds <= 33%
 - Overpair: CALL if pot odds <= 35%
@@ -61,8 +75,10 @@ QQ+, AKs, AKo
 - Otherwise: FOLD
 
 ## KEY INSIGHTS
-- Smart > blind aggression (+35 vs +31 BB/100)
-- Board pair bug was critical (AJ on Q22 = high card, not pair)
+- Smart > blind aggression (+36 vs +25 BB/100)
+- Two pair strength matters: strong bets big, weak bets small
+- Board pair detection critical for hand evaluation
 - Weak kicker: small bet flop, then check (don't pot 3 streets)
 - Pot odds essential: don't call any pair regardless of bet size
-- Low variance (StdDev 3.93) = consistent results
+- Semi-bluff draws on flop AND turn (not just flop)
+- 4-flush on board = fold without flush card
