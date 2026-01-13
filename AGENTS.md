@@ -259,6 +259,23 @@ cd client && python3 poker_sim.py 200000
 
 ## 📖 SESSION HISTORY & LESSONS LEARNED
 
+### Session 37: eval_strategies Position Fix + Range Verification (January 13, 2026)
+
+**Challenge**: eval_strategies.py was defaulting to BTN position for all preflop hands, biasing results toward wider ranges.
+
+**Solution**: Implemented neutral position cycling - each hand evaluated from all 6 positions (UTG/MP/CO/BTN/SB/BB) and averaged.
+
+**Verification**: Confirmed position-specific ranges match strategy files:
+- value_maniac: UTG 34 hands → BTN 94 hands ✅
+- gpt4: UTG 16 hands → BTN 68 hands ✅
+- Both advice path (strategy_engine.py) and simulation (poker_sim.py) pass position correctly
+
+**Results**: value_maniac +23.5 BB/100 (3 bad folds), value_max +10.3 BB/100 (32 bad folds)
+
+**Critical Lesson**: When evaluating strategies on real hands, position matters. Using a single position biases results.
+
+---
+
 ### Session 36: Complete analyze_hand() Refactor - Zero String Matching (January 13, 2026)
 
 **Challenge**: Session 35 refactored value_maniac and value_max, but string matching on `desc` remained in other strategies and archetypes.

@@ -1,26 +1,21 @@
 # OnyxPoker - Status Tracking
 
-**Last Updated**: January 13, 2026 21:33 UTC
+**Last Updated**: January 13, 2026 22:14 UTC
 
-## Current Status: SESSION 36 - COMPLETE analyze_hand() REFACTOR ✅
+## Current Status: SESSION 37 - EVAL_STRATEGIES POSITION FIX + VERIFICATION ✅
 
-Extended Session 35's refactor to eliminate ALL string matching on `desc` across the entire codebase.
+Fixed eval_strategies.py to use neutral position cycling for preflop evaluation, and verified position-specific ranges match strategy files.
 
 **Key Changes This Session**:
-1. Expanded `analyze_hand()` with new properties: `has_middle_pair`, `has_bottom_pair`, `has_flush_draw`, `has_flush`, `has_straight_draw`, `has_straight`
-2. Refactored `_postflop_gpt()` - uses analyze_hand() for all checks
-3. Refactored `_postflop_sonnet()` - uses analyze_hand() for all checks
-4. Refactored `_postflop_sonnet_max()` - uses analyze_hand() AND fixed missing raise logic
-5. Refactored `count_outs()` - uses analyze_hand() instead of string matching
-6. Refactored ALL archetypes (fish, nit, tag, lag, maniac) - use analyze_hand()
-7. Fixed `sonnet_max` bug - was never raising with strong hands (sets/flushes)
-8. Updated `eval_strategies.py` and `poker_sim.py` with missing strategies
+1. Fixed eval_strategies.py preflop evaluation - now cycles through positions (UTG/MP/CO/BTN/SB/BB) instead of defaulting to BTN
+2. Verified position-specific open ranges match strategy files (value_maniac, gpt4 confirmed)
+3. Confirmed both advice path (strategy_engine.py) and simulation (poker_sim.py) use position correctly
 
 **Results**: 
+- eval_strategies.py: value_maniac #1 at +23.5 BB/100 (3 bad folds)
+- value_max #11 at +10.3 BB/100 (32 bad folds - sb_defend still needs tuning)
 - audit_strategies.py: 21/21 PASS
-- test_strategy_engine.py: 54/55 PASS (1 random float expected)
-- grep "in desc": 0 matches (all string matching eliminated)
-- eval_strategies.py: value_maniac #1 at +24.2 BB/100, sonnet_max now shows 13 raises (was 0)
+- Position ranges verified: UTG tight (16-34 hands) → BTN wide (68-94 hands)
 
 ## What Works
 
@@ -137,6 +132,17 @@ Table: 60% fish, 25% nit, 15% tag
 | 12 | nit | -3.42 | 1.43 |
 
 ## Session Log
+
+### Session 37 (January 13, 2026)
+- **EVAL_STRATEGIES POSITION FIX**: Preflop now uses neutral position cycling
+  - Was defaulting to BTN for all hands (biased results)
+  - Now cycles through UTG/MP/CO/BTN/SB/BB for fair average
+- **POSITION RANGE VERIFICATION**: Confirmed code matches strategy files
+  - value_maniac: UTG 34 hands → BTN 94 hands (matches file exactly)
+  - gpt4: UTG 16 hands → BTN 68 hands (matches file exactly)
+  - Both advice (strategy_engine.py) and sim (poker_sim.py) use position correctly
+- **RESULTS**: value_maniac +23.5 BB/100, value_max +10.3 BB/100 (32 bad folds)
+- Commits: [pending]
 
 ### Session 36 (January 13, 2026)
 - **COMPLETE analyze_hand() REFACTOR**: Eliminated ALL string matching on `desc`

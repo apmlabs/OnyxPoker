@@ -389,6 +389,7 @@ STRATEGIES = {
         '3bet_vs': {'UTG': expand_range('TT+,AQs+,AKo,AJs,KQs'), 'MP': expand_range('99+,AJs+,AKo,AQo,KQs,QJs'), 'CO': expand_range('88+,ATs+,AJo+,KQs,KJs,QJs,JTs'), 'BTN': expand_range('77+,A9s+,ATo+,KJs+,KQo,QJs,JTs,T9s')},
         '3bet_bluff': expand_range('A5s-A2s,K9s-K6s,Q9s-Q8s,J9s,T9s,98s,87s,76s,65s,54s'),
         'call_open_ip': expand_range('TT-22,AJs-A5s,KQs-K9s,QJs-Q9s,JTs-J9s,T9s,98s,87s,76s'),
+        'sb_defend': expand_range('TT-22,AJs-A2s,KQs-K8s,QJs-Q9s,JTs-J9s,T9s-T8s,98s,87s,76s,A5o+,KQo,KJo,QJo'),
         'bb_defend': expand_range('22+,A2s+,K4s+,Q6s+,J7s+,T7s+,96s+,85s+,75s,64s+,54s,A5o+,K9o+,QTo+,JTo,T9o'),
         'call_3bet': expand_range('JJ,TT,99,AKo,AQs,AQo,AJs,KQs'),
         '4bet': expand_range('QQ+,AKs,AKo'),
@@ -502,6 +503,7 @@ STRATEGIES['maniac'] = {
     '3bet_vs': {'UTG': expand_range('TT+,AQs+,AKo,AJs,KQs'), 'MP': expand_range('99+,AJs+,AKo,AQo,KQs,QJs'), 'CO': expand_range('88+,ATs+,AJo+,KQs,KJs,QJs,JTs'), 'BTN': expand_range('77+,A9s+,ATo+,KJs+,KQo,QJs,JTs,T9s')},
     '3bet_bluff': expand_range('A5s-A2s,K9s-K6s,Q9s-Q8s,J9s,T9s,98s,87s,76s,65s,54s'),
     'call_open_ip': expand_range('TT-22,AJs-A5s,KQs-K9s,QJs-Q9s,JTs-J9s,T9s,98s,87s,76s,AQo,AJo,ATo,KQo,KJo,QJo'),
+    'sb_defend': expand_range('TT-22,AJs-A2s,KQs-K8s,QJs-Q9s,JTs-J9s,T9s-T8s,98s,87s,76s,A5o+,KQo,KJo,QJo'),
     'bb_defend': expand_range('22+,A2s+,K4s+,Q6s+,J7s+,T7s+,96s+,85s+,75s,64s+,54s,A5o+,K9o+,QTo+,JTo,T9o'),
     'call_3bet': expand_range('JJ,TT,99,AKo,AQs,AQo,AJs,KQs'),
     '4bet': expand_range('QQ+,AKs,AKo'),
@@ -1004,75 +1006,8 @@ def postflop_action(hole_cards: List[Tuple[str, str]], board: List[Tuple[str, st
     # BUT with paired board protection (learned from KK on JJ disaster)
     
     if strategy == 'value_maniac':
-        # Use analyze_hand() for all hand analysis - no string matching
-        hand_info = analyze_hand(hole_cards, board)
-        
-        is_big_bet = to_call >= pot * 0.5 if to_call else False
-        is_dangerous_board_pair = hand_info['board_pair_val'] is not None and hand_info['board_pair_val'] >= 8  # T+
-        
-        # Maniac postflop: overbets for value, calls wide
-        if to_call == 0 or to_call is None:
-            # No bet to call - bet for value
-            if strength >= 4:  # Set+
-                return ('bet', round(pot * 1.25, 2), f"{desc} - overbet value")
-            if strength >= 3:  # Two pair
-                # Two pair with one card + HIGH board pair = pot control
-                if hand_info['two_pair_type'] == 'one_card_board_pair' and is_dangerous_board_pair:
-                    if street == 'flop':
-                        return ('bet', round(pot * 0.33, 2), f"{desc} - small bet (pot control)")
-                    return ('check', 0, f"{desc} - check (vulnerable to trips)")
-                return ('bet', round(pot * 1.1, 2), f"{desc} - bet big")
-            if hand_info['has_any_pair']:
-                if street in ['flop', 'turn'] and random.random() < 0.85:
-                    return ('bet', round(pot * 1.0, 2), f"{desc} - overbet")
-                if street == 'river' and random.random() < 0.5:
-                    return ('bet', round(pot * 1.2, 2), f"{desc} - river overbet")
-            if has_any_draw:
-                return ('bet', round(pot * 1.0, 2), "overbet draw")
-            if street == 'flop' and random.random() < 0.80:
-                return ('bet', round(pot * 0.9, 2), "c-bet big")
-            if street == 'turn' and random.random() < 0.60:
-                return ('bet', round(pot * 1.0, 2), "barrel turn")
-            if street == 'river' and random.random() < 0.35:
-                return ('bet', round(pot * 1.1, 2), "river bluff")
-            return ('check', 0, f"{desc} - check")
-        else:
-            # Facing bet - raise monsters, call pairs, fold air
-            if strength >= 6:  # Quads, full house, straight flush
-                return ('raise', round(to_call * 3, 2), f"{desc} - raise monster")
-            if strength >= 4:  # Set, flush, straight
-                return ('raise', round(to_call * 2.5, 2), f"{desc} - raise strong")
-            if strength == 3:  # Two pair
-                # Pocket pair > board pair = strong (KK on JJ)
-                if hand_info['two_pair_type'] == 'pocket_over_board':
-                    return ('raise', round(to_call * 2.5, 2), f"{desc} - raise strong")
-                # Pocket pair < board pair = weak (66 on JJ)
-                if hand_info['two_pair_type'] == 'pocket_under_board':
-                    if is_big_bet:
-                        return ('fold', 0, f"{desc} - fold (weak two pair vs big bet)")
-                    return ('call', 0, f"{desc} - call (weak two pair)")
-                # Both cards hit = strong (A7 on A72)
-                if hand_info['two_pair_type'] == 'both_cards_hit':
-                    return ('raise', round(to_call * 2.5, 2), f"{desc} - raise strong")
-                # One card + HIGH board pair = weak
-                if hand_info['two_pair_type'] == 'one_card_board_pair' and is_dangerous_board_pair:
-                    if is_big_bet or street == 'river':
-                        return ('fold', 0, f"{desc} - fold (two pair on dangerous board)")
-                    return ('call', 0, f"{desc} - call (but fold to more aggression)")
-                return ('raise', round(to_call * 2.5, 2), f"{desc} - raise strong")
-            # Pocket pair (underpair) - call, don't fold
-            if hand_info['is_pocket_pair']:
-                return ('call', 0, f"{desc} - call pocket pair")
-            if hand_info['has_any_pair']:
-                return ('call', 0, f"{desc} - call any pair")
-            if has_any_draw and street != 'river':
-                return ('call', 0, "call with draw")
-            # Call with overcards on flop (AK, AQ type hands)
-            if street == 'flop' and hand_info['hero_vals'][0] >= 11:  # K or A
-                return ('call', 0, "call overcards")
-            if street == 'flop' and random.random() < 0.4:
-                return ('call', 0, "float flop")
-            return ('fold', 0, f"{desc} - fold")
+        return _postflop_value_maniac(hole_cards, board, pot, to_call, street,
+                                      strength, desc, has_any_draw)
     
     if strategy == 'sonnet_max':
         return _postflop_sonnet_max(hole_cards, board, pot, to_call, street, is_ip,
@@ -1104,6 +1039,71 @@ def postflop_action(hole_cards: List[Tuple[str, str]], board: List[Tuple[str, st
                            is_aggressor, strength, desc, draws, combo_draw,
                            has_flush_draw, has_oesd, is_overpair, board_has_ace,
                            is_underpair_to_ace, is_multiway)
+
+
+def _postflop_value_maniac(hole_cards, board, pot, to_call, street, strength, desc, has_any_draw):
+    """
+    VALUE_MANIAC postflop - Overbets for value, calls wide, paired board protection.
+    """
+    hand_info = analyze_hand(hole_cards, board)
+    is_big_bet = to_call >= pot * 0.5 if to_call else False
+    is_dangerous_board_pair = hand_info['board_pair_val'] is not None and hand_info['board_pair_val'] >= 8  # T+
+    
+    if to_call == 0 or to_call is None:
+        # No bet to call - bet for value
+        if strength >= 4:  # Set+
+            return ('bet', round(pot * 1.25, 2), f"{desc} - overbet value")
+        if strength >= 3:  # Two pair
+            if hand_info['two_pair_type'] == 'one_card_board_pair' and is_dangerous_board_pair:
+                if street == 'flop':
+                    return ('bet', round(pot * 0.33, 2), f"{desc} - small bet (pot control)")
+                return ('check', 0, f"{desc} - check (vulnerable to trips)")
+            return ('bet', round(pot * 1.1, 2), f"{desc} - bet big")
+        if hand_info['has_any_pair']:
+            if street in ['flop', 'turn'] and random.random() < 0.85:
+                return ('bet', round(pot * 1.0, 2), f"{desc} - overbet")
+            if street == 'river' and random.random() < 0.5:
+                return ('bet', round(pot * 1.2, 2), f"{desc} - river overbet")
+        if has_any_draw:
+            return ('bet', round(pot * 1.0, 2), "overbet draw")
+        if street == 'flop' and random.random() < 0.80:
+            return ('bet', round(pot * 0.9, 2), "c-bet big")
+        if street == 'turn' and random.random() < 0.60:
+            return ('bet', round(pot * 1.0, 2), "barrel turn")
+        if street == 'river' and random.random() < 0.35:
+            return ('bet', round(pot * 1.1, 2), "river bluff")
+        return ('check', 0, f"{desc} - check")
+    else:
+        # Facing bet - raise monsters, call pairs, fold air
+        if strength >= 6:
+            return ('raise', round(to_call * 3, 2), f"{desc} - raise monster")
+        if strength >= 4:
+            return ('raise', round(to_call * 2.5, 2), f"{desc} - raise strong")
+        if strength == 3:
+            if hand_info['two_pair_type'] == 'pocket_over_board':
+                return ('raise', round(to_call * 2.5, 2), f"{desc} - raise strong")
+            if hand_info['two_pair_type'] == 'pocket_under_board':
+                if is_big_bet:
+                    return ('fold', 0, f"{desc} - fold (weak two pair vs big bet)")
+                return ('call', 0, f"{desc} - call (weak two pair)")
+            if hand_info['two_pair_type'] == 'both_cards_hit':
+                return ('raise', round(to_call * 2.5, 2), f"{desc} - raise strong")
+            if hand_info['two_pair_type'] == 'one_card_board_pair' and is_dangerous_board_pair:
+                if is_big_bet or street == 'river':
+                    return ('fold', 0, f"{desc} - fold (two pair on dangerous board)")
+                return ('call', 0, f"{desc} - call (but fold to more aggression)")
+            return ('raise', round(to_call * 2.5, 2), f"{desc} - raise strong")
+        if hand_info['is_pocket_pair']:
+            return ('call', 0, f"{desc} - call pocket pair")
+        if hand_info['has_any_pair']:
+            return ('call', 0, f"{desc} - call any pair")
+        if has_any_draw and street != 'river':
+            return ('call', 0, "call with draw")
+        if street == 'flop' and hand_info['hero_vals'][0] >= 11:
+            return ('call', 0, "call overcards")
+        if street == 'flop' and random.random() < 0.4:
+            return ('call', 0, "float flop")
+        return ('fold', 0, f"{desc} - fold")
 
 
 def _postflop_value_max(hole_cards, board, pot, to_call, street, is_ip, is_aggressor,
@@ -1257,6 +1257,20 @@ def _postflop_value_max(hole_cards, board, pot, to_call, street, is_ip, is_aggre
             return ('call', 0, "flush draw - call")
         if has_oesd and pot_odds <= 0.25:
             return ('call', 0, "OESD - call")
+        if has_gutshot and pot_odds <= 0.18:
+            return ('call', 0, "gutshot - call")
+        
+        # Overcards on flop - float with good odds
+        if street == 'flop' and strength == 1:
+            hero_high = max(hand_info['hero_vals'])
+            board_high = hand_info['top_board_val']
+            # Two overcards = 6 outs (~24% by river)
+            if hero_high > board_high and min(hand_info['hero_vals']) > board_high:
+                if pot_odds <= 0.25:
+                    return ('call', 0, f"{desc} - float with overcards")
+            # One overcard = 3 outs (~12% by river)
+            elif hero_high > board_high and pot_odds <= 0.15:
+                return ('call', 0, f"{desc} - float with overcard")
         
         return ('fold', 0, f"{desc} - fold")
 
@@ -1680,7 +1694,13 @@ def preflop_action(hand: str, position: str, strategy: Dict,
             if random.random() < 0.4:
                 return ('raise', f'{hand} 3-bet bluff vs {opener_pos}')
         
-        # Call IP
+        # SB defend - 3bet or call strong hands (SB is OOP so tighter than BB)
+        if position == 'SB':
+            sb_defend = strategy.get('sb_defend', strategy.get('call_open_ip', set()))
+            if hand in sb_defend:
+                return ('call', f'{hand} SB defend')
+        
+        # Call IP (CO, BTN) or BB defend
         if position in ['CO', 'BTN', 'BB']:
             if position == 'BB' and hand in strategy.get('bb_defend', set()):
                 return ('call', f'{hand} BB defend')

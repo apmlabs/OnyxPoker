@@ -124,10 +124,20 @@ def main():
         if not hand:
             continue
         
+    # Process preflop - cycle through positions (we don't know actual position)
+    POSITIONS = ['UTG', 'MP', 'CO', 'BTN', 'SB', 'BB']
+    for i, hd in enumerate(preflop_hands):
+        hand = parse_hand(hd['hero_cards'])
+        if not hand:
+            continue
+        
+        # Cycle through positions to get neutral average
+        pos = POSITIONS[i % 6]
+        
         for strat in STRATEGY_NAMES:
             try:
                 action, _ = get_strategy_action(strat, hand, [], [], 0, 
-                                                float(hd.get('to_call') or 0))
+                                                float(hd.get('to_call') or 0), position=pos)
                 if not action:
                     continue
                 action = action.lower()
