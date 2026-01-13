@@ -462,7 +462,9 @@ def evaluate_hand(hole_cards: List[Tuple[str, str]], board: List[Tuple[str, str]
             
             # BOTTOM PAIR / UNDERPAIR
             return (2, "bottom pair", RANK_VAL[pr])
-        return (2, "pair", RANK_VAL[pr])
+        
+        # Board pair only - we don't have it, just high card with board pair
+        return (1, "high card (board paired)", RANK_VAL[max(hero_ranks, key=lambda r: RANK_VAL[r])])
     
     # High card
     high = max(RANK_VAL[r] for r in ranks)
@@ -724,15 +726,19 @@ def _postflop_value_max(hole_cards, board, pot, to_call, street, is_ip, is_aggre
             size = 0.9 if is_vulnerable else 0.75
             return ('bet', round(pot * size, 2), f"{desc} - value bet")
         
-        # TOP PAIR GOOD KICKER - bet 2 streets
-        if "top pair good kicker" in desc or "top pair" in desc and strength >= 3:
+        # TOP PAIR GOOD KICKER - bet 2-3 streets
+        if "top pair good kicker" in desc:
             if street in ['flop', 'turn']:
                 size = 0.7 if is_vulnerable else 0.6
                 return ('bet', round(pot * size, 2), f"{desc} - value bet")
-            else:  # river - check weak top pair
-                if "good kicker" in desc:
-                    return ('bet', round(pot * 0.5, 2), f"{desc} - thin value")
-                return ('check', 0, f"{desc} - check river")
+            else:  # river
+                return ('bet', round(pot * 0.5, 2), f"{desc} - thin value")
+        
+        # TOP PAIR WEAK KICKER - bet flop only, then check
+        if "top pair weak kicker" in desc:
+            if street == 'flop':
+                return ('bet', round(pot * 0.4, 2), f"{desc} - small value bet")
+            return ('check', 0, f"{desc} - check (weak kicker)")
         
         # OVERPAIR - bet for value
         if "overpair" in desc.lower():

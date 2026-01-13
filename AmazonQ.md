@@ -1,10 +1,10 @@
 # OnyxPoker - Status Tracking
 
-**Last Updated**: January 12, 2026 23:33 UTC
+**Last Updated**: January 13, 2026 01:15 UTC
 
-## Current Status: SESSION 30 - VALUE_MAX MATCHES MANIAC ✅
+## Current Status: SESSION 31 - SMART POSTFLOP FIXES ✅
 
-Analyzed why maniac archetype beat all bots. Updated value_max with wider preflop + aggressive postflop - now performs equally (+41-55 BB/100).
+Fixed critical bugs: board pair detection, weak kicker sizing, pot odds. value_max now #1 at +46.82 BB/100.
 
 ## What Works
 
@@ -96,6 +96,16 @@ python3 poker_sim.py 150000  # Run 150k hands simulation
 | 8 | sonnet | +9.17 | 11.79 |
 
 ## Session Log
+
+### Session 31 (January 13, 2026)
+- **SMART POSTFLOP FIXES**: Analyzed 245-hand session log, found critical bugs ⭐
+  - Fixed board pair detection (AJ on Q22 was "pair", now "high card")
+  - Fixed top pair weak kicker (was potting, now 40% flop only then check)
+  - Added pot odds calculation for calling decisions
+  - C-bet only on dry boards or with equity (not 80% with air)
+- **RESULTS**: value_max now #1 at +46.82 BB/100 (was +38)
+  - Beats maniac (+46.82 vs +39.15) - smart > blind aggression
+  - Lowest variance (StdDev 2.59)
 
 ### Session 30 (January 12, 2026)
 - **VALUE_MAX OPTIMIZATION**: Analyzed why maniac beats all bots ⭐
