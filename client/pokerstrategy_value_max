@@ -1,7 +1,7 @@
-# VALUE_MAX Strategy - Maniac-style ranges + aggressive postflop
-# Based on analysis: wider preflop + bigger bets = more value vs 2NL fish
+# VALUE_MAX Strategy - Smart aggression with pot odds
+# Based on Session 31 fixes: board texture, weak kicker sizing, pot odds
 
-## PREFLOP - Same as maniac (316 open combos)
+## PREFLOP - Wide ranges (316 open combos)
 
 ### Open Ranges
 UTG: 55+, A7s+, A5s-A2s, KTs+, QTs+, JTs, T9s, ATo+, KJo+
@@ -16,7 +16,7 @@ vs MP: 99+, AJs+, AKo, AQo, KQs, QJs
 vs CO: 88+, ATs+, AJo+, KQs, KJs, QJs, JTs
 vs BTN: 77+, A9s+, ATo+, KJs+, KQo, QJs, JTs, T9s
 
-### 3-Bet Bluff (wide like maniac)
+### 3-Bet Bluff
 A5s-A2s, K9s-K6s, Q9s-Q8s, J9s, T9s, 98s, 87s, 76s, 65s, 54s
 
 ### Call 3-Bet
@@ -25,30 +25,44 @@ JJ, TT, 99, AKo, AQs, AQo, AJs, KQs
 ### 4-Bet
 QQ+, AKs, AKo
 
-## POSTFLOP - Aggressive like maniac
+## POSTFLOP - Smart aggression with pot odds
 
-### Betting (when checked to)
-- Straights+: 120% pot (overbet)
-- Sets/Two pair: 110% pot
-- Top pair+: 100% pot
-- Overpair: 100% pot
-- Any pair flop/turn: 90% pot (85% frequency)
-- Any pair river: 85% pot (50% frequency)
-- Combo draw: 90% pot
-- Flush draw: 85% pot
-- OESD: 80% pot
-- C-bet flop: 75% pot (80% frequency)
-- Barrel turn: 85% pot (60% frequency)
+### Board Texture Analysis
+- Paired board: Don't count as our pair
+- Monotone: Scary, check without equity
+- Two-tone/connected: Vulnerable, bet bigger to protect
+- Dry (Axx rainbow): Safe to c-bet small
 
-### Facing Bet
-- Straights+: RAISE 2.5x pot
-- Sets/Two pair: RAISE 2.2x (call river)
-- Top pair: CALL
-- Any pair: CALL (don't fold winners!)
-- Flush draw/OESD: CALL
-- Float flop: 40% frequency
+### Betting (checked to us)
+- Straights+: 100% pot
+- Sets/Two pair: 75-90% pot (bigger on wet boards)
+- Top pair good kicker: 60-70% pot flop/turn, 50% river
+- Top pair weak kicker: 40% pot FLOP ONLY, then check
+- Overpair: 60-70% pot
+- Medium pair (second pair): Check
+- Weak pair: Check
+- Combo draw: 70% pot semi-bluff
+- Flush draw (flop): 60% pot semi-bluff
+- OESD (flop): 55% pot semi-bluff
+- C-bet dry board: 33% pot
+- C-bet with equity: 50% pot
+- Scary board no equity: Check (don't c-bet air)
+
+### Facing Bet (with pot odds)
+- Straights+: RAISE 2x pot
+- Sets/Two pair: RAISE (call river)
+- Top pair good kicker: CALL if pot odds <= 40%
+- Top pair: CALL if pot odds <= 33%
+- Overpair: CALL if pot odds <= 35%
+- Medium/weak pair: CALL if pot odds <= 25%
+- Flush draw (~35% equity): CALL if pot odds <= 35%
+- OESD (~32% equity): CALL if pot odds <= 32%
+- Combo draw (~45% equity): CALL if pot odds <= 45%
 - Otherwise: FOLD
 
-## KEY INSIGHT
-Fish call too much, so bigger bets = 2.3x more value
-(50% pot = 30BB win vs 100% pot = 70BB win on same hand)
+## KEY INSIGHTS
+- Smart > blind aggression (+35 vs +31 BB/100)
+- Board pair bug was critical (AJ on Q22 = high card, not pair)
+- Weak kicker: small bet flop, then check (don't pot 3 streets)
+- Pot odds essential: don't call any pair regardless of bet size
+- Low variance (StdDev 3.93) = consistent results
