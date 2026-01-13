@@ -74,15 +74,24 @@ class StrategyEngine:
         """Preflop decision."""
         
         # Determine what we're facing
-        if to_call <= 0.05 and not facing_raise:
+        # BB special case: if to_call is 0, we can check. Otherwise we face a raise.
+        if position == 'BB':
+            if to_call <= 0.01:  # Can check
+                facing = 'none'
+                opener_pos = None
+            elif to_call <= 0.25:  # Facing open (2-4bb raise = ~0.08-0.16 to call)
+                facing = 'open'
+                opener_pos = 'MP'  # Conservative assumption
+            else:  # Facing 3-bet or bigger
+                facing = '3bet'
+                opener_pos = None
+        elif to_call <= 0.02 and not facing_raise:
             facing = 'none'
             opener_pos = None
-        elif to_call <= 0.20:  # Facing open (2-4bb)
+        elif to_call <= 0.25:  # Facing open (2-4bb)
             facing = 'open'
-            # Conservative: assume early position open when unknown
-            # This uses tighter 3-bet ranges (safer)
             opener_pos = 'MP'
-        elif to_call <= 0.60:  # Facing 3-bet
+        elif to_call <= 0.80:  # Facing 3-bet
             facing = '3bet'
             opener_pos = None
         else:  # Facing 4-bet

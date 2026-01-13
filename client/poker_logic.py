@@ -687,63 +687,129 @@ def postflop_action(hole_cards: List[Tuple[str, str]], board: List[Tuple[str, st
 def _postflop_value_max(hole_cards, board, pot, to_call, street, is_ip, is_aggressor,
                         strength, desc, draws, combo_draw, has_flush_draw, has_oesd, has_any_draw):
     """
-    VALUE_MAX: Maniac-style aggression with smarter hand selection.
-    Key insight: Fish call too much, so bigger bets = more value.
+    VALUE_MAX: Smart postflop based on hand strength vs board.
+    Key principles:
+    - Strong hands (sets+): bet big for value
+    - Medium hands (top pair): bet/call based on board texture
+    - Weak hands: check/fold, don't waste money
+    - Draws: semi-bluff with good equity, fold without odds
     """
+    # Calculate pot odds when facing bet
+    if to_call and to_call > 0:
+        pot_odds = to_call / (pot + to_call)  # e.g., call 10 into 30 = 25%
+    else:
+        pot_odds = 0
+    
+    # Board texture analysis
+    board_ranks = sorted([RANK_VAL[c[0]] for c in board], reverse=True) if board else []
+    board_suits = [c[1] for c in board] if board else []
+    is_paired_board = len(board_ranks) != len(set(board_ranks))
+    is_monotone = len(set(board_suits)) == 1 if len(board_suits) >= 3 else False
+    is_two_tone = len(set(board_suits)) == 2 if len(board_suits) >= 3 else False
+    has_straight_possible = (max(board_ranks) - min(board_ranks) <= 4) if len(board_ranks) >= 3 else False
+    
+    # Determine if we likely have best hand
+    is_vulnerable = is_two_tone or has_straight_possible
+    is_scary_board = is_monotone or is_paired_board or (board_ranks and board_ranks[0] >= RANK_VAL['Q'])
+    
     if to_call == 0 or to_call is None:
-        # VALUE HANDS - overbet like maniac
+        # === BETTING (checked to us) ===
+        
+        # MONSTERS - always bet big
         if strength >= 5:  # Straights+
-            return ('bet', round(pot * 1.2, 2), f"{desc} - value_max overbets")
+            return ('bet', round(pot * 1.0, 2), f"{desc} - bet for value")
+        
+        # STRONG - bet for value, protect on wet boards
         if strength >= 4:  # Sets, two pair
-            return ('bet', round(pot * 1.1, 2), f"{desc} - value_max bets big")
-        if strength >= 3 or "top pair" in desc:
-            return ('bet', round(pot * 1.0, 2), f"{desc} - value_max pots it")
+            size = 0.9 if is_vulnerable else 0.75
+            return ('bet', round(pot * size, 2), f"{desc} - value bet")
         
-        # OVERPAIR - bet big
+        # TOP PAIR GOOD KICKER - bet 2 streets
+        if "top pair good kicker" in desc or "top pair" in desc and strength >= 3:
+            if street in ['flop', 'turn']:
+                size = 0.7 if is_vulnerable else 0.6
+                return ('bet', round(pot * size, 2), f"{desc} - value bet")
+            else:  # river - check weak top pair
+                if "good kicker" in desc:
+                    return ('bet', round(pot * 0.5, 2), f"{desc} - thin value")
+                return ('check', 0, f"{desc} - check river")
+        
+        # OVERPAIR - bet for value
         if "overpair" in desc.lower():
-            return ('bet', round(pot * 1.0, 2), f"{desc} - value_max bets overpair")
+            size = 0.7 if is_vulnerable else 0.6
+            return ('bet', round(pot * size, 2), f"{desc} - value bet overpair")
         
-        # ANY PAIR - bet all streets (like maniac)
-        if "pair" in desc:
-            if street in ['flop', 'turn'] and random.random() < 0.85:
-                return ('bet', round(pot * 0.9, 2), f"{desc} - value_max bets pair")
-            if street == 'river' and random.random() < 0.5:
-                return ('bet', round(pot * 0.85, 2), f"{desc} - value_max bets river")
+        # MEDIUM PAIR (second pair, pocket pair below top) - check/call line
+        if "second pair" in desc or "middle pair" in desc:
+            return ('check', 0, f"{desc} - check medium strength")
         
-        # DRAWS - semi-bluff big
+        # WEAK PAIR (bottom pair, low pocket pair) - check, don't bet
+        if "pair" in desc and strength < 3:
+            return ('check', 0, f"{desc} - check weak pair")
+        
+        # STRONG DRAWS - semi-bluff
         if combo_draw:
-            return ('bet', round(pot * 0.9, 2), "value_max semi-bluffs combo draw")
-        if has_flush_draw:
-            return ('bet', round(pot * 0.85, 2), "value_max semi-bluffs flush draw")
-        if has_oesd:
-            return ('bet', round(pot * 0.8, 2), "value_max semi-bluffs OESD")
+            return ('bet', round(pot * 0.7, 2), f"combo draw - semi-bluff")
+        if has_flush_draw and street == 'flop':
+            return ('bet', round(pot * 0.6, 2), f"flush draw - semi-bluff")
+        if has_oesd and street == 'flop':
+            return ('bet', round(pot * 0.55, 2), f"OESD - semi-bluff")
         
-        # C-BET and BARREL like maniac
-        if street == 'flop' and random.random() < 0.80:
-            return ('bet', round(pot * 0.75, 2), "value_max c-bets")
-        if street == 'turn' and is_aggressor and random.random() < 0.60:
-            return ('bet', round(pot * 0.85, 2), "value_max barrels turn")
+        # C-BET - only with equity or on dry boards
+        if is_aggressor and street == 'flop':
+            if not is_scary_board and not is_vulnerable:
+                return ('bet', round(pot * 0.33, 2), "c-bet dry board")
+            if has_any_draw:
+                return ('bet', round(pot * 0.5, 2), "c-bet with equity")
+            # Don't c-bet scary boards with air
+            return ('check', 0, "check - no equity on scary board")
         
-        return ('check', 0, f"{desc} - value_max checks")
+        return ('check', 0, f"{desc} - check")
     
     else:
-        # FACING A BET - call wider like maniac
-        if strength >= 5:  # Straights+
-            return ('raise', round(pot * 2.5, 2), f"{desc} - value_max raises")
-        if strength >= 4:  # Sets, two pair
+        # === FACING A BET ===
+        
+        # MONSTERS - raise for value
+        if strength >= 5:
+            return ('raise', round(pot * 2.0, 2), f"{desc} - raise for value")
+        
+        # STRONG - raise or call based on street
+        if strength >= 4:
             if street == 'river':
-                return ('call', 0, f"{desc} - value_max calls river")
-            return ('raise', round(pot * 2.2, 2), f"{desc} - value_max raises")
-        if strength >= 3 or "top pair" in desc:
-            return ('call', 0, f"{desc} - value_max calls")
-        # CALL ANY PAIR (like maniac)
+                return ('call', 0, f"{desc} - call river")
+            return ('raise', round(pot * 2.0, 2), f"{desc} - raise for value")
+        
+        # TOP PAIR - call if bet is reasonable
+        if "top pair" in desc or strength >= 3:
+            if pot_odds <= 0.33:  # Calling up to 50% pot
+                return ('call', 0, f"{desc} - call (good odds)")
+            if "good kicker" in desc and pot_odds <= 0.4:
+                return ('call', 0, f"{desc} - call TPGK")
+            return ('fold', 0, f"{desc} - fold (bet too big)")
+        
+        # OVERPAIR - call reasonable bets
+        if "overpair" in desc.lower():
+            if pot_odds <= 0.35:
+                return ('call', 0, f"{desc} - call overpair")
+            return ('fold', 0, f"{desc} - fold overpair to big bet")
+        
+        # MEDIUM PAIR - only call small bets
         if "pair" in desc:
-            return ('call', 0, f"{desc} - value_max calls pair")
+            if pot_odds <= 0.25:  # Only call up to 33% pot
+                return ('call', 0, f"{desc} - call small bet")
+            return ('fold', 0, f"{desc} - fold weak pair")
+        
+        # DRAWS - call with odds
         if has_flush_draw or has_oesd:
-            return ('call', 0, "value_max calls with draw")
-        if street == 'flop' and random.random() < 0.4:
-            return ('call', 0, "value_max floats flop")
-        return ('fold', 0, f"{desc} - value_max folds")
+            # Flush draw ~35% equity, OESD ~32% equity
+            equity = 0.35 if has_flush_draw else 0.32
+            if combo_draw:
+                equity = 0.45
+            if pot_odds <= equity:
+                return ('call', 0, f"draw - call (have odds)")
+            return ('fold', 0, f"draw - fold (no odds)")
+        
+        return ('fold', 0, f"{desc} - fold")
 
 
 def _postflop_gpt(hole_cards, board, pot, to_call, street, is_ip, is_aggressor,
