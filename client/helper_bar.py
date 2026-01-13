@@ -383,7 +383,7 @@ class HelperBar:
             # If we have all position results (preflop), show them
             all_positions = result.get('all_positions')
             if all_positions and not board:  # Preflop only
-                # Build one-line summary
+                # Line 1: Opening actions
                 pos_actions = []
                 for pos in ['UTG', 'MP', 'CO', 'BTN', 'SB', 'BB']:
                     pos_result = all_positions[pos]
@@ -391,13 +391,18 @@ class HelperBar:
                     bet_size = pos_result.get('bet_size', 0)
                     
                     if action in ('bet', 'raise') and bet_size:
-                        action_str = f"{action.upper()} €{bet_size:.2f}"
+                        action_str = f"RAISE"
                     else:
                         action_str = action.upper()
                     
                     pos_actions.append(f"{pos}:{action_str}")
                 
                 self.log(" | ".join(pos_actions), "DECISION")
+                
+                # Line 2: Call thresholds (vs raise)
+                call_info = all_positions.get('BTN', {}).get('call_info', '')
+                if call_info:
+                    self.log(f"vs raise: {call_info}", "INFO")
             else:
                 # Postflop or AI-only mode - show single decision
                 decision_str = f"=> {action.upper()}"

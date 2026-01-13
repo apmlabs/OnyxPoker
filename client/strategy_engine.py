@@ -72,30 +72,29 @@ class StrategyEngine:
         return self._postflop(cards, board, pot, to_call, position)
     
     def _preflop(self, hand: str, position: str, to_call: float, facing_raise: bool) -> Dict[str, Any]:
-        """Preflop decision."""
+        """Preflop decision with call thresholds."""
         
         # Determine what we're facing
-        # BB special case: if to_call is 0, we can check. Otherwise we face a raise.
         if position == 'BB':
-            if to_call <= 0.01:  # Can check
+            if to_call <= 0.01:
                 facing = 'none'
                 opener_pos = None
-            elif to_call <= 0.25:  # Facing open (2-4bb raise = ~0.08-0.16 to call)
+            elif to_call <= 0.25:
                 facing = 'open'
-                opener_pos = 'MP'  # Conservative assumption
-            else:  # Facing 3-bet or bigger
+                opener_pos = 'MP'
+            else:
                 facing = '3bet'
                 opener_pos = None
         elif to_call <= 0.02 and not facing_raise:
             facing = 'none'
             opener_pos = None
-        elif to_call <= 0.25:  # Facing open (2-4bb)
+        elif to_call <= 0.25:
             facing = 'open'
             opener_pos = 'MP'
-        elif to_call <= 0.80:  # Facing 3-bet
+        elif to_call <= 0.80:
             facing = '3bet'
             opener_pos = None
-        else:  # Facing 4-bet
+        else:
             facing = '4bet'
             opener_pos = None
         
@@ -104,18 +103,61 @@ class StrategyEngine:
         bet_size = None
         if action == 'raise':
             if facing == 'none':
-                bet_size = 0.12  # 2.5bb
+                bet_size = 0.12
             elif facing == 'open':
                 bet_size = round(to_call * 3.5, 2)
             elif facing == '3bet':
                 bet_size = round(to_call * 2.5, 2)
         
+        # Add call threshold info
+        call_info = self._get_call_threshold(hand, position)
+        
         return {
             'action': action,
             'bet_size': bet_size,
             'reasoning': reasoning,
+            'call_info': call_info,
             'strategy': self.strategy_name
         }
+    
+    def _get_call_threshold(self, hand: str, position: str) -> str:
+        """Get max call amount for this hand in this position."""
+        s = self.strategy
+        
+        # Check which ranges this hand is in
+        in_4bet = hand in s.get('4bet', set())
+        in_call_3bet = hand in s.get('call_3bet', set())
+        in_3bet = any(hand in s.get('3bet_vs', {}).get(pos, set()) 
+                      for pos in ['UTG', 'MP', 'CO', 'BTN'])
+        in_call_ip = hand in s.get('call_open_ip', set())
+        in_bb_defend = hand in s.get('bb_defend', set())
+        in_open = hand in s.get('open', {}).get(position, set())
+        
+        # Premium: AA, KK, QQ, AKs - can call any amount
+        if in_4bet:
+            return "ALL-IN ok"
+        
+        # Strong: JJ, TT, AQs - can call 3bets
+        if in_call_3bet:
+            return "call 3bet (15bb)"
+        
+        # 3-bet hands that don't call 3bets - raise or fold
+        if in_3bet and not in_call_ip:
+            return "3bet or fold"
+        
+        # Calling hands IP (not BB-specific)
+        if in_call_ip:
+            return "call open (4bb)"
+        
+        # BB defend hands - only applies in BB
+        if position == 'BB' and in_bb_defend:
+            return "BB defend (4bb)"
+        
+        # Opening hands only - fold to any raise
+        if in_open:
+            return "open only, fold vs raise"
+        
+        return "fold"
     
     def _postflop(self, cards: List[str], board: List[str], pot: float, to_call: float, position: str) -> Dict[str, Any]:
         """Postflop decision."""
