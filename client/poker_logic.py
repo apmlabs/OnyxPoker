@@ -1174,13 +1174,15 @@ def _postflop_gpt(hole_cards, board, pot, to_call, street, is_ip, is_aggressor,
         
         return ('check', 0, f"{desc} - check")
     
-    # Facing bet
-    if strength >= 5:
-        return ('call', 0, f"{desc} - call")
-    if strength == 4:
-        return ('call', 0, f"{desc} - call")
-    if strength == 3:
-        return ('call', 0, f"{desc} - call")
+    # Facing bet - raise strong, call medium (per gpt4 strategy: "Flop raises are value-heavy")
+    if strength >= 6:  # Quads, full house, straight flush
+        return ('raise', round(to_call * 3, 2), f"{desc} - raise monster")
+    if strength >= 5:  # Flush, straight
+        return ('raise', round(to_call * 2.5, 2), f"{desc} - raise strong")
+    if strength == 4:  # Trips, set
+        return ('raise', round(to_call * 2.5, 2), f"{desc} - raise set/trips")
+    if strength == 3:  # Two pair
+        return ('call', 0, f"{desc} - call two pair")
     
     # OVERPAIR facing bet - call down
     if is_overpair or "overpair" in desc:
@@ -1294,13 +1296,15 @@ def _postflop_sonnet(hole_cards, board, pot, to_call, street, is_ip, is_aggresso
         
         return ('check', 0, f"{desc} - check")
     
-    # Facing bet
-    if strength >= 5:
-        return ('call', 0, f"{desc} - call")
-    if strength == 4:
-        return ('call', 0, f"{desc} - call")
-    if strength == 3:
-        return ('call', 0, f"{desc} - call")
+    # Facing bet - raise strong, call medium (per sonnet strategy: big value bets)
+    if strength >= 6:  # Quads, full house, straight flush
+        return ('raise', round(to_call * 3, 2), f"{desc} - raise monster")
+    if strength >= 5:  # Flush, straight
+        return ('raise', round(to_call * 2.5, 2), f"{desc} - raise strong")
+    if strength == 4:  # Trips, set
+        return ('raise', round(to_call * 2.5, 2), f"{desc} - raise set/trips")
+    if strength == 3:  # Two pair
+        return ('call', 0, f"{desc} - call two pair")
     
     # Big pocket pair below ace - check-call
     if is_underpair_to_ace:

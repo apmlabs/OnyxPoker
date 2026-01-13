@@ -110,7 +110,7 @@ def test_postflop():
         
         # === WEAK HANDS ===
         (['Ah', 'Kh'], ['Qc', '7d', '2c'], 0.5, 0.25, 'BTN', 'call', 'AK overcards calls (value_maniac)'),
-        (['7h', '2h'], ['Ac', 'Kd', 'Qc'], 0.5, 0.25, 'BTN', 'call', 'Air floats flop (value_maniac)'),
+        (['7h', '2h'], ['Ac', 'Kd', 'Qc'], 0.5, 0.25, 'BTN', 'fold', 'Suited air folds (no backdoor)'),
         (['7h', '2c'], ['Ac', 'Kd', 'Qc'], 0.5, 0.25, 'BTN', 'fold', 'Offsuit air folds'),
     ]
     
