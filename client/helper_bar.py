@@ -326,7 +326,7 @@ class HelperBar:
             self.root.after(0, lambda: self.log(traceback.format_exc(), "DEBUG"))
         finally:
             self._analyzing = False
-            self.root.after(0, lambda: #self.status_label.config(text="Ready", fg='#00ff00'))
+            self.root.after(0, lambda: None)  # status update removed
 
     def _display_result(self, result, elapsed, screenshot, screenshot_name=None):
         """Display analysis result"""
