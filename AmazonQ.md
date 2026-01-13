@@ -1,21 +1,22 @@
 # OnyxPoker - Status Tracking
 
-**Last Updated**: January 13, 2026 04:03 UTC
+**Last Updated**: January 13, 2026 11:59 UTC
 
-## Current Status: SESSION 32 - EQUITY-BASED DECISIONS ✅
+## Current Status: SESSION 33 - POSTFLOP EDGE CASE TESTING ✅
 
-Added equity-based calling logic. value_max now #1 at +31.62 BB/100 (200k hands).
+Created 67-scenario edge case tester. Fixed value_max equity-based leaks. UI cleanup (removed left sidebar, borderless window).
 
 ## What Works
 
 | Component | Status | Notes |
 |-----------|--------|-------|
-| helper_bar.py | ✅ Ready | Draggable UI, manual position selector at top |
+| helper_bar.py | ✅ Ready | Borderless, resizable, edge-drag resize |
 | vision_detector.py | ✅ Ready | Full mode: GPT-5.2 for vision + decisions |
 | vision_detector_lite.py | ✅ Ready | Lite mode: gpt-4o-mini for vision only |
 | strategy_engine.py | ✅ Ready | Lite mode: applies strategy-specific postflop |
-| poker_logic.py | ✅ Ready | Shared logic with strategy-specific postflop |
+| poker_logic.py | ✅ Ready | Equity-based facing-bet decisions |
 | poker_sim.py | ✅ Ready | Full postflop simulation |
+| test_postflop.py | ✅ NEW | 67 edge case scenarios for any strategy |
 | Server | ✅ Running | 54.80.204.92:5001 with Kiro Sonnet 4.5 |
 
 ## Architecture
@@ -35,11 +36,12 @@ Position: Manual selection from UI radio buttons
 
 ## UI Features
 
+- **Borderless**: No Windows title bar (overrideredirect)
 - **Draggable**: Click top bar to move window
+- **Edge Resize**: Drag any edge or corner to resize
 - **Position Selector**: 6 buttons (UTG/MP/CO/BTN/SB/BB) at top
-- **No Window Decorations**: Clean, minimal interface
-- **Resizable**: Drag borders to resize
-- **Hotkeys**: F9=Advice, F10=Bot, F11=Stop, F12=Hide
+- **Hotkeys**: F9=Advice F10=Bot F11=Stop F12=Hide (shown in startup log)
+- **Default Size**: Full width x 440px height
 
 ## Server Locations
 
@@ -99,8 +101,29 @@ python3 poker_sim.py 200000  # Run 200k hands simulation
 
 ## Session Log
 
+### Session 33 (January 13, 2026)
+- **POSTFLOP EDGE CASE TESTER**: Created test_postflop.py with 67 scenarios
+  - Covers: quads, full house, sets, two pair, overpairs, underpairs, draws
+  - Strict issue detection: monsters should raise, draws should semi-bluff
+  - Usage: `python3 test_postflop.py [strategy_name]`
+- **VALUE_MAX LEAK FIX**: Replaced exploitative facing-bet logic with equity-based
+  - Old: Fixed thresholds assumed "big bet = strong hand" (loses vs maniacs)
+  - New: Call if equity > pot_odds, fold otherwise
+  - 8 leaks fixed (KK/JJ underpair, two pair, TPWK all folding 64-82% equity)
+- **STRATEGY COMPARISON**:
+  - value_max: 0 issues (passes all 67 scenarios)
+  - value_maniac: 11 issues (passive with monsters, bad river calls)
+  - gpt4: 17 issues (just calls monsters, folds +EV draws)
+  - sonnet: 16 issues (passive with strong hands)
+- **UI CLEANUP**:
+  - Removed left sidebar (hotkeys now in startup log)
+  - Doubled right panel width to 800px
+  - Borderless window with edge resize
+  - Default height 440px
+- Commits: 3bd86f6, 73a97cb, 3a62c2a
+
 ### Session 32 (January 13, 2026)
-- **POSTFLOP EQUITY UI**: Added real-time equity display to helper bar ⭐
+- **POSTFLOP EQUITY UI**: Added real-time equity display to helper bar
   - `calculate_equity()`: Monte Carlo simulation (500 iterations)
   - `count_outs()`: Counts flush (9), OESD (8), gutshot (4), pair improvement (5)
   - `get_hand_info()`: Returns equity, outs, draws, pot_odds
@@ -113,7 +136,7 @@ python3 poker_sim.py 200000  # Run 200k hands simulation
 - Commits: 5d2f3d8, bfd6b55
 
 ### Session 31 (January 13, 2026)
-- **SMART POSTFLOP FIXES**: Analyzed 245-hand session log, found critical bugs ⭐
+- **SMART POSTFLOP FIXES**: Analyzed 245-hand session log, found critical bugs
   - Fixed board pair detection (AJ on Q22 was "pair", now "high card")
   - Fixed top pair weak kicker (was potting, now 40% flop only then check)
   - Added pot odds calculation for calling decisions
@@ -123,9 +146,7 @@ python3 poker_sim.py 200000  # Run 200k hands simulation
   - Lowest variance (StdDev 2.59)
 
 ### Session 30 (January 12, 2026)
-- **VALUE_MAX OPTIMIZATION**: Analyzed why maniac beats all bots ⭐
-  - Compared preflop: maniac opens 316 combos vs value_max 206
-  - Compared postflop: maniac bets 100-125% pot, value_max was 60-85%
+- **VALUE_MAX OPTIMIZATION**: Analyzed why maniac beats all bots
   - Compared defense: maniac calls any pair, value_max was folding
   - Updated value_max with maniac's preflop ranges
   - Updated value_max postflop to bet bigger (100-120% pot)
