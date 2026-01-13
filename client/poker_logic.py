@@ -710,6 +710,14 @@ def _postflop_value_max(hole_cards, board, pot, to_call, street, is_ip, is_aggre
     is_two_tone = len(set(board_suits)) == 2 if len(board_suits) >= 3 else False
     has_straight_possible = (max(board_ranks) - min(board_ranks) <= 4) if len(board_ranks) >= 3 else False
     
+    # Check for 4-flush on board (we need to have the flush or fold)
+    suit_counts = {}
+    for s in board_suits:
+        suit_counts[s] = suit_counts.get(s, 0) + 1
+    board_has_4flush = any(c >= 4 for c in suit_counts.values())
+    hero_suits = [c[1] for c in hole_cards]
+    hero_has_flush_card = board_has_4flush and any(s in hero_suits for s in [k for k, v in suit_counts.items() if v >= 4])
+    
     # Determine if we likely have best hand
     is_vulnerable = is_two_tone or has_straight_possible
     is_scary_board = is_monotone or is_paired_board or (board_ranks and board_ranks[0] >= RANK_VAL['Q'])
@@ -721,9 +729,16 @@ def _postflop_value_max(hole_cards, board, pot, to_call, street, is_ip, is_aggre
         if strength >= 5:  # Straights+
             return ('bet', round(pot * 1.0, 2), f"{desc} - bet for value")
         
-        # STRONG - bet for value, protect on wet boards
-        if strength >= 4:  # Sets, two pair
+        # STRONG (sets) - bet for value
+        if strength == 4:  # Sets
             size = 0.9 if is_vulnerable else 0.75
+            return ('bet', round(pot * size, 2), f"{desc} - value bet")
+        
+        # TWO PAIR - bet for value on all streets
+        if strength == 3:  # Two pair
+            if board_has_4flush and not hero_has_flush_card:
+                return ('check', 0, f"{desc} - check (4-flush on board)")
+            size = 0.7 if street == 'river' else 0.75
             return ('bet', round(pot * size, 2), f"{desc} - value bet")
         
         # TOP PAIR GOOD KICKER - bet 2-3 streets
@@ -753,12 +768,12 @@ def _postflop_value_max(hole_cards, board, pot, to_call, street, is_ip, is_aggre
         if "pair" in desc and strength < 3:
             return ('check', 0, f"{desc} - check weak pair")
         
-        # STRONG DRAWS - semi-bluff
+        # STRONG DRAWS - semi-bluff on flop AND turn
         if combo_draw:
             return ('bet', round(pot * 0.7, 2), f"combo draw - semi-bluff")
-        if has_flush_draw and street == 'flop':
+        if has_flush_draw and street in ['flop', 'turn']:
             return ('bet', round(pot * 0.6, 2), f"flush draw - semi-bluff")
-        if has_oesd and street == 'flop':
+        if has_oesd and street in ['flop', 'turn']:
             return ('bet', round(pot * 0.55, 2), f"OESD - semi-bluff")
         
         # C-BET - only with equity or on dry boards
@@ -775,18 +790,28 @@ def _postflop_value_max(hole_cards, board, pot, to_call, street, is_ip, is_aggre
     else:
         # === FACING A BET ===
         
+        # 4-flush on board and we don't have it - fold (unless we have full house+)
+        if board_has_4flush and not hero_has_flush_card and strength < 7:
+            return ('fold', 0, f"{desc} - fold (4-flush on board)")
+        
         # MONSTERS - raise for value
         if strength >= 5:
             return ('raise', round(pot * 2.0, 2), f"{desc} - raise for value")
         
-        # STRONG - raise or call based on street
-        if strength >= 4:
+        # SETS - raise or call based on street
+        if strength == 4:
             if street == 'river':
                 return ('call', 0, f"{desc} - call river")
             return ('raise', round(pot * 2.0, 2), f"{desc} - raise for value")
         
+        # TWO PAIR - call big bets, we're strong
+        if strength == 3:
+            if pot_odds <= 0.45:  # Call up to pot-sized bet
+                return ('call', 0, f"{desc} - call (good odds)")
+            return ('fold', 0, f"{desc} - fold (bet too big)")
+        
         # TOP PAIR - call if bet is reasonable
-        if "top pair" in desc or strength >= 3:
+        if "top pair" in desc:
             if pot_odds <= 0.33:  # Calling up to 50% pot
                 return ('call', 0, f"{desc} - call (good odds)")
             if "good kicker" in desc and pot_odds <= 0.4:
