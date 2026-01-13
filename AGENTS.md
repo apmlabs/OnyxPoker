@@ -259,6 +259,36 @@ cd client && python3 poker_sim.py 200000
 
 ## 📖 SESSION HISTORY & LESSONS LEARNED
 
+### Session 36: Complete analyze_hand() Refactor - Zero String Matching (January 13, 2026)
+
+**Challenge**: Session 35 refactored value_maniac and value_max, but string matching on `desc` remained in other strategies and archetypes.
+
+**Solution**: Extended `analyze_hand()` and refactored ALL remaining code:
+
+**New analyze_hand() properties**:
+- `has_middle_pair`, `has_bottom_pair` - for pair detection
+- `has_flush_draw`, `has_flush` - 4/5 cards same suit
+- `has_straight_draw`, `has_straight` - 4/5 consecutive cards
+
+**Refactored functions**:
+- `_postflop_gpt()` - gpt3/gpt4 strategies
+- `_postflop_sonnet()` - sonnet/kiro_optimal/kiro5/kiro_v2/2nl_exploit/aggressive
+- `_postflop_sonnet_max()` - sonnet_max strategy
+- `count_outs()` - out counting for equity
+- ALL archetypes: fish, nit, tag, lag, maniac
+
+**Bug Found**: `sonnet_max` was never raising with strong hands (sets/flushes) - just calling. Fixed by adding proper raise logic for strength >= 4.
+
+**Strategy Coverage**: Added missing strategies to eval_strategies.py and poker_sim.py (kiro5, kiro_v2, kiro_optimal, 2nl_exploit).
+
+**Results**: 
+- `grep "in desc"` returns 0 matches - all string matching eliminated
+- sonnet_max now shows 13 raises (was 0)
+
+**Critical Lesson**: When refactoring, audit the ENTIRE codebase for the pattern being replaced. Partial refactors leave inconsistent code.
+
+---
+
 ### Session 35: analyze_hand() Refactor - No String Matching (January 13, 2026)
 
 **Challenge**: Code was using string matching on descriptions like `"pocket+board" in desc` which is fragile.

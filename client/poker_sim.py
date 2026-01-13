@@ -241,7 +241,9 @@ def run_simulation(num_hands=100000):
     """Run simulation on realistic 2NL tables."""
     random.seed(None)
     
-    bot_strategies = ['sonnet_max', 'value_max', 'sonnet', 'gpt4', 'gpt3', 'aggressive', 'value_maniac', 'fish', 'nit', 'tag', 'lag', 'maniac']
+    bot_strategies = ['value_maniac', 'value_max', 'sonnet_max', 'sonnet', 'gpt4', 'gpt3', 
+                      'kiro_optimal', 'kiro5', 'kiro_v2', '2nl_exploit', 'aggressive',
+                      'fish', 'nit', 'tag', 'lag', 'maniac']
     tables = get_table_configs()
     
     print(f"Testing {len(bot_strategies)} strategies")

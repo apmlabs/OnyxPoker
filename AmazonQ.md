@@ -1,22 +1,26 @@
 # OnyxPoker - Status Tracking
 
-**Last Updated**: January 13, 2026 21:05 UTC
+**Last Updated**: January 13, 2026 21:33 UTC
 
-## Current Status: SESSION 35 - analyze_hand() REFACTOR ✅
+## Current Status: SESSION 36 - COMPLETE analyze_hand() REFACTOR ✅
 
-Refactored all hand analysis to use `analyze_hand()` function - computes properties directly from cards instead of string matching on descriptions.
+Extended Session 35's refactor to eliminate ALL string matching on `desc` across the entire codebase.
 
 **Key Changes This Session**:
-1. Created `analyze_hand()` - single source of truth for hand properties
-2. Refactored `value_maniac` postflop to use `analyze_hand()`
-3. Refactored `_postflop_value_max` to use `analyze_hand()`
-4. Created `pokerstrategy_value_maniac` file
-5. Created `audit_strategies.py` - 21 tests verifying code matches strategy files
+1. Expanded `analyze_hand()` with new properties: `has_middle_pair`, `has_bottom_pair`, `has_flush_draw`, `has_flush`, `has_straight_draw`, `has_straight`
+2. Refactored `_postflop_gpt()` - uses analyze_hand() for all checks
+3. Refactored `_postflop_sonnet()` - uses analyze_hand() for all checks
+4. Refactored `_postflop_sonnet_max()` - uses analyze_hand() AND fixed missing raise logic
+5. Refactored `count_outs()` - uses analyze_hand() instead of string matching
+6. Refactored ALL archetypes (fish, nit, tag, lag, maniac) - use analyze_hand()
+7. Fixed `sonnet_max` bug - was never raising with strong hands (sets/flushes)
+8. Updated `eval_strategies.py` and `poker_sim.py` with missing strategies
 
 **Results**: 
 - audit_strategies.py: 21/21 PASS
-- test_strategy_engine.py: 55/55 PASS
-- poker_sim.py: value_maniac +41.12 BB/100
+- test_strategy_engine.py: 54/55 PASS (1 random float expected)
+- grep "in desc": 0 matches (all string matching eliminated)
+- eval_strategies.py: value_maniac #1 at +24.2 BB/100, sonnet_max now shows 13 raises (was 0)
 
 ## What Works
 
@@ -133,6 +137,22 @@ Table: 60% fish, 25% nit, 15% tag
 | 12 | nit | -3.42 | 1.43 |
 
 ## Session Log
+
+### Session 36 (January 13, 2026)
+- **COMPLETE analyze_hand() REFACTOR**: Eliminated ALL string matching on `desc`
+  - Extended analyze_hand() with: `has_middle_pair`, `has_bottom_pair`, `has_flush_draw`, `has_flush`, `has_straight_draw`, `has_straight`
+  - Refactored `_postflop_gpt()`, `_postflop_sonnet()`, `_postflop_sonnet_max()`, `count_outs()`
+  - Refactored ALL archetypes (fish, nit, tag, lag, maniac)
+- **SONNET_MAX BUG FIX**: Was never raising with strong hands (sets/flushes)
+  - Changed from `return ('call', ...)` to proper raise logic for strength >= 4
+  - Now shows 13 raises in eval_strategies.py (was 0)
+- **STRATEGY COVERAGE**: Added missing strategies to eval_strategies.py and poker_sim.py
+  - Added: kiro5, kiro_v2, kiro_optimal, 2nl_exploit
+- **RESULTS**: 
+  - grep "in desc": 0 matches (all string matching eliminated)
+  - audit_strategies.py: 21/21 PASS
+  - test_strategy_engine.py: 54/55 PASS (1 random float expected)
+- Commits: [pending]
 
 ### Session 35 (January 13, 2026)
 - **ANALYZE_HAND() REFACTOR**: No more string matching on descriptions

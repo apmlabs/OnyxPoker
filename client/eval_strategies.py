@@ -11,7 +11,8 @@ sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 from poker_logic import (STRATEGIES, preflop_action, postflop_action, 
                          calculate_equity, evaluate_hand)
 
-STRATEGY_NAMES = ['value_max', 'sonnet', 'sonnet_max', 'gpt3', 'gpt4', 'aggressive', 'value_maniac']
+STRATEGY_NAMES = ['value_maniac', 'value_max', 'sonnet_max', 'sonnet', 'gpt4', 'gpt3', 
+                  'kiro_optimal', 'kiro5', 'kiro_v2', '2nl_exploit', 'aggressive']
 
 def parse_hand(cards_list):
     if not cards_list or len(cards_list) != 2:
