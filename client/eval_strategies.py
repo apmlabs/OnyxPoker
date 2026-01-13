@@ -5,8 +5,12 @@ Tracks key stats and estimates win rate based on poker fundamentals.
 """
 import json
 import os
+import random
 import sys
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+
+# Seed for reproducible results
+random.seed(42)
 
 from poker_logic import (STRATEGIES, preflop_action, postflop_action, 
                          calculate_equity, evaluate_hand)
@@ -150,6 +154,9 @@ def main():
             except:
                 pass
     
+    # Track bad decisions for debugging
+    bad_decisions = {s: {'bad_folds': [], 'bad_calls': []} for s in STRATEGY_NAMES}
+    
     # Process postflop
     for hd in postflop_hands:
         hand = parse_hand(hd['hero_cards'])
@@ -183,10 +190,17 @@ def main():
                 # Track actions
                 if action == 'fold':
                     results[strat]['postflop_fold'] += 1
-                    if equity < 0.30:
+                    # Adjust equity for villain's betting range
+                    adjusted_equity = equity * 0.7 if to_call > 0 else equity
+                    if adjusted_equity < 0.30:
                         results[strat]['good_folds'] += 1
-                    elif equity > 0.50:
+                    elif adjusted_equity > 0.50:
                         results[strat]['bad_folds'] += 1
+                        bad_decisions[strat]['bad_folds'].append({
+                            'hole': hole, 'board': board, 'street': street,
+                            'pot': pot, 'to_call': to_call, 'equity': equity,
+                            'adj_equity': adjusted_equity
+                        })
                 elif action == 'check':
                     results[strat]['postflop_check'] += 1
                 elif action == 'call':
@@ -196,6 +210,11 @@ def main():
                         results[strat]['good_calls'] += 1
                     else:
                         results[strat]['bad_calls'] += 1
+                        bad_decisions[strat]['bad_calls'].append({
+                            'hole': hole, 'board': board, 'street': street,
+                            'pot': pot, 'to_call': to_call, 'equity': equity,
+                            'pot_odds': pot_odds
+                        })
                 elif action in ['raise', 'bet']:
                     if to_call > 0:  # Facing bet = raise
                         results[strat]['postflop_raise'] += 1
@@ -285,6 +304,26 @@ def main():
         total_hands = len(all_hands)
         bb_100_est = score / total_hands * 100 * 0.5  # Scale factor
         print(f"{i:<6} {strat:<14} {score:>+8.1f}   {bb_100_est:>+8.1f}")
+    
+    # Show bad decisions for value_maniac
+    print("\n" + "=" * 90)
+    print("VALUE_MANIAC BAD DECISIONS (to fix)")
+    print("=" * 90)
+    
+    vm = bad_decisions['value_maniac']
+    if vm['bad_folds']:
+        print(f"\nBAD FOLDS ({len(vm['bad_folds'])}):")
+        for bf in vm['bad_folds']:
+            h = ''.join([c[0]+c[1] for c in bf['hole']])
+            b = ' '.join([c[0]+c[1] for c in bf['board']])
+            print(f"  {h} on {b} ({bf['street']}) eq={bf['equity']:.0%} adj={bf['adj_equity']:.0%} pot={bf['pot']:.2f} call={bf['to_call']:.2f}")
+    
+    if vm['bad_calls']:
+        print(f"\nBAD CALLS ({len(vm['bad_calls'])}):")
+        for bc in vm['bad_calls']:
+            h = ''.join([c[0]+c[1] for c in bc['hole']])
+            b = ' '.join([c[0]+c[1] for c in bc['board']])
+            print(f"  {h} on {b} ({bc['street']}) eq={bc['equity']:.0%} odds={bc['pot_odds']:.0%} pot={bc['pot']:.2f} call={bc['to_call']:.2f}")
 
 if __name__ == '__main__':
     main()

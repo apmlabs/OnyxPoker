@@ -120,6 +120,14 @@ def analyze_hand(hole_cards: List[Tuple[str, str]], board: List[Tuple[str, str]]
     has_flush_draw = any(c >= 4 for c in suit_counts.values()) and not any(c >= 5 for c in suit_counts.values())
     has_flush = any(c >= 5 for c in suit_counts.values())
     
+    # Nut flush draw detection - do we have the Ace of the flush suit?
+    is_nut_flush_draw = False
+    if has_flush_draw:
+        flush_suit = [s for s, c in suit_counts.items() if c >= 4][0]
+        hero_flush_cards = [c for c in hole_cards if c[1] == flush_suit]
+        hero_flush_vals = [RANK_VAL[c[0]] for c in hero_flush_cards]
+        is_nut_flush_draw = 12 in hero_flush_vals  # Has Ace of flush suit
+    
     # Straight draw detection (simplified - OESD or gutshot)
     all_vals_unique = sorted(set(hero_vals + board_vals))
     has_straight_draw = False
@@ -164,6 +172,7 @@ def analyze_hand(hole_cards: List[Tuple[str, str]], board: List[Tuple[str, str]]
         'has_bottom_pair': has_bottom_pair,
         'has_ace_on_board': has_ace_on_board,
         'has_flush_draw': has_flush_draw,
+        'is_nut_flush_draw': is_nut_flush_draw,
         'has_flush': has_flush,
         'has_straight_draw': has_straight_draw,
         'has_straight': has_straight,
@@ -842,7 +851,7 @@ def get_hand_info(hole_cards: List[Tuple[str, str]], board: List[Tuple[str, str]
 def postflop_action(hole_cards: List[Tuple[str, str]], board: List[Tuple[str, str]], 
                     pot: float, to_call: float, street: str, is_ip: bool,
                     is_aggressor: bool, archetype: str = None, strategy: str = None,
-                    num_opponents: int = 1) -> Tuple[str, float, str]:
+                    num_opponents: int = 1, bb_size: float = 0.05) -> Tuple[str, float, str]:
     """
     Postflop decision based on strategy file rules.
     Returns (action, bet_size, reasoning).
@@ -1007,7 +1016,7 @@ def postflop_action(hole_cards: List[Tuple[str, str]], board: List[Tuple[str, st
     
     if strategy == 'value_maniac':
         return _postflop_value_maniac(hole_cards, board, pot, to_call, street,
-                                      strength, desc, has_any_draw)
+                                      strength, desc, has_any_draw, has_flush_draw, has_oesd, bb_size)
     
     if strategy == 'sonnet_max':
         return _postflop_sonnet_max(hole_cards, board, pot, to_call, street, is_ip,
@@ -1041,13 +1050,15 @@ def postflop_action(hole_cards: List[Tuple[str, str]], board: List[Tuple[str, st
                            is_underpair_to_ace, is_multiway)
 
 
-def _postflop_value_maniac(hole_cards, board, pot, to_call, street, strength, desc, has_any_draw):
+def _postflop_value_maniac(hole_cards, board, pot, to_call, street, strength, desc, has_any_draw, has_flush_draw=False, has_oesd=False, bb_size=0.05):
     """
     VALUE_MANIAC postflop - Overbets for value, calls wide, paired board protection.
     """
     hand_info = analyze_hand(hole_cards, board)
-    is_big_bet = to_call >= pot * 0.5 if to_call else False
+    bet_in_bb = to_call / bb_size if bb_size > 0 else 0
+    is_big_bet = bet_in_bb >= 10  # 10+ BB is a big bet/raise
     is_dangerous_board_pair = hand_info['board_pair_val'] is not None and hand_info['board_pair_val'] >= 8  # T+
+    has_strong_draw = has_flush_draw or has_oesd  # 8+ outs
     
     if to_call == 0 or to_call is None:
         # No bet to call - bet for value
@@ -1093,15 +1104,50 @@ def _postflop_value_maniac(hole_cards, board, pot, to_call, street, strength, de
                     return ('fold', 0, f"{desc} - fold (two pair on dangerous board)")
                 return ('call', 0, f"{desc} - call (but fold to more aggression)")
             return ('raise', round(to_call * 2.5, 2), f"{desc} - raise strong")
-        if hand_info['is_pocket_pair']:
-            return ('call', 0, f"{desc} - call pocket pair")
-        if hand_info['has_any_pair']:
-            return ('call', 0, f"{desc} - call any pair")
+        # River defense based on hand strength and bet size in BBs
+        # 2NL villains under-bluff, so need strong hands to call big bets
+        if street == 'river':
+            # Overpairs can call bigger bets than TPGK
+            if hand_info['is_overpair']:
+                if bet_in_bb >= 20:  # Only fold overpair to 20+ BB
+                    return ('fold', 0, f"{desc} - fold overpair vs {bet_in_bb:.0f}BB river bet")
+                return ('call', 0, f"{desc} - call river")
+            if is_big_bet and strength < 3:  # 10+ BB bet needs two pair+
+                return ('fold', 0, f"{desc} - fold vs {bet_in_bb:.0f}BB river bet (need two pair+)")
+            if strength >= 2:  # Top pair+ can call small river bets
+                return ('call', 0, f"{desc} - call river")
+            return ('fold', 0, f"{desc} - fold river")
+        # Flop/turn: use pot odds for pairs
+        if hand_info['is_pocket_pair'] or hand_info['has_any_pair']:
+            pot_odds = to_call / (pot + to_call) if (pot + to_call) > 0 else 1
+            if pot_odds > 0.5 and not has_strong_draw:
+                return ('fold', 0, f"{desc} - fold pair vs all-in")
+            return ('call', 0, f"{desc} - call pair")
+        # Draw calling with conservative thresholds
+        # Math: flush=9 outs=18%, OESD=8 outs=16%, gutshot=4 outs=8%
+        # Conservative: require ~1.5x better odds than pure math (villain has something)
+        # Plus implied odds at 2NL (fish pay off when we hit)
         if has_any_draw and street != 'river':
-            return ('call', 0, "call with draw")
-        if street == 'flop' and hand_info['hero_vals'][0] >= 11:
+            pot_odds = to_call / (pot + to_call) if (pot + to_call) > 0 else 1
+            is_nut_draw = hand_info.get('is_nut_flush_draw', False)
+            # Nut flush draw: can call up to 40% (implied odds)
+            # Non-nut flush draw: call up to 25% (conservative)
+            # OESD: call up to 22%
+            # Gutshot: call up to 12%
+            if has_flush_draw and is_nut_draw and pot_odds <= 0.41:
+                return ('call', 0, "call nut flush draw")
+            if has_flush_draw and pot_odds <= 0.25:
+                return ('call', 0, "call flush draw")
+            if has_oesd and pot_odds <= 0.22:
+                return ('call', 0, "call OESD")
+            if has_any_draw and pot_odds <= 0.12:
+                return ('call', 0, "call gutshot")
+            return ('fold', 0, f"{desc} - fold (bad odds for draw)")
+        # Overcards and floats - only with good odds
+        pot_odds = to_call / (pot + to_call) if (pot + to_call) > 0 else 1
+        if street == 'flop' and hand_info['hero_vals'][0] >= 11 and pot_odds <= 0.30:
             return ('call', 0, "call overcards")
-        if street == 'flop' and random.random() < 0.4:
+        if street == 'flop' and pot_odds <= 0.25 and random.random() < 0.4:
             return ('call', 0, "float flop")
         return ('fold', 0, f"{desc} - fold")
 
@@ -1250,14 +1296,16 @@ def _postflop_value_max(hole_cards, board, pot, to_call, street, is_ip, is_aggre
                 return ('call', 0, f"{desc} - call flop")
             return ('fold', 0, f"{desc} - fold")
         
-        # Draws with odds
+        # Draws - conservative thresholds (villain has something)
         if combo_draw and pot_odds <= 0.35:
             return ('call', 0, "combo draw - call")
-        if has_flush_draw and pot_odds <= 0.30:
-            return ('call', 0, "flush draw - call")
-        if has_oesd and pot_odds <= 0.25:
+        if has_flush_draw:
+            threshold = 0.41 if hand_info.get('is_nut_flush_draw') else 0.25
+            if pot_odds <= threshold:
+                return ('call', 0, f"{'nut ' if hand_info.get('is_nut_flush_draw') else ''}flush draw - call")
+        if has_oesd and pot_odds <= 0.22:
             return ('call', 0, "OESD - call")
-        if has_gutshot and pot_odds <= 0.18:
+        if has_gutshot and pot_odds <= 0.12:
             return ('call', 0, "gutshot - call")
         
         # Overcards on flop - float with good odds
@@ -1395,15 +1443,16 @@ def _postflop_gpt(hole_cards, board, pot, to_call, street, is_ip, is_aggressor,
     if hand_info['has_any_pair'] and street == 'flop':
         return ('call', 0, f"{desc} - call flop")
     
-    # Draws
+    # Draws - conservative thresholds (villain has something)
+    pot_odds = to_call / (pot + to_call) if pot > 0 else 1
     if hand_info.get('has_flush_draw'):
-        pot_odds = to_call / (pot + to_call) if pot > 0 else 1
-        if pot_odds <= 0.40:
-            return ('call', 0, "flush draw - call")
-    if hand_info.get('has_straight_draw'):
-        pot_odds = to_call / (pot + to_call) if pot > 0 else 1
-        if pot_odds <= 0.33:
-            return ('call', 0, "straight draw - call")
+        threshold = 0.41 if hand_info.get('is_nut_flush_draw') else 0.25
+        if pot_odds <= threshold:
+            return ('call', 0, f"{'nut ' if hand_info.get('is_nut_flush_draw') else ''}flush draw - call")
+    if has_oesd and pot_odds <= 0.22:
+        return ('call', 0, "OESD - call")
+    if has_gutshot and pot_odds <= 0.12:
+        return ('call', 0, "gutshot - call")
     
     return ('fold', 0, f"{desc} - fold")
 
@@ -1523,15 +1572,15 @@ def _postflop_sonnet(hole_cards, board, pot, to_call, street, is_ip, is_aggresso
     if hand_info['has_any_pair'] and street == 'flop':
         return ('call', 0, f"{desc} - call flop")
     
-    # Draws
+    # Draws - conservative thresholds (villain has something)
+    pot_odds = to_call / (pot + to_call) if pot > 0 else 1
     if hand_info.get('has_flush_draw'):
-        pot_odds = to_call / (pot + to_call) if pot > 0 else 1
-        if pot_odds <= 0.40:
-            return ('call', 0, "flush draw - call <=40%")
+        threshold = 0.41 if hand_info.get('is_nut_flush_draw') else 0.25
+        if pot_odds <= threshold:
+            return ('call', 0, f"{'nut ' if hand_info.get('is_nut_flush_draw') else ''}flush draw - call")
     if hand_info.get('has_straight_draw'):
-        pot_odds = to_call / (pot + to_call) if pot > 0 else 1
-        if pot_odds <= 0.33:
-            return ('call', 0, "straight draw - call <=33%")
+        if pot_odds <= 0.22:
+            return ('call', 0, "straight draw - call")
     
     return ('fold', 0, f"{desc} - fold")
 
@@ -1653,10 +1702,12 @@ def _postflop_sonnet_max(hole_cards, board, pot, to_call, street, is_ip, is_aggr
                 return ('call', 0, f"{desc} - call flop")
             return ('fold', 0, f"{desc} - fold")
         
-        # Draws
-        if hand_info.get('has_flush_draw') and pot_odds <= 0.30:
-            return ('call', 0, "flush draw - call")
-        if hand_info.get('has_straight_draw') and pot_odds <= 0.25:
+        # Draws - conservative thresholds (villain has something)
+        if hand_info.get('has_flush_draw'):
+            threshold = 0.41 if hand_info.get('is_nut_flush_draw') else 0.25
+            if pot_odds <= threshold:
+                return ('call', 0, f"{'nut ' if hand_info.get('is_nut_flush_draw') else ''}flush draw - call")
+        if hand_info.get('has_straight_draw') and pot_odds <= 0.22:
             return ('call', 0, "straight draw - call")
         
         return ('fold', 0, f"{desc} - fold")

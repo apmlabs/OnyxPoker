@@ -108,6 +108,11 @@ SCENARIOS = [
     
     # === RIVER VALUE ===
     (["As", "Kh"], ["Ac", "7d", "2h", "3c", "4s"], "river", 0, 30, "TPTK river value bet"),
+    
+    # === RIVER RAISE DEFENSE (critical leak test) ===
+    (["As", "Qh"], ["6s", "4s", "Jh", "9d", "Qc"], "river", 15, 30, "TPGK facing river raise - FOLD"),
+    (["Ks", "Jh"], ["Jc", "7d", "2h", "3c", "4s"], "river", 20, 25, "TPWK facing river raise - FOLD"),
+    (["7s", "7h"], ["Ac", "Kd", "2h", "3c", "4s"], "river", 15, 30, "Pocket pair facing river raise - FOLD"),
 ]
 
 
