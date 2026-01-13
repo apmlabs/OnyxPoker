@@ -459,10 +459,20 @@ def evaluate_hand(hole_cards: List[Tuple[str, str]], board: List[Tuple[str, str]
         board_only_ranks = [c[0] for c in board] if board else []
         board_pairs = [pr for pr in pair_ranks if board_only_ranks.count(pr) >= 2]
         
+        # Check if hero has a pocket pair
+        is_pocket_pair = len(hole_cards) == 2 and hole_cards[0][0] == hole_cards[1][0]
+        
         if len(hero_pairs) >= 1:
             # No board pair = strong (we made both pairs)
             if len(board_pairs) == 0:
                 return (3, "two pair", RANK_VAL[pair_ranks[0]])
+            
+            # POCKET PAIR + BOARD PAIR = strong two pair (66 on JJ board)
+            # We have a real pair, not just one card hitting the board
+            if is_pocket_pair:
+                return (3, "two pair (pocket+board)", RANK_VAL[pair_ranks[0]])
+            
+            # ONE CARD + BOARD PAIR = weak (K2 on J2 board)
             # Board pair exists - danger depends on board pair rank
             # HIGH board pair (T+): Many hands contain these, villain likely has trips
             # LOW board pair (2-9): Fewer hands contain these, less likely trips
@@ -499,11 +509,15 @@ def evaluate_hand(hole_cards: List[Tuple[str, str]], board: List[Tuple[str, str]
                     return (2, "top pair good kicker", RANK_VAL[pr] * 100 + kicker)
                 return (2, "top pair weak kicker", RANK_VAL[pr] * 100 + kicker)
             
-            # MIDDLE PAIR
+            # POCKET PAIR (underpair) - stronger than board-made pairs
+            if is_pocket_pair:
+                return (2, f"pocket pair {pr}{pr}", RANK_VAL[pr])
+            
+            # MIDDLE PAIR (one card pairs middle board card)
             elif board_vals and len(board_vals) > 1 and RANK_VAL[pr] >= board_vals[1]:
                 return (2, "middle pair", RANK_VAL[pr])
             
-            # BOTTOM PAIR / UNDERPAIR
+            # BOTTOM PAIR (one card pairs lowest board card)
             return (2, "bottom pair", RANK_VAL[pr])
         
         # Board pair only - we don't have it, just high card with board pair
@@ -868,6 +882,10 @@ def postflop_action(hole_cards: List[Tuple[str, str]], board: List[Tuple[str, st
             if strength >= 4:  # Set, flush, straight
                 return ('raise', round(to_call * 2.5, 2), f"{desc} - raise strong")
             if strength == 3:  # Two pair
+                # POCKET PAIR + BOARD PAIR = strong, play it
+                if "pocket+board" in desc:
+                    return ('raise', round(to_call * 2.5, 2), f"{desc} - raise strong")
+                # ONE CARD + HIGH BOARD PAIR = weak, be careful
                 if is_paired_board and "board paired" in desc and is_dangerous_pair:
                     # Two pair on HIGH paired board - villain likely has trips
                     is_big_bet = to_call >= pot * 0.5
@@ -877,6 +895,9 @@ def postflop_action(hole_cards: List[Tuple[str, str]], board: List[Tuple[str, st
                         return ('fold', 0, f"{desc} - fold (two pair on paired board river)")
                     return ('call', 0, f"{desc} - call (but fold to more aggression)")
                 return ('raise', round(to_call * 2.5, 2), f"{desc} - raise strong")
+            # POCKET PAIR (underpair) - call, don't fold
+            if "pocket pair" in desc:
+                return ('call', 0, f"{desc} - call pocket pair")
             if "pair" in desc:
                 return ('call', 0, f"{desc} - call any pair")
             if has_any_draw and street != 'river':
