@@ -295,7 +295,8 @@ class HelperBar:
                         table_data['is_aggressor'] = is_aggressor
                     
                     for pos in ['UTG', 'MP', 'CO', 'BTN', 'SB', 'BB']:
-                        pos_data = {**table_data, 'position': pos}
+                        # Line 1 always shows OPEN ranges (to_call=0)
+                        pos_data = {**table_data, 'position': pos, 'to_call': 0}
                         decision = engine.get_action(pos_data)
                         all_position_results[pos] = decision
                     

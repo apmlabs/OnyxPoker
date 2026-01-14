@@ -10,7 +10,7 @@ After 40 sessions of development, testing, and refinement - we finally have a wo
 
 ---
 
-## Current Status: SESSION 43 Part 10 - Strategy Audit & Full House Fix ✅
+## Current Status: SESSION 43 Part 11 - Line 1 Always Shows Open Ranges ✅
 
 **Validated preflop advice matches strategy perfectly:**
 - Line 1 (6 positions): 1014/1014 scenarios PASS
@@ -164,6 +164,14 @@ Table: 60% fish, 25% nit, 15% tag
 | 17 | lag | -5.40 | 2.82 |
 
 ## Session Log
+
+### Session 43 Part 11 (January 14, 2026)
+- **LINE 1 FIX**: Always shows open ranges regardless of actual game state
+  - Bug: K9o on BTN showed FOLD when someone raised (should show RAISE for open range)
+  - Fix: Force `to_call=0` when generating Line 1 position actions
+  - Line 1 = "what to do if first to act" (open ranges)
+  - Line 2 = "vs raise" (call thresholds) - unchanged
+- Commits: [pending]
 
 ### Session 43 Part 10 (January 14, 2026)
 - **STRATEGY AUDIT EXPANDED**: Added tests for gpt4, sonnet postflop behaviors
