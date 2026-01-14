@@ -54,7 +54,7 @@ class StrategyEngine:
         to_call = table_data.get('to_call') or 0
         position = (table_data.get('position') or 'BTN').upper()
         facing_raise = table_data.get('facing_raise', False)
-        big_blind = table_data.get('big_blind') or 0.02  # Default to 2NL
+        big_blind = table_data.get('big_blind') or 0.05  # Default to 5NL
         
         hand = get_hand_notation(cards)
         if not hand:
