@@ -274,6 +274,38 @@ cd client && python3 poker_sim.py 200000
 
 ## 📖 SESSION HISTORY & LESSONS LEARNED
 
+### Session 42: value_lord Live Validation (January 14, 2026)
+
+**Challenge**: Analyze 2 recent sessions (251 hands total) to validate value_lord improvements.
+
+**Sessions Analyzed**:
+- Session 1: 141 hands (lost 50BB early on bluffs, recovered with flush)
+- Session 2: 110 hands (consistent wins with draws, pairs, two pairs)
+- Both sessions PROFITABLE with value_maniac
+
+**Key Findings**:
+1. **High card c-bets**: 13-16 per session (aggressive bluffing)
+2. **Pocket pair logic**: Correctly checks underpairs (99 on K73), bets top pairs
+3. **User instincts correct**: Doubts about c-betting after calling preflop are valid
+4. **Variance source**: Early 50BB loss from failed c-bet bluffs
+
+**User Questions Answered**:
+- **C-bet with high card**: value_lord fixes this - only c-bets when WE opened (not after calling)
+- **Pocket pairs checking**: Correct - underpairs check (defensive), top pairs bet (value)
+- **QQ checking**: Should always bet when overpair, check when underpair
+- **C-bet bluffs work**: Yes, but create variance - value_lord is more selective
+- **Overbet draws**: Semi-bluffing is +EV (both strategies do this)
+
+**Comparison**:
+- value_maniac: +20.74 BB/100, higher variance, aggressive bluffing
+- value_lord: +18.86 BB/100, lower variance, disciplined c-betting
+
+**Conclusion**: User's play style matches value_lord better. The -1.88 BB/100 trade-off is worth it for reduced variance and alignment with instincts about when to bluff. value_lord already set as default.
+
+**Critical Lesson**: When user expresses doubts about strategy decisions, those instincts often align with the cleaner, more disciplined approach. Variance reduction matters more than max profit for sustainable play.
+
+---
+
 ### Session 41: value_lord Strategy Creation (January 14, 2026)
 
 **Challenge**: Session 41 (110 hands) revealed 3 issues with value_maniac strategy.

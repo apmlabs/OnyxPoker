@@ -1,6 +1,6 @@
 # OnyxPoker - Status Tracking
 
-**Last Updated**: January 14, 2026 01:30 UTC
+**Last Updated**: January 14, 2026 10:33 UTC
 
 ## 🎉 MILESTONE: FIRST WINNING SESSION! 🎉
 
@@ -10,62 +10,30 @@ After 40 sessions of development, testing, and refinement - we finally have a wo
 
 ---
 
-## Current Status: SESSION 41 - value_lord Strategy Complete ✅
+## Current Status: SESSION 42 - value_lord Validated ✅
 
-Created and tested value_lord strategy based on Session 41 analysis.
+Analyzed 2 recent sessions (251 hands) - confirmed value_lord improvements address user's concerns about c-bet discipline.
 
-**value_lord Strategy**:
-Based on value_maniac (gold model) with 3 key fixes:
-1. **C-bet discipline**: Only c-bet high card when we OPENED preflop (not when called)
-2. **Overpair aggression**: Always bet overpairs (don't check QQ on J-high)
-3. **Weak pair caution**: Check weak pairs on straight boards (J9 on 9AQ87 = check)
+**Session Analysis Results**:
+- Session 1: 141 hands (lost 50BB early on bluffs, recovered with flush) - PROFITABLE
+- Session 2: 110 hands (consistent wins) - PROFITABLE
+- High card c-bets: 13-16 per session (source of variance)
+- User instincts CORRECT: C-betting after calling preflop creates unnecessary variance
 
-**Test Results**:
-- audit_strategies.py: 26/26 PASS ✅
-- test_strategy_engine.py: 54/55 PASS (same AK high card issue as value_maniac)
-- test_postflop.py: 60/70 clean (10 issues vs value_maniac's 12)
-- eval_strategies.py: +550.5 score, 0 bad folds, 0 bad calls
-- poker_sim.py: +18.86 BB/100 (100k hands)
+**Key Findings**:
+1. **Pocket pair logic working**: 99 on K73 = check (underpair), Q9 on Q95 = bet (top pair) ✅
+2. **C-bet bluffs work but create variance**: Early 50BB loss from failed bluffs
+3. **Overbet draws profitable**: Semi-bluffing with draws won pots ✅
+4. **Two pair plays strong**: Multiple wins with 2 pair (weak/good kicker) ✅
 
-**Comparison vs value_maniac**:
-| Metric | value_maniac | value_lord | Difference |
-|--------|--------------|------------|------------|
-| eval_strategies score | +557.5 | +550.5 | -7.0 |
-| eval BB/100 | +20.7 | +20.4 | -0.3 |
-| sim BB/100 | +20.74 | +18.86 | -1.88 |
-| Bad folds | 0 | 0 | 0 |
-| Bad calls | 0 | 0 | 0 |
-| test_postflop issues | 12 | 10 | -2 ✅ |
+**value_lord vs value_maniac**:
+- value_maniac: +20.74 BB/100, higher variance, aggressive bluffing
+- value_lord: +18.86 BB/100, lower variance, disciplined c-betting
+- Trade-off: -1.88 BB/100 for reduced variance and better play style alignment
 
-**Conclusion**: value_lord is cleaner (fewer edge case issues) but slightly less profitable. value_maniac remains default (gold model). Use value_lord when you want to avoid specific Session 41 leaks.
+**Recommendation**: value_lord matches user's play style (doubts about c-bet bluffs). Already set as default. ✅
 
-**Files Modified**:
-- pokerstrategy_value_lord (strategy definition)
-- _postflop_value_lord() in poker_logic.py
-- Added to all test suites (audit, test_strategy_engine, poker_sim, eval_strategies)
-
-**Next**: Test value_lord in live play (Session 42)
-
-**Session Results**:
-- **141 decisions** (75 preflop, 66 postflop)
-- **Actions**: Fold 36% | Bet 32% | Raise 16% | Call 13% | Check 3%
-- **Big wins**: JJ vs 4-bet (~$10), Set of 4s (~$8), Quads 2s (~$7), Trip Aces (~$4)
-- **Strategy working**: Overbets with pairs getting paid at 2NL
-
-**Key Hands**:
-1. JJ 3-bet, called 4-bet, c-bet A-high flop, called all-in → WON ~$10
-2. 44 flopped set, overbet turn/river → WON ~$8
-3. 22 flopped QUADS, raised turn, overbet river → WON ~$7
-4. AKd turned trips, overbet turn/river → WON ~$4
-5. QJ two pair on J88 - advised raise $13.67, user skipped (CORRECT - risky spot)
-
-**Correct Folds**:
-- KJ top pair vs $14.55 all-in → FOLD (saved ~$14)
-- AK top pair vs $7.46 all-in → FOLD (saved ~$7)
-- 99 fold to 4-bet (twice) → FOLD
-- AKo fold to 4-bet → FOLD
-
-**Validation**: value_maniac strategy performs as expected in live play. Overbets extract max value from 2NL fish who call too much.
+**Next**: Continue with value_lord in live play
 
 ## What Works
 

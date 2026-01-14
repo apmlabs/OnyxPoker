@@ -7,7 +7,7 @@ from typing import Dict, Any, List
 from poker_logic import (
     STRATEGIES, RANK_VAL, parse_card, hand_to_str,
     evaluate_hand, check_draws, postflop_action, preflop_action,
-    get_hand_info
+    get_hand_info, analyze_hand
 )
 
 DEFAULT_STRATEGY = 'value_lord'
@@ -205,6 +205,9 @@ class StrategyEngine:
         # Get enhanced hand info
         hand_info = get_hand_info(hole_cards, board_cards, pot, to_call, num_opponents)
         
+        # Get hand analysis for stats display
+        hand_analysis = analyze_hand(hole_cards, board_cards)
+        
         return {
             'action': action,
             'bet_size': bet_size if bet_size > 0 else None,
@@ -215,7 +218,8 @@ class StrategyEngine:
             'draws': hand_info['draws'],
             'outs': hand_info['outs'],
             'out_types': hand_info['out_types'],
-            'pot_odds': hand_info['pot_odds']
+            'pot_odds': hand_info['pot_odds'],
+            'hand_analysis': hand_analysis
         }
 
 
