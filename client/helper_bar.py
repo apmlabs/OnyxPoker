@@ -484,6 +484,85 @@ class HelperBar:
             self.stats_text.insert('end', "No hand analysis available\n")
             return
         
+        # Sets/trips
+        if hand_analysis.get('has_set'):
+            self.stats_text.insert('end', "has_set: ", 'VALUE')
+            self.stats_text.insert('end', "TRUE\n", 'TRUE')
+        elif hand_analysis.get('has_trips'):
+            self.stats_text.insert('end', "has_trips: ", 'VALUE')
+            self.stats_text.insert('end', "TRUE\n", 'TRUE')
+        # Other pairs
+        if hand_analysis.get('has_middle_pair'):
+            self.stats_text.insert('end', "has_middle_pair: ", 'VALUE')
+            self.stats_text.insert('end', "TRUE\n", 'TRUE')
+        if hand_analysis.get('has_bottom_pair'):
+            self.stats_text.insert('end', "has_bottom_pair: ", 'VALUE')
+            self.stats_text.insert('end', "TRUE\n", 'TRUE')
+        # Overpair/underpair
+        if hand_analysis.get('is_overpair'):
+            self.stats_text.insert('end', "is_overpair: ", 'VALUE')
+            self.stats_text.insert('end', "TRUE\n", 'TRUE')
+        else:
+            self.stats_text.insert('end', "is_overpair: ", 'VALUE')
+            self.stats_text.insert('end', "FALSE\n", 'FALSE')
+        if hand_analysis.get('is_underpair_to_ace'):
+            self.stats_text.insert('end', "is_underpair_to_ace: ", 'VALUE')
+            self.stats_text.insert('end', "TRUE\n", 'TRUE')
+        else:
+            self.stats_text.insert('end', "is_underpair_to_ace: ", 'VALUE')
+            self.stats_text.insert('end', "FALSE\n", 'FALSE')
+        # Flush/straight draws
+        if hand_analysis.get('has_flush_draw'):
+            nut = " (NUT)" if hand_analysis.get('is_nut_flush_draw') else ""
+            self.stats_text.insert('end', f"has_flush_draw: ", 'VALUE')
+            self.stats_text.insert('end', f"TRUE{nut}\n", 'TRUE')
+        else:
+            self.stats_text.insert('end', "has_flush_draw: ", 'VALUE')
+            self.stats_text.insert('end', "FALSE\n", 'FALSE')
+        if hand_analysis.get('has_flush'):
+            self.stats_text.insert('end', "has_flush: ", 'VALUE')
+            self.stats_text.insert('end', "TRUE\n", 'TRUE')
+        else:
+            self.stats_text.insert('end', "has_flush: ", 'VALUE')
+            self.stats_text.insert('end', "FALSE\n", 'FALSE')
+        if hand_analysis.get('has_straight_draw'):
+            self.stats_text.insert('end', "has_straight_draw: ", 'VALUE')
+            self.stats_text.insert('end', "TRUE\n", 'TRUE')
+        else:
+            self.stats_text.insert('end', "has_straight_draw: ", 'VALUE')
+            self.stats_text.insert('end', "FALSE\n", 'FALSE')
+        if hand_analysis.get('has_straight'):
+            self.stats_text.insert('end', "has_straight: ", 'VALUE')
+            self.stats_text.insert('end', "TRUE\n", 'TRUE')
+        else:
+            self.stats_text.insert('end', "has_straight: ", 'VALUE')
+            self.stats_text.insert('end', "FALSE\n", 'FALSE')
+        # Board info
+        self.stats_text.insert('end', "=== BOARD ===\n", 'HEADER')
+        if hand_analysis.get('has_board_pair'):
+            val = hand_analysis.get('board_pair_val', 0)
+            self.stats_text.insert('end', f"has_board_pair: ", 'VALUE')
+            self.stats_text.insert('end', f"TRUE ({val})\n", 'TRUE')
+        else:
+            self.stats_text.insert('end', "has_board_pair: ", 'VALUE')
+            self.stats_text.insert('end', "FALSE\n", 'FALSE')
+        if hand_analysis.get('has_ace_on_board'):
+            self.stats_text.insert('end', "has_ace_on_board: ", 'VALUE')
+            self.stats_text.insert('end', "TRUE\n", 'TRUE')
+        else:
+            self.stats_text.insert('end', "has_ace_on_board: ", 'VALUE')
+            self.stats_text.insert('end', "FALSE\n", 'FALSE')
+        # Equity info
+        equity = result.get('equity', 0)
+        outs = result.get('outs', 0)
+        if equity > 0 or outs > 0:
+            self.stats_text.insert('end', "=== EQUITY ===\n", 'HEADER')
+            if equity > 0:
+                self.stats_text.insert('end', f"Win probability: {equity}%\n", 'VALUE')
+            if outs > 0:
+                self.stats_text.insert('end', f"Outs: {outs}\n", 'VALUE')
+        # Hand properties (at bottom)
+        self.stats_text.insert('end', "=== HAND ===\n", 'HEADER')
         # Pocket pair info
         if hand_analysis.get('is_pocket_pair'):
             val = hand_analysis.get('pocket_val', 0)
@@ -492,22 +571,6 @@ class HelperBar:
         else:
             self.stats_text.insert('end', "is_pocket_pair: ", 'VALUE')
             self.stats_text.insert('end', "FALSE\n", 'FALSE')
-        
-        # Overpair/underpair
-        if hand_analysis.get('is_overpair'):
-            self.stats_text.insert('end', "is_overpair: ", 'VALUE')
-            self.stats_text.insert('end', "TRUE\n", 'TRUE')
-        else:
-            self.stats_text.insert('end', "is_overpair: ", 'VALUE')
-            self.stats_text.insert('end', "FALSE\n", 'FALSE')
-        
-        if hand_analysis.get('is_underpair_to_ace'):
-            self.stats_text.insert('end', "is_underpair_to_ace: ", 'VALUE')
-            self.stats_text.insert('end', "TRUE\n", 'TRUE')
-        else:
-            self.stats_text.insert('end', "is_underpair_to_ace: ", 'VALUE')
-            self.stats_text.insert('end', "FALSE\n", 'FALSE')
-        
         # Top pair
         if hand_analysis.get('has_top_pair'):
             kicker = "good" if hand_analysis.get('has_good_kicker') else "weak"
@@ -516,7 +579,6 @@ class HelperBar:
         else:
             self.stats_text.insert('end', "has_top_pair: ", 'VALUE')
             self.stats_text.insert('end', "FALSE\n", 'FALSE')
-        
         # Two pair
         if hand_analysis.get('has_two_pair'):
             tp_type = hand_analysis.get('two_pair_type', 'unknown')
@@ -525,86 +587,6 @@ class HelperBar:
         else:
             self.stats_text.insert('end', "has_two_pair: ", 'VALUE')
             self.stats_text.insert('end', "FALSE\n", 'FALSE')
-        
-        # Sets/trips
-        if hand_analysis.get('has_set'):
-            self.stats_text.insert('end', "has_set: ", 'VALUE')
-            self.stats_text.insert('end', "TRUE\n", 'TRUE')
-        elif hand_analysis.get('has_trips'):
-            self.stats_text.insert('end', "has_trips: ", 'VALUE')
-            self.stats_text.insert('end', "TRUE\n", 'TRUE')
-        
-        # Other pairs
-        if hand_analysis.get('has_middle_pair'):
-            self.stats_text.insert('end', "has_middle_pair: ", 'VALUE')
-            self.stats_text.insert('end', "TRUE\n", 'TRUE')
-        if hand_analysis.get('has_bottom_pair'):
-            self.stats_text.insert('end', "has_bottom_pair: ", 'VALUE')
-            self.stats_text.insert('end', "TRUE\n", 'TRUE')
-        
-        self.stats_text.insert('end', "\n")
-        
-        # Draws
-        self.stats_text.insert('end', "=== DRAWS ===\n", 'HEADER')
-        
-        if hand_analysis.get('has_flush_draw'):
-            nut = " (NUT)" if hand_analysis.get('is_nut_flush_draw') else ""
-            self.stats_text.insert('end', f"has_flush_draw: ", 'VALUE')
-            self.stats_text.insert('end', f"TRUE{nut}\n", 'TRUE')
-        else:
-            self.stats_text.insert('end', "has_flush_draw: ", 'VALUE')
-            self.stats_text.insert('end', "FALSE\n", 'FALSE')
-        
-        if hand_analysis.get('has_flush'):
-            self.stats_text.insert('end', "has_flush: ", 'VALUE')
-            self.stats_text.insert('end', "TRUE\n", 'TRUE')
-        else:
-            self.stats_text.insert('end', "has_flush: ", 'VALUE')
-            self.stats_text.insert('end', "FALSE\n", 'FALSE')
-        
-        if hand_analysis.get('has_straight_draw'):
-            self.stats_text.insert('end', "has_straight_draw: ", 'VALUE')
-            self.stats_text.insert('end', "TRUE\n", 'TRUE')
-        else:
-            self.stats_text.insert('end', "has_straight_draw: ", 'VALUE')
-            self.stats_text.insert('end', "FALSE\n", 'FALSE')
-        
-        if hand_analysis.get('has_straight'):
-            self.stats_text.insert('end', "has_straight: ", 'VALUE')
-            self.stats_text.insert('end', "TRUE\n", 'TRUE')
-        else:
-            self.stats_text.insert('end', "has_straight: ", 'VALUE')
-            self.stats_text.insert('end', "FALSE\n", 'FALSE')
-        
-        self.stats_text.insert('end', "\n")
-        
-        # Board info
-        self.stats_text.insert('end', "=== BOARD ===\n", 'HEADER')
-        
-        if hand_analysis.get('has_board_pair'):
-            val = hand_analysis.get('board_pair_val', 0)
-            self.stats_text.insert('end', f"has_board_pair: ", 'VALUE')
-            self.stats_text.insert('end', f"TRUE ({val})\n", 'TRUE')
-        else:
-            self.stats_text.insert('end', "has_board_pair: ", 'VALUE')
-            self.stats_text.insert('end', "FALSE\n", 'FALSE')
-        
-        if hand_analysis.get('has_ace_on_board'):
-            self.stats_text.insert('end', "has_ace_on_board: ", 'VALUE')
-            self.stats_text.insert('end', "TRUE\n", 'TRUE')
-        else:
-            self.stats_text.insert('end', "has_ace_on_board: ", 'VALUE')
-            self.stats_text.insert('end', "FALSE\n", 'FALSE')
-        
-        # Equity info
-        equity = result.get('equity', 0)
-        outs = result.get('outs', 0)
-        if equity > 0 or outs > 0:
-            self.stats_text.insert('end', "\n=== EQUITY ===\n", 'HEADER')
-            if equity > 0:
-                self.stats_text.insert('end', f"Win probability: {equity}%\n", 'VALUE')
-            if outs > 0:
-                self.stats_text.insert('end', f"Outs: {outs}\n", 'VALUE')
 
     def on_f10(self):
         """Toggle bot mode"""
