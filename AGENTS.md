@@ -335,6 +335,31 @@ cd client && python3 poker_sim.py 200000
 
 ---
 
+### Session 43 Bug Fix: value_maniac Indentation (January 14, 2026)
+
+**Bug Found**: Dead code in value_maniac underpair defense (lines 1185-1192).
+
+**Problem**: The "flop overbet" check was indented under the turn/river block:
+```python
+if street in ['turn', 'river']:
+    return ('fold', 0, "fold underpair vs aggression")
+# Flop overbet: Fold immediately
+    if street == 'flop' and pot_pct > 0.5:  # <-- WRONG INDENT!
+        return ('fold', 0, "fold underpair vs overbet")
+```
+
+**Impact**: Underpairs facing >50% pot on flop would CALL instead of FOLD.
+
+**Test Confirmation**:
+- Before fix: JJ on Q47 facing 80% pot → CALL (wrong)
+- After fix: JJ on Q47 facing 80% pot → FOLD (correct)
+
+**Fix**: Dedented the flop overbet check to correct level.
+
+**Note**: This code was added after the gold version (v1.0-gold), so fixing it doesn't violate the "don't modify gold model" rule.
+
+---
+
 ### Session 43 Part 4: Underpair Defense Fix (January 14, 2026)
 
 **Challenge**: JJ was calling down on Q-K-A boards vs aggression, losing ~$5 per hand.

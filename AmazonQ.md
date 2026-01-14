@@ -1,6 +1,6 @@
 # OnyxPoker - Status Tracking
 
-**Last Updated**: January 14, 2026 14:17 UTC
+**Last Updated**: January 14, 2026 14:45 UTC
 
 ## 🎉 MILESTONE: FIRST WINNING SESSION! 🎉
 
@@ -10,44 +10,29 @@ After 40 sessions of development, testing, and refinement - we finally have a wo
 
 ---
 
-## Current Status: SESSION 43 Part 5 - Pair Handling Improvements ✅
+## Current Status: SESSION 43 Complete + Bug Fix ✅
 
-**Improved Pair Logic for value_lord:**
-- Added TPGK vs TPWK differentiation
-- Added middle vs bottom pair distinction
-- More disciplined play with weak pairs
+**Today's Improvements (Session 43):**
+1. Aggressor tracking - value_lord knows if we opened or called preflop
+2. Underpair defense - JJ folds on Q-K-A boards vs aggression
+3. Pair handling granularity - TPGK/TPWK and middle/bottom pair differentiation
+4. Bug fix - Fixed indentation bug in value_maniac underpair defense
 
-**Changes:**
-1. **TPGK** (AK on K84): Calls flop/turn, calls river ≤50% pot, folds >50% pot
-2. **TPWK** (K7 on K84): Calls flop ≤40% pot only, folds turn/river
-3. **Middle Pair**: Calls flop ≤35% pot, folds turn/river
-4. **Bottom Pair**: Calls flop ≤25% pot (tighter), folds turn/river
+**Pair Logic (value_lord):**
+- **TPGK** (AK on K84): Calls flop/turn, calls river ≤50% pot, folds >50% pot
+- **TPWK** (K7 on K84): Calls flop ≤40% pot only, folds turn/river
+- **Middle Pair**: Calls flop ≤35% pot, folds turn/river
+- **Bottom Pair**: Calls flop ≤25% pot (tighter), folds turn/river
 
 **Test Results:**
 - ✅ audit_strategies.py: 26/26 PASS
 - ✅ test_strategy_engine.py: 54/55 PASS
-- ✅ test_postflop.py: 11 issues (down from 12)
-- ✅ eval_strategies.py: +567.5 score (was +575.5)
+- ✅ eval_strategies.py: +567.5 score, 0 bad folds
 
-**Trade-off Analysis:**
-- 0 bad folds (still perfect) ✅
-- 2 bad calls (was 0) - both are extreme all-in situations (40x pot shoves)
-- 74 good folds (was 67) - folding weak pairs more often
-- More disciplined with TPWK, middle/bottom pairs
-
-**Bad Calls Deep Dive:**
-- Both are TPGK facing 40x pot all-ins on flop (97%+ pot odds)
-- Frequency: 0.3% (2 out of 584 postflop hands)
-- Acceptable edge cases - user would fold these in live play
-- No fix needed - extremely rare situations
-
-**Session 43 Complete:**
-- ✅ Aggressor tracking implementation
-- ✅ Metadata usage (num_players)
-- ✅ UI cleanup (removed duplicates)
-- ✅ Stats display optimization
-- ✅ Underpair defense fix
-- ✅ Pair handling improvements (TPGK/TPWK, middle/bottom)
+**Bug Fixed:**
+- value_maniac had dead code (wrong indentation) in underpair defense
+- JJ on Q47 facing 80% pot was calling instead of folding
+- Now correctly folds underpairs to overbets
 
 **Next**: Test in live play
 
