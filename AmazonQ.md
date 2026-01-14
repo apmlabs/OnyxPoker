@@ -1,6 +1,6 @@
 # OnyxPoker - Status Tracking
 
-**Last Updated**: January 14, 2026 16:26 UTC
+**Last Updated**: January 14, 2026 19:11 UTC
 
 ## 🎉 MILESTONE: FIRST WINNING SESSION! 🎉
 
@@ -10,29 +10,30 @@ After 40 sessions of development, testing, and refinement - we finally have a wo
 
 ---
 
-## Current Status: SESSION 43 Part 6 - Paired Board Fix ✅
+## Current Status: SESSION 43 Part 7 - Major Refactor ✅
 
-**Critical Bug Fixed:**
-- 88 on 577 board was RAISING $11.55 into $0.82 pot (5.6x pot bet!)
-- Root cause: `pocket_over_board` two pair treated as "strong" - WRONG
-- ANY pocket pair on paired board is vulnerable to trips (any 7x beats 88)
-- Fix: Both `pocket_over_board` and `pocket_under_board` now fold big bets, call small
+**Merged `evaluate_hand()` into `analyze_hand()`:**
+- Single source of truth for hand analysis
+- Fixed board trips bug (KJ on 333 was "trips" - now correctly "high card")
+- Deleted 159 lines of duplicate code
+- Updated 7 files to use unified `analyze_hand()`
 
-**Results After Fix:**
+**Results After Refactor:**
 | Metric | value_lord | Before |
 |--------|-----------|--------|
-| Eval Score | +603.5 | +567.5 |
-| Est BB/100 | +21.1 | +19.9 |
-| Sim BB/100 | +20.61 | +18.86 |
-| Good Folds | 79 | 74 |
+| Eval Score | +691.5 | +603.5 |
+| Est BB/100 | +21.9 | +21.1 |
+| Good Folds | 87 | 79 |
+| Good Calls | 96 | 83 |
 | Bad Folds | 0 | 0 |
+| Bad Calls | 0 | 0 |
 
 **Test Results:**
 - ✅ audit_strategies.py: 26/26 PASS
 - ✅ test_strategy_engine.py: 54/55 PASS
 - ✅ eval_strategies.py: 0 bad folds, 0 bad calls
 
-**Next**: Test in live play
+**Next**: Continue analyzing session logs
 
 ## What Works
 

@@ -8,7 +8,7 @@ import random
 from collections import defaultdict
 from poker_logic import (
     RANKS, SUITS, RANK_VAL, STRATEGIES, expand_range,
-    hand_to_str, evaluate_hand, postflop_action, preflop_action
+    hand_to_str, analyze_hand, postflop_action, preflop_action
 )
 
 POSITIONS = ['UTG', 'MP', 'CO', 'BTN', 'SB', 'BB']
@@ -202,7 +202,8 @@ def simulate_hand(players, dealer_pos):
     winners = []
     
     for p in active_players:
-        rank, desc, kicker = evaluate_hand(list(p.cards), board)
+        info = analyze_hand(list(p.cards), board)
+        rank, kicker = info['strength'], info['kicker']
         if rank > best_rank or (rank == best_rank and kicker > best_kicker):
             best_rank = rank
             best_kicker = kicker

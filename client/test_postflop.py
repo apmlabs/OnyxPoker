@@ -6,7 +6,7 @@ Default strategy: value_max
 """
 
 import sys
-from poker_logic import postflop_action, evaluate_hand, calculate_equity, count_outs
+from poker_logic import postflop_action, analyze_hand, calculate_equity, count_outs
 
 # Test scenarios: (hole_cards, board, street, to_call, pot, description)
 SCENARIOS = [
@@ -125,7 +125,8 @@ def test_strategy(strategy_name="value_max"):
     issues = []
     
     for hole, board, street, to_call, pot, desc in SCENARIOS:
-        strength, hand_desc, _ = evaluate_hand(hole, board)
+        info = analyze_hand(hole, board)
+        strength, hand_desc = info['strength'], info['desc']
         equity = calculate_equity(hole, board)
         outs, draws = count_outs(hole, board)
         facing_bet = to_call > 0

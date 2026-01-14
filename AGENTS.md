@@ -274,6 +274,34 @@ cd client && python3 poker_sim.py 200000
 
 ## 📖 SESSION HISTORY & LESSONS LEARNED
 
+### Session 43 Part 7: Merge evaluate_hand into analyze_hand (January 14, 2026)
+
+**Challenge**: Two functions doing similar work - `evaluate_hand()` and `analyze_hand()` - caused bugs when they disagreed (board trips bug).
+
+**Root Cause**: KJ on 333 board was classified as "trips 3s" by `evaluate_hand()` but correctly as "high card" by `analyze_hand()`. Duplicate logic drifted apart.
+
+**Solution**: Merged into single `analyze_hand()` function:
+- Added `strength`, `desc`, `kicker` to return dict
+- Deleted `evaluate_hand()` (159 lines)
+- Updated 7 files to use unified function
+
+**Results After Refactor:**
+| Metric | value_lord | Before |
+|--------|-----------|--------|
+| Eval Score | +691.5 | +603.5 |
+| Good Folds | 87 | 79 |
+| Good Calls | 96 | 83 |
+| Bad Folds | 0 | 0 |
+| Bad Calls | 0 | 0 |
+
+**Files Changed:**
+- poker_logic.py: Deleted evaluate_hand, added strength/desc/kicker to analyze_hand
+- poker_sim.py, eval_strategies.py, test_postflop.py, strategy_engine.py, audit_strategies.py, compare_strategies_on_session.py
+
+**Critical Lesson**: Never have two functions computing the same thing. They WILL drift apart. Single source of truth prevents bugs like "board trips counted as our trips".
+
+---
+
 ### Session 43 Part 6: Paired Board Two Pair Fix (January 14, 2026)
 
 **Challenge**: 88 on 577 board was RAISING $11.55 into $0.82 pot - disaster hand losing ~$15.

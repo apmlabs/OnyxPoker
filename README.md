@@ -79,12 +79,19 @@ Results show BB/100 win rate for each strategy.
 client/
   helper_bar.py        # Main UI
   vision_detector.py   # GPT-5.2 API wrapper
-  poker_logic.py       # Hand evaluation + decisions
+  poker_logic.py       # Hand analysis + decisions (analyze_hand is single source of truth)
   poker_sim.py         # Strategy simulator
   strategy_engine.py   # Lite mode strategy
   pokerstrategy_*      # Strategy definition files
   requirements.txt     # Dependencies
 ```
+
+## Architecture
+
+All hand analysis uses `analyze_hand()` - single source of truth that returns:
+- `strength`: 1-9 (high card to straight flush)
+- `desc`: Human readable description
+- `is_overpair`, `has_top_pair`, `two_pair_type`, etc.
 
 ## Legal
 

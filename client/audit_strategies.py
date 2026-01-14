@@ -6,7 +6,7 @@ Tests specific scenarios to verify code matches strategy file descriptions.
 import sys
 sys.path.insert(0, '.')
 from poker_logic import (STRATEGIES, preflop_action, postflop_action, 
-                         expand_range, evaluate_hand)
+                         expand_range, analyze_hand)
 
 def test_preflop(strategy_name, hand, position, facing, expected_action, desc):
     """Test a preflop scenario."""

@@ -4,7 +4,7 @@ Compare how value_maniac vs value_lord would have played a session.
 """
 import json
 import sys
-from poker_logic import preflop_action, postflop_action, evaluate_hand
+from poker_logic import preflop_action, postflop_action, analyze_hand
 
 def analyze_session(log_file, strategy_name):
     """Replay session with given strategy and track differences."""
@@ -40,7 +40,8 @@ def analyze_session(log_file, strategy_name):
             continue
         else:
             # Postflop
-            strength, desc = evaluate_hand(hole, board)
+            info = analyze_hand(hole, board)
+            strength, desc = info['strength'], info['desc']
             action, amount, reasoning = postflop_action(
                 hole, board, pot, to_call, 
                 position=position,

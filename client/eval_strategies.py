@@ -13,7 +13,7 @@ sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 random.seed(42)
 
 from poker_logic import (STRATEGIES, preflop_action, postflop_action, 
-                         calculate_equity, evaluate_hand)
+                         calculate_equity, analyze_hand)
 
 STRATEGY_NAMES = ['value_lord', 'value_maniac', 'value_max', 'sonnet_max', 'sonnet', 'gpt4', 'gpt3', 
                   'kiro_optimal', 'kiro5', 'kiro_v2', '2nl_exploit', 'aggressive']
@@ -173,10 +173,9 @@ def main():
         # Calculate equity
         equity = calculate_equity(hole, board, num_opponents=1, simulations=300) / 100.0
         
-        # Evaluate hand strength (returns tuple: (strength_num, desc, kicker))
-        # strength_num: 1=high card, 2=pair, 3=two pair, 4=trips/set, 5=straight, 6=flush, 7=full house, 8=quads, 9=straight flush
-        hand_eval = evaluate_hand(hole, board)
-        hand_strength = hand_eval[0] if hand_eval else 1
+        # Evaluate hand strength using analyze_hand
+        hand_info = analyze_hand(hole, board)
+        hand_strength = hand_info.get('strength', 1) if hand_info else 1
         
         # Is this a value hand? (pair or better = strength >= 2)
         is_value_hand = hand_strength >= 2

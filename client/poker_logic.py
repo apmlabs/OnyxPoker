@@ -193,8 +193,78 @@ def analyze_hand(hole_cards: List[Tuple[str, str]], board: List[Tuple[str, str]]
                 board_flush_suit = suit
                 break
     
+    # Compute strength, desc, kicker (replaces evaluate_hand)
+    strength, desc, kicker = 1, "high card", hero_vals[0]
+    
+    # Check for quads
+    if our_quads:
+        strength, desc, kicker = 8, f"quads {our_quads[0]}s", RANK_VAL[our_quads[0]]
+    # Full house (trips + another pair)
+    elif has_set and has_two_pair:
+        strength, desc, kicker = 7, "full house", pocket_val
+    elif has_trips and has_two_pair:
+        strength, desc, kicker = 7, "full house", RANK_VAL[our_trips[0]]
+    # Flush
+    elif has_flush:
+        flush_suit = [s for s, c in suit_counts.items() if c >= 5][0]
+        flush_high = max(RANK_VAL[c[0]] for c in (hole_cards + board) if c[1] == flush_suit)
+        strength, desc, kicker = 6, "flush", flush_high
+    # Straight
+    elif has_straight:
+        strength, desc, kicker = 5, "straight", max(hero_vals + board_vals)
+    # Set
+    elif has_set:
+        strength, desc, kicker = 4, f"set of {our_trips[0]}s", RANK_VAL[our_trips[0]]
+    # Trips
+    elif has_trips:
+        strength, desc, kicker = 4, f"trips {our_trips[0]}s", RANK_VAL[our_trips[0]]
+    # Two pair
+    elif has_two_pair:
+        pair_vals = sorted([RANK_VAL[r] for r in our_pairs], reverse=True)
+        if two_pair_type == 'pocket_over_board':
+            desc = "two pair (pocket+board strong)"
+        elif two_pair_type == 'pocket_under_board':
+            desc = "two pair (pocket+board weak)"
+        elif two_pair_type == 'both_cards_hit':
+            desc = "two pair"
+        elif board_pair_val and board_pair_val >= 8:
+            desc = "two pair (board paired)"
+        else:
+            desc = "two pair (low board pair)"
+        strength, kicker = 3, pair_vals[0]
+    # Overpair
+    elif is_overpair:
+        strength, desc, kicker = 2, f"overpair {hero_ranks[0]}{hero_ranks[0]}", pocket_val
+    # Underpair to ace
+    elif is_underpair_to_ace and pocket_val >= 8:  # TT+
+        strength, desc, kicker = 2, f"underpair {hero_ranks[0]}{hero_ranks[0]} (ace on board)", pocket_val
+    # Top pair
+    elif has_top_pair:
+        if has_good_kicker:
+            strength, desc, kicker = 2, "top pair good kicker", top_board_val * 100 + kicker_val
+        else:
+            strength, desc, kicker = 2, "top pair weak kicker", top_board_val * 100 + (kicker_val or 0)
+    # Pocket pair (underpair)
+    elif is_pocket_pair:
+        strength, desc, kicker = 2, f"pocket pair {hero_ranks[0]}{hero_ranks[0]}", pocket_val
+    # Middle pair
+    elif has_middle_pair:
+        strength, desc, kicker = 2, "middle pair", hero_vals[0]
+    # Bottom pair
+    elif has_bottom_pair:
+        strength, desc, kicker = 2, "bottom pair", hero_vals[0]
+    # Any other pair we contribute to
+    elif has_any_pair:
+        strength, desc, kicker = 2, "pair", hero_vals[0]
+    # High card with board pair
+    elif has_board_pair:
+        strength, desc, kicker = 1, "high card (board paired)", hero_vals[0]
+    
     return {
         'valid': True,
+        'strength': strength,
+        'desc': desc,
+        'kicker': kicker,
         'is_pocket_pair': is_pocket_pair,
         'pocket_val': pocket_val,
         'has_board_pair': has_board_pair,
@@ -596,161 +666,6 @@ def parse_card(card: str) -> Tuple[str, str]:
     return (rank, suit)
 
 
-def evaluate_hand(hole_cards: List[Tuple[str, str]], board: List[Tuple[str, str]]) -> Tuple[int, str, int]:
-    """
-    Evaluate 5-7 card hand. Returns (rank, description, kicker_value).
-    Rank: 9=straight flush, 8=quads, 7=full house, 6=flush, 5=straight,
-          4=trips/set, 3=two pair, 2=pair, 1=high card
-    """
-    all_cards = hole_cards + board
-    if len(all_cards) < 5:
-        return (0, "incomplete", 0)
-    
-    ranks = [c[0] for c in all_cards]
-    suits = [c[1] for c in all_cards]
-    hero_ranks = set(c[0] for c in hole_cards)
-    
-    rank_counts = {}
-    for r in ranks:
-        rank_counts[r] = rank_counts.get(r, 0) + 1
-    
-    suit_counts = {}
-    for s in suits:
-        suit_counts[s] = suit_counts.get(s, 0) + 1
-    
-    # Check flush
-    flush_suit = None
-    for s, count in suit_counts.items():
-        if count >= 5:
-            flush_suit = s
-    
-    # Check straight
-    rank_set = set(RANK_VAL[r] for r in ranks)
-    if 12 in rank_set:
-        rank_set.add(-1)
-    
-    straight_high = None
-    for i in range(8, -2, -1):
-        if all(j in rank_set for j in range(i, i+5)):
-            straight_high = i + 4
-            break
-    
-    # Straight flush
-    if flush_suit and straight_high is not None:
-        flush_ranks = set(RANK_VAL[c[0]] for c in all_cards if c[1] == flush_suit)
-        if 12 in flush_ranks:
-            flush_ranks.add(-1)
-        for i in range(8, -2, -1):
-            if all(j in flush_ranks for j in range(i, i+5)):
-                return (9, "straight flush", i+4)
-    
-    # Four of a kind
-    for r, count in rank_counts.items():
-        if count >= 4:
-            return (8, f"quads {r}s", RANK_VAL[r])
-    
-    # Full house
-    trips = [r for r, c in rank_counts.items() if c >= 3]
-    pairs = [r for r, c in rank_counts.items() if c >= 2]
-    if trips and len(pairs) >= 2:
-        return (7, "full house", RANK_VAL[trips[0]])
-    
-    # Flush
-    if flush_suit:
-        flush_cards = sorted([RANK_VAL[c[0]] for c in all_cards if c[1] == flush_suit], reverse=True)
-        return (6, "flush", flush_cards[0])
-    
-    # Straight
-    if straight_high is not None:
-        return (5, "straight", straight_high)
-    
-    # Three of a kind
-    if trips:
-        is_set = trips[0] in hero_ranks and len(hero_ranks) == 1
-        return (4, f"set of {trips[0]}s" if is_set else f"trips {trips[0]}s", RANK_VAL[trips[0]])
-    
-    # Two pair - check if strong or weak
-    pair_ranks = sorted([r for r, c in rank_counts.items() if c >= 2], key=lambda r: RANK_VAL[r], reverse=True)
-    if len(pair_ranks) >= 2:
-        # Check which pairs we contribute to
-        hero_pairs = [pr for pr in pair_ranks if pr in hero_ranks]
-        board_only_ranks = [c[0] for c in board] if board else []
-        board_pairs = [pr for pr in pair_ranks if board_only_ranks.count(pr) >= 2]
-        
-        # Check if hero has a pocket pair
-        is_pocket_pair = len(hole_cards) == 2 and hole_cards[0][0] == hole_cards[1][0]
-        
-        if len(hero_pairs) >= 1:
-            # No board pair = strong (we made both pairs)
-            if len(board_pairs) == 0:
-                return (3, "two pair", RANK_VAL[pair_ranks[0]])
-            
-            # POCKET PAIR + BOARD PAIR - strength depends on which pair is higher
-            if is_pocket_pair:
-                pocket_val = RANK_VAL[hole_cards[0][0]]
-                board_pair_val = max(RANK_VAL[p] for p in board_pairs)
-                if pocket_val > board_pair_val:
-                    # KK on JJ = strong (only JJ beats us)
-                    return (3, "two pair (pocket+board strong)", RANK_VAL[pair_ranks[0]])
-                else:
-                    # 66 on JJ = weak (any Jx has trips)
-                    return (3, "two pair (pocket+board weak)", RANK_VAL[pair_ranks[0]])
-            
-            # ONE CARD + BOARD PAIR = weak (K2 on J2 board)
-            # Board pair exists - danger depends on board pair rank
-            # HIGH board pair (T+): Many hands contain these, villain likely has trips
-            # LOW board pair (2-9): Fewer hands contain these, less likely trips
-            board_pair_val = max(RANK_VAL[p] for p in board_pairs)
-            if board_pair_val >= 8:  # T=8, J=9, Q=10, K=11, A=12
-                return (3, "two pair (board paired)", RANK_VAL[pair_ranks[0]])
-            else:
-                return (3, "two pair (low board pair)", RANK_VAL[pair_ranks[0]])
-    
-    # One pair
-    if pair_ranks:
-        pr = pair_ranks[0]
-        board_ranks = [c[0] for c in board] if board else []
-        board_vals = sorted([RANK_VAL[r] for r in board_ranks], reverse=True)
-        hero_vals = [RANK_VAL[r] for r in hero_ranks]
-        
-        # Check for pocket pair (both hole cards same rank)
-        is_pocket_pair = len(hole_cards) == 2 and hole_cards[0][0] == hole_cards[1][0]
-        
-        if pr in hero_ranks:
-            # OVERPAIR: Pocket pair higher than all board cards
-            if is_pocket_pair and board_vals and RANK_VAL[pr] > board_vals[0]:
-                return (2, f"overpair {pr}{pr}", RANK_VAL[pr] * 100 + RANK_VAL[pr])
-            
-            # UNDERPAIR TO ACE: Big pocket pair (TT+) but ace on board
-            if is_pocket_pair and board_vals and any(v == RANK_VAL['A'] for v in board_vals):
-                if RANK_VAL[pr] >= RANK_VAL['T'] and RANK_VAL[pr] < RANK_VAL['A']:
-                    return (2, f"underpair {pr}{pr} (ace on board)", RANK_VAL[pr] * 100 + RANK_VAL[pr])
-            
-            # TOP PAIR
-            if board_vals and RANK_VAL[pr] >= board_vals[0]:
-                kicker = max(RANK_VAL[r] for r in hero_ranks if r != pr) if len(hero_ranks) > 1 else 0
-                if kicker >= RANK_VAL['T']:
-                    return (2, "top pair good kicker", RANK_VAL[pr] * 100 + kicker)
-                return (2, "top pair weak kicker", RANK_VAL[pr] * 100 + kicker)
-            
-            # POCKET PAIR (underpair) - stronger than board-made pairs
-            if is_pocket_pair:
-                return (2, f"pocket pair {pr}{pr}", RANK_VAL[pr])
-            
-            # MIDDLE PAIR (one card pairs middle board card)
-            elif board_vals and len(board_vals) > 1 and RANK_VAL[pr] >= board_vals[1]:
-                return (2, "middle pair", RANK_VAL[pr])
-            
-            # BOTTOM PAIR (one card pairs lowest board card)
-            return (2, "bottom pair", RANK_VAL[pr])
-        
-        # Board pair only - we don't have it, just high card with board pair
-        return (1, "high card (board paired)", RANK_VAL[max(hero_ranks, key=lambda r: RANK_VAL[r])])
-    
-    # High card
-    high = max(RANK_VAL[r] for r in ranks)
-    return (1, "high card", high)
-
 
 def check_draws(hole_cards: List[Tuple[str, str]], board: List[Tuple[str, str]]) -> List[str]:
     """Check for flush and straight draws."""
@@ -819,14 +734,18 @@ def calculate_equity(hole_cards: List[Tuple[str, str]], board: List[Tuple[str, s
             idx += 2
         
         # Evaluate all hands
-        hero_rank = evaluate_hand(hole_cards, full_board)
-        opp_ranks = [evaluate_hand(oh, full_board) for oh in opp_hands]
+        hero_info = analyze_hand(hole_cards, full_board)
+        hero_rank = (hero_info['strength'], hero_info['kicker'])
+        opp_ranks = []
+        for oh in opp_hands:
+            oi = analyze_hand(oh, full_board)
+            opp_ranks.append((oi['strength'], oi['kicker']))
         
-        best_opp = max(opp_ranks, key=lambda x: (x[0], x[2]))
+        best_opp = max(opp_ranks)
         
-        if (hero_rank[0], hero_rank[2]) > (best_opp[0], best_opp[2]):
+        if hero_rank > best_opp:
             wins += 1
-        elif (hero_rank[0], hero_rank[2]) == (best_opp[0], best_opp[2]):
+        elif hero_rank == best_opp:
             ties += 0.5
     
     return round((wins + ties) / simulations * 100, 1)
@@ -863,7 +782,8 @@ def count_outs(hole_cards: List[Tuple[str, str]], board: List[Tuple[str, str]]) 
 def get_hand_info(hole_cards: List[Tuple[str, str]], board: List[Tuple[str, str]], 
                   pot: float, to_call: float, num_opponents: int = 1) -> Dict:
     """Get comprehensive hand info for display."""
-    rank, desc, kicker = evaluate_hand(hole_cards, board)
+    info = analyze_hand(hole_cards, board)
+    rank, desc = info['strength'], info['desc']
     draws = check_draws(hole_cards, board)
     outs, out_types = count_outs(hole_cards, board)
     
@@ -906,7 +826,8 @@ def postflop_action(hole_cards: List[Tuple[str, str]], board: List[Tuple[str, st
     strategy: 'gpt3', 'gpt4', 'sonnet', 'kiro_optimal' for bot-specific logic
     num_opponents: number of active opponents (1=heads-up, 2+=multiway)
     """
-    strength, desc, kicker = evaluate_hand(hole_cards, board)
+    hand_info = analyze_hand(hole_cards, board)
+    strength, desc = hand_info['strength'], hand_info['desc']
     draws = check_draws(hole_cards, board)
     
     has_flush_draw = "flush_draw" in draws

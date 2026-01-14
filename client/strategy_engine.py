@@ -6,7 +6,7 @@ Takes table data from vision API and returns action + reasoning.
 from typing import Dict, Any, List
 from poker_logic import (
     STRATEGIES, RANK_VAL, parse_card, hand_to_str,
-    evaluate_hand, check_draws, postflop_action, preflop_action,
+    check_draws, postflop_action, preflop_action,
     get_hand_info, analyze_hand
 )
 
