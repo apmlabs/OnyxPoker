@@ -10,31 +10,35 @@ After 40 sessions of development, testing, and refinement - we finally have a wo
 
 ---
 
-## Current Status: SESSION 43 Part 3 - Stats Display Optimization ✅
+## Current Status: SESSION 43 Part 4 - Underpair Defense Fix ✅
 
-**Stats Display Optimization:**
-- Reordered for compact research view: equity → draws → stats → hand properties
-- Win probability & Outs at top (most important for decisions)
-- Sets/trips/pairs moved to bottom (hand classification)
-- Changed BOARD title to STATS
-- Removed EQUITY and HAND titles (cleaner, more space)
-- All empty lines removed between sections
+**Critical Bug Fixed:**
+- JJ was calling down on Q-K-A boards vs aggression (lost ~$5 per hand)
+- Root cause: Code treated ALL pocket pairs the same, didn't check if underpair
+- Fix: Detect underpairs (pocket_val < highest_board_card), fold to aggression on turn/river
 
-**Display Order:**
-1. Win probability & Outs (top)
-2. Flush/straight draws
-3. === STATS === (board pair, ace on board)
-4. Sets/trips/middle/bottom pairs
-5. Overpair/underpair
-6. Pocket pair/top pair/two pair (bottom)
+**Underpair Defense Logic:**
+- Flop: Call once if small bet (≤50% pot) - see if villain slows down
+- Turn/River: FOLD to continued aggression
+- Flop overbet (>50% pot): Fold immediately
+
+**Test Results:**
+- ✅ JJ on Q47 flop: Call once (underpair)
+- ✅ JJ on Q47K turn: FOLD (underpair vs aggression)
+- ✅ JJ on Q47KA river: FOLD (underpair vs river bet)
+- ✅ QQ on J85: Still calls (overpair)
+- ✅ 88 set: Still raises (set)
+
+**Money Saved:** ~$10 per session (found 3 similar hands in previous logs)
 
 **Session 43 Complete:**
 - ✅ Aggressor tracking implementation
 - ✅ Metadata usage (num_players)
 - ✅ UI cleanup (removed duplicates)
 - ✅ Stats display optimization
+- ✅ Underpair defense fix
 
-**Next**: Test aggressor tracking in live play (press F9 preflop when calling)
+**Next**: Test in live play
 
 ## What Works
 

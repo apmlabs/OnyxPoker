@@ -274,6 +274,70 @@ cd client && python3 poker_sim.py 200000
 
 ## 📖 SESSION HISTORY & LESSONS LEARNED
 
+### Session 43 Part 4: Underpair Defense Fix (January 14, 2026)
+
+**Challenge**: JJ was calling down on Q-K-A boards vs aggression, losing ~$5 per hand.
+
+**Problem**: Code treated ALL pocket pairs the same - "pocket pair JJ - call pair" logic didn't check if underpair.
+
+**The Disaster Hand** (session_20260114_140911):
+- Preflop: 3-bet JJ vs MP ✅
+- Preflop: Called 4-bet ⚠️
+- Flop Q47: Called $0.44 (underpair, 68.5% equity) ⚠️
+- Turn K: Called $1.15 (underpair, 69.4% equity) ⚠️⚠️
+- River A: **Called $2.69** (underpair, 63% equity) ❌❌❌
+- **Total lost: ~$5** on Q-K-A board (all overcards!)
+
+**Why Equity vs Random is Wrong**:
+- Equity calculation assumes villain has random hands
+- When villain bets flop, turn, AND river → they have something
+- 63-69% equity vs random is meaningless vs villain's actual range
+
+**Similar Hands in Logs**:
+- JJ on 85A: Called $3.63 raise (session_20260114_011821)
+- JJ on 6K9: Called $1.59 raise (session_20260114_092528)
+- **Total money lost to this bug: ~$10**
+
+**Solution**: Underpair defense logic
+```python
+# Detect underpairs
+if is_pocket_pair and board:
+    highest_board = max(board_vals)
+    is_underpair = pocket_val < highest_board
+    
+    if is_underpair:
+        # Flop: Call once (see if villain slows down)
+        if street == 'flop' and pot_pct <= 0.5:
+            return ('call', 0, "call once (underpair)")
+        # Turn/River: FOLD to continued aggression
+        if street in ['turn', 'river']:
+            return ('fold', 0, "fold underpair vs aggression")
+        # Flop overbet: Fold immediately
+        if street == 'flop' and pot_pct > 0.5:
+            return ('fold', 0, "fold underpair vs overbet")
+```
+
+**Applied To**:
+- `_postflop_value_maniac()` - both flop/turn and river defense sections
+- `_postflop_value_lord()` - both flop/turn and river defense sections
+
+**Test Results**:
+```
+JJ on Q47 flop: call - call once (underpair) ✅
+JJ on Q47K turn: fold - fold underpair vs aggression ✅
+JJ on Q47KA river: fold - fold underpair vs river bet ✅
+QQ on J85: call - overpair QQ - call pair ✅ (still works)
+88 set on T948: raise - set of 8s - raise strong ✅ (still works)
+```
+
+**Money Saved**: ~$10 per session (3 similar hands found in logs)
+
+**Why This Matters**: Underpairs are vulnerable - any overcard on board means villain likely has us beat when they bet multiple streets. Calling down with JJ on Q-K-A is lighting money on fire.
+
+**Critical Lesson**: When villain bets flop, turn, AND river on a scary board (multiple overcards), they have something. Equity vs random is a trap - fold underpairs to aggression.
+
+---
+
 ### Session 43: Decision Stats UI (January 14, 2026)
 
 **Challenge**: User doing research needs to see what stats drive each decision.
