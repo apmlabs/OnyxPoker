@@ -1,0 +1,80 @@
+# VALUE_LORD Strategy - Refined value extraction
+# Based on value_maniac with Session 41 improvements
+
+## PREFLOP (same as value_maniac - wide ranges)
+
+### Open Raise (2.5-3BB)
+UTG: 55+, A7s+, A5s-A2s, KTs+, QTs+, JTs, T9s, ATo+, KJo+
+MP: 44+, A5s+, K8s+, Q9s+, J9s+, T8s+, 97s+, 87s, 76s, A9o+, KTo+, QJo
+CO: 22+, A2s+, K5s+, Q7s+, J7s+, T7s+, 96s+, 85s+, 75s, 64s+, 54s, A7o+, K9o+, QTo+, JTo
+BTN: 22+, A2s+, K2s+, Q4s+, J6s+, T6s+, 95s+, 84s+, 74s+, 63s+, 53s+, 43s, A2o+, K7o+, Q9o+, J9o+, T9o
+SB: 22+, A2s+, K4s+, Q6s+, J7s+, T7s+, 96s+, 85s+, 75s, 64s+, 54s, A5o+, K8o+, QTo+, JTo
+
+### 3-Bet Value
+vs UTG: TT+, AQs+, AKo, AJs, KQs
+vs MP: 99+, AJs+, AKo, AQo, KQs, QJs
+vs CO: 88+, ATs+, AJo+, KQs, KJs, QJs, JTs
+vs BTN: 77+, A9s+, ATo+, KJs+, KQo, QJs, JTs, T9s
+
+### 3-Bet Bluff
+A5s-A2s, K9s-K6s, Q9s-Q8s, J9s, T9s, 98s, 87s, 76s, 65s, 54s
+
+### Call Open (IP)
+TT-22, AJs-A5s, KQs-K9s, QJs-Q9s, JTs-J9s, T9s, 98s, 87s, 76s, AQo, AJo, ATo, KQo, KJo, QJo
+
+### BB Defend
+22+, A2s+, K4s+, Q6s+, J7s+, T7s+, 96s+, 85s+, 75s, 64s+, 54s, A5o+, K9o+, QTo+, JTo, T9o
+
+### Call 3-Bet
+JJ, TT, 99, AKo, AQs, AQo, AJs, KQs
+
+### 4-Bet
+QQ+, AKs, AKo
+
+## POSTFLOP - Smart aggression with Session 41 fixes
+
+### C-Betting Rules (NEW)
+- Only c-bet high card when WE OPENED preflop
+- Don't c-bet high card when we CALLED preflop (check instead)
+- Overpairs ALWAYS bet (don't check)
+- Bottom pair on straight boards: CHECK (don't overbet)
+
+### Betting (checked to us)
+- Monsters (quads, FH, SF): Overbet 125% pot
+- Strong (set, flush, straight): Bet 110% pot
+- Two pair (pocket+board): Bet 110% pot
+- Two pair (both cards): Bet 110% pot
+- Two pair on HIGH paired board (T+): Small bet 33% flop, CHECK turn/river
+- Overpair: Bet 100% pot (ALWAYS bet, don't check)
+- Top/middle pair: Bet 100% pot flop/turn (85%), 120% river (50%)
+- Bottom pair on straight board: CHECK (don't overbet)
+- Bottom pair otherwise: Bet 60% pot
+- Draws: Overbet 100% pot
+- Air (we opened): C-bet 90% pot (80%), barrel turn (60%), river bluff (35%)
+- Air (we called): CHECK (don't c-bet)
+
+### Facing Bet
+- Monsters: Raise 3x
+- Strong (set, flush, straight): Raise 2.5x
+- Two pair (pocket+board): Raise 2.5x (we have full house blockers)
+- Two pair on HIGH paired board: FOLD to big bet, call small
+- Overpair: CALL
+- Pocket pair (underpair): CALL (don't fold pairs)
+- Any pair: CALL
+- Draws (not river): CALL
+- Overcards on flop: CALL
+- Air on flop: Float 40%
+- Otherwise: FOLD
+
+### Key Improvements from value_maniac
+1. C-bet discipline: Only with high card when we opened
+2. Overpair aggression: Always bet (no checking)
+3. Bottom pair caution: Check on straight boards
+4. Paired board protection: Still checks HIGH paired boards
+
+### Key Traits
+- Wide preflop ranges (same as value_maniac)
+- Overbets for value
+- Smarter c-betting (position-aware)
+- Overpair aggression
+- Bottom pair discipline on dangerous boards

@@ -535,6 +535,10 @@ STRATEGIES['maniac'] = {
 STRATEGIES['value_maniac'] = STRATEGIES['maniac'].copy()
 STRATEGIES['value_maniac']['name'] = 'Value Maniac'
 
+# value_lord: value_maniac with Session 41 improvements
+STRATEGIES['value_lord'] = STRATEGIES['maniac'].copy()
+STRATEGIES['value_lord']['name'] = 'Value Lord'
+
 
 # Hand evaluation
 def hand_to_str(cards: List[Tuple[str, str]]) -> str:
@@ -1030,6 +1034,10 @@ def postflop_action(hole_cards: List[Tuple[str, str]], board: List[Tuple[str, st
         return _postflop_value_maniac(hole_cards, board, pot, to_call, street,
                                       strength, desc, has_any_draw, has_flush_draw, has_oesd, bb_size)
     
+    if strategy == 'value_lord':
+        return _postflop_value_lord(hole_cards, board, pot, to_call, street,
+                                    strength, desc, has_any_draw, has_flush_draw, has_oesd, bb_size, is_aggressor)
+    
     if strategy == 'sonnet_max':
         return _postflop_sonnet_max(hole_cards, board, pot, to_call, street, is_ip,
                                     is_aggressor, strength, desc, draws, combo_draw,
@@ -1162,6 +1170,124 @@ def _postflop_value_maniac(hole_cards, board, pot, to_call, street, strength, de
                 return ('call', 0, "call gutshot")
             return ('fold', 0, f"{desc} - fold (bad odds for draw)")
         # Overcards and floats - only with good odds
+        pot_odds = to_call / (pot + to_call) if (pot + to_call) > 0 else 1
+        if street == 'flop' and hand_info['hero_vals'][0] >= 11 and pot_odds <= 0.30:
+            return ('call', 0, "call overcards")
+        if street == 'flop' and pot_odds <= 0.25 and random.random() < 0.4:
+            return ('call', 0, "float flop")
+        return ('fold', 0, f"{desc} - fold")
+
+
+def _postflop_value_lord(hole_cards, board, pot, to_call, street, strength, desc, has_any_draw, 
+                         has_flush_draw=False, has_oesd=False, bb_size=0.05, is_aggressor=False):
+    """
+    VALUE_LORD postflop - value_maniac with Session 41 improvements.
+    Fixes: c-bet discipline, overpair aggression, bottom pair caution.
+    """
+    hand_info = analyze_hand(hole_cards, board)
+    bet_in_bb = to_call / bb_size if bb_size > 0 else 0
+    is_big_bet = to_call > 0 and pot > 0 and to_call >= pot * 0.5
+    is_dangerous_board_pair = hand_info['board_pair_val'] is not None and hand_info['board_pair_val'] >= 8  # T+
+    has_strong_draw = has_flush_draw or has_oesd
+    
+    # Check for straight board (4+ cards within 5-rank span = straight possible)
+    board_vals = sorted([RANK_VAL[c[0]] for c in board], reverse=True) if board else []
+    is_straight_board = False
+    if len(board_vals) >= 4:
+        # Check if any 4 cards are within a 5-rank span
+        for i in range(len(board_vals) - 3):
+            window = board_vals[i:i+4]
+            if max(window) - min(window) <= 5:  # 4 cards within 5 ranks = straight possible
+                is_straight_board = True
+                break
+    
+    if to_call == 0 or to_call is None:
+        # No bet to call - bet for value
+        if strength >= 4:  # Set+
+            return ('bet', round(pot * 1.25, 2), f"{desc} - overbet value")
+        if strength >= 3:  # Two pair
+            if hand_info['two_pair_type'] == 'one_card_board_pair' and is_dangerous_board_pair:
+                if street == 'flop':
+                    return ('bet', round(pot * 0.33, 2), f"{desc} - small bet (pot control)")
+                return ('check', 0, f"{desc} - check (vulnerable to trips)")
+            return ('bet', round(pot * 1.1, 2), f"{desc} - bet big")
+        # FIX 1: Overpairs ALWAYS bet (don't check)
+        if hand_info['is_overpair']:
+            if street in ['flop', 'turn']:
+                return ('bet', round(pot * 1.0, 2), f"{desc} - overbet")
+            if street == 'river':
+                return ('bet', round(pot * 1.2, 2), f"{desc} - river overbet")
+        # FIX 2: Weak pairs on straight board = CHECK (not top pair, not overpair)
+        if hand_info['has_any_pair'] and not hand_info['has_top_pair'] and not hand_info['is_overpair'] and is_straight_board:
+            return ('check', 0, f"{desc} - check (weak pair on straight board)")
+        # Pairs - bet normally
+        if hand_info['has_any_pair']:
+            if street in ['flop', 'turn'] and random.random() < 0.85:
+                return ('bet', round(pot * 1.0, 2), f"{desc} - overbet")
+            if street == 'river' and random.random() < 0.5:
+                return ('bet', round(pot * 1.2, 2), f"{desc} - river overbet")
+        if has_any_draw:
+            return ('bet', round(pot * 1.0, 2), "overbet draw")
+        # FIX 3: Only c-bet high card when we were aggressor (opened preflop)
+        if is_aggressor:
+            if street == 'flop' and random.random() < 0.80:
+                return ('bet', round(pot * 0.9, 2), "c-bet big")
+            if street == 'turn' and random.random() < 0.60:
+                return ('bet', round(pot * 1.0, 2), "barrel turn")
+            if street == 'river' and random.random() < 0.35:
+                return ('bet', round(pot * 1.1, 2), "river bluff")
+        return ('check', 0, f"{desc} - check")
+    else:
+        # Facing bet - same as value_maniac
+        if strength >= 6:
+            return ('raise', round(to_call * 3, 2), f"{desc} - raise monster")
+        if strength >= 4:
+            return ('raise', round(to_call * 2.5, 2), f"{desc} - raise strong")
+        if strength == 3:
+            if hand_info['two_pair_type'] == 'pocket_over_board':
+                return ('raise', round(to_call * 2.5, 2), f"{desc} - raise strong")
+            if hand_info['two_pair_type'] == 'pocket_under_board':
+                if is_big_bet:
+                    return ('fold', 0, f"{desc} - fold (weak two pair vs big bet)")
+                return ('call', 0, f"{desc} - call (weak two pair)")
+            if hand_info['two_pair_type'] == 'both_cards_hit':
+                return ('raise', round(to_call * 2.5, 2), f"{desc} - raise strong")
+            if hand_info['two_pair_type'] == 'one_card_board_pair' and is_dangerous_board_pair:
+                if is_big_bet or street == 'river':
+                    return ('fold', 0, f"{desc} - fold (two pair on dangerous board)")
+                return ('call', 0, f"{desc} - call (but fold to more aggression)")
+            return ('raise', round(to_call * 2.5, 2), f"{desc} - raise strong")
+        pot_pct = to_call / pot if pot > 0 else 0
+        if street == 'river':
+            if hand_info['is_overpair']:
+                if pot_pct > 1.0:
+                    return ('fold', 0, f"{desc} - fold overpair vs {pot_pct:.0%} pot bet")
+                return ('call', 0, f"{desc} - call river")
+            if is_big_bet and strength < 3:
+                return ('fold', 0, f"{desc} - fold vs {pot_pct:.0%} pot bet (need two pair+)")
+            if strength >= 2:
+                return ('call', 0, f"{desc} - call river")
+            return ('fold', 0, f"{desc} - fold river")
+        if hand_info['is_pocket_pair'] or hand_info['has_any_pair']:
+            pot_odds = to_call / (pot + to_call) if (pot + to_call) > 0 else 1
+            pot_pct = to_call / pot if pot > 0 else 0
+            if pot_pct > 1.0 and strength <= 2 and not hand_info['has_top_pair']:
+                return ('fold', 0, f"{desc} - fold weak pair vs overbet")
+            if pot_odds > 0.5 and not has_strong_draw:
+                return ('fold', 0, f"{desc} - fold pair vs all-in")
+            return ('call', 0, f"{desc} - call pair")
+        if has_any_draw and street != 'river':
+            pot_odds = to_call / (pot + to_call) if (pot + to_call) > 0 else 1
+            is_nut_draw = hand_info.get('is_nut_flush_draw', False)
+            if has_flush_draw and is_nut_draw and pot_odds <= 0.41:
+                return ('call', 0, "call nut flush draw")
+            if has_flush_draw and pot_odds <= 0.25:
+                return ('call', 0, "call flush draw")
+            if has_oesd and pot_odds <= 0.22:
+                return ('call', 0, "call OESD")
+            if has_any_draw and pot_odds <= 0.12:
+                return ('call', 0, "call gutshot")
+            return ('fold', 0, f"{desc} - fold (bad odds for draw)")
         pot_odds = to_call / (pot + to_call) if (pot + to_call) > 0 else 1
         if street == 'flop' and hand_info['hero_vals'][0] >= 11 and pot_odds <= 0.30:
             return ('call', 0, "call overcards")
