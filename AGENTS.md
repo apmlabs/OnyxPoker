@@ -99,13 +99,14 @@ onyxpoker/                    # Main repo (GitHub: apmlabs/OnyxPoker)
 ## ✅ CURRENT STATE
 
 ### What Works
-- `helper_bar.py` - Draggable UI with manual position selector
+- `helper_bar.py` - Draggable UI, shows all 6 positions for preflop
 - `vision_detector_lite.py` - GPT-5.2 for vision only
 - `strategy_engine.py` - Applies value_maniac strategy (default)
 - `poker_sim.py` - Monte Carlo simulation (200k hands)
 - `analyze_hand()` - Card-based hand analysis
 - All test suites passing
 - Hotkeys: F9=Advice, F10=Bot loop, F11=Stop, F12=Hide
+- **LIVE VALIDATED**: 141 hands Session 40 - overbets with pairs getting paid
 
 ### Strategy Rankings (100k hands simulation)
 | Rank | Strategy | BB/100 | Key Trait |
