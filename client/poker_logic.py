@@ -64,7 +64,10 @@ def analyze_hand(hole_cards: List[Tuple[str, str]], board: List[Tuple[str, str]]
     # Overpair: pocket pair higher than all board cards
     is_overpair = is_pocket_pair and board_vals and pocket_val > max(board_vals)
     
-    # Underpair to ace: pocket pair but ace on board
+    # Underpair: pocket pair lower than highest board card
+    is_underpair = is_pocket_pair and board_vals and pocket_val < max(board_vals)
+    
+    # Underpair to ace: pocket pair but ace on board (legacy, kept for compatibility)
     has_ace_on_board = 'A' in board_ranks
     is_underpair_to_ace = is_pocket_pair and has_ace_on_board and pocket_val < 12
     
@@ -110,13 +113,17 @@ def analyze_hand(hole_cards: List[Tuple[str, str]], board: List[Tuple[str, str]]
     has_middle_pair = False
     has_bottom_pair = False
     if has_any_pair and not has_top_pair and not is_overpair and len(board_vals) >= 2:
+        board_sorted_asc = sorted(board_vals)
+        mid_idx = len(board_sorted_asc) // 2  # Middle index
         for r in hero_ranks:
             rv = RANK_VAL[r]
             if r in board_ranks:
-                if rv == board_vals[1]:  # Second highest board card
-                    has_middle_pair = True
-                elif rv == min(board_vals):  # Lowest board card
+                # Bottom pair = pairs with lower half of board
+                # Middle pair = pairs with upper half (but not top)
+                if rv < board_sorted_asc[mid_idx]:
                     has_bottom_pair = True
+                else:
+                    has_middle_pair = True
     
     # Flush draw detection
     hero_suits = [c[1] for c in hole_cards]
@@ -270,6 +277,7 @@ def analyze_hand(hole_cards: List[Tuple[str, str]], board: List[Tuple[str, str]]
         'has_board_pair': has_board_pair,
         'board_pair_val': board_pair_val,
         'is_overpair': is_overpair,
+        'is_underpair': is_underpair,
         'is_underpair_to_ace': is_underpair_to_ace,
         'has_top_pair': has_top_pair,
         'has_good_kicker': has_good_kicker,
@@ -1044,10 +1052,22 @@ def _postflop_value_maniac(hole_cards, board, pot, to_call, street, strength, de
                 return ('check', 0, f"{desc} - check (vulnerable to trips)")
             return ('bet', round(pot * 1.1, 2), f"{desc} - bet big")
         if hand_info['has_any_pair']:
-            if street in ['flop', 'turn'] and random.random() < 0.85:
-                return ('bet', round(pot * 1.0, 2), f"{desc} - overbet")
-            if street == 'river' and random.random() < 0.5:
-                return ('bet', round(pot * 1.2, 2), f"{desc} - river overbet")
+            # Top pair / overpair: overbet for value
+            if hand_info['has_top_pair'] or hand_info['is_overpair']:
+                if street in ['flop', 'turn'] and random.random() < 0.85:
+                    return ('bet', round(pot * 1.0, 2), f"{desc} - overbet")
+                if street == 'river' and random.random() < 0.5:
+                    return ('bet', round(pot * 1.2, 2), f"{desc} - river overbet")
+            # Middle pair: bet flop only, then pot control
+            elif hand_info['has_middle_pair']:
+                if street == 'flop':
+                    return ('bet', round(pot * 0.5, 2), f"{desc} - bet middle pair")
+                return ('check', 0, f"{desc} - check middle pair")
+            # Bottom pair: small bet flop only
+            elif hand_info['has_bottom_pair']:
+                if street == 'flop' and random.random() < 0.6:
+                    return ('bet', round(pot * 0.33, 2), f"{desc} - bet bottom pair")
+                return ('check', 0, f"{desc} - check bottom pair")
         if has_any_draw:
             return ('bet', round(pot * 1.0, 2), "overbet draw")
         if street == 'flop' and random.random() < 0.80:
@@ -1091,6 +1111,12 @@ def _postflop_value_maniac(hole_cards, board, pot, to_call, street, strength, de
                 return ('call', 0, f"{desc} - call river")
             if is_big_bet and strength < 3:  # 60%+ pot bet needs two pair+
                 return ('fold', 0, f"{desc} - fold vs {pot_pct:.0%} pot bet (need two pair+)")
+            # Bottom pair: fold river (too weak)
+            if hand_info['has_bottom_pair']:
+                return ('fold', 0, f"{desc} - fold bottom pair on river")
+            # Middle pair: fold to 40%+ pot bets
+            if hand_info['has_middle_pair'] and pot_pct > 0.4:
+                return ('fold', 0, f"{desc} - fold middle pair vs {pot_pct:.0%} pot")
             if strength >= 2:  # Top pair+ can call small river bets
                 return ('call', 0, f"{desc} - call river")
             return ('fold', 0, f"{desc} - fold river")
@@ -1188,22 +1214,34 @@ def _postflop_value_lord(hole_cards, board, pot, to_call, street, strength, desc
         # FIX 2: Weak pairs on straight board = CHECK (not top pair, not overpair)
         if hand_info['has_any_pair'] and not hand_info['has_top_pair'] and not hand_info['is_overpair'] and is_straight_board:
             return ('check', 0, f"{desc} - check (weak pair on straight board)")
-        # Pairs - bet normally
+        # Pairs - differentiate by strength
         if hand_info['has_any_pair']:
-            if street in ['flop', 'turn'] and random.random() < 0.85:
-                return ('bet', round(pot * 1.0, 2), f"{desc} - overbet")
-            if street == 'river' and random.random() < 0.5:
-                return ('bet', round(pot * 1.2, 2), f"{desc} - river overbet")
+            # Top pair: overbet for value
+            if hand_info['has_top_pair']:
+                if street in ['flop', 'turn']:
+                    return ('bet', round(pot * 1.0, 2), f"{desc} - overbet")
+                if street == 'river':
+                    if hand_info['has_good_kicker']:
+                        return ('bet', round(pot * 1.0, 2), f"{desc} - TPGK value")
+                    else:
+                        return ('bet', round(pot * 0.5, 2), f"{desc} - TPWK thin value")
+            # Middle pair: bet flop only, then pot control
+            elif hand_info['has_middle_pair']:
+                if street == 'flop':
+                    return ('bet', round(pot * 0.5, 2), f"{desc} - bet middle pair")
+                return ('check', 0, f"{desc} - check middle pair")
+            # Bottom pair: small bet flop only (always bet - sizing is defensive)
+            elif hand_info['has_bottom_pair']:
+                if street == 'flop':
+                    return ('bet', round(pot * 0.33, 2), f"{desc} - bet bottom pair")
+                return ('check', 0, f"{desc} - check bottom pair")
         if has_any_draw:
             return ('bet', round(pot * 1.0, 2), "overbet draw")
-        # FIX 3: Only c-bet high card when we were aggressor (opened preflop)
+        # Only c-bet when aggressor - but don't barrel turn/river with air
         if is_aggressor:
-            if street == 'flop' and random.random() < 0.80:
+            if street == 'flop':
                 return ('bet', round(pot * 0.9, 2), "c-bet big")
-            if street == 'turn' and random.random() < 0.60:
-                return ('bet', round(pot * 1.0, 2), "barrel turn")
-            if street == 'river' and random.random() < 0.35:
-                return ('bet', round(pot * 1.1, 2), "river bluff")
+            # Turn/river with air: check (fish don't fold)
         return ('check', 0, f"{desc} - check")
     else:
         # Facing bet - same as value_maniac
@@ -1246,6 +1284,12 @@ def _postflop_value_lord(hole_cards, board, pot, to_call, street, strength, desc
             
             if is_big_bet and strength < 3:
                 return ('fold', 0, f"{desc} - fold vs {pot_pct:.0%} pot bet (need two pair+)")
+            # Bottom pair: fold river (too weak)
+            if hand_info['has_bottom_pair']:
+                return ('fold', 0, f"{desc} - fold bottom pair on river")
+            # Middle pair: fold to 40%+ pot bets
+            if hand_info['has_middle_pair'] and pot_pct > 0.4:
+                return ('fold', 0, f"{desc} - fold middle pair vs {pot_pct:.0%} pot")
             if strength >= 2:
                 return ('call', 0, f"{desc} - call river")
             return ('fold', 0, f"{desc} - fold river")
@@ -1446,10 +1490,13 @@ def _postflop_value_max(hole_cards, board, pot, to_call, street, is_ip, is_aggre
             if street == 'river' and is_big_bet:
                 return ('fold', 0, f"{desc} - fold big river bet")
             return ('call', 0, f"{desc} - call")
-        if hand_info['is_underpair_to_ace']:
+        
+        # Underpair (pocket pair below board high card) - very careful
+        if hand_info.get('is_underpair'):
+            # Only call flop with small bet, fold turn/river
             if street == 'flop' and pot_odds <= 0.30:
-                return ('call', 0, f"{desc} - call flop")
-            return ('fold', 0, f"{desc} - fold")
+                return ('call', 0, f"{desc} - call flop (underpair)")
+            return ('fold', 0, f"{desc} - fold underpair")
         
         # Pocket pair (not overpair/underpair) - call flop
         if hand_info['is_pocket_pair']:

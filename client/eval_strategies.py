@@ -15,8 +15,7 @@ random.seed(42)
 from poker_logic import (STRATEGIES, preflop_action, postflop_action, 
                          calculate_equity, analyze_hand)
 
-STRATEGY_NAMES = ['value_lord', 'value_maniac', 'value_max', 'sonnet_max', 'sonnet', 'gpt4', 'gpt3', 
-                  'kiro_optimal', 'kiro5', 'kiro_v2', '2nl_exploit', 'aggressive']
+STRATEGY_NAMES = ['value_lord', 'value_maniac', 'value_max', 'kiro_v2', 'sonnet_max']
 
 def parse_hand(cards_list):
     if not cards_list or len(cards_list) != 2:

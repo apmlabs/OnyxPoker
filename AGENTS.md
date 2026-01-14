@@ -45,8 +45,7 @@ PokerStars/Simulator Window
    Strategy Engine (strategy_engine.py)
          ↓
    poker_logic.py
-     ├── analyze_hand() - Card-based hand analysis (no string matching)
-     ├── evaluate_hand() - Hand strength + description
+     ├── analyze_hand() - Card-based hand analysis (strength, desc, all flags)
      ├── preflop_action() - Position-based ranges
      └── postflop_action() - Strategy-specific logic
          ├── value_maniac: Wide ranges, overbets, paired board protection
@@ -273,6 +272,55 @@ cd client && python3 poker_sim.py 200000
 ---
 
 ## 📖 SESSION HISTORY & LESSONS LEARNED
+
+### Session 43 Part 8: Bottom Pair Fix (January 14, 2026)
+
+**Challenge**: A3 on 326KJ board was classified as generic "pair" instead of "bottom pair" - the 3 pairs with board but wasn't detected as bottom pair.
+
+**Root Cause**: Bottom pair detection only checked if hero's pair matched `min(board_vals)` (the absolute lowest card), but A3 paired with 3 which was second-lowest on a 5-card board.
+
+**Solution**: Changed bottom/middle pair detection to use board halves:
+```python
+if has_any_pair and not has_top_pair and not is_overpair and len(board_vals) >= 2:
+    board_sorted_asc = sorted(board_vals)
+    mid_idx = len(board_sorted_asc) // 2  # Middle index
+    for r in hero_ranks:
+        rv = RANK_VAL[r]
+        if r in board_ranks:
+            if rv < board_sorted_asc[mid_idx]:
+                has_bottom_pair = True
+            else:
+                has_middle_pair = True
+```
+
+**Second Bug Found**: River defense in value_lord had `if strength >= 2: return call` which caught bottom pair BEFORE the bottom_pair specific fold logic.
+
+**Fix Applied**: Added bottom/middle pair river defense to BOTH value_maniac and value_lord:
+```python
+# Bottom pair: fold river (too weak)
+if hand_info['has_bottom_pair']:
+    return ('fold', 0, f"{desc} - fold bottom pair on river")
+# Middle pair: fold to 40%+ pot bets
+if hand_info['has_middle_pair'] and pot_pct > 0.4:
+    return ('fold', 0, f"{desc} - fold middle pair vs {pot_pct:.0%} pot")
+```
+
+**Disaster Hands Fixed: 6/9 ($20.97 saved)**
+- JJ underpair river: FOLD ($2.69)
+- K9 TPGK vs big river: FOLD ($3.55)
+- A6 high card flop: FOLD ($4.92)
+- T9 middle pair flop: FOLD ($5.60)
+- A3 bottom pair river: FOLD ($2.02)
+- Q9 high card flop: FOLD ($2.19)
+
+**3 Hands Still Call (Intentional)**:
+- JJ underpair flop ($3.63) - allows 1 flop call
+- AQ TPGK river 35% pot ($2.59) - under 50% threshold
+- AQ TPGK river 21% pot ($2.23) - under 50% threshold
+
+**Critical Lesson**: Order of checks matters - generic `strength >= 2` check was catching bottom pair before specific bottom_pair fold logic. Also, fixes must be applied to BOTH value_maniac and value_lord (duplicate strategy functions).
+
+---
 
 ### Session 43 Part 7: Merge evaluate_hand into analyze_hand (January 14, 2026)
 

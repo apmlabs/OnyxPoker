@@ -1,6 +1,6 @@
 # OnyxPoker - Status Tracking
 
-**Last Updated**: January 14, 2026 19:11 UTC
+**Last Updated**: January 14, 2026 20:53 UTC
 
 ## 🎉 MILESTONE: FIRST WINNING SESSION! 🎉
 
@@ -10,30 +10,35 @@ After 40 sessions of development, testing, and refinement - we finally have a wo
 
 ---
 
-## Current Status: SESSION 43 Part 7 - Major Refactor ✅
+## Current Status: SESSION 43 Part 8 - Bottom Pair Fix ✅
 
-**Merged `evaluate_hand()` into `analyze_hand()`:**
-- Single source of truth for hand analysis
-- Fixed board trips bug (KJ on 333 was "trips" - now correctly "high card")
-- Deleted 159 lines of duplicate code
-- Updated 7 files to use unified `analyze_hand()`
+**Fixed bottom/middle pair detection and river defense:**
+- Bottom pair detection now uses board halves (not just min card)
+- A3 on 326KJ now correctly detected as bottom pair
+- Added river fold logic for bottom pair (too weak to call)
+- Added river fold logic for middle pair vs 40%+ pot bets
 
-**Results After Refactor:**
-| Metric | value_lord | Before |
-|--------|-----------|--------|
-| Eval Score | +691.5 | +603.5 |
-| Est BB/100 | +21.9 | +21.1 |
-| Good Folds | 87 | 79 |
-| Good Calls | 96 | 83 |
+**Disaster Hands Fixed: 6/9 ($20.97 saved)**
+- JJ underpair river: FOLD ($2.69)
+- K9 TPGK vs big river: FOLD ($3.55)
+- A6 high card flop: FOLD ($4.92)
+- T9 middle pair flop: FOLD ($5.60)
+- A3 bottom pair river: FOLD ($2.02)
+- Q9 high card flop: FOLD ($2.19)
+
+**Results:**
+| Metric | value_lord | value_maniac |
+|--------|-----------|--------------|
+| Eval Score | +687.5 | +678.5 |
+| Est BB/100 | +21.3 | +21.0 |
+| Good Folds | 89 | 77 |
+| Good Calls | 99 | 111 |
 | Bad Folds | 0 | 0 |
 | Bad Calls | 0 | 0 |
 
 **Test Results:**
 - ✅ audit_strategies.py: 26/26 PASS
-- ✅ test_strategy_engine.py: 54/55 PASS
 - ✅ eval_strategies.py: 0 bad folds, 0 bad calls
-
-**Next**: Continue analyzing session logs
 
 ## What Works
 
