@@ -1351,6 +1351,8 @@ def _postflop_value_lord(hole_cards, board, pot, to_call, street, strength, desc
                 if hand_info['has_good_kicker']:
                     # TPGK: Call flop/turn, careful on river
                     if street in ['flop', 'turn']:
+                        if pot_pct > 5.0:  # Fold to massive overbets (all-ins)
+                            return ('fold', 0, f"{desc} - fold TPGK vs {pot_pct:.0%} pot all-in")
                         return ('call', 0, f"{desc} - call TPGK")
                     if pot_pct <= 0.5:  # River: only call small bets
                         return ('call', 0, f"{desc} - call TPGK river")
