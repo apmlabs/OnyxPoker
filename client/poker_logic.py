@@ -211,6 +211,9 @@ def analyze_hand(hole_cards: List[Tuple[str, str]], board: List[Tuple[str, str]]
         strength, desc, kicker = 7, "full house", pocket_val
     elif has_trips and has_two_pair:
         strength, desc, kicker = 7, "full house", RANK_VAL[our_trips[0]]
+    # Full house (board trips + hero pair)
+    elif board_trips and is_pocket_pair:
+        strength, desc, kicker = 7, "full house", RANK_VAL[board_trips[0]]
     # Flush
     elif has_flush:
         flush_suit = [s for s, c in suit_counts.items() if c >= 5][0]
@@ -1781,6 +1784,10 @@ def _postflop_sonnet(hole_cards, board, pot, to_call, street, is_ip, is_aggresso
         if street == 'flop':
             return ('call', 0, f"{desc} - call flop once")
         return ('fold', 0, f"{desc} - fold {street}")
+    
+    # Bottom pair: check-fold (per strategy file)
+    if hand_info['has_bottom_pair']:
+        return ('fold', 0, f"{desc} - fold (bottom pair)")
     
     # Any pair - call flop
     if hand_info['has_any_pair'] and street == 'flop':

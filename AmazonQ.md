@@ -10,7 +10,7 @@ After 40 sessions of development, testing, and refinement - we finally have a wo
 
 ---
 
-## Current Status: SESSION 43 Part 9 - Preflop UI Validation ✅
+## Current Status: SESSION 43 Part 10 - Strategy Audit & Full House Fix ✅
 
 **Validated preflop advice matches strategy perfectly:**
 - Line 1 (6 positions): 1014/1014 scenarios PASS
@@ -164,6 +164,18 @@ Table: 60% fish, 25% nit, 15% tag
 | 17 | lag | -5.40 | 2.82 |
 
 ## Session Log
+
+### Session 43 Part 10 (January 14, 2026)
+- **STRATEGY AUDIT EXPANDED**: Added tests for gpt4, sonnet postflop behaviors
+  - gpt4: TPTK 2 streets (bet flop/turn, check river), TPWK bet once
+  - sonnet: specific sizing, middle pair call once, bottom pair fold
+- **SONNET BOTTOM PAIR FIX**: Strategy file says "check-fold", code was calling
+  - Added `has_bottom_pair` check in `_postflop_sonnet()`
+- **FULL HOUSE BUG FIX**: Board trips + hero pocket pair wasn't detected
+  - 55 on AAA was "two pair" instead of "full house"
+  - Added `board_trips and is_pocket_pair` detection
+- All 43 audit tests pass, 9/9 full house scenarios pass
+- Commits: [pending]
 
 ### Session 43 (January 14, 2026)
 - **PREFLOP UI VALIDATION**: Verified all preflop advice matches strategy

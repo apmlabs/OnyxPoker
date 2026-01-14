@@ -273,6 +273,34 @@ cd client && python3 poker_sim.py 200000
 
 ## 📖 SESSION HISTORY & LESSONS LEARNED
 
+### Session 43 Part 10: Strategy Audit & Full House Fix (January 14, 2026)
+
+**Challenge**: Audit all strategies to ensure code matches strategy files, not just value_lord/value_maniac.
+
+**Bugs Found & Fixed**:
+1. **Sonnet bottom pair**: Strategy file says "check-fold", code was calling
+   - Added `has_bottom_pair` check before generic `has_any_pair` in `_postflop_sonnet()`
+2. **Full house detection**: Board trips + hero pocket pair wasn't detected
+   - 55 on AAA was showing "two pair" instead of "full house"
+   - Added: `elif board_trips and is_pocket_pair: strength = 7`
+
+**Audit Expanded**: Added tests for gpt4 and sonnet specific behaviors:
+- gpt4: TPTK bets 2 streets (flop/turn), checks river
+- gpt4: TPWK bets flop only, checks turn
+- sonnet: Bottom pair folds (not calls)
+- sonnet: Middle pair calls flop once, folds turn
+
+**Full House Test Coverage** (9/9 pass):
+- Set + board pair ✅
+- Pocket pair + board trips ✅
+- Hero trips + hero pair (AK on AAK) ✅
+- Hero pair + board trips (AA on KKK) ✅
+- Quads correctly detected (AK on KKK = KKKK) ✅
+
+**Critical Lesson**: When auditing strategies, test ALL hand strength detection, not just strategy-specific logic. Full house bug affected ALL strategies since `analyze_hand()` is shared.
+
+---
+
 ### Session 43 Part 9: Preflop UI Validation (January 14, 2026)
 
 **Challenge**: User reported confusing preflop advice - "vs raise: open only, fold vs raise" was unclear.

@@ -97,17 +97,52 @@ def main():
     
     # ========== GPT4 TESTS ==========
     print("\n--- GPT4 STRATEGY ---")
-    print("Board texture aware, smaller c-bets")
+    print("Board texture aware, smaller c-bets (25-35% dry), TPTK 2 streets")
     
+    # Basic value betting
     results.append(test_postflop('gpt4', [('A','s'),('A','d')], [('K','h'),('7','d'),('2','c')], 1.0, 0, 'flop', 'bet', 'AA on K72 - value bet'))
     results.append(test_postflop('gpt4', [('K','s'),('K','d')], [('A','h'),('7','d'),('2','c')], 1.0, 0.5, 'flop', 'call', 'KK underpair to ace - call'))
     
+    # TPTK: 2 streets for value (bet flop/turn, check river)
+    results.append(test_postflop('gpt4', [('A','s'),('K','d')], [('A','h'),('7','c'),('2','d')], 1.0, 0, 'flop', 'bet', 'TPTK flop - bet'))
+    results.append(test_postflop('gpt4', [('A','s'),('K','d')], [('A','h'),('7','c'),('2','d'),('5','s')], 1.0, 0, 'turn', 'bet', 'TPTK turn - bet'))
+    results.append(test_postflop('gpt4', [('A','s'),('K','d')], [('A','h'),('7','c'),('2','d'),('5','s'),('3','h')], 1.0, 0, 'river', 'check', 'TPTK river - check (2 streets only)'))
+    
+    # Weak top pair: bet once, then check
+    results.append(test_postflop('gpt4', [('K','s'),('7','d')], [('K','h'),('8','c'),('2','d')], 1.0, 0, 'flop', 'bet', 'TPWK flop - bet once'))
+    results.append(test_postflop('gpt4', [('K','s'),('7','d')], [('K','h'),('8','c'),('2','d'),('5','s')], 1.0, 0, 'turn', 'check', 'TPWK turn - check'))
+    
+    # Facing aggression: fold one pair to turn/river raises
+    results.append(test_postflop('gpt4', [('A','s'),('K','d')], [('A','h'),('7','c'),('2','d'),('5','s')], 1.0, 0.8, 'turn', 'call', 'TPTK facing turn bet - call'))
+    results.append(test_postflop('gpt4', [('K','s'),('7','d')], [('K','h'),('8','c'),('2','d'),('5','s')], 1.0, 0.5, 'turn', 'fold', 'TPWK facing turn bet - fold'))
+    
     # ========== SONNET TESTS ==========
     print("\n--- SONNET STRATEGY ---")
-    print("Big value bets (75-85%), overpair logic")
+    print("Big value bets (75-85%), specific sizing per street")
     
+    # Overpair value betting
     results.append(test_postflop('sonnet', [('Q','s'),('Q','d')], [('J','h'),('8','d'),('5','c')], 1.0, 0, 'flop', 'bet', 'QQ overpair - value bet'))
     results.append(test_postflop('sonnet', [('K','s'),('K','d')], [('A','h'),('7','d'),('2','c')], 1.0, 0.5, 'flop', 'call', 'KK underpair to ace - call'))
+    
+    # TPTK: bet all 3 streets (75/70/60)
+    results.append(test_postflop('sonnet', [('A','s'),('K','d')], [('A','h'),('7','c'),('2','d')], 1.0, 0, 'flop', 'bet', 'TPTK flop - bet 75%'))
+    results.append(test_postflop('sonnet', [('A','s'),('K','d')], [('A','h'),('7','c'),('2','d'),('5','s')], 1.0, 0, 'turn', 'bet', 'TPTK turn - bet 70%'))
+    results.append(test_postflop('sonnet', [('A','s'),('K','d')], [('A','h'),('7','c'),('2','d'),('5','s'),('3','h')], 1.0, 0, 'river', 'bet', 'TPTK river - bet 60%'))
+    
+    # TPWK: bet flop only, check-call turn/river
+    results.append(test_postflop('sonnet', [('K','s'),('7','d')], [('K','h'),('8','c'),('2','d')], 1.0, 0, 'flop', 'bet', 'TPWK flop - bet 65%'))
+    results.append(test_postflop('sonnet', [('K','s'),('7','d')], [('K','h'),('8','c'),('2','d'),('5','s')], 1.0, 0, 'turn', 'check', 'TPWK turn - check'))
+    
+    # Facing aggression: "Turn raises: fold one pair"
+    results.append(test_postflop('sonnet', [('A','s'),('K','d')], [('A','h'),('7','c'),('2','d'),('5','s')], 1.0, 0.8, 'turn', 'call', 'TPTK facing turn bet - call'))
+    results.append(test_postflop('sonnet', [('K','s'),('7','d')], [('K','h'),('8','c'),('2','d'),('5','s')], 1.0, 0.5, 'turn', 'fold', 'TPWK facing turn bet - fold'))
+    
+    # Middle pair: check-call once, fold turn
+    results.append(test_postflop('sonnet', [('T','s'),('9','d')], [('K','h'),('T','c'),('4','d')], 1.0, 0.4, 'flop', 'call', 'Middle pair flop - call once'))
+    results.append(test_postflop('sonnet', [('T','s'),('9','d')], [('K','h'),('T','c'),('4','d'),('2','s')], 1.0, 0.5, 'turn', 'fold', 'Middle pair turn - fold'))
+    
+    # Bottom pair: check-fold
+    results.append(test_postflop('sonnet', [('4','s'),('3','d')], [('K','h'),('T','c'),('4','d')], 1.0, 0.3, 'flop', 'fold', 'Bottom pair facing bet - fold'))
     
     # Print results
     print("\n" + "=" * 80)
