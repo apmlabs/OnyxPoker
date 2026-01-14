@@ -4,6 +4,17 @@
 
 **First winning live session!** After 40 sessions of development, the system finally produced real winning results at 2NL. 141 hands played, overbets with pairs getting paid consistently. This validates the entire approach.
 
+### ⚠️ GOLD MODEL - DO NOT MODIFY ⚠️
+```
+Git Tag:    v1.0-gold
+Commit:     9349026
+Date:       January 14, 2026
+Strategy:   value_maniac
+Results:    141 hands, profitable session
+```
+**To revert**: `git checkout v1.0-gold`
+**To compare**: Always benchmark new strategies against this version.
+
 ---
 
 ## 🎯 PROJECT GOAL
