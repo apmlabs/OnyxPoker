@@ -488,6 +488,30 @@ Table: 60% fish, 25% nit, 15% tag
 - Fixed Windows encoding issues (no emojis)
 - Created unified GUI with hotkeys
 
+## Future Plans
+
+### Session Results Aggregator (Not Yet Built)
+Different from eval_strategies.py which tests strategy decisions on logged hands.
+
+**What it would do**:
+- Parse session logs to extract ACTUAL money won/lost per hand
+- Calculate real BB/100 win rate across multiple sessions
+- Compare live results vs simulation predictions (+41 BB/100)
+- Track win rate over time (is it improving? variance?)
+
+**Why it's different from eval**:
+- eval_strategies.py: "Would this strategy make the RIGHT decision on this hand?"
+- Aggregator: "How much money did we ACTUALLY win/lose playing these hands?"
+
+**Data needed** (not currently logged):
+- Hand result (won/lost/folded)
+- Final pot size when won
+- Amount lost when called and lost
+
+**When to build**: After 500+ live hands to have meaningful sample size.
+
+---
+
 ## Technical Details
 
 - **Model**: gpt-5.2 (configurable in vision_detector.py)
