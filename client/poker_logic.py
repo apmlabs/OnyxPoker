@@ -1143,12 +1143,11 @@ def _postflop_value_maniac(hole_cards, board, pot, to_call, street, strength, de
         if strength >= 4:
             return ('raise', round(to_call * 2.5, 2), f"{desc} - raise strong")
         if strength == 3:
-            if hand_info['two_pair_type'] == 'pocket_over_board':
-                return ('raise', round(to_call * 2.5, 2), f"{desc} - raise strong")
-            if hand_info['two_pair_type'] == 'pocket_under_board':
+            # Pocket pair on paired board = vulnerable to trips (any 7x beats 88 on 577)
+            if hand_info['two_pair_type'] in ['pocket_over_board', 'pocket_under_board']:
                 if is_big_bet:
-                    return ('fold', 0, f"{desc} - fold (weak two pair vs big bet)")
-                return ('call', 0, f"{desc} - call (weak two pair)")
+                    return ('fold', 0, f"{desc} - fold (vulnerable to trips)")
+                return ('call', 0, f"{desc} - call (vulnerable to trips)")
             if hand_info['two_pair_type'] == 'both_cards_hit':
                 return ('raise', round(to_call * 2.5, 2), f"{desc} - raise strong")
             if hand_info['two_pair_type'] == 'one_card_board_pair' and is_dangerous_board_pair:
@@ -1292,12 +1291,11 @@ def _postflop_value_lord(hole_cards, board, pot, to_call, street, strength, desc
         if strength >= 4:
             return ('raise', round(to_call * 2.5, 2), f"{desc} - raise strong")
         if strength == 3:
-            if hand_info['two_pair_type'] == 'pocket_over_board':
-                return ('raise', round(to_call * 2.5, 2), f"{desc} - raise strong")
-            if hand_info['two_pair_type'] == 'pocket_under_board':
+            # Pocket pair on paired board = vulnerable to trips (any 7x beats 88 on 577)
+            if hand_info['two_pair_type'] in ['pocket_over_board', 'pocket_under_board']:
                 if is_big_bet:
-                    return ('fold', 0, f"{desc} - fold (weak two pair vs big bet)")
-                return ('call', 0, f"{desc} - call (weak two pair)")
+                    return ('fold', 0, f"{desc} - fold (vulnerable to trips)")
+                return ('call', 0, f"{desc} - call (vulnerable to trips)")
             if hand_info['two_pair_type'] == 'both_cards_hit':
                 return ('raise', round(to_call * 2.5, 2), f"{desc} - raise strong")
             if hand_info['two_pair_type'] == 'one_card_board_pair' and is_dangerous_board_pair:

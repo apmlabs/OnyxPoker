@@ -70,7 +70,7 @@ def main():
     
     # Paired board - KK on JJ (KK > JJ = strong)
     results.append(test_postflop('value_maniac', [('K','s'),('K','d')], [('J','h'),('J','d'),('2','c')], 1.0, 0, 'flop', 'bet', 'KK on JJ - value bet (KK > JJ)'))
-    results.append(test_postflop('value_maniac', [('K','s'),('K','d')], [('J','h'),('J','d'),('2','c')], 1.0, 0.5, 'flop', 'raise', 'KK on JJ facing bet - raise (KK > JJ)'))
+    results.append(test_postflop('value_maniac', [('K','s'),('K','d')], [('J','h'),('J','d'),('2','c')], 1.0, 0.5, 'flop', 'fold', 'KK on JJ facing bet - fold (vulnerable to trips)'))
     
     # Paired board - 66 on JJ (66 < JJ = weak)
     results.append(test_postflop('value_maniac', [('6','s'),('6','d')], [('J','h'),('J','d'),('8','c')], 1.0, 0.5, 'flop', 'fold', '66 on JJ8 facing 50% - fold (66 < JJ)'))

@@ -274,6 +274,38 @@ cd client && python3 poker_sim.py 200000
 
 ## 📖 SESSION HISTORY & LESSONS LEARNED
 
+### Session 43 Part 6: Paired Board Two Pair Fix (January 14, 2026)
+
+**Challenge**: 88 on 577 board was RAISING $11.55 into $0.82 pot - disaster hand losing ~$15.
+
+**Root Cause**: `pocket_over_board` two pair classification was treated as "strong" and raised.
+
+**The Flaw**: ANY pocket pair on a paired board is vulnerable to trips:
+- 88 on 577 → any 7x has trips (beats us)
+- KK on JJ5 → any Jx has trips (beats us)
+- The relative rank (88 > 77, KK > JJ) is IRRELEVANT for defense
+
+**Fix Applied**: Both `pocket_over_board` and `pocket_under_board` now:
+- Fold to big bets (>50% pot)
+- Call small bets (<50% pot)
+
+**Results After Fix:**
+| Metric | value_lord | Before |
+|--------|-----------|--------|
+| Eval Score | +603.5 | +567.5 |
+| Est BB/100 | +21.1 | +19.9 |
+| Sim BB/100 | +20.61 | +18.86 |
+| Good Folds | 79 | 74 |
+
+**Test Verification:**
+- 88 on 577T facing $4.62 (5.6x pot) → fold ✅
+- 88 on 577T facing $0.30 (small bet) → call ✅
+- KK on JJ5 facing $0.80 → fold ✅
+
+**Critical Lesson**: When villain bets big on a paired board, they often have trips. Pocket pair rank relative to board pair is meaningless - ANY pocket pair is vulnerable. The 5.6x pot bet was a massive tell we ignored.
+
+---
+
 ### Session 43 Part 5: Pair Handling Improvements (January 14, 2026)
 
 **Challenge**: Pairs are 40-50% of postflop hands - need granular logic for different pair types.

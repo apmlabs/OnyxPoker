@@ -1,6 +1,6 @@
 # OnyxPoker - Status Tracking
 
-**Last Updated**: January 14, 2026 14:45 UTC
+**Last Updated**: January 14, 2026 16:26 UTC
 
 ## 🎉 MILESTONE: FIRST WINNING SESSION! 🎉
 
@@ -10,29 +10,27 @@ After 40 sessions of development, testing, and refinement - we finally have a wo
 
 ---
 
-## Current Status: SESSION 43 Complete + Bug Fix ✅
+## Current Status: SESSION 43 Part 6 - Paired Board Fix ✅
 
-**Today's Improvements (Session 43):**
-1. Aggressor tracking - value_lord knows if we opened or called preflop
-2. Underpair defense - JJ folds on Q-K-A boards vs aggression
-3. Pair handling granularity - TPGK/TPWK and middle/bottom pair differentiation
-4. Bug fix - Fixed indentation bug in value_maniac underpair defense
+**Critical Bug Fixed:**
+- 88 on 577 board was RAISING $11.55 into $0.82 pot (5.6x pot bet!)
+- Root cause: `pocket_over_board` two pair treated as "strong" - WRONG
+- ANY pocket pair on paired board is vulnerable to trips (any 7x beats 88)
+- Fix: Both `pocket_over_board` and `pocket_under_board` now fold big bets, call small
 
-**Pair Logic (value_lord):**
-- **TPGK** (AK on K84): Calls flop/turn, calls river ≤50% pot, folds >50% pot
-- **TPWK** (K7 on K84): Calls flop ≤40% pot only, folds turn/river
-- **Middle Pair**: Calls flop ≤35% pot, folds turn/river
-- **Bottom Pair**: Calls flop ≤25% pot (tighter), folds turn/river
+**Results After Fix:**
+| Metric | value_lord | Before |
+|--------|-----------|--------|
+| Eval Score | +603.5 | +567.5 |
+| Est BB/100 | +21.1 | +19.9 |
+| Sim BB/100 | +20.61 | +18.86 |
+| Good Folds | 79 | 74 |
+| Bad Folds | 0 | 0 |
 
 **Test Results:**
 - ✅ audit_strategies.py: 26/26 PASS
 - ✅ test_strategy_engine.py: 54/55 PASS
-- ✅ eval_strategies.py: +567.5 score, 0 bad folds
-
-**Bug Fixed:**
-- value_maniac had dead code (wrong indentation) in underpair defense
-- JJ on Q47 facing 80% pot was calling instead of folding
-- Now correctly folds underpairs to overbets
+- ✅ eval_strategies.py: 0 bad folds, 0 bad calls
 
 **Next**: Test in live play
 
