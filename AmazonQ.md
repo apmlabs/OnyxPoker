@@ -1,6 +1,6 @@
 # OnyxPoker - Status Tracking
 
-**Last Updated**: January 14, 2026 20:53 UTC
+**Last Updated**: January 14, 2026 22:22 UTC
 
 ## 🎉 MILESTONE: FIRST WINNING SESSION! 🎉
 
@@ -10,21 +10,24 @@ After 40 sessions of development, testing, and refinement - we finally have a wo
 
 ---
 
-## Current Status: SESSION 43 Part 8 - Bottom Pair Fix ✅
+## Current Status: SESSION 43 Part 9 - Preflop UI Validation ✅
 
-**Fixed bottom/middle pair detection and river defense:**
-- Bottom pair detection now uses board halves (not just min card)
-- A3 on 326KJ now correctly detected as bottom pair
-- Added river fold logic for bottom pair (too weak to call)
-- Added river fold logic for middle pair vs 40%+ pot bets
+**Validated preflop advice matches strategy perfectly:**
+- Line 1 (6 positions): 1014/1014 scenarios PASS
+- Line 2 (vs raise): 1014/1014 scenarios PASS
+- All open ranges match strategy file
+- All call/3bet/4bet ranges match strategy file
 
-**Disaster Hands Fixed: 6/9 ($20.97 saved)**
-- JJ underpair river: FOLD ($2.69)
-- K9 TPGK vs big river: FOLD ($3.55)
-- A6 high card flop: FOLD ($4.92)
-- T9 middle pair flop: FOLD ($5.60)
-- A3 bottom pair river: FOLD ($2.02)
-- Q9 high card flop: FOLD ($2.19)
+**Clearer "vs raise" wording:**
+- `CALL any` - AA, KK, AKs, AKo
+- `CALL up to 15bb` - JJ, TT, 99, AQs, KQs
+- `CALL up to 4bb` - suited connectors, broadways
+- `FOLD` - open-only hands (was "open only, fold vs raise")
+
+**Multi-stakes support (from Part 8):**
+- Vision extracts big_blind from window title
+- Thresholds use relative BB (not hardcoded $0.02)
+- Default BB changed to 0.05 (5NL)
 
 **Results:**
 | Metric | value_lord | value_maniac |
@@ -161,6 +164,24 @@ Table: 60% fish, 25% nit, 15% tag
 | 17 | lag | -5.40 | 2.82 |
 
 ## Session Log
+
+### Session 43 (January 14, 2026)
+- **PREFLOP UI VALIDATION**: Verified all preflop advice matches strategy
+  - Line 1 (6 positions): 1014/1014 scenarios PASS
+  - Line 2 (vs raise): 1014/1014 scenarios PASS
+  - All open/call/3bet/4bet ranges match strategy file
+- **CLEARER VS RAISE WORDING**: Simplified call threshold messages
+  - `CALL any` - AA, KK, AKs, AKo
+  - `CALL up to 15bb` - JJ, TT, 99, AQs, KQs
+  - `CALL up to 4bb` - suited connectors, broadways
+  - `FOLD` - open-only hands (was confusing "open only, fold vs raise")
+- **MULTI-STAKES SUPPORT**: Vision extracts big_blind from window title
+  - Thresholds use relative BB (not hardcoded $0.02)
+  - Default BB changed to 0.05 (5NL)
+- **BOTTOM PAIR FIX**: Detection now uses board halves
+  - A3 on 326KJ correctly detected as bottom pair
+  - River fold logic for bottom/middle pair
+- Commits: d7f2fdc
 
 ### Session 40 (January 14, 2026)
 - **FIRST LIVE SESSION**: 141 hands with value_maniac strategy

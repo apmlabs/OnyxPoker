@@ -273,6 +273,31 @@ cd client && python3 poker_sim.py 200000
 
 ## 📖 SESSION HISTORY & LESSONS LEARNED
 
+### Session 43 Part 9: Preflop UI Validation (January 14, 2026)
+
+**Challenge**: User reported confusing preflop advice - "vs raise: open only, fold vs raise" was unclear.
+
+**Validation Performed**: Simulated all 169 hands × 6 positions = 1014 scenarios for both lines:
+- Line 1 (6 position actions): 1014/1014 PASS
+- Line 2 (vs raise thresholds): 1014/1014 PASS
+- All ranges match strategy file exactly
+
+**Fix Applied**: Clearer wording for `_get_call_threshold()`:
+```python
+# Before: "open only, fold vs raise", "call open (4bb)", "call 3bet (15bb)"
+# After:  "FOLD", "CALL up to 4bb", "CALL up to 15bb", "CALL any"
+```
+
+**Output Examples**:
+- AA: `vs raise: CALL any`
+- JJ: `vs raise: CALL up to 15bb`
+- KJs: `vs raise: CALL up to 4bb`
+- A6o: `vs raise: FOLD`
+
+**Critical Lesson**: UI text must be immediately actionable. "open only, fold vs raise" requires mental parsing; "FOLD" is instant.
+
+---
+
 ### Session 43 Part 8: Bottom Pair Fix (January 14, 2026)
 
 **Challenge**: A3 on 326KJ board was classified as generic "pair" instead of "bottom pair" - the 3 pairs with board but wasn't detected as bottom pair.

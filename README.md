@@ -35,9 +35,9 @@ python helper_bar.py --strategy sonnet
 2. Run `python helper_bar.py` - a bar appears at bottom of screen
 3. Click on poker window to make it active
 4. Press **F9** - AI analyzes the table and shows:
-   - **Decision** for all 6 positions (preflop)
-   - **Decision stats** - all the `is_*` and `has_*` flags used to make the decision
-   - Perfect for research - see exactly what drives each decision
+   - **Line 1**: Action for all 6 positions (UTG:FOLD | MP:FOLD | CO:RAISE | BTN:RAISE | SB:RAISE | BB:CHECK)
+   - **Line 2**: What to do vs a raise (CALL any, CALL up to 15bb, CALL up to 4bb, or FOLD)
+   - **Stats panel**: All hand analysis flags for research
 
 ## Hotkeys
 
