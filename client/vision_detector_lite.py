@@ -41,7 +41,8 @@ class VisionDetectorLite:
   "to_call": 0.02,
   "is_hero_turn": true,
   "num_players": 3,
-  "facing_raise": false
+  "facing_raise": false,
+  "big_blind": 0.02
 }
 
 CRITICAL - CARD SUIT DETECTION:
@@ -64,6 +65,7 @@ READING RULES:
 - hero_stack: Hero's chip stack at BOTTOM. Read exact decimal value.
 - to_call: Amount shown on CALL button. 0 if CHECK button visible. null if no action buttons.
 - is_hero_turn: TRUE if LARGE RED action buttons (FOLD/CHECK/CALL/RAISE) visible. FALSE if only small checkboxes.
+- big_blind: Read from WINDOW TITLE at top. Format is "Table - $SB/$BB". Extract BB value (e.g., "$0.01/$0.02" → 0.02, "$0.05/$0.10" → 0.10).
 
 OTHER FIELDS:
 - num_players: Count active players still in the hand (not folded).

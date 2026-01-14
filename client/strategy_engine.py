@@ -54,6 +54,7 @@ class StrategyEngine:
         to_call = table_data.get('to_call') or 0
         position = (table_data.get('position') or 'BTN').upper()
         facing_raise = table_data.get('facing_raise', False)
+        big_blind = table_data.get('big_blind') or 0.02  # Default to 2NL
         
         hand = get_hand_notation(cards)
         if not hand:
@@ -66,35 +67,34 @@ class StrategyEngine:
         
         # Preflop
         if not board:
-            return self._preflop(hand, position, to_call, facing_raise)
+            return self._preflop(hand, position, to_call, facing_raise, big_blind)
         
         # Postflop
         return self._postflop(cards, board, pot, to_call, position, table_data)
     
-    def _preflop(self, hand: str, position: str, to_call: float, facing_raise: bool) -> Dict[str, Any]:
+    def _preflop(self, hand: str, position: str, to_call: float, facing_raise: bool, big_blind: float = 0.02) -> Dict[str, Any]:
         """Preflop decision with call thresholds."""
         
-        # Determine what we're facing
-        # Key insight: to_call is the most reliable indicator
-        # - to_call <= 0.02 means no raise (just blinds)
-        # - to_call > 0.02 means someone raised
+        # Determine what we're facing based on to_call relative to big_blind
+        # - to_call <= BB means no raise (just blinds)
+        # - to_call > BB means someone raised
         if position == 'BB':
-            if to_call <= 0.01:
+            if to_call <= big_blind * 0.5:  # Less than half BB = no raise
                 facing = 'none'
                 opener_pos = None
-            elif to_call <= 0.25:
+            elif to_call <= big_blind * 12:  # Up to 12BB = open raise
                 facing = 'open'
                 opener_pos = 'MP'
             else:
                 facing = '3bet'
                 opener_pos = None
-        elif to_call <= 0.02:  # No raise - ignore facing_raise flag
+        elif to_call <= big_blind:  # No raise - just blinds
             facing = 'none'
             opener_pos = None
-        elif to_call <= 0.25:
+        elif to_call <= big_blind * 12:  # Up to 12BB = open raise
             facing = 'open'
             opener_pos = 'MP'
-        elif to_call <= 0.80:
+        elif to_call <= big_blind * 40:  # Up to 40BB = 3bet
             facing = '3bet'
             opener_pos = None
         else:
@@ -106,7 +106,7 @@ class StrategyEngine:
         bet_size = None
         if action == 'raise':
             if facing == 'none':
-                bet_size = 0.12
+                bet_size = round(big_blind * 6, 2)  # 3BB open (6x SB)
             elif facing == 'open':
                 bet_size = round(to_call * 3.5, 2)
             elif facing == '3bet':
