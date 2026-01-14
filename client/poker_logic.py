@@ -47,10 +47,16 @@ def analyze_hand(hole_cards: List[Tuple[str, str]], board: List[Tuple[str, str]]
     all_ranks = hero_ranks + board_ranks
     all_rank_counts = Counter(all_ranks)
     
-    # What pairs/trips/quads do we have?
-    our_pairs = [r for r, c in all_rank_counts.items() if c >= 2]
-    our_trips = [r for r, c in all_rank_counts.items() if c >= 3]
+    # What pairs/trips/quads do we have? (must include at least one hero card for pairs)
+    # Exception: board pairs count for two pair detection
+    hero_pairs = [r for r, c in all_rank_counts.items() if c >= 2 and r in hero_ranks]
+    board_pair_ranks = [r for r, c in Counter(board_ranks).items() if c >= 2]
+    our_pairs = list(set(hero_pairs + board_pair_ranks))  # Combine hero pairs + board pairs
+    our_trips = [r for r, c in all_rank_counts.items() if c >= 3 and r in hero_ranks]
     our_quads = [r for r, c in all_rank_counts.items() if c >= 4]
+    
+    # Does hero actually have a pair (not just board paired)?
+    hero_has_pair = len(hero_pairs) > 0
     
     # Did hero's cards hit the board?
     hero_hit_board = [r for r in hero_ranks if r in board_ranks]
@@ -97,8 +103,8 @@ def analyze_hand(hole_cards: List[Tuple[str, str]], board: List[Tuple[str, str]]
     has_set = len(our_trips) > 0 and is_pocket_pair  # Set = pocket pair hit board
     has_trips = len(our_trips) > 0 and not is_pocket_pair  # Trips = board pair + one card
     
-    # Any pair at all
-    has_any_pair = num_pairs >= 1
+    # Any pair at all (hero must have at least one card in a pair)
+    has_any_pair = hero_has_pair
     
     # Middle/bottom pair detection
     has_middle_pair = False
@@ -120,13 +126,19 @@ def analyze_hand(hole_cards: List[Tuple[str, str]], board: List[Tuple[str, str]]
     has_flush_draw = any(c >= 4 for c in suit_counts.values()) and not any(c >= 5 for c in suit_counts.values())
     has_flush = any(c >= 5 for c in suit_counts.values())
     
-    # Nut flush draw detection - do we have the Ace of the flush suit?
+    # Nut flush draw detection - do we have the Ace or King of the flush suit?
     is_nut_flush_draw = False
     if has_flush_draw:
         flush_suit = [s for s, c in suit_counts.items() if c >= 4][0]
         hero_flush_cards = [c for c in hole_cards if c[1] == flush_suit]
         hero_flush_vals = [RANK_VAL[c[0]] for c in hero_flush_cards]
-        is_nut_flush_draw = 12 in hero_flush_vals  # Has Ace of flush suit
+        # Check if we have Ace or King of flush suit (nut or 2nd nut)
+        board_flush_vals = [RANK_VAL[c[0]] for c in board if c[1] == flush_suit]
+        # Nut if we have Ace, or King when Ace not on board
+        if 12 in hero_flush_vals:  # Ace
+            is_nut_flush_draw = True
+        elif 11 in hero_flush_vals and 12 not in board_flush_vals:  # King, no Ace on board
+            is_nut_flush_draw = True
     
     # Straight draw detection (simplified - OESD or gutshot)
     all_vals_unique = sorted(set(hero_vals + board_vals))
@@ -1056,7 +1068,8 @@ def _postflop_value_maniac(hole_cards, board, pot, to_call, street, strength, de
     """
     hand_info = analyze_hand(hole_cards, board)
     bet_in_bb = to_call / bb_size if bb_size > 0 else 0
-    is_big_bet = bet_in_bb >= 10  # 10+ BB is a big bet/raise
+    # Use pot-relative sizing for "big bet" - 60%+ pot is big
+    is_big_bet = to_call > 0 and pot > 0 and to_call >= pot * 0.5
     is_dangerous_board_pair = hand_info['board_pair_val'] is not None and hand_info['board_pair_val'] >= 8  # T+
     has_strong_draw = has_flush_draw or has_oesd  # 8+ outs
     
@@ -1104,22 +1117,27 @@ def _postflop_value_maniac(hole_cards, board, pot, to_call, street, strength, de
                     return ('fold', 0, f"{desc} - fold (two pair on dangerous board)")
                 return ('call', 0, f"{desc} - call (but fold to more aggression)")
             return ('raise', round(to_call * 2.5, 2), f"{desc} - raise strong")
-        # River defense based on hand strength and bet size in BBs
+        # River defense based on hand strength and pot-relative bet size
         # 2NL villains under-bluff, so need strong hands to call big bets
+        pot_pct = to_call / pot if pot > 0 else 0
         if street == 'river':
-            # Overpairs can call bigger bets than TPGK
+            # Overpairs can call up to pot-sized bets
             if hand_info['is_overpair']:
-                if bet_in_bb >= 20:  # Only fold overpair to 20+ BB
-                    return ('fold', 0, f"{desc} - fold overpair vs {bet_in_bb:.0f}BB river bet")
+                if pot_pct > 1.0:  # Only fold overpair to overbet
+                    return ('fold', 0, f"{desc} - fold overpair vs {pot_pct:.0%} pot bet")
                 return ('call', 0, f"{desc} - call river")
-            if is_big_bet and strength < 3:  # 10+ BB bet needs two pair+
-                return ('fold', 0, f"{desc} - fold vs {bet_in_bb:.0f}BB river bet (need two pair+)")
+            if is_big_bet and strength < 3:  # 60%+ pot bet needs two pair+
+                return ('fold', 0, f"{desc} - fold vs {pot_pct:.0%} pot bet (need two pair+)")
             if strength >= 2:  # Top pair+ can call small river bets
                 return ('call', 0, f"{desc} - call river")
             return ('fold', 0, f"{desc} - fold river")
-        # Flop/turn: use pot odds for pairs
+        # Flop/turn: fold weak pairs to huge overbets
         if hand_info['is_pocket_pair'] or hand_info['has_any_pair']:
             pot_odds = to_call / (pot + to_call) if (pot + to_call) > 0 else 1
+            pot_pct = to_call / pot if pot > 0 else 0
+            # Fold weak pairs (bottom/middle) to overbets (100%+ pot)
+            if pot_pct > 1.0 and strength <= 2 and not hand_info['has_top_pair']:
+                return ('fold', 0, f"{desc} - fold weak pair vs overbet")
             if pot_odds > 0.5 and not has_strong_draw:
                 return ('fold', 0, f"{desc} - fold pair vs all-in")
             return ('call', 0, f"{desc} - call pair")

@@ -173,12 +173,13 @@ def main():
         # Calculate equity
         equity = calculate_equity(hole, board, num_opponents=1, simulations=300) / 100.0
         
-        # Evaluate hand strength
+        # Evaluate hand strength (returns tuple: (strength_num, desc, kicker))
+        # strength_num: 1=high card, 2=pair, 3=two pair, 4=trips/set, 5=straight, 6=flush, 7=full house, 8=quads, 9=straight flush
         hand_eval = evaluate_hand(hole, board)
-        hand_strength = hand_eval[0] if hand_eval else 'high card'
+        hand_strength = hand_eval[0] if hand_eval else 1
         
-        # Is this a value hand? (pair or better)
-        is_value_hand = hand_strength not in ['high card']
+        # Is this a value hand? (pair or better = strength >= 2)
+        is_value_hand = hand_strength >= 2
         
         for strat in STRATEGY_NAMES:
             try:
@@ -190,8 +191,16 @@ def main():
                 # Track actions
                 if action == 'fold':
                     results[strat]['postflop_fold'] += 1
-                    # Adjust equity for villain's betting range
-                    adjusted_equity = equity * 0.7 if to_call > 0 else equity
+                    # Adjust equity based on bet size (bigger bet = stronger range)
+                    pot_pct = to_call / pot if pot > 0 else 0
+                    if pot_pct > 2.0:  # Overbet 200%+ = very strong range
+                        adjusted_equity = equity * 0.5
+                    elif pot_pct > 1.0:  # Overbet 100-200%
+                        adjusted_equity = equity * 0.6
+                    elif pot_pct > 0.5:  # 50-100% pot
+                        adjusted_equity = equity * 0.7
+                    else:  # Small bet
+                        adjusted_equity = equity * 0.8
                     if adjusted_equity < 0.30:
                         results[strat]['good_folds'] += 1
                     elif adjusted_equity > 0.50:
