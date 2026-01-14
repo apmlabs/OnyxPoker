@@ -69,6 +69,10 @@ class HelperBar:
         self.last_screenshot = None
         self.bot_running = False
         
+        # Session state for aggressor tracking
+        self.last_preflop_action = None  # 'open', 'call', or None
+        self.last_pot = 0  # Track pot to detect new hands
+        
         # Drag state
         self._drag_start_x = 0
         self._drag_start_y = 0
@@ -279,6 +283,17 @@ class HelperBar:
                     engine = StrategyEngine(STRATEGY)
                     all_position_results = {}
                     
+                    # Determine if we're aggressor (for postflop)
+                    board = table_data.get('community_cards', [])
+                    if board:  # Postflop
+                        if self.last_preflop_action == 'open':
+                            is_aggressor = True
+                        elif self.last_preflop_action == 'call':
+                            is_aggressor = False
+                        else:
+                            is_aggressor = True  # Default (first F9 postflop, or typical play)
+                        table_data['is_aggressor'] = is_aggressor
+                    
                     for pos in ['UTG', 'MP', 'CO', 'BTN', 'SB', 'BB']:
                         pos_data = {**table_data, 'position': pos}
                         decision = engine.get_action(pos_data)
@@ -323,6 +338,21 @@ class HelperBar:
         confidence = result.get('confidence', 0.95) or 0.95
 
         to_call = result.get('to_call')
+        
+        # Detect new hand (pot reset to blinds ~$0.07)
+        if pot > 0 and pot <= 0.10 and self.last_pot > 0.10:
+            self.last_preflop_action = None  # New hand started
+            self.log("New hand detected", "DEBUG")
+        self.last_pot = pot
+        
+        # Track preflop aggressor for postflop decisions
+        if not board:  # Preflop
+            if action in ('bet', 'raise'):
+                self.last_preflop_action = 'open'
+            elif action == 'call':
+                self.last_preflop_action = 'call'
+            elif action == 'fold':
+                self.last_preflop_action = None
         
         # Save to session log (JSONL format) - includes screenshot name for correlation
         log_entry = {

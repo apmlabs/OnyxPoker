@@ -69,7 +69,7 @@ class StrategyEngine:
             return self._preflop(hand, position, to_call, facing_raise)
         
         # Postflop
-        return self._postflop(cards, board, pot, to_call, position)
+        return self._postflop(cards, board, pot, to_call, position, table_data)
     
     def _preflop(self, hand: str, position: str, to_call: float, facing_raise: bool) -> Dict[str, Any]:
         """Preflop decision with call thresholds."""
@@ -162,7 +162,7 @@ class StrategyEngine:
         
         return "fold"
     
-    def _postflop(self, cards: List[str], board: List[str], pot: float, to_call: float, position: str) -> Dict[str, Any]:
+    def _postflop(self, cards: List[str], board: List[str], pot: float, to_call: float, position: str, table_data: Dict[str, Any] = None) -> Dict[str, Any]:
         """Postflop decision."""
         
         # Parse cards
@@ -192,7 +192,12 @@ class StrategyEngine:
         
         # Position (simplified)
         is_ip = position in ['BTN', 'CO']
-        is_aggressor = True  # Assume we were aggressor preflop
+        
+        # Get is_aggressor from table_data if available, otherwise default to True
+        if table_data:
+            is_aggressor = table_data.get('is_aggressor', True)
+        else:
+            is_aggressor = True  # Default for backward compatibility
         
         # Default to heads-up (vision detector should provide num_players in future)
         num_opponents = 1
