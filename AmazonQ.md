@@ -1,26 +1,31 @@
 # OnyxPoker - Status Tracking
 
-**Last Updated**: January 14, 2026 00:10 UTC
+**Last Updated**: January 14, 2026 01:28 UTC
 
-## Current Status: SESSION 39 - EVAL FRAMEWORK FIX ✅
+## Current Status: SESSION 40 - FIRST LIVE SESSION ✅
 
-Fixed eval_strategies.py to use hand strength instead of equity vs random for bad fold detection.
+First real-money live session with value_maniac strategy. 141 hands played.
 
-**Key Changes This Session**:
-1. Fixed eval_strategies.py bugs:
-   - `is_value_hand`: was comparing int to string (always True)
-   - `has_any_pair`: was counting board pairs as hero pairs
-   - Bad fold detection: now uses hand strength + bet size (not equity vs random)
-2. Fixed poker_logic.py:
-   - `is_big_bet`: now pot-relative (50%+ pot) not absolute BB
-   - River defense: pot-relative thresholds for overpairs
-   - Nut flush draw: includes King when Ace not on board
-3. All strategies now have 0 bad folds, 0 bad calls
+**Session Results**:
+- **141 decisions** (75 preflop, 66 postflop)
+- **Actions**: Fold 36% | Bet 32% | Raise 16% | Call 13% | Check 3%
+- **Big wins**: JJ vs 4-bet (~$10), Set of 4s (~$8), Quads 2s (~$7), Trip Aces (~$4)
+- **Strategy working**: Overbets with pairs getting paid at 2NL
 
-**Results**: 
-- audit_strategies.py: 21/21 PASS
-- eval_strategies.py: value_maniac +461.5 score, 0 bad folds, 0 bad calls
-- All test suites passing
+**Key Hands**:
+1. JJ 3-bet, called 4-bet, c-bet A-high flop, called all-in → WON ~$10
+2. 44 flopped set, overbet turn/river → WON ~$8
+3. 22 flopped QUADS, raised turn, overbet river → WON ~$7
+4. AKd turned trips, overbet turn/river → WON ~$4
+5. QJ two pair on J88 - advised raise $13.67, user skipped (CORRECT - risky spot)
+
+**Correct Folds**:
+- KJ top pair vs $14.55 all-in → FOLD (saved ~$14)
+- AK top pair vs $7.46 all-in → FOLD (saved ~$7)
+- 99 fold to 4-bet (twice) → FOLD
+- AKo fold to 4-bet → FOLD
+
+**Validation**: value_maniac strategy performs as expected in live play. Overbets extract max value from 2NL fish who call too much.
 
 ## What Works
 
@@ -138,6 +143,20 @@ Table: 60% fish, 25% nit, 15% tag
 | 12 | nit | -3.42 | 1.43 |
 
 ## Session Log
+
+### Session 40 (January 14, 2026)
+- **FIRST LIVE SESSION**: 141 hands with value_maniac strategy
+- **RESULTS**: Strategy validated in real play
+  - Actions: Fold 36% | Bet 32% | Raise 16% | Call 13% | Check 3%
+  - Big wins: JJ (~$10), Set 4s (~$8), Quads 2s (~$7), Trip As (~$4)
+  - Overbets with pairs consistently getting paid
+- **KEY HANDS**:
+  - JJ called 4-bet, c-bet A-high flop, called all-in → WON
+  - 44 flopped set, overbet turn/river → WON ~$8
+  - 22 flopped QUADS → WON ~$7
+  - QJ two pair on J88 - advised raise $13.67, user correctly skipped (risky)
+- **CORRECT FOLDS**: KJ vs $14.55 all-in, AK vs $7.46 all-in, 99/AKo vs 4-bets
+- **VALIDATION**: value_maniac overbets extract max value from 2NL fish
 
 ### Session 39 (January 14, 2026)
 - **EVAL FRAMEWORK FIX**: Fixed eval_strategies.py to use hand strength instead of equity

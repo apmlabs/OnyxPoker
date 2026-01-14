@@ -2,6 +2,13 @@
 
 AI-powered poker assistant using GPT-5.2 vision to read tables and provide decisions.
 
+## Live Results (Session 40)
+
+**141 hands played** with value_maniac strategy:
+- Overbets with pairs getting paid consistently
+- Big wins: JJ (~$10), Set 4s (~$8), Quads (~$7), Trip Aces (~$4)
+- Correct folds: KJ vs $14.55 all-in, AK vs $7.46 all-in
+
 ## Quick Start
 
 ```bash
@@ -26,9 +33,8 @@ python helper_bar.py --strategy sonnet
 
 1. Open PokerStars and sit at a table
 2. Run `python helper_bar.py` - a bar appears at bottom of screen
-3. **Select your position** using radio buttons at top (UTG/MP/CO/BTN/SB/BB)
-4. Click on poker window to make it active
-5. Press **F9** - AI analyzes the table and shows decision
+3. Click on poker window to make it active
+4. Press **F9** - AI analyzes the table and shows decision for all 6 positions (preflop)
 
 ## Hotkeys
 
@@ -44,7 +50,7 @@ python helper_bar.py --strategy sonnet
 - **No calibration needed** - F9 screenshots the active window
 - **GPT-5.2 Vision** reads cards, pot, stacks, buttons (96.9% accuracy)
 - **Strategy Engine** applies hardcoded poker logic from strategy files
-- **Manual Position** - Select your position via UI buttons
+- **Preflop**: Shows advice for ALL 6 positions automatically
 - **6-9 seconds** per analysis
 
 **AI-Only Mode**: Use `--ai-only` flag for GPT-5.2 to make all decisions (old behavior)
