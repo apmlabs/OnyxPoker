@@ -191,25 +191,38 @@ def main():
                 # Track actions
                 if action == 'fold':
                     results[strat]['postflop_fold'] += 1
-                    # Adjust equity based on bet size (bigger bet = stronger range)
+                    # Bad fold = folding strong hands to small bets
+                    # Use hand strength + bet size, not equity vs random
                     pot_pct = to_call / pot if pot > 0 else 0
-                    if pot_pct > 2.0:  # Overbet 200%+ = very strong range
-                        adjusted_equity = equity * 0.5
-                    elif pot_pct > 1.0:  # Overbet 100-200%
-                        adjusted_equity = equity * 0.6
-                    elif pot_pct > 0.5:  # 50-100% pot
-                        adjusted_equity = equity * 0.7
-                    else:  # Small bet
-                        adjusted_equity = equity * 0.8
-                    if adjusted_equity < 0.30:
+                    is_small_bet = pot_pct < 0.5
+                    is_medium_bet = 0.5 <= pot_pct < 1.0
+                    
+                    # Good fold: weak hand OR strong hand vs huge bet
+                    # Bad fold: strong hand vs small/medium bet
+                    if hand_strength >= 4:  # Set+ should rarely fold
+                        if is_small_bet or is_medium_bet:
+                            results[strat]['bad_folds'] += 1
+                            bad_decisions[strat]['bad_folds'].append({
+                                'hole': hole, 'board': board, 'street': street,
+                                'pot': pot, 'to_call': to_call, 'equity': equity,
+                                'strength': hand_strength
+                            })
+                        else:
+                            results[strat]['good_folds'] += 1
+                    elif hand_strength == 3:  # Two pair - context dependent
+                        if is_small_bet:  # Folding two pair to small bet = bad
+                            results[strat]['bad_folds'] += 1
+                            bad_decisions[strat]['bad_folds'].append({
+                                'hole': hole, 'board': board, 'street': street,
+                                'pot': pot, 'to_call': to_call, 'equity': equity,
+                                'strength': hand_strength
+                            })
+                        else:
+                            results[strat]['good_folds'] += 1
+                    elif hand_strength == 2:  # One pair - usually ok to fold vs aggression
                         results[strat]['good_folds'] += 1
-                    elif adjusted_equity > 0.50:
-                        results[strat]['bad_folds'] += 1
-                        bad_decisions[strat]['bad_folds'].append({
-                            'hole': hole, 'board': board, 'street': street,
-                            'pot': pot, 'to_call': to_call, 'equity': equity,
-                            'adj_equity': adjusted_equity
-                        })
+                    else:  # High card - good fold
+                        results[strat]['good_folds'] += 1
                 elif action == 'check':
                     results[strat]['postflop_check'] += 1
                 elif action == 'call':
@@ -325,7 +338,10 @@ def main():
         for bf in vm['bad_folds']:
             h = ''.join([c[0]+c[1] for c in bf['hole']])
             b = ' '.join([c[0]+c[1] for c in bf['board']])
-            print(f"  {h} on {b} ({bf['street']}) eq={bf['equity']:.0%} adj={bf['adj_equity']:.0%} pot={bf['pot']:.2f} call={bf['to_call']:.2f}")
+            strength_names = {1: 'high', 2: 'pair', 3: '2pair', 4: 'trips', 5: 'str', 6: 'flush', 7: 'FH', 8: 'quads'}
+            sname = strength_names.get(bf.get('strength', 1), '?')
+            pot_pct = bf['to_call'] / bf['pot'] * 100 if bf['pot'] > 0 else 0
+            print(f"  {h} on {b} ({bf['street']}) str={sname} pot%={pot_pct:.0f}%")
     
     if vm['bad_calls']:
         print(f"\nBAD CALLS ({len(vm['bad_calls'])}):")
