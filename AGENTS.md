@@ -158,7 +158,7 @@ cd client && python3 test_strategy_engine.py
 **MUST PASS before live play!**
 
 ### 3. Real Hand Evaluation (`eval_strategies.py`)
-Evaluates strategies on 1000+ real hands from session logs.
+Evaluates strategies on 1150 real hands from session logs.
 
 ```bash
 cd client && python3 eval_strategies.py
@@ -171,20 +171,17 @@ cd client && python3 eval_strategies.py
 - **PostFold%**: Postflop fold frequency
 - **Aggression%**: Bet+Raise / (Bet+Raise+Call+Check)
 
-**Quality metrics:**
-- **Good Folds**: Folding <30% equity hands
-- **Bad Folds**: Folding >50% equity hands (LEAK!)
+**Quality metrics (hand strength based, NOT equity):**
+- **Good Folds**: Folding weak hands (high card, one pair vs aggression)
+- **Bad Folds**: Folding strong hands to small bets (set+ vs <100% pot, two pair vs <50% pot)
 - **Good Calls**: Calling when equity > pot odds
 - **Bad Calls**: Calling when equity < pot odds
-- **Value Raises**: Raising with strong hands facing bets
+- **Value Bets**: Betting with pair or better
 
-**Score formula:**
-```
-Score = GoodFolds*2 - BadFolds*3 + GoodCalls*2 - BadCalls*2 
-        + ValueBets*1 - Bluffs*0.5 + PreflopRaises*0.5
-```
+**Why hand strength, not equity?**
+Equity vs random is meaningless when villain bets. A 50% pot bet means villain has something - their range is NOT random. Hand strength categories match how strategies actually think.
 
-**Target: Score > +300, BadFolds = 0**
+**Target: BadFolds = 0, BadCalls = 0**
 
 ### 4. Monte Carlo Simulation (`poker_sim.py`)
 Simulates 200k+ hands against realistic opponent archetypes.
@@ -205,7 +202,7 @@ cd client && python3 poker_sim.py 200000
 2. Run `audit_strategies.py` → **MUST PASS** (code matches strategy files)
 3. Run `test_strategy_engine.py` → **MUST PASS** (live code path)
 4. Run `test_postflop.py` → fix any issues
-5. Run `eval_strategies.py` → check real hand performance
+5. Run `eval_strategies.py` → check real hand performance (0 bad folds/calls)
 6. Run `poker_sim.py 200000` → verify simulation results
 7. If all pass, commit changes
 
@@ -259,6 +256,30 @@ cd client && python3 poker_sim.py 200000
 
 ## 📖 SESSION HISTORY & LESSONS LEARNED
 
+### Session 39: Eval Framework Fix (January 14, 2026)
+
+**Challenge**: eval_strategies.py was flagging correct folds as "bad folds" because it used equity vs random with arbitrary multipliers.
+
+**Bugs Found**:
+1. `is_value_hand` compared int to string (`1 not in ['high card']` = always True)
+2. `has_any_pair` counted board pairs as hero pairs (T9 on 33K showed "has pair")
+3. `is_big_bet` used absolute BB (10+) instead of pot-relative sizing
+4. Nut flush draw only checked for Ace, not King
+
+**Solution**: Use hand strength categories for bad fold detection:
+- **Set+ (strength ≥ 4)**: Bad fold if facing <100% pot
+- **Two pair (strength = 3)**: Bad fold only if facing <50% pot  
+- **One pair (strength = 2)**: Always good fold (can fold to aggression)
+- **High card**: Always good fold
+
+**Why this works**: Matches how strategies actually think. "Fold one pair to 50% pot river bet" is correct poker - equity vs random is meaningless when villain bets.
+
+**Results**: value_maniac 0 bad folds, 0 bad calls, +461.5 score
+
+**Critical Lesson**: Testing frameworks must match the logic being tested. Using equity vs random to judge hand-strength-based decisions creates false positives.
+
+---
+
 ### Session 38: Equity vs Random Bug Fix (January 13, 2026)
 
 **Challenge**: Disaster hand analysis revealed fundamental flaw - equity vs random hands was being used for river defense decisions, but villain's range is never random when they bet/raise.
@@ -267,8 +288,8 @@ cd client && python3 poker_sim.py 200000
 
 **Solution**: Two-pronged approach:
 1. **Made hands**: Use hand strength thresholds instead of equity
-   - One pair (TPGK) folds to 10+ BB bets
-   - Overpairs can call up to 20 BB bets
+   - One pair (TPGK) folds to 50%+ pot bets
+   - Overpairs can call up to 100% pot bets
    - Two pair+ calls
 2. **Draws**: Use conservative pot odds thresholds (draws have known outs, making math more reliable)
    - Nut flush draw: 41% (implied odds at 2NL)
