@@ -1188,8 +1188,8 @@ def _postflop_value_maniac(hole_cards, board, pot, to_call, street, strength, de
                 if street in ['turn', 'river']:
                     return ('fold', 0, f"{desc} - fold underpair vs aggression")
                 # Flop overbet: Fold immediately
-                    if street == 'flop' and pot_pct > 0.5:
-                        return ('fold', 0, f"{desc} - fold underpair vs overbet")
+                if street == 'flop' and pot_pct > 0.5:
+                    return ('fold', 0, f"{desc} - fold underpair vs overbet")
             
             # Fold weak pairs (bottom/middle) to overbets (100%+ pot)
             if pot_pct > 1.0 and strength <= 2 and not hand_info['has_top_pair']:
