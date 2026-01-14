@@ -365,6 +365,7 @@ class HelperBar:
             'action': action,
             'amount': bet_size,
             'to_call': to_call,
+            'big_blind': result.get('big_blind', 0.02),
             'reasoning': reasoning,
             'confidence': confidence,
             'elapsed': round(elapsed, 2)
