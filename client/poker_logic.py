@@ -1161,12 +1161,8 @@ def _postflop_value_maniac(hole_cards, board, pot, to_call, street, strength, de
         pot_pct = to_call / pot if pot > 0 else 0
         if street == 'river':
             # UNDERPAIR CHECK: Fold underpairs on river vs any bet
-            if hand_info['is_pocket_pair'] and board:
-                board_vals = [RANK_VAL[c[0]] for c in board]
-                highest_board = max(board_vals)
-                is_underpair = hand_info['pocket_val'] < highest_board
-                if is_underpair:
-                    return ('fold', 0, f"{desc} - fold underpair vs river bet")
+            if hand_info['is_pocket_pair'] and not hand_info['is_overpair']:
+                return ('fold', 0, f"{desc} - fold underpair vs river bet")
             
             # Overpairs can call up to pot-sized bets
             if hand_info['is_overpair']:
@@ -1184,20 +1180,14 @@ def _postflop_value_maniac(hole_cards, board, pot, to_call, street, strength, de
             pot_pct = to_call / pot if pot > 0 else 0
             
             # UNDERPAIR DEFENSE: Fold underpairs to aggression on scary boards
-            # If pocket pair is below highest board card = underpair
-            if hand_info['is_pocket_pair'] and board:
-                board_vals = [RANK_VAL[c[0]] for c in board]
-                highest_board = max(board_vals)
-                is_underpair = hand_info['pocket_val'] < highest_board
-                
-                if is_underpair:
-                    # Flop: Check-call once (see if villain slows down)
-                    if street == 'flop' and pot_pct <= 0.5:
-                        return ('call', 0, f"{desc} - call once (underpair)")
-                    # Turn/river: Fold to continued aggression
-                    if street in ['turn', 'river']:
-                        return ('fold', 0, f"{desc} - fold underpair vs aggression")
-                    # Flop overbet: Fold immediately
+            if hand_info['is_pocket_pair'] and not hand_info['is_overpair']:
+                # Flop: Check-call once (see if villain slows down)
+                if street == 'flop' and pot_pct <= 0.5:
+                    return ('call', 0, f"{desc} - call once (underpair)")
+                # Turn/river: Fold to continued aggression
+                if street in ['turn', 'river']:
+                    return ('fold', 0, f"{desc} - fold underpair vs aggression")
+                # Flop overbet: Fold immediately
                     if street == 'flop' and pot_pct > 0.5:
                         return ('fold', 0, f"{desc} - fold underpair vs overbet")
             
@@ -1318,12 +1308,8 @@ def _postflop_value_lord(hole_cards, board, pot, to_call, street, strength, desc
         pot_pct = to_call / pot if pot > 0 else 0
         if street == 'river':
             # UNDERPAIR CHECK: Fold underpairs on river vs any bet
-            if hand_info['is_pocket_pair'] and board:
-                board_vals = [RANK_VAL[c[0]] for c in board]
-                highest_board = max(board_vals)
-                is_underpair = hand_info['pocket_val'] < highest_board
-                if is_underpair:
-                    return ('fold', 0, f"{desc} - fold underpair vs river bet")
+            if hand_info['is_pocket_pair'] and not hand_info['is_overpair']:
+                return ('fold', 0, f"{desc} - fold underpair vs river bet")
             
             if hand_info['is_overpair']:
                 if pot_pct > 1.0:
@@ -1339,22 +1325,16 @@ def _postflop_value_lord(hole_cards, board, pot, to_call, street, strength, desc
             pot_pct = to_call / pot if pot > 0 else 0
             
             # UNDERPAIR DEFENSE: Fold underpairs to aggression on scary boards
-            # If pocket pair is below highest board card = underpair
-            if hand_info['is_pocket_pair'] and board:
-                board_vals = [RANK_VAL[c[0]] for c in board]
-                highest_board = max(board_vals)
-                is_underpair = hand_info['pocket_val'] < highest_board
-                
-                if is_underpair:
-                    # Flop: Check-call once (see if villain slows down)
-                    if street == 'flop' and pot_pct <= 0.5:
-                        return ('call', 0, f"{desc} - call once (underpair)")
-                    # Turn/river: Fold to continued aggression
-                    if street in ['turn', 'river']:
-                        return ('fold', 0, f"{desc} - fold underpair vs aggression")
-                    # Flop overbet: Fold immediately
-                    if street == 'flop' and pot_pct > 0.5:
-                        return ('fold', 0, f"{desc} - fold underpair vs overbet")
+            if hand_info['is_pocket_pair'] and not hand_info['is_overpair']:
+                # Flop: Check-call once (see if villain slows down)
+                if street == 'flop' and pot_pct <= 0.5:
+                    return ('call', 0, f"{desc} - call once (underpair)")
+                # Turn/river: Fold to continued aggression
+                if street in ['turn', 'river']:
+                    return ('fold', 0, f"{desc} - fold underpair vs aggression")
+                # Flop overbet: Fold immediately
+                if street == 'flop' and pot_pct > 0.5:
+                    return ('fold', 0, f"{desc} - fold underpair vs overbet")
             
             if pot_pct > 1.0 and strength <= 2 and not hand_info['has_top_pair']:
                 return ('fold', 0, f"{desc} - fold weak pair vs overbet")
