@@ -1315,6 +1315,16 @@ def _postflop_value_lord(hole_cards, board, pot, to_call, street, strength, desc
                 if pot_pct > 1.0:
                     return ('fold', 0, f"{desc} - fold overpair vs {pot_pct:.0%} pot bet")
                 return ('call', 0, f"{desc} - call river")
+            
+            # TOP PAIR: Differentiate by kicker on river
+            if hand_info['has_top_pair']:
+                if hand_info['has_good_kicker']:
+                    if pot_pct <= 0.5:
+                        return ('call', 0, f"{desc} - call TPGK river")
+                    return ('fold', 0, f"{desc} - fold TPGK vs big river bet")
+                else:
+                    return ('fold', 0, f"{desc} - fold TPWK river")
+            
             if is_big_bet and strength < 3:
                 return ('fold', 0, f"{desc} - fold vs {pot_pct:.0%} pot bet (need two pair+)")
             if strength >= 2:
@@ -1336,7 +1346,34 @@ def _postflop_value_lord(hole_cards, board, pot, to_call, street, strength, desc
                 if street == 'flop' and pot_pct > 0.5:
                     return ('fold', 0, f"{desc} - fold underpair vs overbet")
             
-            if pot_pct > 1.0 and strength <= 2 and not hand_info['has_top_pair']:
+            # TOP PAIR: Differentiate by kicker strength
+            if hand_info['has_top_pair']:
+                if hand_info['has_good_kicker']:
+                    # TPGK: Call flop/turn, careful on river
+                    if street in ['flop', 'turn']:
+                        return ('call', 0, f"{desc} - call TPGK")
+                    if pot_pct <= 0.5:  # River: only call small bets
+                        return ('call', 0, f"{desc} - call TPGK river")
+                    return ('fold', 0, f"{desc} - fold TPGK vs big river bet")
+                else:
+                    # TPWK: Call flop only, fold turn/river
+                    if street == 'flop' and pot_pct <= 0.4:
+                        return ('call', 0, f"{desc} - call TPWK flop")
+                    return ('fold', 0, f"{desc} - fold TPWK")
+            
+            # MIDDLE vs BOTTOM PAIR: Different thresholds
+            if hand_info['has_middle_pair']:
+                if street == 'flop' and pot_pct <= 0.35:
+                    return ('call', 0, f"{desc} - call middle pair")
+                return ('fold', 0, f"{desc} - fold middle pair")
+            
+            if hand_info['has_bottom_pair']:
+                if street == 'flop' and pot_pct <= 0.25:
+                    return ('call', 0, f"{desc} - call bottom pair")
+                return ('fold', 0, f"{desc} - fold bottom pair")
+            
+            # Generic pair logic (overpairs, pocket pairs)
+            if pot_pct > 1.0 and strength <= 2:
                 return ('fold', 0, f"{desc} - fold weak pair vs overbet")
             if pot_odds > 0.5 and not has_strong_draw:
                 return ('fold', 0, f"{desc} - fold pair vs all-in")
