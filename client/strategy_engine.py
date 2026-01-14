@@ -196,11 +196,11 @@ class StrategyEngine:
         # Get is_aggressor from table_data if available, otherwise default to True
         if table_data:
             is_aggressor = table_data.get('is_aggressor', True)
+            # Get actual number of opponents from vision (num_players - 1 = opponents)
+            num_opponents = max(1, (table_data.get('num_players', 2) - 1))
         else:
             is_aggressor = True  # Default for backward compatibility
-        
-        # Default to heads-up (vision detector should provide num_players in future)
-        num_opponents = 1
+            num_opponents = 1  # Default to heads-up
         
         action, bet_size, reasoning = postflop_action(
             hole_cards, board_cards, pot, to_call, street, is_ip, is_aggressor,
