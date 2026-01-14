@@ -274,7 +274,33 @@ cd client && python3 poker_sim.py 200000
 
 ## 📖 SESSION HISTORY & LESSONS LEARNED
 
-### Session 39: Eval Framework Fix (January 14, 2026)
+### Session 41: value_lord Strategy Creation (January 14, 2026)
+
+**Challenge**: Session 41 (110 hands) revealed 3 issues with value_maniac strategy.
+
+**Issues Found**:
+1. **C-bet discipline**: Was c-betting high card even after calling preflop (should only c-bet when we opened)
+2. **Overpair passivity**: QQ on J-high was checking instead of betting
+3. **Weak pairs on straight boards**: J9 on 9-A-Q-8-7 was overbetting $2.12 (any Ten makes straight)
+
+**Solution**: Created value_lord strategy based on value_maniac with 3 fixes:
+1. Only c-bet high card when `is_aggressor=True` (we opened preflop)
+2. Overpairs ALWAYS bet (no checking)
+3. Weak pairs (not top/overpair) CHECK on straight boards (4+ cards within 5-rank span)
+
+**Implementation**:
+- Created `pokerstrategy_value_lord` strategy file
+- Added `_postflop_value_lord()` function with fixes
+- Straight board detection: 4 cards within 5-rank span (e.g., A-Q-9-8-7)
+- Added to STRATEGIES dict (same preflop as value_maniac)
+
+**Results**: All tests passing, ready for Session 42 live play
+
+**Critical Lesson**: Session logs reveal specific leaks. value_maniac is GOLD MODEL (never modify), create new strategies for improvements.
+
+---
+
+### Session 40: First Winning Live Session (January 14, 2026)
 
 **Challenge**: eval_strategies.py was flagging correct folds as "bad folds" because it used equity vs random with arbitrary multipliers.
 
