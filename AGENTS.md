@@ -299,6 +299,44 @@ cd client && python3 poker_sim.py 200000
 
 ---
 
+### Session 43 Part 2: Aggressor Tracking Implementation (January 14, 2026)
+
+**Challenge**: value_lord's c-bet discipline wasn't working - was always c-betting high card even after calling preflop.
+
+**Root Cause**: strategy_engine.py was hardcoding `is_aggressor=True`, so value_lord thought we opened every hand.
+
+**Solution**: Implemented session state tracking:
+- Store `last_preflop_action` ('open', 'call', or None) when F9 pressed preflop
+- Detect new hands by pot reset to blinds (~$0.07)
+- Pass `is_aggressor` to postflop based on tracked action
+- Default to True when unknown (user's typical playstyle)
+
+**Implementation**:
+- Added `last_preflop_action` and `last_pot` to helper_bar.py state
+- Track action from AI advice (raise='open', call='call', fold=None)
+- Pass `table_data` dict to strategy_engine._postflop() instead of individual params
+- Extract `is_aggressor` from table_data in _postflop()
+
+**Metadata Usage**:
+- Now using `num_players` from vision for accurate equity calculations
+- Multiway pots (3+ players) calculate equity vs correct number of opponents
+- Decided NOT to use `hero_stack` (SPR logic) or `facing_raise` (covered by to_call) for now
+
+**Example Flow**:
+1. Preflop F9: AI says "call" → store `'call'`
+2. Flop F9: Pass `is_aggressor=False` → value_lord checks high card ✅
+3. If first F9 is postflop: Default `is_aggressor=True` (typical play)
+
+**Why This Matters**: value_lord's Session 41 fix (c-bet discipline) now actually works in live play. The K7o gutshot overbet from earlier session would have been a check if we'd pressed F9 preflop and it said "call".
+
+**Critical Lesson**: When a strategy has conditional logic based on game state (aggressor/caller), that state must be tracked across F9 presses. Passing full `table_data` dict is more flexible than individual params - easier to add new metadata later.
+
+**Future Considerations** (documented, not implemented):
+- `hero_stack`: Could enable SPR-based decisions (short stack shove logic, implied odds for draws)
+- `facing_raise`: Already covered by `to_call > 0`, no additional value
+
+---
+
 ### Session 42: value_lord Live Validation (January 14, 2026)
 
 **Challenge**: Analyze 2 recent sessions (251 hands total) to validate value_lord improvements.

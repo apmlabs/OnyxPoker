@@ -10,25 +10,29 @@ After 40 sessions of development, testing, and refinement - we finally have a wo
 
 ---
 
-## Current Status: SESSION 43 - Decision Stats UI ✅
+## Current Status: SESSION 43 - Aggressor Tracking + UI Cleanup ✅
 
-Added real-time decision stats display to right sidebar for research visibility.
+**Aggressor Tracking Implementation:**
+- Track preflop action (open/call/fold) to determine postflop aggressor status
+- value_lord now correctly checks high card when we called preflop (not aggressor)
+- Detects new hands by pot reset to blinds
+- Defaults to is_aggressor=True when unknown (typical playstyle)
+- Fixed bug: strategy_engine was hardcoding is_aggressor=True
 
-**UI Enhancement**:
-- Replaced duplicate game state with `analyze_hand()` stats
-- Shows all `is_*` and `has_*` flags used in decision making
-- Color-coded: TRUE=green, FALSE=gray, headers=yellow, values=cyan
-- Perfect for research - see exactly what drives each decision
+**Metadata Usage:**
+- Now using `num_players` from vision for accurate equity calculations
+- Multiway pots (3+ players) now calculate equity vs correct number of opponents
 
-**Stats Displayed**:
-1. **Hand Properties**: is_pocket_pair, is_overpair, has_top_pair (with kicker), has_two_pair (with type), has_set/trips, has_middle/bottom_pair
-2. **Draws**: has_flush_draw (shows if NUT), has_flush, has_straight_draw, has_straight
-3. **Board Info**: has_board_pair (with value), has_ace_on_board
-4. **Equity**: Win probability %, Outs count
+**Future Considerations (not needed now):**
+- `hero_stack`: Could enable SPR-based decisions (short stack shove logic, implied odds)
+- `facing_raise`: Already covered by `to_call > 0`
 
-**Why This Matters**: User doing research (not playing for money) - needs to understand what stats influence each decision. Now all the boolean flags from `analyze_hand()` are visible in real-time.
+**UI Cleanup:**
+- Removed duplicate info from right sidebar (decision, game state)
+- Added "To call:" to main log display
+- Sidebar now shows only `analyze_hand()` stats for research
 
-**Next**: Test in live play to verify stats display correctly
+**Next**: Test aggressor tracking in live play (press F9 preflop when calling)
 
 ## What Works
 
