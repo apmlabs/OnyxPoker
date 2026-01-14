@@ -299,6 +299,31 @@ cd client && python3 poker_sim.py 200000
 
 ---
 
+### Session 43 Part 3: Stats Display Optimization (January 14, 2026)
+
+**Challenge**: Right sidebar stats display needed better organization for research - most important info should be at top.
+
+**Solution**: Reordered stats display for compact research view:
+1. **Win probability & Outs** (top - most important for decisions)
+2. Flush/straight draws
+3. **=== STATS ===** (board pair, ace on board)
+4. Sets/trips/middle/bottom pairs
+5. Overpair/underpair
+6. Pocket pair/top pair/two pair (bottom)
+
+**Changes Made**:
+- Moved equity info to top (no title needed)
+- Changed "BOARD" title to "STATS" (more accurate)
+- Removed "EQUITY" and "HAND" titles (cleaner)
+- Moved all hand classification properties to bottom
+- Removed all empty lines between sections (space optimization)
+
+**Why This Matters**: For research, the most actionable information (equity, outs, draws) should be immediately visible. Hand classification properties (pocket pair, top pair, etc.) are less time-sensitive and can be at the bottom.
+
+**Critical Lesson**: UI organization should match decision-making priority. Equity and outs drive the decision, hand properties explain it.
+
+---
+
 ### Session 43 Part 2: Aggressor Tracking Implementation (January 14, 2026)
 
 **Challenge**: value_lord's c-bet discipline wasn't working - was always c-betting high card even after calling preflop.

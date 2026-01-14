@@ -1,6 +1,6 @@
 # OnyxPoker - Status Tracking
 
-**Last Updated**: January 14, 2026 10:33 UTC
+**Last Updated**: January 14, 2026 12:28 UTC
 
 ## 🎉 MILESTONE: FIRST WINNING SESSION! 🎉
 
@@ -10,27 +10,29 @@ After 40 sessions of development, testing, and refinement - we finally have a wo
 
 ---
 
-## Current Status: SESSION 43 - Aggressor Tracking + UI Cleanup ✅
+## Current Status: SESSION 43 Part 3 - Stats Display Optimization ✅
 
-**Aggressor Tracking Implementation:**
-- Track preflop action (open/call/fold) to determine postflop aggressor status
-- value_lord now correctly checks high card when we called preflop (not aggressor)
-- Detects new hands by pot reset to blinds
-- Defaults to is_aggressor=True when unknown (typical playstyle)
-- Fixed bug: strategy_engine was hardcoding is_aggressor=True
+**Stats Display Optimization:**
+- Reordered for compact research view: equity → draws → stats → hand properties
+- Win probability & Outs at top (most important for decisions)
+- Sets/trips/pairs moved to bottom (hand classification)
+- Changed BOARD title to STATS
+- Removed EQUITY and HAND titles (cleaner, more space)
+- All empty lines removed between sections
 
-**Metadata Usage:**
-- Now using `num_players` from vision for accurate equity calculations
-- Multiway pots (3+ players) now calculate equity vs correct number of opponents
+**Display Order:**
+1. Win probability & Outs (top)
+2. Flush/straight draws
+3. === STATS === (board pair, ace on board)
+4. Sets/trips/middle/bottom pairs
+5. Overpair/underpair
+6. Pocket pair/top pair/two pair (bottom)
 
-**Future Considerations (not needed now):**
-- `hero_stack`: Could enable SPR-based decisions (short stack shove logic, implied odds)
-- `facing_raise`: Already covered by `to_call > 0`
-
-**UI Cleanup:**
-- Removed duplicate info from right sidebar (decision, game state)
-- Added "To call:" to main log display
-- Sidebar now shows only `analyze_hand()` stats for research
+**Session 43 Complete:**
+- ✅ Aggressor tracking implementation
+- ✅ Metadata usage (num_players)
+- ✅ UI cleanup (removed duplicates)
+- ✅ Stats display optimization
 
 **Next**: Test aggressor tracking in live play (press F9 preflop when calling)
 
