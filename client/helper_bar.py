@@ -520,6 +520,14 @@ class HelperBar:
             self.stats_text.insert('end', "FALSE\n", 'FALSE')
         # Board info
         self.stats_text.insert('end', "=== STATS ===\n", 'HEADER')
+        # Board texture warnings (only show if active)
+        board_straight_combos = hand_analysis.get('board_straight_combos', [])
+        if board_straight_combos:
+            combos_str = ', '.join(board_straight_combos)
+            self.stats_text.insert('end', f"Straight possible: {combos_str}\n", 'VALUE')
+        board_flush_suit = hand_analysis.get('board_flush_suit')
+        if board_flush_suit:
+            self.stats_text.insert('end', f"Flush possible: {board_flush_suit}\n", 'VALUE')
         if hand_analysis.get('has_board_pair'):
             val = hand_analysis.get('board_pair_val', 0)
             self.stats_text.insert('end', f"has_board_pair: ", 'VALUE')

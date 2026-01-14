@@ -164,6 +164,35 @@ def analyze_hand(hole_cards: List[Tuple[str, str]], board: List[Tuple[str, str]]
     elif len({12, 0, 1, 2, 3} & set(hero_vals + board_vals)) >= 4:
         has_straight_draw = True
     
+    # Board texture analysis - straight possibilities
+    board_straight_combos = []
+    if len(board_vals) >= 3:
+        # Check all possible 2-card combinations that could make a straight
+        board_vals_sorted = sorted(board_vals)
+        # For each possible straight (5 consecutive cards), check if board has 3+ cards
+        for low in range(0, 9):  # Straights from A-5 (low=0) to T-A (low=8)
+            straight = list(range(low, low + 5))
+            if low == 0:  # Wheel (A-2-3-4-5)
+                straight = [12, 0, 1, 2, 3]
+            board_in_straight = [v for v in board_vals if v in straight]
+            if len(board_in_straight) >= 3:
+                # Find what 2-card combos complete this straight
+                missing = [v for v in straight if v not in board_vals]
+                if len(missing) == 2:
+                    # Need both missing cards
+                    combo = ''.join([RANKS[v] for v in sorted(missing, reverse=True)])
+                    if combo not in board_straight_combos:
+                        board_straight_combos.append(combo)
+    
+    # Board texture analysis - flush possibilities
+    board_flush_suit = None
+    if len(board_suits) >= 3:
+        board_suit_counts = Counter(board_suits)
+        for suit, count in board_suit_counts.items():
+            if count >= 3:
+                board_flush_suit = suit
+                break
+    
     return {
         'valid': True,
         'is_pocket_pair': is_pocket_pair,
@@ -188,6 +217,8 @@ def analyze_hand(hole_cards: List[Tuple[str, str]], board: List[Tuple[str, str]]
         'has_flush': has_flush,
         'has_straight_draw': has_straight_draw,
         'has_straight': has_straight,
+        'board_straight_combos': board_straight_combos,
+        'board_flush_suit': board_flush_suit,
         'hero_vals': hero_vals,
         'board_vals': board_vals,
         'top_board_val': top_board_val,
