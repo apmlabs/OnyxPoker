@@ -294,9 +294,16 @@ cd client && python3 poker_sim.py 200000
 - Straight board detection: 4 cards within 5-rank span (e.g., A-Q-9-8-7)
 - Added to STRATEGIES dict (same preflop as value_maniac)
 
-**Results**: All tests passing, ready for Session 42 live play
+**Test Results**:
+- audit_strategies.py: 26/26 PASS ✅
+- test_strategy_engine.py: 54/55 PASS
+- test_postflop.py: 60/70 clean (10 issues vs value_maniac's 12)
+- eval_strategies.py: +550.5 score vs value_maniac's +557.5 (-7 points)
+- poker_sim.py: +18.86 BB/100 vs value_maniac's +20.74 (-1.88 BB/100)
 
-**Critical Lesson**: Session logs reveal specific leaks. value_maniac is GOLD MODEL (never modify), create new strategies for improvements.
+**Conclusion**: value_lord is cleaner (fewer edge case issues) but slightly less profitable (-0.3 BB/100 on real hands, -1.88 BB/100 in simulation). The improvements reduce variance and avoid specific leaks, but also miss some thin value that value_maniac extracts from 2NL fish.
+
+**Critical Lesson**: Session logs reveal specific leaks. value_maniac is GOLD MODEL (never modify), create new strategies for improvements. Sometimes "cleaner" code is less profitable - 2NL fish call too much, so aggressive c-betting and overbetting weak pairs actually extracts value.
 
 ---
 

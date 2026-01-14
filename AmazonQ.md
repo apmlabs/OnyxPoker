@@ -10,25 +10,39 @@ After 40 sessions of development, testing, and refinement - we finally have a wo
 
 ---
 
-## Current Status: SESSION 41 - Analysis & value_lord Creation ✅
+## Current Status: SESSION 41 - value_lord Strategy Complete ✅
 
-Analyzed Session 41 (110 hands) and created value_lord strategy with improvements.
+Created and tested value_lord strategy based on Session 41 analysis.
 
-**Session 41 Results**:
-- **110 decisions** (38 fold, 33 bet, 19 raise, 16 call, 4 check)
-- **Big wins**: KK on 66 (~$3.50), AQ top pair (won big pot), A7 flush (~$6.18), QJ top pair (~$2.30)
-- **Issues identified**: C-bet discipline, overpair passivity, weak pairs on straight boards
-
-**value_lord Strategy Created**:
+**value_lord Strategy**:
 Based on value_maniac (gold model) with 3 key fixes:
 1. **C-bet discipline**: Only c-bet high card when we OPENED preflop (not when called)
 2. **Overpair aggression**: Always bet overpairs (don't check QQ on J-high)
 3. **Weak pair caution**: Check weak pairs on straight boards (J9 on 9AQ87 = check)
 
-**Files**:
+**Test Results**:
+- audit_strategies.py: 26/26 PASS ✅
+- test_strategy_engine.py: 54/55 PASS (same AK high card issue as value_maniac)
+- test_postflop.py: 60/70 clean (10 issues vs value_maniac's 12)
+- eval_strategies.py: +550.5 score, 0 bad folds, 0 bad calls
+- poker_sim.py: +18.86 BB/100 (100k hands)
+
+**Comparison vs value_maniac**:
+| Metric | value_maniac | value_lord | Difference |
+|--------|--------------|------------|------------|
+| eval_strategies score | +557.5 | +550.5 | -7.0 |
+| eval BB/100 | +20.7 | +20.4 | -0.3 |
+| sim BB/100 | +20.74 | +18.86 | -1.88 |
+| Bad folds | 0 | 0 | 0 |
+| Bad calls | 0 | 0 | 0 |
+| test_postflop issues | 12 | 10 | -2 ✅ |
+
+**Conclusion**: value_lord is cleaner (fewer edge case issues) but slightly less profitable. value_maniac remains default (gold model). Use value_lord when you want to avoid specific Session 41 leaks.
+
+**Files Modified**:
 - pokerstrategy_value_lord (strategy definition)
 - _postflop_value_lord() in poker_logic.py
-- All tests passing
+- Added to all test suites (audit, test_strategy_engine, poker_sim, eval_strategies)
 
 **Next**: Test value_lord in live play (Session 42)
 
@@ -155,18 +169,23 @@ Table: 60% fish, 25% nit, 15% tag
 
 | Rank | Strategy | BB/100 | StdDev |
 |------|----------|--------|--------|
-| 1 | value_maniac | +41.12 | 8.13 |
-| 2 | maniac | +29.96 | 1.07 |
-| 3 | value_max | +26.81 | 9.81 |
-| 4 | sonnet_max | +20.29 | 6.22 |
-| 5 | gpt3 | +15.89 | 6.62 |
-| 6 | aggressive | +14.98 | 12.05 |
-| 7 | gpt4 | +13.66 | 8.05 |
-| 8 | sonnet | +11.79 | 3.05 |
-| 9 | tag | +5.41 | 4.70 |
-| 10 | lag | +5.05 | 1.15 |
-| 11 | fish | -1.17 | 1.40 |
-| 12 | nit | -3.42 | 1.43 |
+| 1 | kiro_optimal | +38.64 | 16.22 |
+| 2 | kiro5 | +38.30 | 3.31 |
+| 3 | maniac | +34.38 | 15.83 |
+| 4 | value_maniac | +20.74 | 5.20 |
+| 5 | gpt4 | +19.73 | 13.11 |
+| 6 | value_lord | +18.86 | 5.67 |
+| 7 | value_max | +16.20 | 8.38 |
+| 8 | sonnet_max | +12.31 | 5.07 |
+| 9 | sonnet | +9.79 | 23.22 |
+| 10 | 2nl_exploit | +9.36 | 14.18 |
+| 11 | kiro_v2 | +7.11 | 7.37 |
+| 12 | tag | +4.30 | 0.84 |
+| 13 | gpt3 | +3.86 | 13.07 |
+| 14 | aggressive | +1.68 | 5.74 |
+| 15 | nit | -1.19 | 1.83 |
+| 16 | fish | -2.26 | 4.42 |
+| 17 | lag | -5.40 | 2.82 |
 
 ## Session Log
 
