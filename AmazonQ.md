@@ -10,30 +10,25 @@ After 40 sessions of development, testing, and refinement - we finally have a wo
 
 ---
 
-## Current Status: SESSION 42 - value_lord Validated ✅
+## Current Status: SESSION 43 - Decision Stats UI ✅
 
-Analyzed 2 recent sessions (251 hands) - confirmed value_lord improvements address user's concerns about c-bet discipline.
+Added real-time decision stats display to right sidebar for research visibility.
 
-**Session Analysis Results**:
-- Session 1: 141 hands (lost 50BB early on bluffs, recovered with flush) - PROFITABLE
-- Session 2: 110 hands (consistent wins) - PROFITABLE
-- High card c-bets: 13-16 per session (source of variance)
-- User instincts CORRECT: C-betting after calling preflop creates unnecessary variance
+**UI Enhancement**:
+- Replaced duplicate game state with `analyze_hand()` stats
+- Shows all `is_*` and `has_*` flags used in decision making
+- Color-coded: TRUE=green, FALSE=gray, headers=yellow, values=cyan
+- Perfect for research - see exactly what drives each decision
 
-**Key Findings**:
-1. **Pocket pair logic working**: 99 on K73 = check (underpair), Q9 on Q95 = bet (top pair) ✅
-2. **C-bet bluffs work but create variance**: Early 50BB loss from failed bluffs
-3. **Overbet draws profitable**: Semi-bluffing with draws won pots ✅
-4. **Two pair plays strong**: Multiple wins with 2 pair (weak/good kicker) ✅
+**Stats Displayed**:
+1. **Hand Properties**: is_pocket_pair, is_overpair, has_top_pair (with kicker), has_two_pair (with type), has_set/trips, has_middle/bottom_pair
+2. **Draws**: has_flush_draw (shows if NUT), has_flush, has_straight_draw, has_straight
+3. **Board Info**: has_board_pair (with value), has_ace_on_board
+4. **Equity**: Win probability %, Outs count
 
-**value_lord vs value_maniac**:
-- value_maniac: +20.74 BB/100, higher variance, aggressive bluffing
-- value_lord: +18.86 BB/100, lower variance, disciplined c-betting
-- Trade-off: -1.88 BB/100 for reduced variance and better play style alignment
+**Why This Matters**: User doing research (not playing for money) - needs to understand what stats influence each decision. Now all the boolean flags from `analyze_hand()` are visible in real-time.
 
-**Recommendation**: value_lord matches user's play style (doubts about c-bet bluffs). Already set as default. ✅
-
-**Next**: Continue with value_lord in live play
+**Next**: Test in live play to verify stats display correctly
 
 ## What Works
 

@@ -274,6 +274,31 @@ cd client && python3 poker_sim.py 200000
 
 ## 📖 SESSION HISTORY & LESSONS LEARNED
 
+### Session 43: Decision Stats UI (January 14, 2026)
+
+**Challenge**: User doing research needs to see what stats drive each decision.
+
+**Problem**: Right sidebar showed duplicate game state (cards, board, pot) already visible in main log. Not useful for understanding decision logic.
+
+**Solution**: Replaced with real-time `analyze_hand()` stats display:
+- All `is_*` and `has_*` boolean flags
+- Hand properties (pocket pair, overpair, top pair with kicker, two pair type)
+- Draws (flush draw with NUT indicator, straight draw)
+- Board info (board pair, ace on board)
+- Equity (win %, outs)
+
+**Implementation**:
+- Added `hand_analysis` to strategy_engine.py postflop return
+- Created `_update_stats_display()` in helper_bar.py
+- Color-coded: TRUE=green, FALSE=gray, headers=yellow, values=cyan
+- Scrollable text widget for all stats
+
+**Why This Matters**: Research tool needs transparency. User can now see exactly which flags are TRUE/FALSE for each decision, making it clear why strategy chose that action.
+
+**Critical Lesson**: For research tools, showing the decision-making process is as important as showing the decision itself. Transparency > polish.
+
+---
+
 ### Session 42: value_lord Live Validation (January 14, 2026)
 
 **Challenge**: Analyze 2 recent sessions (251 hands total) to validate value_lord improvements.

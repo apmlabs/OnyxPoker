@@ -34,7 +34,10 @@ python helper_bar.py --strategy sonnet
 1. Open PokerStars and sit at a table
 2. Run `python helper_bar.py` - a bar appears at bottom of screen
 3. Click on poker window to make it active
-4. Press **F9** - AI analyzes the table and shows decision for all 6 positions (preflop)
+4. Press **F9** - AI analyzes the table and shows:
+   - **Decision** for all 6 positions (preflop)
+   - **Decision stats** - all the `is_*` and `has_*` flags used to make the decision
+   - Perfect for research - see exactly what drives each decision
 
 ## Hotkeys
 
