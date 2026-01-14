@@ -145,16 +145,6 @@ class HelperBar:
         right.pack(side='right', fill='y', padx=2, pady=2)
         right.pack_propagate(False)
 
-        tk.Label(right, text="DECISION STATS", font=('Arial', 9, 'bold'),
-                bg='#2d2d2d', fg='#888').pack(pady=3)
-
-        # Decision - big and clear
-        self.decision_label = tk.Label(right, text="--", font=('Arial', 18, 'bold'),
-                                      bg='#2d2d2d', fg='#00ff00')
-        self.decision_label.pack(pady=5)
-
-        tk.Frame(right, height=1, bg='#555').pack(fill='x', pady=5)
-
         # Stats display (scrollable)
         stats_scroll = scrolledtext.ScrolledText(right, font=('Courier', 9),
                                                 bg='#1a1a1a', fg='#ccc',
@@ -363,7 +353,8 @@ class HelperBar:
         # Log result
         cards_str = ' '.join(cards) if cards else '--'
         board_str = ' '.join(board) if board else '--'
-        self.log(f"Cards: {cards_str} | Board: {board_str} | Pot: ${pot}", "INFO")
+        to_call_str = f" | To call: ${to_call:.2f}" if to_call is not None else ""
+        self.log(f"Cards: {cards_str} | Board: {board_str} | Pot: ${pot}{to_call_str}", "INFO")
 
         # Show decision if we have any useful info (pot > 0 means table detected)
         if pot > 0 or cards or board:
@@ -449,7 +440,6 @@ class HelperBar:
             equity_str = " | ".join(parts) if parts else hand_desc
         
         if True:  # Always show advice - removed unreliable is_hero_turn detection
-            self.decision_label.config(text=action.upper())
             self._update_stats_display(result)
         
         self.time_label.config(text=f"{elapsed:.1f}s")
@@ -463,20 +453,6 @@ class HelperBar:
         if not hand_analysis or not hand_analysis.get('valid'):
             self.stats_text.insert('end', "No hand analysis available\n")
             return
-        
-        # Game state
-        self.stats_text.insert('end', "=== GAME STATE ===\n", 'HEADER')
-        cards = result.get('cards', [])
-        board = result.get('board', [])
-        pot = result.get('pot', 0)
-        to_call = result.get('to_call', 0)
-        
-        self.stats_text.insert('end', f"Cards: {' '.join(cards)}\n", 'VALUE')
-        self.stats_text.insert('end', f"Board: {' '.join(board) if board else 'preflop'}\n", 'VALUE')
-        self.stats_text.insert('end', f"Pot: ${pot:.2f} | To call: ${to_call:.2f}\n\n", 'VALUE')
-        
-        # Hand properties
-        self.stats_text.insert('end', "=== HAND PROPERTIES ===\n", 'HEADER')
         
         # Pocket pair info
         if hand_analysis.get('is_pocket_pair'):
