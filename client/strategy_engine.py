@@ -138,29 +138,29 @@ class StrategyEngine:
         
         # Premium: AA, KK, QQ, AKs - can call any amount
         if in_4bet:
-            return "ALL-IN ok"
+            return "CALL any"
         
         # Strong: JJ, TT, AQs - can call 3bets
         if in_call_3bet:
-            return "call 3bet (15bb)"
+            return "CALL up to 15bb"
         
-        # 3-bet hands that don't call 3bets - raise or fold
+        # 3-bet hands that don't call 3bets - reraise or fold
         if in_3bet and not in_call_ip:
-            return "3bet or fold"
+            return "RERAISE or FOLD"
         
         # Calling hands IP (not BB-specific)
         if in_call_ip:
-            return "call open (4bb)"
+            return "CALL up to 4bb"
         
         # BB defend hands - only applies in BB
         if position == 'BB' and in_bb_defend:
-            return "BB defend (4bb)"
+            return "CALL up to 4bb"
         
         # Opening hands only - fold to any raise
         if in_open:
-            return "open only, fold vs raise"
+            return "FOLD"
         
-        return "fold"
+        return "FOLD"
     
     def _postflop(self, cards: List[str], board: List[str], pot: float, to_call: float, position: str, table_data: Dict[str, Any] = None) -> Dict[str, Any]:
         """Postflop decision."""
