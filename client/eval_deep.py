@@ -37,16 +37,25 @@ BENCHMARKS = {
 }
 
 def calc_preflop_stats(strategy_name):
-    """Calculate VPIP/PFR for a strategy across all positions."""
+    """Calculate all preflop stats for a strategy."""
     strategy = STRATEGIES.get(strategy_name)
     if not strategy:
         return None
     
-    stats = {pos: {'vpip': 0, 'pfr': 0, 'call': 0, 'total': 0, '3bet': 0, '3bet_opp': 0, 'defend': 0, 'defend_opp': 0} for pos in POSITIONS}
+    stats = {pos: {
+        'vpip': 0, 'pfr': 0, 'call': 0, 'total': 0,
+        '3bet': 0, '3bet_opp': 0,
+        '4bet': 0, '4bet_opp': 0,
+        'fold_to_3bet': 0, 'fold_to_3bet_opp': 0,
+        'steal': 0, 'steal_opp': 0,
+        'defend': 0, 'defend_opp': 0
+    } for pos in POSITIONS}
+    
+    steal_positions = ['CO', 'BTN', 'SB']
     
     for hand in ALL_HANDS:
         for pos in POSITIONS:
-            # Scenario 1: First to act (no raise) - BB can't be first to act
+            # Scenario 1: First to act (no raise)
             if pos != 'BB':
                 action, _ = preflop_action(hand, pos, strategy, facing='none')
                 stats[pos]['total'] += 1
@@ -54,9 +63,15 @@ def calc_preflop_stats(strategy_name):
                     stats[pos]['vpip'] += 1
                 if action == 'raise':
                     stats[pos]['pfr'] += 1
+                    # Steal tracking (opens from CO/BTN/SB)
+                    if pos in steal_positions:
+                        stats[pos]['steal_opp'] += 1
+                        stats[pos]['steal'] += 1
+                elif pos in steal_positions:
+                    stats[pos]['steal_opp'] += 1
             
-            # Scenario 2: Facing open (from earlier position)
-            if pos not in ['UTG']:  # UTG can't face an open
+            # Scenario 2: Facing open (3-bet opportunity)
+            if pos not in ['UTG']:
                 action2, _ = preflop_action(hand, pos, strategy, facing='open', opener_pos='UTG')
                 stats[pos]['total'] += 1
                 stats[pos]['3bet_opp'] += 1
@@ -69,11 +84,26 @@ def calc_preflop_stats(strategy_name):
                 if action2 == 'call':
                     stats[pos]['call'] += 1
                 
-                # BB defense tracking
+                # BB defense vs steal
                 if pos == 'BB':
                     stats[pos]['defend_opp'] += 1
                     if action2 in ['raise', 'call']:
                         stats[pos]['defend'] += 1
+            
+            # Scenario 3: We opened, facing 3-bet (fold to 3bet / 4bet opportunity)
+            if pos not in ['BB', 'SB']:  # Can't open from blinds
+                # First check if we would open
+                open_action, _ = preflop_action(hand, pos, strategy, facing='none')
+                if open_action == 'raise':
+                    # Now facing 3-bet
+                    action3, _ = preflop_action(hand, pos, strategy, facing='3bet')
+                    stats[pos]['fold_to_3bet_opp'] += 1
+                    stats[pos]['4bet_opp'] += 1
+                    
+                    if action3 == 'fold':
+                        stats[pos]['fold_to_3bet'] += 1
+                    elif action3 == 'raise':
+                        stats[pos]['4bet'] += 1
     
     # Aggregate
     total_vpip = sum(s['vpip'] for s in stats.values())
@@ -82,6 +112,12 @@ def calc_preflop_stats(strategy_name):
     total_hands = sum(s['total'] for s in stats.values())
     total_3bet = sum(s['3bet'] for s in stats.values())
     total_3bet_opp = sum(s['3bet_opp'] for s in stats.values())
+    total_4bet = sum(s['4bet'] for s in stats.values())
+    total_4bet_opp = sum(s['4bet_opp'] for s in stats.values())
+    total_fold_3bet = sum(s['fold_to_3bet'] for s in stats.values())
+    total_fold_3bet_opp = sum(s['fold_to_3bet_opp'] for s in stats.values())
+    total_steal = sum(s['steal'] for s in stats.values())
+    total_steal_opp = sum(s['steal_opp'] for s in stats.values())
     total_defend = stats['BB']['defend']
     total_defend_opp = stats['BB']['defend_opp']
     
@@ -91,6 +127,9 @@ def calc_preflop_stats(strategy_name):
         'call_pct': total_call / total_hands * 100,
         'gap': (total_vpip - total_pfr) / total_hands * 100,
         '3bet': total_3bet / total_3bet_opp * 100 if total_3bet_opp > 0 else 0,
+        '4bet': total_4bet / total_4bet_opp * 100 if total_4bet_opp > 0 else 0,
+        'fold_to_3bet': total_fold_3bet / total_fold_3bet_opp * 100 if total_fold_3bet_opp > 0 else 0,
+        'steal': total_steal / total_steal_opp * 100 if total_steal_opp > 0 else 0,
         'bb_defend': total_defend / total_defend_opp * 100 if total_defend_opp > 0 else 0,
         'by_position': {
             pos: {
@@ -114,6 +153,10 @@ def calc_postflop_stats_from_logs(strategy_name):
         'river': {'bets': 0, 'raises': 0, 'calls': 0, 'checks': 0, 'folds': 0},
     }
     
+    # C-bet tracking (flop bet when aggressor and first to act)
+    cbet_opp = 0
+    cbet_made = 0
+    
     total_hands = 0
     
     for fname in os.listdir(log_dir):
@@ -130,6 +173,7 @@ def calc_postflop_stats_from_logs(strategy_name):
                     cards = d['hero_cards']
                     pot = float(d.get('pot') or 0)
                     to_call = float(d.get('to_call') or 0)
+                    is_aggressor = d.get('is_aggressor', True)
                     
                     if len(board) < 3 or len(cards) < 2:
                         continue
@@ -140,8 +184,14 @@ def calc_postflop_stats_from_logs(strategy_name):
                     # Replay through strategy
                     action, bet_size, reason = postflop_action(
                         cards, board, pot, to_call, street,
-                        is_ip=True, is_aggressor=True, strategy=strategy_name
+                        is_ip=True, is_aggressor=is_aggressor, strategy=strategy_name
                     )
+                    
+                    # C-bet tracking: flop, aggressor, first to act (to_call=0)
+                    if street == 'flop' and is_aggressor and to_call == 0:
+                        cbet_opp += 1
+                        if action in ['bet', 'raise']:
+                            cbet_made += 1
                     
                     if action == 'fold':
                         stats[street]['folds'] += 1
@@ -179,6 +229,10 @@ def calc_postflop_stats_from_logs(strategy_name):
     all_calls = sum(stats[st]['calls'] for st in stats)
     result['overall_af'] = all_bets / all_calls if all_calls > 0 else all_bets
     
+    # C-bet %
+    result['cbet'] = cbet_made / cbet_opp * 100 if cbet_opp > 0 else 0
+    result['cbet_opp'] = cbet_opp
+    
     return result
 
 def classify_profile(vpip, pfr, af):
@@ -210,19 +264,36 @@ def print_preflop_report(strategy_name, stats):
     print(f"PREFLOP PROFILE: {strategy_name.upper()}")
     print('='*70)
     
-    tag = BENCHMARKS['tag']
+    # Industry targets
+    targets = {
+        'vpip': (21, 3), 'pfr': (18, 3), 'gap': (3, 2),
+        '3bet': (8, 2), '4bet': (25, 10), 'fold_to_3bet': (60, 10),
+        'steal': (35, 8), 'bb_defend': (40, 5)
+    }
     
-    def rating(val, target, tolerance=3):
+    def rating(val, target, tolerance):
         diff = abs(val - target)
         if diff <= tolerance: return 'GOOD'
         elif val > target: return 'HIGH'
         else: return 'LOW'
     
-    print(f"\n  VPIP:  {stats['vpip']:5.1f}%  (target: {tag['vpip']}%)  [{rating(stats['vpip'], tag['vpip'])}]")
-    print(f"  PFR:   {stats['pfr']:5.1f}%  (target: {tag['pfr']}%)  [{rating(stats['pfr'], tag['pfr'])}]")
-    print(f"  Gap:   {stats['gap']:5.1f}%  (target: {tag['gap']}%)  [{rating(stats['gap'], tag['gap'], 2)}]")
-    print(f"  3-bet: {stats['3bet']:5.1f}%  (target: 6-10%)")
-    print(f"  BB Def:{stats['bb_defend']:5.1f}%  (target: 35-45%)")
+    print(f"\n  Core Stats:")
+    print(f"  {'Stat':<15} {'Value':>8} {'Target':>10} {'Rating':>8}")
+    print(f"  {'-'*45}")
+    print(f"  {'VPIP':<15} {stats['vpip']:>7.1f}% {targets['vpip'][0]:>8}%  [{rating(stats['vpip'], *targets['vpip'])}]")
+    print(f"  {'PFR':<15} {stats['pfr']:>7.1f}% {targets['pfr'][0]:>8}%  [{rating(stats['pfr'], *targets['pfr'])}]")
+    print(f"  {'Gap (VPIP-PFR)':<15} {stats['gap']:>7.1f}% {targets['gap'][0]:>8}%  [{rating(stats['gap'], *targets['gap'])}]")
+    
+    print(f"\n  Aggression Stats:")
+    print(f"  {'-'*45}")
+    print(f"  {'3-bet %':<15} {stats['3bet']:>7.1f}% {'6-10':>8}%  [{rating(stats['3bet'], *targets['3bet'])}]")
+    print(f"  {'4-bet %':<15} {stats['4bet']:>7.1f}% {'25+':>8}%  [{rating(stats['4bet'], *targets['4bet'])}]")
+    print(f"  {'Fold to 3bet':<15} {stats['fold_to_3bet']:>7.1f}% {'55-70':>8}%  [{rating(stats['fold_to_3bet'], *targets['fold_to_3bet'])}]")
+    
+    print(f"\n  Positional Stats:")
+    print(f"  {'-'*45}")
+    print(f"  {'Steal %':<15} {stats['steal']:>7.1f}% {'27-40':>8}%  [{rating(stats['steal'], *targets['steal'])}]")
+    print(f"  {'BB Defend %':<15} {stats['bb_defend']:>7.1f}% {'35-45':>8}%  [{rating(stats['bb_defend'], *targets['bb_defend'])}]")
     
     print(f"\n  Position Breakdown:")
     print(f"  {'Pos':<5} {'VPIP':>7} {'PFR':>7} {'3bet':>7}")
@@ -237,15 +308,23 @@ def print_postflop_report(stats):
     print("POSTFLOP PROFILE (from real logs)")
     print('='*70)
     
-    tag_af = BENCHMARKS['tag']['af']
-    
     def af_rating(val):
         if 2.0 <= val <= 3.5: return 'GOOD'
         elif val < 2.0: return 'PASSIVE'
         else: return 'AGGRO'
     
-    print(f"\n  Overall AF: {stats['overall_af']:.2f}  (target: {tag_af})  [{af_rating(stats['overall_af'])}]")
-    print(f"  Total postflop hands: {stats['total_hands']}")
+    def cbet_rating(val):
+        if 70 <= val <= 90: return 'GOOD'
+        elif val < 70: return 'LOW'
+        else: return 'HIGH'
+    
+    print(f"\n  Core Stats:")
+    print(f"  {'Stat':<15} {'Value':>8} {'Target':>10} {'Rating':>8}")
+    print(f"  {'-'*45}")
+    print(f"  {'Overall AF':<15} {stats['overall_af']:>8.2f} {'2.0-3.5':>10}  [{af_rating(stats['overall_af'])}]")
+    print(f"  {'C-bet %':<15} {stats['cbet']:>7.1f}% {'70-90':>9}%  [{cbet_rating(stats['cbet'])}]")
+    print(f"  {'(C-bet opps)':<15} {stats['cbet_opp']:>8}")
+    print(f"  {'Total hands':<15} {stats['total_hands']:>8}")
     
     print(f"\n  By Street:")
     print(f"  {'Street':<8} {'AF':>6} {'Fold%':>8} {'Agg%':>8} {'Hands':>8}")
@@ -312,16 +391,17 @@ def main():
         print(f"\n{'='*70}")
         print("SUMMARY")
         print('='*70)
-        print(f"\n  {'Strategy':<14} {'VPIP':>7} {'PFR':>7} {'3bet':>7} {'AF':>6}  Profile")
-        print(f"  {'-'*58}")
+        print(f"\n  {'Strategy':<14} {'VPIP':>6} {'PFR':>6} {'3bet':>6} {'4bet':>6} {'Steal':>6} {'AF':>5} {'Cbet':>6}")
+        print(f"  {'-'*68}")
+        print(f"  {'TARGET':<14} {'21%':>6} {'18%':>6} {'8%':>6} {'25%':>6} {'35%':>6} {'2.5':>5} {'80%':>6}")
+        print(f"  {'-'*68}")
         
         for strat in strategies:
             if strat not in STRATEGIES:
                 continue
             preflop = calc_preflop_stats(strat)
             postflop = calc_postflop_stats_from_logs(strat)
-            profile, closest = classify_profile(preflop['vpip'], preflop['pfr'], postflop['overall_af'])
-            print(f"  {strat:<14} {preflop['vpip']:>6.1f}% {preflop['pfr']:>6.1f}% {preflop['3bet']:>6.1f}% {postflop['overall_af']:>6.2f}  {profile}")
+            print(f"  {strat:<14} {preflop['vpip']:>5.1f}% {preflop['pfr']:>5.1f}% {preflop['3bet']:>5.1f}% {preflop['4bet']:>5.1f}% {preflop['steal']:>5.1f}% {postflop['overall_af']:>5.2f} {postflop['cbet']:>5.1f}%")
 
 if __name__ == '__main__':
     main()
