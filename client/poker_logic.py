@@ -84,9 +84,9 @@ def analyze_hand(hole_cards: List[Tuple[str, str]], board: List[Tuple[str, str]]
         kicker_val = None
         has_good_kicker = False
     
-    # Two pair analysis
+    # Two pair analysis - hero must contribute to at least one pair
     num_pairs = len(our_pairs)
-    has_two_pair = num_pairs >= 2
+    has_two_pair = num_pairs >= 2 and hero_has_pair
     
     # Two pair type (only if we have two pair)
     two_pair_type = None
