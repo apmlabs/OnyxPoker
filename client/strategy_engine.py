@@ -114,12 +114,14 @@ class StrategyEngine:
         
         # Add call threshold info
         call_info = self._get_call_threshold(hand, position)
+        bb_defense = self._get_bb_defense(hand)
         
         return {
             'action': action,
             'bet_size': bet_size,
             'reasoning': reasoning,
             'call_info': call_info,
+            'bb_defense': bb_defense,
             'strategy': self.strategy_name
         }
     
@@ -146,20 +148,36 @@ class StrategyEngine:
         
         # 3-bet hands that don't call 3bets - reraise or fold
         if in_3bet and not in_call_ip:
-            return "RERAISE or FOLD"
+            return "3BET or FOLD"
         
         # Calling hands IP (not BB-specific)
         if in_call_ip:
             return "CALL up to 4bb"
         
-        # BB defend hands - only applies in BB
-        if position == 'BB' and in_bb_defend:
-            return "CALL up to 4bb"
+        # BB defend hands
+        if in_bb_defend:
+            return "CALL up to 3bb"
         
-        # Opening hands only - fold to any raise
+        # Opening hands: can call min-raises only
         if in_open:
-            return "FOLD"
+            return "CALL up to 2.5bb"
         
+        return "FOLD"
+    
+    def _get_bb_defense(self, hand: str) -> str:
+        """Get BB defense threshold for Line 1 display."""
+        s = self.strategy
+        
+        in_4bet = hand in s.get('4bet', set())
+        in_call_3bet = hand in s.get('call_3bet', set())
+        in_bb_defend = hand in s.get('bb_defend', set())
+        
+        if in_4bet:
+            return "CALL any"
+        if in_call_3bet:
+            return "CALL 6bb"
+        if in_bb_defend:
+            return "CALL 3bb"
         return "FOLD"
     
     def _postflop(self, cards: List[str], board: List[str], pot: float, to_call: float, position: str, table_data: Dict[str, Any] = None) -> Dict[str, Any]:

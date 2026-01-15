@@ -393,15 +393,18 @@ class HelperBar:
             # If we have all position results (preflop), show them
             all_positions = result.get('all_positions')
             if all_positions and not board:  # Preflop only
-                # Line 1: Opening actions
+                # Line 1: Opening actions (BB shows defense threshold)
                 pos_actions = []
                 for pos in ['UTG', 'MP', 'CO', 'BTN', 'SB', 'BB']:
                     pos_result = all_positions[pos]
                     action = pos_result.get('action', 'fold')
-                    bet_size = pos_result.get('bet_size', 0)
                     
-                    if action in ('bet', 'raise') and bet_size:
-                        action_str = f"RAISE"
+                    if pos == 'BB':
+                        # BB: show defense threshold instead of CHECK
+                        bb_defense = pos_result.get('bb_defense', 'FOLD')
+                        action_str = bb_defense
+                    elif action in ('bet', 'raise'):
+                        action_str = "RAISE"
                     else:
                         action_str = action.upper()
                     
