@@ -368,7 +368,7 @@ class HelperBar:
             'to_call': to_call,
             'big_blind': result.get('big_blind', 0.02),
             'num_players': result.get('num_players', 2),
-            'is_aggressor': table_data.get('is_aggressor'),
+            'is_aggressor': result.get('is_aggressor'),
             'facing': result.get('facing'),
             'reasoning': reasoning,
             'confidence': confidence,
