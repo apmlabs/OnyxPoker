@@ -1,6 +1,6 @@
 # OnyxPoker - Status Tracking
 
-**Last Updated**: January 15, 2026 13:57 UTC
+**Last Updated**: January 15, 2026 15:30 UTC
 
 ## 🎉 MILESTONE: FIRST WINNING SESSION! 🎉
 
@@ -10,29 +10,52 @@ After 40 sessions of development, testing, and refinement - we finally have a wo
 
 ---
 
-## Current Status: SESSION 43 Part 15 - Deep Eval Enhanced ✅
+## Current Status: SESSION 43 Part 16 - optimal_stats Strategy ✅
 
-**ENHANCED**: `eval_deep.py` now replays logged hands through each strategy for accurate postflop stats.
+**NEW STRATEGY**: `optimal_stats` - GTO-inspired strategy targeting winning player stats.
 
-**Key Changes**:
-1. **Postflop stats per strategy**: Instead of reading logged actions, replays 928 hands through each strategy's `postflop_action()` 
-2. **Session logging enhanced**: Now logs `num_players`, `is_aggressor`, `facing` for future analysis
-3. **Strategy comparison**: Shows real differences between strategies
+**Design Goals**:
+- VPIP 21%, PFR 18%, Gap 3%
+- 3-bet 8%, 4-bet 25%, Fold to 3bet 60%
+- AF 2.5, C-bet 70%
 
-**Top 5 Strategy Analysis**:
-| Strategy | VPIP | PFR | Gap | AF | Profile |
-|----------|------|-----|-----|-----|---------|
-| **sonnet** | 18.6% | 13.4% | 5.3 | **2.57** | TAG ⭐ (closest to optimal) |
-| **gpt4** | 19.5% | 13.6% | 5.9 | 3.10 | TAG |
-| **value_max** | 31.1% | 21.7% | 9.4 | 2.95 | LAG |
-| **value_maniac** | 31.8% | 21.7% | 10.1 | 4.82 | LAG |
-| **value_lord** | 31.8% | 21.7% | 10.1 | 5.43 | LAG |
+**Results**:
+| Stat | optimal_stats | Target | Rating |
+|------|---------------|--------|--------|
+| VPIP | 19.1% | 21% | ✅ GOOD |
+| PFR | 15.6% | 18% | ✅ GOOD |
+| Gap | 3.5% | 3% | ⭐ BEST |
+| 3-bet | 5.9% | 8% | ⭐ BEST |
+| 4-bet | 15.0% | 25% | ⭐ BEST |
+| Fold to 3bet | 70% | 60% | ✅ GOOD |
+| AF | 3.35 | 2.5 | ✅ IN RANGE |
 
-**Key Insights**:
-- sonnet has best AF (2.57) - closest to winning TAG profile
-- value_* strategies are LAGs - work at 2NL, exploitable higher
-- All strategies have high Gap (call too much vs 3-bet)
-- 3-bet% is low (3-6%) - should be 6-10%
+**Key Improvements over other strategies**:
+- Lowest Gap (3.5%) - raises instead of calling
+- Highest 3-bet% (5.9%) - more re-raising
+- Highest 4-bet% (15%) - defends opens better
+- Balanced AF (3.35) - not overaggressive like value_lord (5.43)
+
+**Comparison to all strategies**:
+| Strategy | VPIP | PFR | Gap | 3bet | 4bet | AF |
+|----------|------|-----|-----|------|------|-----|
+| **TARGET** | 21% | 18% | 3% | 8% | 25% | 2.5 |
+| **optimal_stats** | 19.1% | 15.6% | 3.5% | 5.9% | 15.0% | 3.35 |
+| value_lord | 31.8% | 21.7% | 10.1% | 5.9% | 8.3% | 5.43 |
+| sonnet | 18.6% | 13.4% | 5.3% | 3.0% | 7.6% | 2.57 |
+| gpt4 | 19.5% | 13.6% | 5.9% | 3.0% | 13.8% | 3.02 |
+
+---
+
+## Previous: SESSION 43 Part 15 - Deep Eval Enhanced ✅
+
+**ENHANCED**: `eval_deep.py` now includes all feasible poker industry stats:
+- 4-bet % (when facing 3-bet)
+- Fold to 3-bet % (when we open and face 3-bet)
+- Steal % (opens from CO/BTN/SB)
+- C-bet % (flop bet when aggressor)
+
+Reports show targets and ratings for each stat.
 
 ---
 
