@@ -1380,12 +1380,19 @@ def _postflop_value_lord(hole_cards, board, pot, to_call, street, strength, desc
             # TOP PAIR: Differentiate by kicker strength
             if hand_info['has_top_pair']:
                 if hand_info['has_good_kicker']:
-                    # TPGK: Call flop/turn, careful on river
-                    if street in ['flop', 'turn']:
-                        if pot_pct > 5.0:  # Fold to massive overbets (all-ins)
-                            return ('fold', 0, f"{desc} - fold TPGK vs {pot_pct:.0%} pot all-in")
+                    # TPGK: Call normal bets, fold to huge overbets (shove = overpair/set)
+                    # Calculate effective bet size: to_call / (pot - to_call) for raise sizing
+                    effective_pct = to_call / (pot - to_call) if pot > to_call else pot_pct
+                    if street == 'flop':
+                        if effective_pct > 1.0:  # Fold to pot+ raise on flop (shove)
+                            return ('fold', 0, f"{desc} - fold TPGK vs {effective_pct:.0%} pot shove")
                         return ('call', 0, f"{desc} - call TPGK")
-                    if pot_pct <= 0.5:  # River: only call small bets
+                    if street == 'turn':
+                        if effective_pct > 0.8:  # Fold to 80%+ raise on turn
+                            return ('fold', 0, f"{desc} - fold TPGK vs {effective_pct:.0%} pot")
+                        return ('call', 0, f"{desc} - call TPGK")
+                    # River: only call small bets
+                    if pot_pct <= 0.5:
                         return ('call', 0, f"{desc} - call TPGK river")
                     return ('fold', 0, f"{desc} - fold TPGK vs big river bet")
                 else:
