@@ -273,6 +273,40 @@ cd client && python3 poker_sim.py 200000
 
 ## 📖 SESSION HISTORY & LESSONS LEARNED
 
+### Session 43 Part 17: Complete Stats & Money Analysis (January 15, 2026)
+
+**Challenge**: Implement ALL feasible poker stats and compare strategies to industry standards, then reconcile with actual money won/lost.
+
+**Stats Implemented** (all marked YES in feasibility analysis):
+- PREFLOP: VPIP, PFR, Gap, 3-bet%, 4-bet%, Fold to 3-bet, Steal%, BB Defend%
+- POSTFLOP: C-bet%, AF (overall + per street), Fold%
+
+**Comprehensive Comparison Results**:
+```
+Strategy        VPIP   PFR   Gap  3bet  4bet  Steal   AF  Cbet  Score
+TARGET           21%   18%    3%    8%   25%   35%  2.5   75%    -
+optimal_stats  19.1% 15.6%  3.5%  5.9% 15.0% 34.1% 3.35  56%   7/10
+value_lord     31.8% 21.7% 10.1%  5.9%  8.3% 46.7% 5.43  89%   2/10
+value_maniac   31.8% 21.7% 10.1%  5.9%  8.3% 46.7% 4.82  82%   3/10
+```
+
+**Money vs Stats Paradox** (1819 real hands):
+| Strategy | BB/100 | Money | Stats Score |
+|----------|--------|-------|-------------|
+| value_lord | +21.8 | $7.93 | 2/10 |
+| optimal_stats | +19.9 | $7.24 | 7/10 |
+
+**Critical Lesson**: Industry-standard stats assume opponents fold appropriately. At 2NL they don't - fish call everything. So:
+- LAG style (value_lord) extracts more value with aggressive betting
+- TAG style (optimal_stats) leaves money on table by not betting enough
+- The "correct" strategy depends on opponent pool, not just stats
+
+**Recommendation**:
+- 2NL: Use value_lord/value_maniac (+21.8 BB/100)
+- 5NL+: Switch to optimal_stats (opponents fold more)
+
+---
+
 ### Session 43 Part 16: optimal_stats Strategy (January 15, 2026)
 
 **Challenge**: All existing strategies have flaws - value_* are too aggressive (AF 5+), sonnet/gpt c-bet too little (37%), all have low 3-bet% (3-6%).

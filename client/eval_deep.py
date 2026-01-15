@@ -27,13 +27,30 @@ def generate_all_hands():
 ALL_HANDS = generate_all_hands()
 POSITIONS = ['UTG', 'MP', 'CO', 'BTN', 'SB', 'BB']
 
-# Industry benchmarks
+# Industry benchmarks (6-max cash games)
 BENCHMARKS = {
-    'fish':      {'vpip': 56, 'pfr': 5,  'gap': 51, 'af': 0.5, 'profile': 'Loose-Passive'},
-    'passive':   {'vpip': 24, 'pfr': 2,  'gap': 22, 'af': 0.8, 'profile': 'Loose-Passive'},
-    'nit':       {'vpip': 12, 'pfr': 10, 'gap': 2,  'af': 1.5, 'profile': 'Tight-Passive'},
-    'tag':       {'vpip': 21, 'pfr': 18, 'gap': 3,  'af': 2.5, 'profile': 'Tight-Aggressive (Winner)'},
-    'lag':       {'vpip': 28, 'pfr': 25, 'gap': 3,  'af': 3.5, 'profile': 'Loose-Aggressive'},
+    'fish':      {'vpip': 56, 'pfr': 5,  'gap': 51, 'af': 0.5, '3bet': 2, 'cbet': 30, 'profile': 'Loose-Passive'},
+    'passive':   {'vpip': 24, 'pfr': 2,  'gap': 22, 'af': 0.8, '3bet': 3, 'cbet': 40, 'profile': 'Loose-Passive'},
+    'nit':       {'vpip': 12, 'pfr': 10, 'gap': 2,  'af': 1.5, '3bet': 4, 'cbet': 60, 'profile': 'Tight-Passive'},
+    'tag':       {'vpip': 21, 'pfr': 18, 'gap': 3,  'af': 2.5, '3bet': 8, 'cbet': 75, 'profile': 'Tight-Aggressive (Winner)'},
+    'lag':       {'vpip': 28, 'pfr': 25, 'gap': 3,  'af': 3.5, '3bet': 10, 'cbet': 80, 'profile': 'Loose-Aggressive'},
+}
+
+# Industry targets for 6-max winning player
+TARGETS = {
+    'vpip':         {'target': 21, 'range': (18, 25), 'desc': 'Voluntarily Put $ In Pot'},
+    'pfr':          {'target': 18, 'range': (15, 22), 'desc': 'Pre-Flop Raise %'},
+    'gap':          {'target': 3,  'range': (0, 5),   'desc': 'VPIP - PFR (calling frequency)'},
+    '3bet':         {'target': 8,  'range': (6, 10),  'desc': '3-bet % when facing open'},
+    '4bet':         {'target': 25, 'range': (15, 35), 'desc': '4-bet % when facing 3-bet'},
+    'fold_to_3bet': {'target': 60, 'range': (55, 70), 'desc': 'Fold to 3-bet after opening'},
+    'steal':        {'target': 35, 'range': (27, 40), 'desc': 'Open from CO/BTN/SB'},
+    'bb_defend':    {'target': 40, 'range': (35, 45), 'desc': 'BB defend vs steal'},
+    'cbet':         {'target': 75, 'range': (65, 85), 'desc': 'C-bet % on flop as aggressor'},
+    'af':           {'target': 2.5,'range': (2.0, 3.5),'desc': 'Aggression Factor (bets+raises)/calls'},
+    'flop_af':      {'target': 3.0,'range': (2.5, 4.0),'desc': 'Flop Aggression Factor'},
+    'turn_af':      {'target': 2.5,'range': (2.0, 3.5),'desc': 'Turn Aggression Factor'},
+    'river_af':     {'target': 2.0,'range': (1.5, 3.0),'desc': 'River Aggression Factor'},
 }
 
 def calc_preflop_stats(strategy_name):
@@ -258,42 +275,42 @@ def classify_profile(vpip, pfr, af):
     
     return profile, closest
 
+def rate_stat(stat_name, value):
+    """Rate a stat against industry target."""
+    if stat_name not in TARGETS:
+        return '?'
+    t = TARGETS[stat_name]
+    lo, hi = t['range']
+    if lo <= value <= hi:
+        return 'GOOD'
+    elif value < lo:
+        return 'LOW'
+    else:
+        return 'HIGH'
+
 def print_preflop_report(strategy_name, stats):
     """Print preflop stats report."""
     print(f"\n{'='*70}")
     print(f"PREFLOP PROFILE: {strategy_name.upper()}")
     print('='*70)
     
-    # Industry targets
-    targets = {
-        'vpip': (21, 3), 'pfr': (18, 3), 'gap': (3, 2),
-        '3bet': (8, 2), '4bet': (25, 10), 'fold_to_3bet': (60, 10),
-        'steal': (35, 8), 'bb_defend': (40, 5)
-    }
-    
-    def rating(val, target, tolerance):
-        diff = abs(val - target)
-        if diff <= tolerance: return 'GOOD'
-        elif val > target: return 'HIGH'
-        else: return 'LOW'
-    
     print(f"\n  Core Stats:")
-    print(f"  {'Stat':<15} {'Value':>8} {'Target':>10} {'Rating':>8}")
-    print(f"  {'-'*45}")
-    print(f"  {'VPIP':<15} {stats['vpip']:>7.1f}% {targets['vpip'][0]:>8}%  [{rating(stats['vpip'], *targets['vpip'])}]")
-    print(f"  {'PFR':<15} {stats['pfr']:>7.1f}% {targets['pfr'][0]:>8}%  [{rating(stats['pfr'], *targets['pfr'])}]")
-    print(f"  {'Gap (VPIP-PFR)':<15} {stats['gap']:>7.1f}% {targets['gap'][0]:>8}%  [{rating(stats['gap'], *targets['gap'])}]")
+    print(f"  {'Stat':<15} {'Value':>8} {'Target':>12} {'Rating':>8}")
+    print(f"  {'-'*48}")
+    print(f"  {'VPIP':<15} {stats['vpip']:>7.1f}% {'18-25':>11}%  [{rate_stat('vpip', stats['vpip'])}]")
+    print(f"  {'PFR':<15} {stats['pfr']:>7.1f}% {'15-22':>11}%  [{rate_stat('pfr', stats['pfr'])}]")
+    print(f"  {'Gap (VPIP-PFR)':<15} {stats['gap']:>7.1f}% {'0-5':>11}%  [{rate_stat('gap', stats['gap'])}]")
     
     print(f"\n  Aggression Stats:")
-    print(f"  {'-'*45}")
-    print(f"  {'3-bet %':<15} {stats['3bet']:>7.1f}% {'6-10':>8}%  [{rating(stats['3bet'], *targets['3bet'])}]")
-    print(f"  {'4-bet %':<15} {stats['4bet']:>7.1f}% {'25+':>8}%  [{rating(stats['4bet'], *targets['4bet'])}]")
-    print(f"  {'Fold to 3bet':<15} {stats['fold_to_3bet']:>7.1f}% {'55-70':>8}%  [{rating(stats['fold_to_3bet'], *targets['fold_to_3bet'])}]")
+    print(f"  {'-'*48}")
+    print(f"  {'3-bet %':<15} {stats['3bet']:>7.1f}% {'6-10':>11}%  [{rate_stat('3bet', stats['3bet'])}]")
+    print(f"  {'4-bet %':<15} {stats['4bet']:>7.1f}% {'15-35':>11}%  [{rate_stat('4bet', stats['4bet'])}]")
+    print(f"  {'Fold to 3bet':<15} {stats['fold_to_3bet']:>7.1f}% {'55-70':>11}%  [{rate_stat('fold_to_3bet', stats['fold_to_3bet'])}]")
     
     print(f"\n  Positional Stats:")
-    print(f"  {'-'*45}")
-    print(f"  {'Steal %':<15} {stats['steal']:>7.1f}% {'27-40':>8}%  [{rating(stats['steal'], *targets['steal'])}]")
-    print(f"  {'BB Defend %':<15} {stats['bb_defend']:>7.1f}% {'35-45':>8}%  [{rating(stats['bb_defend'], *targets['bb_defend'])}]")
+    print(f"  {'-'*48}")
+    print(f"  {'Steal %':<15} {stats['steal']:>7.1f}% {'27-40':>11}%  [{rate_stat('steal', stats['steal'])}]")
+    print(f"  {'BB Defend %':<15} {stats['bb_defend']:>7.1f}% {'35-45':>11}%  [{rate_stat('bb_defend', stats['bb_defend'])}]")
     
     print(f"\n  Position Breakdown:")
     print(f"  {'Pos':<5} {'VPIP':>7} {'PFR':>7} {'3bet':>7}")
@@ -308,30 +325,22 @@ def print_postflop_report(stats):
     print("POSTFLOP PROFILE (from real logs)")
     print('='*70)
     
-    def af_rating(val):
-        if 2.0 <= val <= 3.5: return 'GOOD'
-        elif val < 2.0: return 'PASSIVE'
-        else: return 'AGGRO'
-    
-    def cbet_rating(val):
-        if 70 <= val <= 90: return 'GOOD'
-        elif val < 70: return 'LOW'
-        else: return 'HIGH'
-    
     print(f"\n  Core Stats:")
-    print(f"  {'Stat':<15} {'Value':>8} {'Target':>10} {'Rating':>8}")
-    print(f"  {'-'*45}")
-    print(f"  {'Overall AF':<15} {stats['overall_af']:>8.2f} {'2.0-3.5':>10}  [{af_rating(stats['overall_af'])}]")
-    print(f"  {'C-bet %':<15} {stats['cbet']:>7.1f}% {'70-90':>9}%  [{cbet_rating(stats['cbet'])}]")
+    print(f"  {'Stat':<15} {'Value':>8} {'Target':>12} {'Rating':>8}")
+    print(f"  {'-'*48}")
+    print(f"  {'Overall AF':<15} {stats['overall_af']:>8.2f} {'2.0-3.5':>12}  [{rate_stat('af', stats['overall_af'])}]")
+    print(f"  {'C-bet %':<15} {stats['cbet']:>7.1f}% {'65-85':>11}%  [{rate_stat('cbet', stats['cbet'])}]")
     print(f"  {'(C-bet opps)':<15} {stats['cbet_opp']:>8}")
     print(f"  {'Total hands':<15} {stats['total_hands']:>8}")
     
     print(f"\n  By Street:")
-    print(f"  {'Street':<8} {'AF':>6} {'Fold%':>8} {'Agg%':>8} {'Hands':>8}")
-    print(f"  {'-'*42}")
+    print(f"  {'Street':<8} {'AF':>6} {'Target':>10} {'Fold%':>8} {'Agg%':>8} {'Hands':>8}")
+    print(f"  {'-'*52}")
     for street in ['flop', 'turn', 'river']:
         s = stats[street]
-        print(f"  {street.capitalize():<8} {s['af']:>6.2f} {s['fold_pct']:>7.1f}% {s['agg_pct']:>7.1f}% {s['total']:>8}")
+        af_target = TARGETS.get(f'{street}_af', {}).get('range', (2.0, 3.5))
+        rating = rate_stat(f'{street}_af', s['af'])
+        print(f"  {street.capitalize():<8} {s['af']:>6.2f} {af_target[0]:.1f}-{af_target[1]:.1f}  [{rating}] {s['fold_pct']:>6.1f}% {s['agg_pct']:>6.1f}% {s['total']:>8}")
 
 def print_comparison(strategy_name, preflop, postflop):
     """Print comparison to benchmarks."""
@@ -367,12 +376,14 @@ def print_comparison(strategy_name, preflop, postflop):
         print("           This profile typically loses money long-term.")
 
 def main():
-    strategies = sys.argv[1:] if len(sys.argv) > 1 else ['value_lord', 'value_maniac', 'value_max']
+    strategies = sys.argv[1:] if len(sys.argv) > 1 else ['optimal_stats', 'value_lord', 'value_maniac', 'sonnet', 'gpt4', 'kiro_v2']
     
     print("\n" + "="*70)
-    print("DEEP STRATEGY EVALUATION")
+    print("DEEP STRATEGY EVALUATION - ALL FEASIBLE STATS")
     print("="*70)
     print(f"\nStrategies: {', '.join(strategies)}")
+    
+    all_results = {}
     
     for strat in strategies:
         if strat not in STRATEGIES:
@@ -381,27 +392,119 @@ def main():
         
         preflop = calc_preflop_stats(strat)
         postflop = calc_postflop_stats_from_logs(strat)
+        all_results[strat] = {'preflop': preflop, 'postflop': postflop}
         
         print_preflop_report(strat, preflop)
         print_postflop_report(postflop)
         print_comparison(strat, preflop, postflop)
     
-    # Summary table
+    # Comprehensive summary table
     if len(strategies) > 1:
-        print(f"\n{'='*70}")
-        print("SUMMARY")
-        print('='*70)
-        print(f"\n  {'Strategy':<14} {'VPIP':>6} {'PFR':>6} {'3bet':>6} {'4bet':>6} {'Steal':>6} {'AF':>5} {'Cbet':>6}")
-        print(f"  {'-'*68}")
-        print(f"  {'TARGET':<14} {'21%':>6} {'18%':>6} {'8%':>6} {'25%':>6} {'35%':>6} {'2.5':>5} {'80%':>6}")
-        print(f"  {'-'*68}")
+        print(f"\n{'='*100}")
+        print("COMPREHENSIVE COMPARISON - ALL STATS vs INDUSTRY TARGETS")
+        print('='*100)
+        
+        # Header
+        print(f"\n  {'':14} |{'--- PREFLOP ---':^42}|{'--- POSTFLOP ---':^30}")
+        print(f"  {'Strategy':<14} {'VPIP':>6} {'PFR':>6} {'Gap':>5} {'3bet':>6} {'4bet':>6} {'F3b':>6} {'Stl':>6} {'BBD':>6} | {'AF':>5} {'Cbet':>6} {'FAF':>5} {'TAF':>5} {'RAF':>5}")
+        print(f"  {'-'*98}")
+        print(f"  {'TARGET':<14} {'21%':>6} {'18%':>6} {'3%':>5} {'8%':>6} {'25%':>6} {'60%':>6} {'35%':>6} {'40%':>6} | {'2.5':>5} {'75%':>6} {'3.0':>5} {'2.5':>5} {'2.0':>5}")
+        print(f"  {'-'*98}")
         
         for strat in strategies:
-            if strat not in STRATEGIES:
+            if strat not in all_results:
                 continue
-            preflop = calc_preflop_stats(strat)
-            postflop = calc_postflop_stats_from_logs(strat)
-            print(f"  {strat:<14} {preflop['vpip']:>5.1f}% {preflop['pfr']:>5.1f}% {preflop['3bet']:>5.1f}% {preflop['4bet']:>5.1f}% {preflop['steal']:>5.1f}% {postflop['overall_af']:>5.2f} {postflop['cbet']:>5.1f}%")
+            p = all_results[strat]['preflop']
+            q = all_results[strat]['postflop']
+            print(f"  {strat:<14} {p['vpip']:>5.1f}% {p['pfr']:>5.1f}% {p['gap']:>4.1f}% {p['3bet']:>5.1f}% {p['4bet']:>5.1f}% {p['fold_to_3bet']:>5.0f}% {p['steal']:>5.1f}% {p['bb_defend']:>5.1f}% | {q['overall_af']:>5.2f} {q['cbet']:>5.1f}% {q['flop']['af']:>5.2f} {q['turn']['af']:>5.2f} {q['river']['af']:>5.2f}")
+        
+        # Rating summary
+        print(f"\n{'='*100}")
+        print("RATING SUMMARY (GOOD = within target range)")
+        print('='*100)
+        
+        stat_names = ['vpip', 'pfr', 'gap', '3bet', '4bet', 'fold_to_3bet', 'steal', 'bb_defend', 'af', 'cbet']
+        
+        print(f"\n  {'Strategy':<14}", end='')
+        for stat in stat_names:
+            print(f" {stat[:6]:>6}", end='')
+        print(f" {'SCORE':>7}")
+        print(f"  {'-'*85}")
+        
+        for strat in strategies:
+            if strat not in all_results:
+                continue
+            p = all_results[strat]['preflop']
+            q = all_results[strat]['postflop']
+            
+            values = {
+                'vpip': p['vpip'], 'pfr': p['pfr'], 'gap': p['gap'],
+                '3bet': p['3bet'], '4bet': p['4bet'], 'fold_to_3bet': p['fold_to_3bet'],
+                'steal': p['steal'], 'bb_defend': p['bb_defend'],
+                'af': q['overall_af'], 'cbet': q['cbet']
+            }
+            
+            print(f"  {strat:<14}", end='')
+            good_count = 0
+            for stat in stat_names:
+                rating = rate_stat(stat, values[stat])
+                symbol = 'OK' if rating == 'GOOD' else '--'
+                if rating == 'GOOD':
+                    good_count += 1
+                print(f" {symbol:>6}", end='')
+            print(f" {good_count:>5}/10")
+        
+        # Best strategy recommendation
+        print(f"\n{'='*100}")
+        print("RECOMMENDATION")
+        print('='*100)
+        
+        best_score = 0
+        best_strat = None
+        for strat in strategies:
+            if strat not in all_results:
+                continue
+            p = all_results[strat]['preflop']
+            q = all_results[strat]['postflop']
+            
+            score = 0
+            for stat, val in [('vpip', p['vpip']), ('pfr', p['pfr']), ('gap', p['gap']),
+                              ('3bet', p['3bet']), ('4bet', p['4bet']), ('fold_to_3bet', p['fold_to_3bet']),
+                              ('steal', p['steal']), ('bb_defend', p['bb_defend']),
+                              ('af', q['overall_af']), ('cbet', q['cbet'])]:
+                if rate_stat(stat, val) == 'GOOD':
+                    score += 1
+            if score > best_score:
+                best_score = score
+                best_strat = strat
+        
+        if best_strat:
+            print(f"\n  Best overall: {best_strat.upper()} ({best_score}/10 stats in target range)")
+            
+            # Show what each strategy is best at
+            print(f"\n  Strategy strengths:")
+            for strat in strategies:
+                if strat not in all_results:
+                    continue
+                p = all_results[strat]['preflop']
+                q = all_results[strat]['postflop']
+                
+                strengths = []
+                if rate_stat('gap', p['gap']) == 'GOOD':
+                    strengths.append(f"Gap {p['gap']:.1f}%")
+                if rate_stat('3bet', p['3bet']) == 'GOOD':
+                    strengths.append(f"3bet {p['3bet']:.1f}%")
+                if rate_stat('4bet', p['4bet']) == 'GOOD':
+                    strengths.append(f"4bet {p['4bet']:.1f}%")
+                if rate_stat('cbet', q['cbet']) == 'GOOD':
+                    strengths.append(f"Cbet {q['cbet']:.1f}%")
+                if rate_stat('af', q['overall_af']) == 'GOOD':
+                    strengths.append(f"AF {q['overall_af']:.2f}")
+                
+                if strengths:
+                    print(f"    {strat:<14}: {', '.join(strengths)}")
+                else:
+                    print(f"    {strat:<14}: No stats in optimal range")
 
 if __name__ == '__main__':
     main()

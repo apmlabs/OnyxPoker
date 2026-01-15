@@ -1,6 +1,6 @@
 # OnyxPoker - Status Tracking
 
-**Last Updated**: January 15, 2026 15:30 UTC
+**Last Updated**: January 15, 2026 16:45 UTC
 
 ## 🎉 MILESTONE: FIRST WINNING SESSION! 🎉
 
@@ -10,7 +10,25 @@ After 40 sessions of development, testing, and refinement - we finally have a wo
 
 ---
 
-## Current Status: SESSION 43 Part 16 - optimal_stats Strategy ✅
+## Current Status: SESSION 43 Part 17 - Complete Stats & Money Analysis ✅
+
+**COMPREHENSIVE EVALUATION**: All feasible poker stats implemented, compared to industry standards.
+
+### Stats vs Money Paradox (1819 real hands)
+
+| Rank | Strategy | BB/100 | Money | Stats Score | Bad Decisions |
+|------|----------|--------|-------|-------------|---------------|
+| 1 | **value_lord** | +21.8 | $7.93 | 2/10 | 0 |
+| 2 | value_maniac | +21.5 | $7.82 | 3/10 | 0 |
+| 3 | optimal_stats | +19.9 | $7.24 | **7/10** | 9 |
+
+**Key Insight**: optimal_stats has BEST stats but makes $0.69 LESS because at 2NL fish call too much - aggressive betting wins more.
+
+**Recommendation**: value_lord at 2NL, optimal_stats at 5NL+
+
+---
+
+## Previous: SESSION 43 Part 16 - optimal_stats Strategy ✅
 
 **NEW STRATEGY**: `optimal_stats` - GTO-inspired strategy targeting winning player stats.
 
