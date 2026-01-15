@@ -219,9 +219,19 @@ def analyze_hand(hole_cards: List[Tuple[str, str]], board: List[Tuple[str, str]]
         flush_suit = [s for s, c in suit_counts.items() if c >= 5][0]
         flush_high = max(RANK_VAL[c[0]] for c in (hole_cards + board) if c[1] == flush_suit)
         strength, desc, kicker = 6, "flush", flush_high
-    # Straight
+    # Straight - find the highest straight we can make
     elif has_straight:
-        strength, desc, kicker = 5, "straight", max(hero_vals + board_vals)
+        all_vals = sorted(set(hero_vals + board_vals))
+        straight_high = 0
+        # Check for wheel (A2345) - high card is 5 (val=3)
+        if {12, 0, 1, 2, 3}.issubset(set(all_vals)):
+            straight_high = 3  # 5-high
+        # Find highest 5-card straight
+        for i in range(len(all_vals) - 4):
+            window = all_vals[i:i+5]
+            if window[-1] - window[0] == 4:
+                straight_high = max(straight_high, window[-1])
+        strength, desc, kicker = 5, "straight", straight_high
     # Set
     elif has_set:
         strength, desc, kicker = 4, f"set of {our_trips[0]}s", RANK_VAL[our_trips[0]]
