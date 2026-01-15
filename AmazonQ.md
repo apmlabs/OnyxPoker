@@ -1,6 +1,6 @@
 # OnyxPoker - Status Tracking
 
-**Last Updated**: January 15, 2026 20:42 UTC
+**Last Updated**: January 15, 2026 21:51 UTC
 
 ## 🎉 MILESTONE: FIRST WINNING SESSION! 🎉
 
@@ -10,37 +10,60 @@ After 40 sessions of development, testing, and refinement - we finally have a wo
 
 ---
 
-## Current Status: SESSION 43 Part 20 - Live Testing Bug Fixes ✅
+## Current Status: SESSION 43 Part 21 - Real Hand History Evaluation ✅
+
+**MAJOR ANALYSIS**: Evaluated all 12 strategies on 1,209 real PokerStars hands from idealistslp sessions.
+
+### Actual Session Results
+- **Total**: €-40.52 (-753.9 BB, **-62.4 BB/100**)
+- 5NL: 1,036 hands, -69.2 BB/100
+- 10NL: 154 hands, -19.4 BB/100
+- 25NL: 19 hands, -35.2 BB/100
+
+### Strategy Rankings by Net Impact (BB saved - BB missed)
+
+| Rank | Strategy | PF Folds | PF Saved | Post Folds | Post Saved | **NET BB** |
+|------|----------|----------|----------|------------|------------|------------|
+| 1 | **optimal_stats** | 102 | 361.8 | 151 | 1134.7 | **+816.7** |
+| 2 | aggressive | 100 | 358.4 | 143 | 1078.3 | +771.1 |
+| 3 | sonnet_max | 103 | 349.0 | 149 | 1106.9 | +764.7 |
+| 4 | 2nl_exploit | 99 | 341.2 | 143 | 1078.3 | +753.9 |
+| 5 | gpt3 | 113 | 362.8 | 143 | 1078.3 | +753.8 |
+| 6 | sonnet | 103 | 349.0 | 143 | 1078.3 | +749.7 |
+| 7 | kiro_v2 | 107 | 363.8 | 139 | 981.7 | +669.7 |
+| 8 | kiro5 | 105 | 351.0 | 139 | 981.7 | +656.9 |
+| 9 | kiro_optimal | 103 | 349.0 | 139 | 981.7 | +654.9 |
+| 10 | gpt4 | 108 | 270.3 | 143 | 1078.3 | +653.6 |
+| 11 | value_lord | 62 | 125.3 | 146 | 980.0 | +446.4 |
+| 12 | value_maniac | 62 | 125.3 | 121 | 771.0 | +266.8 |
+
+### Key Findings
+
+1. **optimal_stats wins on real data** (+816.7 BB net) - tighter preflop + better postflop discipline
+2. **value_lord/value_maniac underperform** - play too many hands, miss postflop folds
+3. **Postflop discipline matters more** - most savings come from folding postflop
+4. **Biggest leak: 54s from SB** - lost 98.4 BB on one hand that tighter strategies fold
+
+### Simulation vs Reality Gap
+
+| Strategy | Simulation BB/100 | Real Data Ranking |
+|----------|-------------------|-------------------|
+| value_lord | +21.7 | #11 |
+| optimal_stats | +19.9 | **#1** |
+
+**Conclusion**: Simulation rewards aggression, but real data shows tighter strategies save more money by avoiding disasters.
+
+---
+
+## Previous: SESSION 43 Part 20 - Live Testing Bug Fixes ✅
 
 **FIXED**: Three bugs found during live testing session.
 
 ### Bugs Fixed
 
 1. **helper_bar.py NameError** - `table_data` not defined in `_display_result()`
-   - Was breaking UI completely (no advice shown)
-   - Fix: Use `result.get('is_aggressor')` instead
-
-2. **Betting draws on river** - Code said "overbet draw" on river
-   - AcKc on river with "straight draw" = nonsense (no more cards!)
-   - Fix: Add `street != 'river'` check before betting draws
-
+2. **Betting draws on river** - Code said "overbet draw" on river (no more cards!)
 3. **TPGK calling shoves** - JhTh called $2.88 shove, lost to QQ
-   - 240% pot shove on flop = almost always overpair/set
-   - Fix: Use `effective_pct = to_call / (pot - to_call)` to detect raises
-   - TPGK now folds to 100%+ pot raises on flop
-
-### Test Results (1,890 real hands)
-| Rank | Strategy | BB/100 | Bad Decisions |
-|------|----------|--------|---------------|
-| 1 | value_lord | +21.7 | 0 |
-| 2 | value_maniac | +21.4 | 0 |
-| 3 | optimal_stats | +19.7 | 9 |
-| 4 | kiro_v2 | +19.5 | 11 |
-| 5 | sonnet_max | +19.1 | 8 |
-
-- audit_strategies.py: **43/43 PASS** ✅
-- value_lord: 0 bad folds, 0 bad calls
-- Good Folds improved: 103 → 107 (+4)
 
 ---
 
@@ -61,43 +84,6 @@ After 40 sessions of development, testing, and refinement - we finally have a wo
 ---
 
 ## Previous: SESSION 43 Part 16 - optimal_stats Strategy ✅
-
-**NEW STRATEGY**: `optimal_stats` - GTO-inspired strategy targeting winning player stats.
-
-**Design Goals**:
-- VPIP 21%, PFR 18%, Gap 3%
-- 3-bet 8%, 4-bet 25%, Fold to 3bet 60%
-- AF 2.5, C-bet 70%
-
-**Results**:
-| Stat | optimal_stats | Target | Rating |
-|------|---------------|--------|--------|
-| VPIP | 19.1% | 21% | ✅ GOOD |
-| PFR | 15.6% | 18% | ✅ GOOD |
-| Gap | 3.5% | 3% | ⭐ BEST |
-| 3-bet | 5.9% | 8% | ⭐ BEST |
-| 4-bet | 15.0% | 25% | ⭐ BEST |
-| Fold to 3bet | 70% | 60% | ✅ GOOD |
-| AF | 3.35 | 2.5 | ✅ IN RANGE |
-
-**Key Improvements over other strategies**:
-- Lowest Gap (3.5%) - raises instead of calling
-- Highest 3-bet% (5.9%) - more re-raising
-- Highest 4-bet% (15%) - defends opens better
-- Balanced AF (3.35) - not overaggressive like value_lord (5.43)
-
-**Comparison to all strategies**:
-| Strategy | VPIP | PFR | Gap | 3bet | 4bet | AF |
-|----------|------|-----|-----|------|------|-----|
-| **TARGET** | 21% | 18% | 3% | 8% | 25% | 2.5 |
-| **optimal_stats** | 19.1% | 15.6% | 3.5% | 5.9% | 15.0% | 3.35 |
-| value_lord | 31.8% | 21.7% | 10.1% | 5.9% | 8.3% | 5.43 |
-| sonnet | 18.6% | 13.4% | 5.3% | 3.0% | 7.6% | 2.57 |
-| gpt4 | 19.5% | 13.6% | 5.9% | 3.0% | 13.8% | 3.02 |
-
----
-
-## Previous: SESSION 43 Part 15 - Deep Eval Enhanced ✅
 
 **ENHANCED**: `eval_deep.py` now includes all feasible poker industry stats:
 - 4-bet % (when facing 3-bet)

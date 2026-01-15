@@ -273,6 +273,46 @@ cd client && python3 poker_sim.py 200000
 
 ## 📖 SESSION HISTORY & LESSONS LEARNED
 
+### Session 43 Part 21: Real Hand History Evaluation (January 15, 2026)
+
+**Challenge**: Evaluate all 12 strategies on 1,209 real PokerStars hands from idealistslp sessions to determine which strategy actually performs best on real data.
+
+**Methodology**:
+- Parsed hand histories from idealistslp_extracted/ folder
+- Evaluated each strategy's preflop and postflop decisions
+- Calculated "net impact" = BB saved by folding losers - BB missed by folding winners
+
+**Actual Session Results**:
+- Total: €-40.52 (-753.9 BB, -62.4 BB/100)
+- 5NL: 1,036 hands, -69.2 BB/100
+- 10NL: 154 hands, -19.4 BB/100
+- 25NL: 19 hands, -35.2 BB/100
+
+**Strategy Rankings by Net Impact**:
+| Rank | Strategy | NET BB |
+|------|----------|--------|
+| 1 | **optimal_stats** | +816.7 |
+| 2 | aggressive | +771.1 |
+| 3 | sonnet_max | +764.7 |
+| 11 | value_lord | +446.4 |
+| 12 | value_maniac | +266.8 |
+
+**Key Findings**:
+1. **optimal_stats wins on real data** - tighter preflop + better postflop discipline
+2. **value_lord/value_maniac underperform** - play too many hands, miss postflop folds
+3. **Postflop discipline matters more** - most savings come from folding postflop
+4. **Biggest leak: 54s from SB** - lost 98.4 BB on one hand that tighter strategies fold
+
+**Simulation vs Reality Gap**:
+| Strategy | Simulation BB/100 | Real Data Ranking |
+|----------|-------------------|-------------------|
+| value_lord | +21.7 | #11 |
+| optimal_stats | +19.9 | **#1** |
+
+**Critical Lesson**: Simulation rewards aggression because simulated opponents fold. Real opponents at 2NL call too much AND hit hands. Tighter strategies avoid disasters better. The "best" strategy depends on whether you're optimizing for simulation or real results.
+
+---
+
 ### Session 43 Part 20: Live Testing Bug Fixes (January 15, 2026)
 
 **Challenge**: Live testing revealed 3 bugs that weren't caught by unit tests.
