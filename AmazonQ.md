@@ -10,7 +10,7 @@ After 40 sessions of development, testing, and refinement - we finally have a wo
 
 ---
 
-## Current Status: SESSION 43 Part 11 - Line 1 Always Shows Open Ranges ✅
+## Current Status: SESSION 43 Part 12 - C-bet & Straight Kicker Fixes ✅
 
 **Validated preflop advice matches strategy perfectly:**
 - Line 1 (6 positions): 1014/1014 scenarios PASS
@@ -164,6 +164,19 @@ Table: 60% fish, 25% nit, 15% tag
 | 17 | lag | -5.40 | 2.82 |
 
 ## Session Log
+
+### Session 43 Part 12 (January 15, 2026)
+- **C-BET LEAK FIX**: Don't c-bet air on monotone/paired boards
+  - Analyzed session_20260115_001232.jsonl - found 7 leaks at 10NL/25NL
+  - KJh on As4s6s (monotone) → now checks instead of c-bet bluff
+  - A3h on 4d4c6h (paired) → now checks instead of c-bet bluff
+  - AKc on 4s8d8h (paired) → now checks instead of c-bet bluff
+- **STRAIGHT KICKER BUG FIX**: Was using max card, not high card of straight
+  - JJ on 6-7-8-9-T showed 51% equity (wrong!)
+  - Fixed: now correctly finds J-high straight, equity = 95.5%
+  - Only QJ (8 combos) beats JJ when hero blocks 2 Jacks
+- **RESULTS**: value_lord +761.0, 0 bad folds, 0 bad calls
+- Commits: 236e4a5, 71fa348
 
 ### Session 43 Part 11 (January 14, 2026)
 - **LINE 1 FIX**: Always shows open ranges regardless of actual game state
