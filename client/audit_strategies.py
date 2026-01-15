@@ -113,7 +113,7 @@ def main():
     results.append(test_postflop('gpt4', [('K','s'),('7','d')], [('K','h'),('8','c'),('2','d'),('5','s')], 1.0, 0, 'turn', 'check', 'TPWK turn - check'))
     
     # Facing aggression: fold one pair to turn/river raises
-    results.append(test_postflop('gpt4', [('A','s'),('K','d')], [('A','h'),('7','c'),('2','d'),('5','s')], 1.0, 0.8, 'turn', 'call', 'TPTK facing turn bet - call'))
+    results.append(test_postflop('gpt4', [('A','s'),('K','d')], [('A','h'),('7','c'),('2','d'),('5','s')], 1.0, 0.8, 'turn', 'fold', 'TPTK facing turn bet - fold (per file: fold one-pair)'))
     results.append(test_postflop('gpt4', [('K','s'),('7','d')], [('K','h'),('8','c'),('2','d'),('5','s')], 1.0, 0.5, 'turn', 'fold', 'TPWK facing turn bet - fold'))
     
     # ========== SONNET TESTS ==========

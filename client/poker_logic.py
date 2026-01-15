@@ -1034,6 +1034,12 @@ def postflop_action(hole_cards: List[Tuple[str, str]], board: List[Tuple[str, st
     # value_maniac: Exact maniac postflop (overbets, calls wide)
     # BUT with paired board protection (learned from KK on JJ disaster)
     
+    # Detect if facing a raise (vs just a bet) - used by kiro/sonnet/gpt strategies
+    # Heuristic: if to_call > 80% pot, likely a raise (bet + raise = big amount)
+    # NOTE: value_lord and value_maniac do NOT use this - they have their own logic
+    is_facing_raise = to_call and pot > 0 and to_call > pot * 0.8
+    
+    # value_lord and value_maniac - unchanged, don't pass is_facing_raise
     if strategy == 'value_maniac':
         return _postflop_value_maniac(hole_cards, board, pot, to_call, street,
                                       strength, desc, has_any_draw, has_flush_draw, has_oesd, bb_size)
@@ -1065,18 +1071,25 @@ def postflop_action(hole_cards: List[Tuple[str, str]], board: List[Tuple[str, st
                             has_flush_draw, has_oesd, has_gutshot, is_overpair,
                             is_underpair_to_ace, is_multiway)
     
+    # Kiro strategies (slightly smaller sizings per their files)
+    if strategy in ['kiro_optimal', 'kiro5', 'kiro_v2']:
+        return _postflop_kiro(hole_cards, board, pot, to_call, street, is_ip,
+                             is_aggressor, strength, desc, draws, combo_draw,
+                             has_flush_draw, has_oesd, is_overpair, board_has_ace,
+                             is_underpair_to_ace, is_multiway, is_facing_raise)
+    
     # Sonnet-style strategies (big value bets)
-    if strategy in ['sonnet', 'kiro_optimal', 'kiro5', 'kiro_v2', '2nl_exploit', 'aggressive']:
+    if strategy in ['sonnet', '2nl_exploit', 'aggressive']:
         return _postflop_sonnet(hole_cards, board, pot, to_call, street, is_ip,
                                is_aggressor, strength, desc, draws, combo_draw,
                                has_flush_draw, has_oesd, is_overpair, board_has_ace,
-                               is_underpair_to_ace, is_multiway)
+                               is_underpair_to_ace, is_multiway, is_facing_raise)
     
     # DEFAULT fallback (same as sonnet)
     return _postflop_sonnet(hole_cards, board, pot, to_call, street, is_ip,
                            is_aggressor, strength, desc, draws, combo_draw,
                            has_flush_draw, has_oesd, is_overpair, board_has_ace,
-                           is_underpair_to_ace, is_multiway)
+                           is_underpair_to_ace, is_multiway, is_facing_raise)
 
 
 def _postflop_value_maniac(hole_cards, board, pot, to_call, street, strength, desc, has_any_draw, has_flush_draw=False, has_oesd=False, bb_size=0.05):
@@ -1825,7 +1838,12 @@ def _postflop_gpt(hole_cards, board, pot, to_call, street, is_ip, is_aggressor,
         
         return ('check', 0, f"{desc} - check")
     
-    # Facing bet
+    # === FACING BET ===
+    # Per gpt3/gpt4 files:
+    # "Flop raises are value-heavy: continue mainly with strong top pair+, big draws"
+    # "Turn raises: fold most one-pair"
+    # "River raises: fold almost all one-pair; call with very strong hands only"
+    
     if strength >= 6:
         return ('raise', round(to_call * 3, 2), f"{desc} - raise monster")
     if strength >= 5:
@@ -1835,32 +1853,23 @@ def _postflop_gpt(hole_cards, board, pot, to_call, street, is_ip, is_aggressor,
     if strength == 3:
         return ('call', 0, f"{desc} - call two pair")
     
-    # Overpair facing bet - call down
+    # Overpair facing bet - call flop only, fold turn/river (per file: "fold most one-pair")
     if hand_info['is_overpair']:
-        if street != 'river':
-            return ('call', 0, f"{desc} - call {street}")
-        pot_odds = to_call / (pot + to_call) if pot > 0 else 1
-        if pot_odds <= 0.35:
-            return ('call', 0, f"{desc} - call small river")
-        return ('fold', 0, f"{desc} - fold big river")
+        if street == 'flop':
+            return ('call', 0, f"{desc} - call flop")
+        return ('fold', 0, f"{desc} - fold {street} (one pair)")
     
-    # Underpair to ace - call flop, fold later
+    # Underpair to ace - call flop only
     if hand_info['is_underpair_to_ace']:
         if street == 'flop':
             return ('call', 0, f"{desc} - call flop")
-        pot_odds = to_call / (pot + to_call) if pot > 0 else 1
-        if pot_odds <= 0.25:
-            return ('call', 0, f"{desc} - call small bet")
         return ('fold', 0, f"{desc} - fold (ace on board)")
     
-    # Top pair good kicker - call flop/turn
+    # Top pair good kicker - call flop, fold turn/river (per file: "fold most one-pair")
     if hand_info['has_top_pair'] and hand_info['has_good_kicker']:
-        if street in ['flop', 'turn']:
-            return ('call', 0, f"{desc} - call {street}")
-        pot_odds = to_call / (pot + to_call) if pot > 0 else 1
-        if pot_odds <= 0.40:
-            return ('call', 0, f"{desc} - call small river")
-        return ('fold', 0, f"{desc} - fold big river")
+        if street == 'flop':
+            return ('call', 0, f"{desc} - call flop")
+        return ('fold', 0, f"{desc} - fold {street} (one pair)")
     
     # Top pair weak kicker - call flop only
     if hand_info['has_top_pair']:
@@ -1868,7 +1877,7 @@ def _postflop_gpt(hole_cards, board, pot, to_call, street, is_ip, is_aggressor,
             return ('call', 0, f"{desc} - call flop")
         return ('fold', 0, f"{desc} - fold {street}")
     
-    # Any pair - call flop
+    # Any other pair - call flop only
     if hand_info['has_any_pair'] and street == 'flop':
         return ('call', 0, f"{desc} - call flop")
     
@@ -1886,11 +1895,162 @@ def _postflop_gpt(hole_cards, board, pot, to_call, street, is_ip, is_aggressor,
     return ('fold', 0, f"{desc} - fold")
 
 
+def _postflop_kiro(hole_cards, board, pot, to_call, street, is_ip, is_aggressor,
+                   strength, desc, draws, combo_draw, has_flush_draw, has_oesd,
+                   is_overpair, board_has_ace, is_underpair_to_ace=False, is_multiway=False,
+                   is_facing_raise=False):
+    """
+    Kiro strategies (kiro_optimal, kiro5, kiro_v2): Slightly smaller sizings.
+    Per strategy files: TPGK 65%/55%/40%, Overpair 65%/55%/45%, etc.
+    Key difference from sonnet: Facing turn/river raises = fold one pair.
+    """
+    hand_info = analyze_hand(hole_cards, board)
+    
+    # Sizings per kiro_v2 file (slightly smaller than sonnet)
+    s = {
+        'flop': {'nuts': 1.0, 'set': 0.85, 'twopair': 0.75, 'tptk': 0.70, 'tpgk': 0.65, 'tpwk': 0.60, 'overpair': 0.65},
+        'turn': {'nuts': 1.0, 'set': 0.85, 'twopair': 0.75, 'tptk': 0.60, 'tpgk': 0.55, 'tpwk': 0.0, 'overpair': 0.55},
+        'river': {'nuts': 1.0, 'set': 0.85, 'twopair': 0.75, 'tptk': 0.50, 'tpgk': 0.40, 'tpwk': 0.0, 'overpair': 0.45},
+    }.get(street, {})
+    
+    if to_call == 0 or to_call is None:
+        # Multiway: only bet strong value + strong draws
+        if is_multiway:
+            if strength >= 4:
+                return ('bet', round(pot * s.get('set', 0.85), 2), f"{desc} - multiway value")
+            if strength == 3:
+                return ('bet', round(pot * 0.65, 2), f"{desc} - multiway value")
+            if combo_draw:
+                return ('bet', round(pot * 0.60, 2), "combo draw - multiway semi-bluff")
+            return ('check', 0, f"{desc} - check multiway")
+        
+        # Strong hands
+        if strength >= 5:
+            return ('bet', round(pot * s.get('nuts', 1.0), 2), f"{desc} - bet 100%")
+        if strength == 4:
+            return ('bet', round(pot * s.get('set', 0.85), 2), f"{desc} - bet 85%")
+        if strength == 3:
+            return ('bet', round(pot * s.get('twopair', 0.75), 2), f"{desc} - bet 75%")
+        
+        # Underpair to ace - check-call only
+        if hand_info['is_underpair_to_ace']:
+            return ('check', 0, f"{desc} - check (pocket pair below ace)")
+        
+        # True overpair
+        if hand_info['is_overpair']:
+            return ('bet', round(pot * s.get('overpair', 0.65), 2), f"{desc} overpair - bet")
+        
+        # Top pair top kicker
+        if hand_info['has_top_pair'] and hand_info['has_good_kicker']:
+            return ('bet', round(pot * s.get('tptk', 0.70), 2), f"{desc} - value bet")
+        
+        # Top pair good kicker (8+)
+        if hand_info['has_top_pair'] and hand_info.get('kicker_val', 0) >= 6:
+            return ('bet', round(pot * s.get('tpgk', 0.65), 2), f"{desc} - value bet")
+        
+        # Top pair weak kicker - bet flop only
+        if hand_info['has_top_pair'] and street == 'flop':
+            return ('bet', round(pot * s.get('tpwk', 0.60), 2), f"{desc} - bet flop")
+        
+        # Draws
+        if combo_draw:
+            return ('bet', round(pot * 0.65, 2), "combo draw - semi-bluff 65%")
+        if hand_info.get('has_flush_draw') and is_aggressor:
+            return ('bet', round(pot * 0.45, 2), "flush draw - semi-bluff")
+        
+        return ('check', 0, f"{desc} - check")
+    
+    # === FACING BET/RAISE ===
+    # Per kiro files: "Facing turn raise: continue two pair+, fold one pair"
+    # Per kiro files: "Facing river raise: continue straights+, fold two pair"
+    
+    # FACING RAISE - much tighter than facing bet
+    if is_facing_raise:
+        if street == 'turn':
+            # "Turn raise: continue two pair+"
+            if strength >= 3:
+                return ('call', 0, f"{desc} - call raise")
+            return ('fold', 0, f"{desc} - fold to turn raise")
+        if street == 'river':
+            # "River raise: continue straights+"
+            if strength >= 5:
+                return ('call', 0, f"{desc} - call raise")
+            return ('fold', 0, f"{desc} - fold to river raise")
+        # Flop raise - continue TPTK+
+        if strength >= 3 or (hand_info['has_top_pair'] and hand_info['has_good_kicker']):
+            return ('call', 0, f"{desc} - call flop raise")
+        return ('fold', 0, f"{desc} - fold to flop raise")
+    
+    # FACING BET (not raise) - normal logic
+    if strength >= 6:
+        return ('raise', round(to_call * 3, 2), f"{desc} - raise monster")
+    if strength >= 5:
+        return ('raise', round(to_call * 2.5, 2), f"{desc} - raise strong")
+    if strength == 4:
+        return ('raise', round(to_call * 2.5, 2), f"{desc} - raise set/trips")
+    if strength == 3:
+        return ('call', 0, f"{desc} - call two pair")
+    
+    # Underpair to ace - check-call flop only
+    if hand_info['is_underpair_to_ace']:
+        if street == 'flop':
+            return ('call', 0, f"{desc} - call flop (pocket pair below ace)")
+        return ('fold', 0, f"{desc} - fold (ace on board)")
+    
+    # True overpair - call flop/turn, fold big river
+    if hand_info['is_overpair']:
+        if street != 'river':
+            return ('call', 0, f"{desc} overpair - call")
+        pot_odds = to_call / (pot + to_call) if pot > 0 else 1
+        if pot_odds <= 0.30:
+            return ('call', 0, f"{desc} overpair - call small river")
+        return ('fold', 0, f"{desc} overpair - fold big river")
+    
+    # Top pair good kicker - call flop/turn, fold river
+    if hand_info['has_top_pair'] and hand_info['has_good_kicker']:
+        if street in ['flop', 'turn']:
+            return ('call', 0, f"{desc} - call {street}")
+        pot_odds = to_call / (pot + to_call) if pot > 0 else 1
+        if pot_odds <= 0.35:
+            return ('call', 0, f"{desc} - call small river")
+        return ('fold', 0, f"{desc} - fold big river bet")
+    
+    # Top pair weak kicker - call flop only (per file: "check-call flop, fold to turn bet")
+    if hand_info['has_top_pair']:
+        if street == 'flop':
+            return ('call', 0, f"{desc} - call flop")
+        return ('fold', 0, f"{desc} - fold {street}")
+    
+    # Middle pair: call flop once, fold turn (per file)
+    if hand_info['has_middle_pair']:
+        if street == 'flop':
+            return ('call', 0, f"{desc} - call flop once")
+        return ('fold', 0, f"{desc} - fold {street}")
+    
+    # Bottom pair: check-fold (per file)
+    if hand_info['has_bottom_pair']:
+        return ('fold', 0, f"{desc} - fold (bottom pair)")
+    
+    # Draws - conservative thresholds
+    pot_odds = to_call / (pot + to_call) if pot > 0 else 1
+    if hand_info.get('has_flush_draw'):
+        # Per file: "call ≤40% pot"
+        if pot_odds <= 0.40:
+            return ('call', 0, "flush draw - call")
+    if hand_info.get('has_straight_draw'):
+        # Per file: "call ≤33% pot"
+        if pot_odds <= 0.33:
+            return ('call', 0, "straight draw - call")
+    
+    return ('fold', 0, f"{desc} - fold")
+
+
 def _postflop_sonnet(hole_cards, board, pot, to_call, street, is_ip, is_aggressor,
                      strength, desc, draws, combo_draw, has_flush_draw, has_oesd,
-                     is_overpair, board_has_ace, is_underpair_to_ace=False, is_multiway=False):
+                     is_overpair, board_has_ace, is_underpair_to_ace=False, is_multiway=False,
+                     is_facing_raise=False):
     """
-    Sonnet/Kiro_optimal postflop: Bigger value bets, overpair logic.
+    Sonnet postflop: Bigger value bets, overpair logic.
     Uses analyze_hand() for all hand property checks.
     """
     hand_info = analyze_hand(hole_cards, board)
@@ -1948,7 +2108,27 @@ def _postflop_sonnet(hole_cards, board, pot, to_call, street, is_ip, is_aggresso
         
         return ('check', 0, f"{desc} - check")
     
-    # Facing bet
+    # === FACING BET/RAISE ===
+    # Per sonnet file: similar to kiro - tighter vs raises
+    
+    # FACING RAISE - much tighter than facing bet
+    if is_facing_raise:
+        if street == 'turn':
+            # Turn raise: continue two pair+
+            if strength >= 3:
+                return ('call', 0, f"{desc} - call raise")
+            return ('fold', 0, f"{desc} - fold to turn raise")
+        if street == 'river':
+            # River raise: continue straights+
+            if strength >= 5:
+                return ('call', 0, f"{desc} - call raise")
+            return ('fold', 0, f"{desc} - fold to river raise")
+        # Flop raise - continue TPTK+
+        if strength >= 3 or (hand_info['has_top_pair'] and hand_info['has_good_kicker']):
+            return ('call', 0, f"{desc} - call flop raise")
+        return ('fold', 0, f"{desc} - fold to flop raise")
+    
+    # FACING BET (not raise) - normal logic
     if strength >= 6:
         return ('raise', round(to_call * 3, 2), f"{desc} - raise monster")
     if strength >= 5:

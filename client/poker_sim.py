@@ -242,7 +242,7 @@ def run_simulation(num_hands=100000):
     """Run simulation on realistic 2NL tables."""
     random.seed(None)
     
-    bot_strategies = ['optimal_stats', 'value_lord', 'value_maniac', 'value_max', 'kiro_v2', 'sonnet_max']
+    bot_strategies = ['optimal_stats', 'value_lord', 'value_maniac', 'value_max', 'kiro_v2', 'kiro_optimal', 'gpt4', 'sonnet_max']
     tables = get_table_configs()
     
     print(f"Testing {len(bot_strategies)} strategies")
