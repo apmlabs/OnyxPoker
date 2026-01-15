@@ -273,6 +273,39 @@ cd client && python3 poker_sim.py 200000
 
 ## 📖 SESSION HISTORY & LESSONS LEARNED
 
+### Session 43 Part 15: Deep Eval Enhanced (January 15, 2026)
+
+**Challenge**: eval_deep.py was reading logged actions, but we want to see what each STRATEGY would do.
+
+**Solution**: Replay logged hands through each strategy's `postflop_action()`:
+- 928 postflop hands replayed through each strategy
+- Each strategy gets its own AF calculation
+- Shows real differences between strategies
+
+**Session Logging Enhanced**: Added fields for future analysis:
+- `num_players` - from vision (active players)
+- `is_aggressor` - True if we opened preflop
+- `facing` - none/open/3bet/4bet (derived from to_call)
+
+**Top 5 Strategy Comparison**:
+| Strategy | VPIP | PFR | Gap | AF | Profile |
+|----------|------|-----|-----|-----|---------|
+| **sonnet** | 18.6% | 13.4% | 5.3 | **2.57** | TAG ⭐ |
+| **gpt4** | 19.5% | 13.6% | 5.9 | 3.10 | TAG |
+| **value_max** | 31.1% | 21.7% | 9.4 | 2.95 | LAG |
+| **value_maniac** | 31.8% | 21.7% | 10.1 | 4.82 | LAG |
+| **value_lord** | 31.8% | 21.7% | 10.1 | 5.43 | LAG |
+
+**Key Insights**:
+- sonnet closest to optimal TAG (AF 2.57 = target 2.5)
+- value_* strategies are LAGs - profitable at 2NL, exploitable higher
+- All strategies have high Gap - call too much instead of 3-betting
+- 3-bet% low (3-6%) - should be 6-10%
+
+**Critical Lesson**: Replaying hands through strategies shows real differences. Reading logged actions only shows what ONE strategy did, not what others WOULD do.
+
+---
+
 ### Session 43 Part 14: Deep Strategy Evaluation Tool (January 15, 2026)
 
 **Challenge**: Need comprehensive strategy analysis using real poker metrics, not arbitrary scoring.

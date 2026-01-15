@@ -1,6 +1,6 @@
 # OnyxPoker - Status Tracking
 
-**Last Updated**: January 15, 2026 13:20 UTC
+**Last Updated**: January 15, 2026 13:57 UTC
 
 ## 🎉 MILESTONE: FIRST WINNING SESSION! 🎉
 
@@ -10,7 +10,33 @@ After 40 sessions of development, testing, and refinement - we finally have a wo
 
 ---
 
-## Current Status: SESSION 43 Part 14 - Deep Strategy Evaluation ✅
+## Current Status: SESSION 43 Part 15 - Deep Eval Enhanced ✅
+
+**ENHANCED**: `eval_deep.py` now replays logged hands through each strategy for accurate postflop stats.
+
+**Key Changes**:
+1. **Postflop stats per strategy**: Instead of reading logged actions, replays 928 hands through each strategy's `postflop_action()` 
+2. **Session logging enhanced**: Now logs `num_players`, `is_aggressor`, `facing` for future analysis
+3. **Strategy comparison**: Shows real differences between strategies
+
+**Top 5 Strategy Analysis**:
+| Strategy | VPIP | PFR | Gap | AF | Profile |
+|----------|------|-----|-----|-----|---------|
+| **sonnet** | 18.6% | 13.4% | 5.3 | **2.57** | TAG ⭐ (closest to optimal) |
+| **gpt4** | 19.5% | 13.6% | 5.9 | 3.10 | TAG |
+| **value_max** | 31.1% | 21.7% | 9.4 | 2.95 | LAG |
+| **value_maniac** | 31.8% | 21.7% | 10.1 | 4.82 | LAG |
+| **value_lord** | 31.8% | 21.7% | 10.1 | 5.43 | LAG |
+
+**Key Insights**:
+- sonnet has best AF (2.57) - closest to winning TAG profile
+- value_* strategies are LAGs - work at 2NL, exploitable higher
+- All strategies have high Gap (call too much vs 3-bet)
+- 3-bet% is low (3-6%) - should be 6-10%
+
+---
+
+## Previous: SESSION 43 Part 14 - Deep Strategy Evaluation ✅
 
 **NEW TOOL**: `eval_deep.py` - Comprehensive strategy analysis with real poker metrics.
 
@@ -19,24 +45,12 @@ After 40 sessions of development, testing, and refinement - we finally have a wo
    - VPIP, PFR, Gap (industry-standard stats)
    - 3-bet %, BB Defense %
    - Position breakdown (UTG through BB)
-2. **Postflop Profile**: Calculates from real session logs (831 hands)
+2. **Postflop Profile**: Replays logged hands through strategy
    - Aggression Factor (AF) by street
    - Fold %, Aggression %
 3. **Comparison**: Shows where strategy falls on fish→winner spectrum
-   - Compares to: fish, passive, nit, TAG (winner), LAG
 
-**value_lord Profile**:
-```
-VPIP:   31.8%  (target: 21%)  - Loose
-PFR:    21.7%  (target: 18%)  - Aggressive  
-Gap:    10.1%  (target: 3%)   - Calls a lot
-AF:     3.34   (target: 2.5)  - Aggressive postflop
-BB Def: 44.4%  (target: 35-45%) - Good
-
-VERDICT: Plays like a LAG (Loose-Aggressive)
-```
-
-**Industry Benchmarks Used**:
+**Industry Benchmarks**:
 | Type | VPIP | PFR | Gap | AF | Profile |
 |------|------|-----|-----|-----|---------|
 | Fish | 56% | 5% | 51 | 0.5 | Loose-Passive |
