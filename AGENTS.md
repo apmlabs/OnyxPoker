@@ -273,6 +273,40 @@ cd client && python3 poker_sim.py 200000
 
 ## 📖 SESSION HISTORY & LESSONS LEARNED
 
+### Session 43 Part 13: Critical Postflop Bug Fix (January 15, 2026)
+
+**Challenge**: User reported postflop showing CHECK when facing a bet - should be FOLD/CALL.
+
+**Root Cause Discovery**: Deep dive into logs revealed the bug:
+- Log showed `"action": "check"` with `"to_call": 0.55`
+- But `poker_logic.py` correctly returns `fold` when tested directly
+- Bug was in `helper_bar.py` - it reused the preflop position loop for postflop
+- The loop forces `to_call=0` for Line 1 display, but postflop was using that result too!
+
+**The Bug** (lines 297-302 of helper_bar.py):
+```python
+for pos in ['UTG', 'MP', 'CO', 'BTN', 'SB', 'BB']:
+    pos_data = {**table_data, 'position': pos, 'to_call': 0}  # Forces to_call=0!
+    decision = engine.get_action(pos_data)
+    all_position_results[pos] = decision
+
+result = {**table_data, **all_position_results['BTN']}  # Uses wrong action!
+```
+
+**Fix**: Separate preflop and postflop paths:
+- Preflop: Loop through positions with `to_call=0` (for Line 1 open ranges)
+- Postflop: Call `engine.get_action(table_data)` directly with real `to_call`
+
+**Additional Fixes**:
+1. **BB Defense in Line 1**: BB now shows defense threshold instead of useless "CHECK"
+   - `BB:CALL 3bb` / `BB:CALL 6bb` / `BB:CALL any` / `BB:FOLD`
+2. **Min-raise thresholds**: Opening hands show "CALL up to 2.5bb" instead of "FOLD"
+   - Allows calling min-raises with marginal hands
+
+**Critical Lesson**: When debugging, trace the EXACT code path from input to output. The bug was in the glue code (helper_bar.py), not the logic (poker_logic.py). Testing poker_logic directly showed correct behavior, but the live path had a different bug.
+
+---
+
 ### Session 43 Part 10: Strategy Audit & Full House Fix (January 14, 2026)
 
 **Challenge**: Audit all strategies to ensure code matches strategy files, not just value_lord/value_maniac.

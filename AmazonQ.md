@@ -1,6 +1,6 @@
 # OnyxPoker - Status Tracking
 
-**Last Updated**: January 14, 2026 22:22 UTC
+**Last Updated**: January 15, 2026 12:15 UTC
 
 ## 🎉 MILESTONE: FIRST WINNING SESSION! 🎉
 
@@ -10,47 +10,44 @@ After 40 sessions of development, testing, and refinement - we finally have a wo
 
 ---
 
-## Current Status: SESSION 43 Part 12 - C-bet & Straight Kicker Fixes ✅
+## Current Status: SESSION 43 Part 13 - Critical Postflop Bug Fix ✅
 
-**Validated preflop advice matches strategy perfectly:**
-- Line 1 (6 positions): 1014/1014 scenarios PASS
-- Line 2 (vs raise): 1014/1014 scenarios PASS
-- All open ranges match strategy file
-- All call/3bet/4bet ranges match strategy file
+**CRITICAL BUG FIXED**: Postflop was always using `to_call=0`, causing CHECK advice when facing bets!
 
-**Clearer "vs raise" wording:**
+**Root Cause**: helper_bar.py reused the preflop position loop (which forces `to_call=0`) for postflop decisions. The action came from `all_position_results['BTN']` computed with `to_call=0`, but the log wrote the real `to_call` from vision.
+
+**Fixes Applied**:
+1. **Postflop facing bet**: Now uses real `to_call` → FOLD/CALL instead of CHECK
+2. **BB Line 1**: Shows defense threshold (CALL 3bb/6bb/any) instead of CHECK
+3. **Min-raise thresholds**: Marginal hands show "CALL up to 2.5bb" instead of FOLD
+
+**New Line 1 Format**:
+```
+UTG:RAISE | MP:RAISE | CO:RAISE | BTN:RAISE | SB:RAISE | BB:CALL 3bb
+```
+BB now shows defense threshold, not useless "CHECK"
+
+**New Line 2 Thresholds**:
 - `CALL any` - AA, KK, AKs, AKo
-- `CALL up to 15bb` - JJ, TT, 99, AQs, KQs
+- `CALL up to 15bb` - JJ, TT, AQs
 - `CALL up to 4bb` - suited connectors, broadways
-- `FOLD` - open-only hands (was "open only, fold vs raise")
-
-**Multi-stakes support (from Part 8):**
-- Vision extracts big_blind from window title
-- Thresholds use relative BB (not hardcoded $0.02)
-- Default BB changed to 0.05 (5NL)
-
-**Results:**
-| Metric | value_lord | value_maniac |
-|--------|-----------|--------------|
-| Eval Score | +687.5 | +678.5 |
-| Est BB/100 | +21.3 | +21.0 |
-| Good Folds | 89 | 77 |
-| Good Calls | 99 | 111 |
-| Bad Folds | 0 | 0 |
-| Bad Calls | 0 | 0 |
+- `CALL up to 3bb` - BB defend hands
+- `CALL up to 2.5bb` - opening hands (can call min-raises)
+- `FOLD` - trash hands
 
 **Test Results:**
-- ✅ audit_strategies.py: 26/26 PASS
-- ✅ eval_strategies.py: 0 bad folds, 0 bad calls
+- ✅ Postflop with to_call=0.55 → FOLD (was CHECK)
+- ✅ BB defense: AA→CALL any, JJ→CALL 6bb, T9s→CALL 3bb
+- ✅ Min-raise: K8o→CALL up to 2.5bb (was FOLD)
 
 ## What Works
 
 | Component | Status | Notes |
 |-----------|--------|-------|
-| helper_bar.py | ✅ Ready | Borderless, resizable, edge-drag resize |
+| helper_bar.py | ✅ Fixed | Postflop uses real to_call, BB shows defense |
 | vision_detector.py | ✅ Ready | Full mode: GPT-5.2 for vision + decisions |
 | vision_detector_lite.py | ✅ Ready | Lite mode: GPT-5.2 for vision only |
-| strategy_engine.py | ✅ Ready | Preflop facing detection uses to_call |
+| strategy_engine.py | ✅ Fixed | BB defense + min-raise thresholds |
 | poker_logic.py | ✅ Refactored | analyze_hand() for all hand analysis |
 | poker_sim.py | ✅ Ready | Full postflop simulation |
 | audit_strategies.py | ✅ Ready | 21 tests - code matches strategy files |
@@ -164,6 +161,21 @@ Table: 60% fish, 25% nit, 15% tag
 | 17 | lag | -5.40 | 2.82 |
 
 ## Session Log
+
+### Session 43 Part 13 (January 15, 2026)
+- **CRITICAL POSTFLOP BUG FIX**: Postflop was always using `to_call=0`!
+  - Bug: helper_bar.py reused preflop loop (forces to_call=0) for postflop
+  - Result: Said CHECK when facing $0.55 bet (should be FOLD)
+  - Fix: Postflop now calls engine.get_action() directly with real to_call
+- **BB DEFENSE IN LINE 1**: BB now shows defense threshold instead of CHECK
+  - AA → BB:CALL any
+  - JJ → BB:CALL 6bb
+  - T9s → BB:CALL 3bb
+  - 72o → BB:FOLD
+- **MIN-RAISE THRESHOLDS**: Marginal hands can call min-raises
+  - K8o → CALL up to 2.5bb (was FOLD)
+  - A5o → CALL up to 3bb (was FOLD)
+- Commits: 7260047, 38a9196
 
 ### Session 43 Part 12 (January 15, 2026)
 - **C-BET LEAK FIX**: Don't c-bet air on monotone/paired boards
