@@ -1,6 +1,6 @@
 # OnyxPoker - Status Tracking
 
-**Last Updated**: January 15, 2026 16:45 UTC
+**Last Updated**: January 15, 2026 17:12 UTC
 
 ## 🎉 MILESTONE: FIRST WINNING SESSION! 🎉
 
@@ -10,7 +10,43 @@ After 40 sessions of development, testing, and refinement - we finally have a wo
 
 ---
 
-## Current Status: SESSION 43 Part 17 - Complete Stats & Money Analysis ✅
+## Current Status: SESSION 43 Part 18 - Strategy Execution Fidelity ✅
+
+**IMPROVED**: Strategies now execute their own postflop logic correctly.
+
+### Changes Made
+
+1. **Created `_postflop_kiro`** for kiro_optimal/kiro5/kiro_v2
+   - Correct sizings per strategy files: TPGK 65%/55%/40%, Overpair 65%/55%/45%
+   - Was sharing `_postflop_sonnet` which had different sizings (70%/60%/50%)
+
+2. **Fixed gpt3/gpt4 facing aggression**
+   - Now folds one-pair on turn/river per strategy file
+   - Strategy file says: "Turn raises: fold most one-pair"
+
+3. **Added raise detection** (`is_facing_raise = to_call > 80% pot`)
+   - Only affects kiro/sonnet/gpt strategies
+   - **value_lord and value_maniac UNCHANGED**
+   - Facing raise: fold one-pair on turn, fold below straights on river
+
+### Test Results
+- audit_strategies.py: 43/43 PASS
+- test_strategy_engine.py: 50/55 PASS (same as before)
+- value_lord: 0 bad folds, 0 bad calls (unchanged)
+
+### Simulation (30k hands)
+| Strategy | BB/100 |
+|----------|--------|
+| value_lord | +19.47 |
+| kiro_v2 | +16.82 |
+| gpt4 | +1.82 |
+| kiro_optimal | +1.58 |
+
+**Note**: Tighter "fold one-pair to raises" is correct per strategy files but less profitable at 2NL where fish call too much.
+
+---
+
+## Previous: SESSION 43 Part 17 - Complete Stats & Money Analysis ✅
 
 **COMPREHENSIVE EVALUATION**: All feasible poker stats implemented, compared to industry standards.
 

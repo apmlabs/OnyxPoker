@@ -273,6 +273,39 @@ cd client && python3 poker_sim.py 200000
 
 ## 📖 SESSION HISTORY & LESSONS LEARNED
 
+### Session 43 Part 18: Strategy Execution Fidelity (January 15, 2026)
+
+**Challenge**: Audit revealed strategies weren't executing their own postflop logic - kiro strategies shared sonnet's code, gpt strategies ignored "facing raise" rules.
+
+**Solution**: Three improvements to ensure strategies match their files:
+
+1. **Created `_postflop_kiro`** for kiro_optimal/kiro5/kiro_v2
+   - Correct sizings: TPGK 65%/55%/40%, Overpair 65%/55%/45%
+   - Was using sonnet's 70%/60%/50% (wrong)
+
+2. **Fixed gpt3/gpt4 facing aggression**
+   - Now folds one-pair on turn/river per strategy file
+   - Strategy file: "Turn raises: fold most one-pair"
+
+3. **Added raise detection** (`is_facing_raise = to_call > 80% pot`)
+   - Only affects kiro/sonnet/gpt strategies
+   - value_lord/value_maniac UNCHANGED (don't receive parameter)
+
+**Test Results**:
+- audit_strategies.py: 43/43 PASS
+- value_lord: 0 bad folds, 0 bad calls (unchanged)
+
+**Simulation (30k hands)**:
+| Strategy | BB/100 |
+|----------|--------|
+| value_lord | +19.47 |
+| kiro_v2 | +16.82 |
+| gpt4 | +1.82 |
+
+**Critical Lesson**: Tighter "fold one-pair to raises" is correct per strategy files but less profitable at 2NL where fish call too much. Strategy file compliance vs profitability is a trade-off - value_lord ignores raise detection intentionally.
+
+---
+
 ### Session 43 Part 17: Complete Stats & Money Analysis (January 15, 2026)
 
 **Challenge**: Implement ALL feasible poker stats and compare strategies to industry standards, then reconcile with actual money won/lost.
