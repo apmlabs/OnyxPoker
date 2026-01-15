@@ -279,31 +279,31 @@ class HelperBar:
                     table_data = vision.detect_table(temp_path)
                     api_time = time.time() - api_start
                     
-                    # Calculate action for ALL 6 positions
                     engine = StrategyEngine(STRATEGY)
-                    all_position_results = {}
-                    
-                    # Determine if we're aggressor (for postflop)
                     board = table_data.get('community_cards', [])
-                    if board:  # Postflop
+                    
+                    if board:  # Postflop - use real to_call
                         if self.last_preflop_action == 'open':
                             is_aggressor = True
                         elif self.last_preflop_action == 'call':
                             is_aggressor = False
                         else:
-                            is_aggressor = True  # Default (first F9 postflop, or typical play)
+                            is_aggressor = True
                         table_data['is_aggressor'] = is_aggressor
-                    
-                    for pos in ['UTG', 'MP', 'CO', 'BTN', 'SB', 'BB']:
-                        # Line 1 always shows OPEN ranges (to_call=0)
-                        pos_data = {**table_data, 'position': pos, 'to_call': 0}
-                        decision = engine.get_action(pos_data)
-                        all_position_results[pos] = decision
-                    
-                    # Use BTN as default for display
-                    result = {**table_data, **all_position_results['BTN']}
-                    result['api_time'] = api_time
-                    result['all_positions'] = all_position_results
+                        # Single decision with real to_call
+                        decision = engine.get_action(table_data)
+                        result = {**table_data, **decision}
+                        result['api_time'] = api_time
+                        result['all_positions'] = None
+                    else:  # Preflop - calculate for all 6 positions with to_call=0
+                        all_position_results = {}
+                        for pos in ['UTG', 'MP', 'CO', 'BTN', 'SB', 'BB']:
+                            pos_data = {**table_data, 'position': pos, 'to_call': 0}
+                            decision = engine.get_action(pos_data)
+                            all_position_results[pos] = decision
+                        result = {**table_data, **all_position_results['BTN']}
+                        result['api_time'] = api_time
+                        result['all_positions'] = all_position_results
 
                 elapsed = time.time() - start
                 self.root.after(0, lambda t=api_time: self.log(f"API done: {t:.1f}s", "DEBUG"))
