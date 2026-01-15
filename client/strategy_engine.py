@@ -122,6 +122,7 @@ class StrategyEngine:
             'reasoning': reasoning,
             'call_info': call_info,
             'bb_defense': bb_defense,
+            'facing': facing,
             'strategy': self.strategy_name
         }
     
