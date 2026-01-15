@@ -1,6 +1,6 @@
 # OnyxPoker - Status Tracking
 
-**Last Updated**: January 15, 2026 17:12 UTC
+**Last Updated**: January 15, 2026 20:42 UTC
 
 ## 🎉 MILESTONE: FIRST WINNING SESSION! 🎉
 
@@ -10,44 +10,41 @@ After 40 sessions of development, testing, and refinement - we finally have a wo
 
 ---
 
-## Current Status: SESSION 43 Part 19 - pot_pct Based Decisions ✅
+## Current Status: SESSION 43 Part 20 - Live Testing Bug Fixes ✅
 
-**IMPROVED**: kiro/sonnet/gpt strategies now use pot_pct for bet-size aware decisions (like value_lord).
+**FIXED**: Three bugs found during live testing session.
 
-### Changes Made
+### Bugs Fixed
 
-1. **Replaced `is_facing_raise` binary flag** with granular `pot_pct` thresholds
-   - Old: >80% pot = "raise" → fold one pair
-   - New: Different thresholds per hand type and street
+1. **helper_bar.py NameError** - `table_data` not defined in `_display_result()`
+   - Was breaking UI completely (no advice shown)
+   - Fix: Use `result.get('is_aggressor')` instead
 
-2. **New pot_pct thresholds for kiro/sonnet:**
-   - TPGK: call flop, call turn ≤60%, call river ≤40-45%
-   - Overpair: call flop, call turn/river ≤50%
-   - Two pair: fold to >75% pot on river
+2. **Betting draws on river** - Code said "overbet draw" on river
+   - AcKc on river with "straight draw" = nonsense (no more cards!)
+   - Fix: Add `street != 'river'` check before betting draws
 
-3. **New pot_pct thresholds for gpt:**
-   - TPGK: call flop, call turn ≤50%, fold river
-   - Overpair: call flop, call turn/river ≤40%
+3. **TPGK calling shoves** - JhTh called $2.88 shove, lost to QQ
+   - 240% pot shove on flop = almost always overpair/set
+   - Fix: Use `effective_pct = to_call / (pot - to_call)` to detect raises
+   - TPGK now folds to 100%+ pot raises on flop
 
-### Test Results (1,819 real hands)
+### Test Results (1,890 real hands)
 | Rank | Strategy | BB/100 | Bad Decisions |
 |------|----------|--------|---------------|
-| 1 | value_lord | +21.8 | 0 |
-| 2 | value_maniac | +21.5 | 0 |
-| 3 | optimal_stats | +19.9 | 9 |
-| 4 | kiro_v2 | +19.6 | 11 |
-| 5 | sonnet_max | +19.4 | 7 |
+| 1 | value_lord | +21.7 | 0 |
+| 2 | value_maniac | +21.4 | 0 |
+| 3 | optimal_stats | +19.7 | 9 |
+| 4 | kiro_v2 | +19.5 | 11 |
+| 5 | sonnet_max | +19.1 | 8 |
 
 - audit_strategies.py: **43/43 PASS** ✅
-- value_lord: 0 bad folds, 0 bad calls (unchanged)
-
-**Key insight**: value_lord still wins because it has the most granular pot_pct logic AND is designed for 2NL fish.
+- value_lord: 0 bad folds, 0 bad calls
+- Good Folds improved: 103 → 107 (+4)
 
 ---
 
-## Previous: SESSION 43 Part 18 - Strategy Execution Fidelity ✅
-
-**COMPREHENSIVE EVALUATION**: All feasible poker stats implemented, compared to industry standards.
+## Previous: SESSION 43 Part 19 - pot_pct Based Decisions ✅
 
 ### Stats vs Money Paradox (1819 real hands)
 

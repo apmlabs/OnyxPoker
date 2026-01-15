@@ -273,6 +273,33 @@ cd client && python3 poker_sim.py 200000
 
 ## 📖 SESSION HISTORY & LESSONS LEARNED
 
+### Session 43 Part 20: Live Testing Bug Fixes (January 15, 2026)
+
+**Challenge**: Live testing revealed 3 bugs that weren't caught by unit tests.
+
+**Bugs Fixed**:
+
+1. **helper_bar.py NameError** - `table_data` not defined in `_display_result()`
+   - UI was completely broken (no advice shown)
+   - Fix: Use `result.get('is_aggressor')` instead
+
+2. **Betting draws on river** - AcKc on 3s 7h 7s Jh Qc said "overbet draw"
+   - Can't draw on river - no more cards coming!
+   - Fix: Add `street != 'river'` check before betting draws
+
+3. **TPGK calling shoves** - JhTh called $2.88 shove into $1.50 pot, lost to QQ
+   - 240% pot shove = almost always overpair/set
+   - Old code saw pot=$5.07, to_call=$2.88 (57% pot) → CALL
+   - Fix: Use `effective_pct = to_call / (pot - to_call)` = 132% → FOLD
+
+**Test Results (1,890 hands)**:
+- value_lord: +21.7 BB/100, 0 bad decisions
+- Good Folds: 103 → 107 (+4 improvement)
+
+**Critical Lesson**: Unit tests (audit_strategies.py, eval_strategies.py) test poker_logic.py directly but don't test helper_bar.py (the actual UI). Live testing catches bugs in the glue code.
+
+---
+
 ### Session 43 Part 19: pot_pct Based Decisions (January 15, 2026)
 
 **Challenge**: kiro/sonnet/gpt strategies used binary `is_facing_raise` (>80% pot) which was too crude. value_lord already had granular pot_pct logic - should other strategies benefit too?
