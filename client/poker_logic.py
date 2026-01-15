@@ -1073,6 +1073,13 @@ def _postflop_value_maniac(hole_cards, board, pot, to_call, street, strength, de
                 return ('check', 0, f"{desc} - check bottom pair")
         if has_any_draw:
             return ('bet', round(pot * 1.0, 2), "overbet draw")
+        # C-bet with air - but NOT on dangerous boards
+        is_monotone = hand_info.get('board_flush_suit') is not None
+        is_paired = hand_info.get('board_pair_val') is not None
+        if is_monotone and not has_flush_draw:
+            return ('check', 0, f"{desc} - check (monotone board)")
+        if is_paired:
+            return ('check', 0, f"{desc} - check (paired board)")
         if street == 'flop' and random.random() < 0.80:
             return ('bet', round(pot * 0.9, 2), "c-bet big")
         if street == 'turn' and random.random() < 0.60:
@@ -1240,11 +1247,15 @@ def _postflop_value_lord(hole_cards, board, pot, to_call, street, strength, desc
                 return ('check', 0, f"{desc} - check bottom pair")
         if has_any_draw:
             return ('bet', round(pot * 1.0, 2), "overbet draw")
-        # Only c-bet when aggressor - but don't barrel turn/river with air
-        if is_aggressor:
-            if street == 'flop':
-                return ('bet', round(pot * 0.9, 2), "c-bet big")
-            # Turn/river with air: check (fish don't fold)
+        # Only c-bet when aggressor - but NOT on dangerous boards
+        if is_aggressor and street == 'flop':
+            is_monotone = hand_info.get('board_flush_suit') is not None
+            is_paired = hand_info.get('board_pair_val') is not None
+            if is_monotone and not has_flush_draw:
+                return ('check', 0, f"{desc} - check (monotone board)")
+            if is_paired:
+                return ('check', 0, f"{desc} - check (paired board)")
+            return ('bet', round(pot * 0.9, 2), "c-bet big")
         return ('check', 0, f"{desc} - check")
     else:
         # Facing bet - same as value_maniac
