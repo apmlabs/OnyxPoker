@@ -1,6 +1,6 @@
 # OnyxPoker - Status Tracking
 
-**Last Updated**: January 15, 2026 12:15 UTC
+**Last Updated**: January 15, 2026 13:20 UTC
 
 ## 🎉 MILESTONE: FIRST WINNING SESSION! 🎉
 
@@ -10,7 +10,42 @@ After 40 sessions of development, testing, and refinement - we finally have a wo
 
 ---
 
-## Current Status: SESSION 43 Part 13 - Critical Postflop Bug Fix ✅
+## Current Status: SESSION 43 Part 14 - Deep Strategy Evaluation ✅
+
+**NEW TOOL**: `eval_deep.py` - Comprehensive strategy analysis with real poker metrics.
+
+**What it does**:
+1. **Preflop Profile**: Simulates all 169 hands × 6 positions through strategy
+   - VPIP, PFR, Gap (industry-standard stats)
+   - 3-bet %, BB Defense %
+   - Position breakdown (UTG through BB)
+2. **Postflop Profile**: Calculates from real session logs (831 hands)
+   - Aggression Factor (AF) by street
+   - Fold %, Aggression %
+3. **Comparison**: Shows where strategy falls on fish→winner spectrum
+   - Compares to: fish, passive, nit, TAG (winner), LAG
+
+**value_lord Profile**:
+```
+VPIP:   31.8%  (target: 21%)  - Loose
+PFR:    21.7%  (target: 18%)  - Aggressive  
+Gap:    10.1%  (target: 3%)   - Calls a lot
+AF:     3.34   (target: 2.5)  - Aggressive postflop
+BB Def: 44.4%  (target: 35-45%) - Good
+
+VERDICT: Plays like a LAG (Loose-Aggressive)
+```
+
+**Industry Benchmarks Used**:
+| Type | VPIP | PFR | Gap | AF | Profile |
+|------|------|-----|-----|-----|---------|
+| Fish | 56% | 5% | 51 | 0.5 | Loose-Passive |
+| TAG (Winner) | 21% | 18% | 3 | 2.5 | Tight-Aggressive |
+| LAG | 28% | 25% | 3 | 3.5 | Loose-Aggressive |
+
+---
+
+## Previous: SESSION 43 Part 13 - Critical Postflop Bug Fix ✅
 
 **CRITICAL BUG FIXED**: Postflop was always using `to_call=0`, causing CHECK advice when facing bets!
 
@@ -161,6 +196,21 @@ Table: 60% fish, 25% nit, 15% tag
 | 17 | lag | -5.40 | 2.82 |
 
 ## Session Log
+
+### Session 43 Part 14 (January 15, 2026)
+- **NEW TOOL: eval_deep.py** - Deep strategy evaluation with real poker metrics
+  - Simulates all 169 hands × 6 positions to calculate VPIP/PFR/Gap
+  - Calculates postflop AF from real session logs (831 hands)
+  - Compares strategy to industry benchmarks (fish/nit/TAG/LAG)
+  - Shows position breakdown (UTG tight → BTN loose)
+- **INDUSTRY BENCHMARKS**: Added real poker stats from winning players
+  - TAG (winner): VPIP 21%, PFR 18%, Gap 3%, AF 2.5
+  - LAG: VPIP 28%, PFR 25%, Gap 3%, AF 3.5
+  - Fish: VPIP 56%, PFR 5%, Gap 51, AF 0.5
+- **value_lord PROFILE**: Plays like a LAG (Loose-Aggressive)
+  - VPIP 31.8%, PFR 21.7%, Gap 10.1%, AF 3.34
+  - BB Defense 44.4% (good, target 35-45%)
+  - Looser than optimal TAG but aggressive - profitable at 2NL
 
 ### Session 43 Part 13 (January 15, 2026)
 - **CRITICAL POSTFLOP BUG FIX**: Postflop was always using `to_call=0`!

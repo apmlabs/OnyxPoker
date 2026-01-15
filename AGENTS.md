@@ -273,6 +273,39 @@ cd client && python3 poker_sim.py 200000
 
 ## 📖 SESSION HISTORY & LESSONS LEARNED
 
+### Session 43 Part 14: Deep Strategy Evaluation Tool (January 15, 2026)
+
+**Challenge**: Need comprehensive strategy analysis using real poker metrics, not arbitrary scoring.
+
+**Solution**: Created `eval_deep.py` with industry-standard poker statistics:
+
+**Preflop Stats** (simulated across all 169 hands × 6 positions):
+- VPIP (Voluntarily Put $ In Pot) - % of hands played
+- PFR (Pre-Flop Raise) - % of hands raised
+- Gap (VPIP - PFR) - how often we call vs raise
+- 3-bet % - re-raise frequency
+- BB Defense % - how often BB defends vs steal
+
+**Postflop Stats** (calculated from 831 real session hands):
+- AF (Aggression Factor) = (bets + raises) / calls
+- Fold %, Aggression % by street (flop/turn/river)
+
+**Industry Benchmarks** (from BlackRain79, AdvancedPokerTraining):
+| Type | VPIP | PFR | Gap | AF | Profile |
+|------|------|-----|-----|-----|---------|
+| Fish | 56% | 5% | 51 | 0.5 | Loose-Passive |
+| TAG (Winner) | 21% | 18% | 3 | 2.5 | Tight-Aggressive |
+| LAG | 28% | 25% | 3 | 3.5 | Loose-Aggressive |
+
+**value_lord Analysis**:
+- VPIP 31.8% (loose), PFR 21.7% (aggressive), Gap 10.1% (calls a lot)
+- AF 3.34 (aggressive postflop), BB Defend 44.4% (good)
+- **Verdict**: Plays like a LAG - profitable at 2NL where opponents are passive
+
+**Critical Lesson**: Use industry-standard metrics (VPIP/PFR/AF) instead of arbitrary scoring. These stats let us compare our strategy to known winning player profiles and identify specific leaks.
+
+---
+
 ### Session 43 Part 13: Critical Postflop Bug Fix (January 15, 2026)
 
 **Challenge**: User reported postflop showing CHECK when facing a bet - should be FOLD/CALL.
