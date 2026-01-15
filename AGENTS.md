@@ -273,6 +273,33 @@ cd client && python3 poker_sim.py 200000
 
 ## 📖 SESSION HISTORY & LESSONS LEARNED
 
+### Session 43 Part 19: pot_pct Based Decisions (January 15, 2026)
+
+**Challenge**: kiro/sonnet/gpt strategies used binary `is_facing_raise` (>80% pot) which was too crude. value_lord already had granular pot_pct logic - should other strategies benefit too?
+
+**Solution**: Replaced `is_facing_raise` with `pot_pct` thresholds in all three strategy families:
+
+1. **kiro/sonnet strategies:**
+   - TPGK: call flop, call turn ≤60%, call river ≤40-45%
+   - Overpair: call flop, call turn/river ≤50%
+   - Two pair: fold to >75% pot on river
+
+2. **gpt strategies:**
+   - TPGK: call flop, call turn ≤50%, fold river
+   - Overpair: call flop, call turn/river ≤40%
+
+**Test Results (1,819 real hands):**
+| Rank | Strategy | BB/100 | Bad Decisions |
+|------|----------|--------|---------------|
+| 1 | value_lord | +21.8 | 0 |
+| 2 | value_maniac | +21.5 | 0 |
+| 3 | optimal_stats | +19.9 | 9 |
+| 4 | kiro_v2 | +19.6 | 11 |
+
+**Critical Lesson**: Bet sizing matters more than binary "raise vs bet" detection. value_lord still wins because it has the most granular logic AND is designed for 2NL fish. The pot_pct approach is more nuanced than "fold one pair to raises."
+
+---
+
 ### Session 43 Part 18: Strategy Execution Fidelity (January 15, 2026)
 
 **Challenge**: Audit revealed strategies weren't executing their own postflop logic - kiro strategies shared sonnet's code, gpt strategies ignored "facing raise" rules.

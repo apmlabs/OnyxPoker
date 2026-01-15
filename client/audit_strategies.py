@@ -134,7 +134,8 @@ def main():
     results.append(test_postflop('sonnet', [('K','s'),('7','d')], [('K','h'),('8','c'),('2','d'),('5','s')], 1.0, 0, 'turn', 'check', 'TPWK turn - check'))
     
     # Facing aggression: "Turn raises: fold one pair"
-    results.append(test_postflop('sonnet', [('A','s'),('K','d')], [('A','h'),('7','c'),('2','d'),('5','s')], 1.0, 0.8, 'turn', 'call', 'TPTK facing turn bet - call'))
+    # 80% pot is a big bet - treat like a raise, fold TPTK
+    results.append(test_postflop('sonnet', [('A','s'),('K','d')], [('A','h'),('7','c'),('2','d'),('5','s')], 1.0, 0.8, 'turn', 'fold', 'TPTK facing 80% pot turn - fold (big bet)'))
     results.append(test_postflop('sonnet', [('K','s'),('7','d')], [('K','h'),('8','c'),('2','d'),('5','s')], 1.0, 0.5, 'turn', 'fold', 'TPWK facing turn bet - fold'))
     
     # Middle pair: check-call once, fold turn
