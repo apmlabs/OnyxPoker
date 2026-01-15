@@ -560,6 +560,37 @@ STRATEGIES = {
         'call_3bet': expand_range('QQ,JJ,AKo,AQs'),
         '4bet': expand_range('KK+,AKs'),
     },
+    # OPTIMAL_STATS: GTO-inspired strategy targeting winning player stats
+    # VPIP 21%, PFR 18%, Gap 3%, 3-bet 8%, 4-bet 25%, AF 2.5, C-bet 70%
+    'optimal_stats': {
+        'name': 'Optimal Stats',
+        'open': {
+            'UTG': expand_range('77+,ATs+,KQs,AJo+'),
+            'MP': expand_range('66+,A9s+,A5s-A3s,KJs+,QJs,JTs,AJo+,KQo'),
+            'CO': expand_range('44+,A2s+,K9s+,Q9s+,J9s+,T8s+,97s+,86s+,76s,ATo+,KJo+,QJo'),
+            'BTN': expand_range('22+,A2s+,K5s+,Q7s+,J7s+,T6s+,95s+,85s+,74s+,64s+,54s,A7o+,K9o+,QTo+,JTo'),
+            'SB': expand_range('33+,A2s+,K7s+,Q8s+,J8s+,T8s+,97s+,86s+,76s,A8o+,KTo+,QJo'),
+        },
+        # VERY wide 3-bet ranges (target 8% overall) - 3-bet vs ALL positions
+        '3bet_vs': {
+            'UTG': expand_range('99+,AQs+,AKo,AJs'),
+            'MP': expand_range('88+,AJs+,AKo,AQo,KQs,QJs'),
+            'CO': expand_range('77+,ATs+,AJo+,KQs,KJs,QJs,JTs'),
+            'BTN': expand_range('66+,A9s+,ATo+,KJs+,KQo,QJs,JTs,T9s'),
+        },
+        # Wide 3-bet bluffs vs late position (always 3-bet these)
+        '3bet_bluff': expand_range('A5s-A2s,K9s-K5s,Q9s-Q7s,J9s-J7s,T9s-T7s,98s-97s,87s-86s,76s-75s,65s,54s'),
+        # Minimal calling - prefer 3-bet or fold (low gap)
+        'call_open_ip': expand_range('TT-77,AQs-ATs,KQs-KJs,QJs,JTs'),
+        # BB defend 40%
+        'bb_defend': expand_range('99-22,AJs-A2s,KTs+,Q9s+,J9s+,T8s+,97s+,86s+,76s,65s,A9o+,KJo,QJo'),
+        # Wider call 3-bet
+        'call_3bet': expand_range('QQ,JJ,TT,99,AKo,AQs,AQo,AJs,KQs'),
+        # Wide 4-bet (target 25% of opens facing 3-bet)
+        '4bet': expand_range('KK+,AKs,AKo,AQs,AQo'),
+        # Flag to always 3-bet bluff (not 40%)
+        '3bet_bluff_always': True,
+    },
 }
 
 # Player archetypes
@@ -1011,6 +1042,11 @@ def postflop_action(hole_cards: List[Tuple[str, str]], board: List[Tuple[str, st
         return _postflop_value_lord(hole_cards, board, pot, to_call, street,
                                     strength, desc, has_any_draw, has_flush_draw, has_oesd, bb_size, is_aggressor)
     
+    if strategy == 'optimal_stats':
+        return _postflop_optimal_stats(hole_cards, board, pot, to_call, street, is_ip,
+                                       is_aggressor, strength, desc, draws, combo_draw,
+                                       has_flush_draw, has_oesd, has_gutshot, has_any_draw)
+    
     if strategy == 'sonnet_max':
         return _postflop_sonnet_max(hole_cards, board, pot, to_call, street, is_ip,
                                     is_aggressor, strength, desc, draws, combo_draw,
@@ -1384,6 +1420,161 @@ def _postflop_value_lord(hole_cards, board, pot, to_call, street, strength, desc
             return ('call', 0, "call overcards")
         if street == 'flop' and pot_odds <= 0.25 and random.random() < 0.4:
             return ('call', 0, "float flop")
+        return ('fold', 0, f"{desc} - fold")
+
+
+def _postflop_optimal_stats(hole_cards, board, pot, to_call, street, is_ip, is_aggressor,
+                            strength, desc, draws, combo_draw, has_flush_draw, has_oesd, has_gutshot, has_any_draw):
+    """
+    OPTIMAL_STATS postflop - Balanced aggression targeting AF 2.5, C-bet 70%.
+    Key: More checking and calling than other strategies to achieve balanced AF.
+    """
+    hand_info = analyze_hand(hole_cards, board)
+    pot_pct = to_call / pot if pot > 0 and to_call else 0
+    
+    # Board texture analysis
+    board_vals = [RANK_VAL[c[0]] for c in board] if board else []
+    board_suits = [c[1] for c in board] if board else []
+    is_wet_board = len(set(board_suits)) <= 2 or (max(board_vals) - min(board_vals) <= 4 if board_vals else False)
+    is_dry_board = not is_wet_board
+    
+    # === CHECKED TO US (betting decisions) ===
+    if to_call == 0 or to_call is None:
+        
+        # Monsters: bet for value (but not always - balance)
+        if strength >= 5:  # Flush, straight, full house+
+            if random.random() < 0.85:  # Bet 85%, check 15%
+                bet = round(pot * 0.70, 2)
+                return ('bet', bet, f"{desc} - bet 70% for value")
+            return ('check', 0, f"{desc} - slowplay monster")
+        
+        # Sets: bet for value
+        if strength == 4 or hand_info.get('has_set'):
+            if random.random() < 0.80:  # Bet 80%, check 20%
+                bet = round(pot * 0.65, 2)
+                return ('bet', bet, f"{desc} - bet 65% with set")
+            return ('check', 0, f"{desc} - slowplay set")
+        
+        # Two pair: bet for value
+        if strength == 3 or hand_info.get('has_two_pair'):
+            bet = round(pot * 0.60, 2)
+            return ('bet', bet, f"{desc} - bet 60% with two pair")
+        
+        # Overpair: bet flop/turn, check river sometimes
+        if hand_info.get('is_overpair'):
+            if street == 'river' and random.random() < 0.40:
+                return ('check', 0, f"{desc} - check overpair river")
+            bet = round(pot * 0.55, 2)
+            return ('bet', bet, f"{desc} - bet 55% with overpair")
+        
+        # Top pair good kicker: bet flop, check turn/river more
+        if hand_info.get('has_top_pair') and hand_info.get('has_good_kicker'):
+            if street == 'flop':
+                bet = round(pot * 0.50, 2)
+                return ('bet', bet, f"{desc} - bet 50% TPGK")
+            if street == 'turn' and random.random() < 0.50:
+                bet = round(pot * 0.50, 2)
+                return ('bet', bet, f"{desc} - bet 50% TPGK turn")
+            return ('check', 0, f"{desc} - check TPGK")
+        
+        # Top pair weak kicker: bet flop only, sometimes
+        if hand_info.get('has_top_pair'):
+            if street == 'flop' and random.random() < 0.60:
+                bet = round(pot * 0.45, 2)
+                return ('bet', bet, f"{desc} - bet 45% TPWK")
+            return ('check', 0, f"{desc} - check TPWK")
+        
+        # Middle/bottom pair: check
+        if hand_info.get('has_middle_pair') or hand_info.get('has_bottom_pair') or hand_info.get('has_any_pair'):
+            return ('check', 0, f"{desc} - check weak pair")
+        
+        # Draws: semi-bluff sometimes (not always)
+        if combo_draw and random.random() < 0.70:
+            bet = round(pot * 0.55, 2)
+            return ('bet', bet, "semi-bluff combo draw")
+        if has_flush_draw and random.random() < 0.55:
+            bet = round(pot * 0.45, 2)
+            return ('bet', bet, "semi-bluff flush draw")
+        if has_oesd and random.random() < 0.50:
+            bet = round(pot * 0.45, 2)
+            return ('bet', bet, "semi-bluff OESD")
+        
+        # C-bet with air (only if aggressor, ~65% frequency)
+        if is_aggressor:
+            if street == 'flop':
+                if is_dry_board and random.random() < 0.65:
+                    bet = round(pot * 0.40, 2)
+                    return ('bet', bet, "c-bet dry board")
+                if is_wet_board and random.random() < 0.45:
+                    bet = round(pot * 0.50, 2)
+                    return ('bet', bet, "c-bet wet board")
+            if street == 'turn' and random.random() < 0.30:
+                bet = round(pot * 0.50, 2)
+                return ('bet', bet, "barrel turn")
+        
+        return ('check', 0, f"{desc} - check")
+    
+    # === FACING BET (calling/folding decisions) ===
+    else:
+        # Monsters: mostly call to keep AF balanced
+        if strength >= 5:
+            if random.random() < 0.35:  # Raise 35%, call 65%
+                raise_amt = round(to_call * 2.5, 2)
+                return ('raise', raise_amt, f"{desc} - raise monster")
+            return ('call', 0, f"{desc} - call monster")
+        
+        # Sets: mostly call
+        if strength == 4 or hand_info.get('has_set'):
+            if random.random() < 0.25:  # Raise 25%, call 75%
+                raise_amt = round(to_call * 2.5, 2)
+                return ('raise', raise_amt, f"{desc} - raise set")
+            return ('call', 0, f"{desc} - call set")
+        
+        # Two pair: call
+        if strength == 3 or hand_info.get('has_two_pair'):
+            return ('call', 0, f"{desc} - call two pair")
+        
+        # Overpair: call flop/turn, fold river to big bets
+        if hand_info.get('is_overpair'):
+            if street == 'river' and pot_pct > 0.75:
+                return ('fold', 0, f"{desc} - fold overpair to big river bet")
+            return ('call', 0, f"{desc} - call overpair")
+        
+        # Top pair good kicker: call one street
+        if hand_info.get('has_top_pair') and hand_info.get('has_good_kicker'):
+            if street == 'flop':
+                return ('call', 0, f"{desc} - call TPGK flop")
+            if street == 'turn' and pot_pct <= 0.50:
+                return ('call', 0, f"{desc} - call TPGK turn small bet")
+            return ('fold', 0, f"{desc} - fold TPGK to aggression")
+        
+        # Top pair weak kicker: call flop only
+        if hand_info.get('has_top_pair'):
+            if street == 'flop' and pot_pct <= 0.50:
+                return ('call', 0, f"{desc} - call TPWK flop")
+            return ('fold', 0, f"{desc} - fold TPWK")
+        
+        # Middle pair: call flop small bets only
+        if hand_info.get('has_middle_pair'):
+            if street == 'flop' and pot_pct <= 0.40:
+                return ('call', 0, f"{desc} - call middle pair flop")
+            return ('fold', 0, f"{desc} - fold middle pair")
+        
+        # Bottom pair: fold
+        if hand_info.get('has_bottom_pair'):
+            return ('fold', 0, f"{desc} - fold bottom pair")
+        
+        # Draws: call if pot odds justify
+        if combo_draw and pot_pct <= 0.45:
+            return ('call', 0, "call combo draw")
+        if has_flush_draw and pot_pct <= 0.35:
+            return ('call', 0, "call flush draw")
+        if has_oesd and pot_pct <= 0.30:
+            return ('call', 0, "call OESD")
+        if has_gutshot and pot_pct <= 0.20:
+            return ('call', 0, "call gutshot")
+        
+        # Air: fold (don't hero call)
         return ('fold', 0, f"{desc} - fold")
 
 
@@ -1982,9 +2173,9 @@ def preflop_action(hand: str, position: str, strategy: Dict,
         if hand in three_bet_range:
             return ('raise', f'{hand} 3-bet vs {opener_pos}')
         
-        # 3-bet bluff
+        # 3-bet bluff (always or 40% depending on strategy)
         if opener_pos in ['CO', 'BTN'] and hand in strategy.get('3bet_bluff', set()):
-            if random.random() < 0.4:
+            if strategy.get('3bet_bluff_always') or random.random() < 0.4:
                 return ('raise', f'{hand} 3-bet bluff vs {opener_pos}')
         
         # SB defend - 3bet or call strong hands (SB is OOP so tighter than BB)

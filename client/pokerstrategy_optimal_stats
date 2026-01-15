@@ -1,0 +1,100 @@
+# OPTIMAL_STATS Strategy - GTO-inspired for 6-max cash games
+# Designed to hit industry-standard winning player stats:
+# VPIP: 21%, PFR: 18%, Gap: 3%, 3-bet: 8%, 4-bet: 25%, Fold to 3bet: 60%
+# AF: 2.5, C-bet: 65-75%
+
+## DESIGN PRINCIPLES
+# 1. Raise or fold preflop - minimize calling (low gap)
+# 2. 3-bet wider for value AND bluffs (8% target)
+# 3. 4-bet wider - don't fold premiums to 3-bets (25% target)
+# 4. C-bet most flops (65-75%) but give up on turn without equity
+# 5. Balanced postflop AF (2.5) - not too passive, not too aggro
+
+## PREFLOP - TIGHT BUT AGGRESSIVE
+
+### Open Raise (2.5bb) - ~21% overall
+UTG (13%): 77+, ATs+, KQs, AJo+
+MP (16%): 66+, A9s+, A5s-A3s, KJs+, QJs, JTs, AJo+, KQo
+CO (24%): 44+, A2s+, K9s+, Q9s+, J9s+, T8s+, 97s+, 86s+, 76s, ATo+, KJo+, QJo
+BTN (38%): 22+, A2s+, K5s+, Q7s+, J7s+, T6s+, 95s+, 85s+, 74s+, 64s+, 54s, A7o+, K9o+, QTo+, JTo
+SB (28%): 33+, A2s+, K7s+, Q8s+, J8s+, T8s+, 97s+, 86s+, 76s, A8o+, KTo+, QJo
+
+### 3-Bet Value (wider than typical - target 8% overall)
+vs UTG: QQ+, AKs, AKo, AQs
+vs MP: JJ+, AKs, AKo, AQs, AQo
+vs CO: TT+, AQs+, AKo, AJs, KQs
+vs BTN: 99+, AJs+, AQo+, KQs, KJs, QJs
+
+### 3-Bet Bluff (polarized with blockers)
+vs CO: A5s-A2s, K9s, Q9s, J9s, T9s, 98s, 87s, 76s
+vs BTN: A5s-A2s, K9s-K7s, Q9s, J9s, T9s, 98s, 87s, 76s, 65s
+
+### Call Open IP (minimal - prefer 3-bet or fold)
+vs UTG: JJ-99, AQs, AJs, KQs
+vs MP: TT-77, AJs-ATs, KQs-KJs, QJs
+vs CO: 99-55, ATs-A9s, KJs-KTs, QJs, JTs, T9s
+vs BTN: 88-44, A9s-A7s, KTs-K9s, QTs, JTs, T9s, 98s, 87s
+
+### BB Defend (40% target)
+3-bet: TT+, AQs+, AKo, A5s-A4s, K9s
+Call: 99-22, AJs-A2s, KTs+, Q9s+, J9s+, T8s+, 97s+, 86s+, 76s, 65s, A9o+, KJo, QJo
+
+### Call 3-Bet (tighter - prefer 4-bet or fold)
+QQ, JJ, TT, AKo, AQs
+
+### 4-Bet (wider - 25% of opens that face 3-bet)
+KK+, AKs, AKo, AQs, JJ (vs late position 3-bet)
+
+### Fold to 3-Bet (~60% target)
+Fold: All hands not in call_3bet or 4bet ranges
+Key: Don't defend too wide - 3-bets are usually strong
+
+## POSTFLOP - BALANCED AGGRESSION (AF 2.5)
+
+### C-Betting (65-75% on flop)
+# C-bet when:
+- We have any pair or better
+- We have any draw (flush draw, OESD, gutshot)
+- Board favors our range (high cards, dry texture)
+- Heads-up in position
+
+# Check when:
+- Multiway pots with air
+- Wet boards that hit caller's range
+- We called preflop (not aggressor)
+
+### Bet Sizing
+Flop: 50-66% pot (smaller on dry, larger on wet)
+Turn: 66-75% pot
+River: 75-100% pot for value, 50-66% for bluffs
+
+### Made Hands
+Monsters (sets+): Bet 75% pot all streets, raise if bet into
+Two pair: Bet 70% pot, call raises
+Top pair good kicker: Bet 60% flop, 50% turn, check-call river
+Top pair weak kicker: Bet 50% flop, check turn/river
+Overpair: Bet 65% all streets, fold to big raises on scary boards
+Middle pair: Check-call flop, fold to turn aggression
+Bottom pair: Check-fold (unless heads-up with position)
+
+### Draws
+Flush draw: Bet 50% pot as semi-bluff, call up to 40% pot
+OESD: Bet 50% pot, call up to 35% pot
+Gutshot: Check-call 25% pot, fold to larger
+Combo draw: Bet 66% pot, can call all-in
+
+### Facing Aggression
+- Sets+: Raise for value
+- Two pair: Call, raise only on safe boards
+- Top pair: Call one street, fold to continued aggression
+- Overpair: Call flop/turn, fold river to big bets on scary boards
+- Draws: Call if pot odds justify, fold otherwise
+- Air: Fold (don't hero call)
+
+### Key Differences from Other Strategies
+1. Lower VPIP (21% vs 32% value_*) - tighter hand selection
+2. Higher 3-bet% (8% vs 3-6%) - more re-raising
+3. Higher 4-bet% (25% vs 8%) - defend opens better
+4. Lower fold to 3-bet (60% vs 80%) - don't overfold
+5. Balanced AF (2.5 vs 5.0 value_*) - not overaggressive
+6. Higher c-bet (70% vs 37% sonnet) - take more pots
