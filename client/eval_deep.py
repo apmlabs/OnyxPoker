@@ -101,9 +101,12 @@ def calc_preflop_stats(strategy_name):
         }
     }
 
-def calc_postflop_stats_from_logs():
-    """Calculate postflop stats from real session logs."""
+def calc_postflop_stats_from_logs(strategy_name):
+    """Replay logged hands through strategy and calculate postflop stats."""
     log_dir = '../server/uploads'
+    strategy = STRATEGIES.get(strategy_name)
+    if not strategy:
+        return None
     
     stats = {
         'flop': {'bets': 0, 'raises': 0, 'calls': 0, 'checks': 0, 'folds': 0},
@@ -120,14 +123,25 @@ def calc_postflop_stats_from_logs():
             for line in f:
                 try:
                     d = json.loads(line)
-                    if not d.get('board') or not d.get('is_hero_turn'):
+                    if not d.get('board') or not d.get('hero_cards'):
+                        continue
+                    
+                    board = d['board']
+                    cards = d['hero_cards']
+                    pot = float(d.get('pot') or 0)
+                    to_call = float(d.get('to_call') or 0)
+                    
+                    if len(board) < 3 or len(cards) < 2:
                         continue
                     
                     total_hands += 1
-                    board_len = len(d['board'])
-                    street = 'flop' if board_len == 3 else 'turn' if board_len == 4 else 'river'
-                    action = d.get('action', '').lower()
-                    to_call = float(d.get('to_call') or 0)
+                    street = 'flop' if len(board) == 3 else 'turn' if len(board) == 4 else 'river'
+                    
+                    # Replay through strategy
+                    action, bet_size, reason = postflop_action(
+                        cards, board, pot, to_call, street,
+                        is_ip=True, is_aggressor=True, strategy=strategy_name
+                    )
                     
                     if action == 'fold':
                         stats[street]['folds'] += 1
@@ -145,7 +159,7 @@ def calc_postflop_stats_from_logs():
                 except:
                     pass
     
-    # Calculate AF per street: (bets + raises) / calls
+    # Calculate AF per street
     result = {'total_hands': total_hands}
     for street in ['flop', 'turn', 'river']:
         s = stats[street]
@@ -281,15 +295,13 @@ def main():
     print("="*70)
     print(f"\nStrategies: {', '.join(strategies)}")
     
-    # Get postflop stats once (same for all - from logs)
-    postflop = calc_postflop_stats_from_logs()
-    
     for strat in strategies:
         if strat not in STRATEGIES:
             print(f"\nStrategy '{strat}' not found!")
             continue
         
         preflop = calc_preflop_stats(strat)
+        postflop = calc_postflop_stats_from_logs(strat)
         
         print_preflop_report(strat, preflop)
         print_postflop_report(postflop)
@@ -307,6 +319,7 @@ def main():
             if strat not in STRATEGIES:
                 continue
             preflop = calc_preflop_stats(strat)
+            postflop = calc_postflop_stats_from_logs(strat)
             profile, closest = classify_profile(preflop['vpip'], preflop['pfr'], postflop['overall_af'])
             print(f"  {strat:<14} {preflop['vpip']:>6.1f}% {preflop['pfr']:>6.1f}% {preflop['3bet']:>6.1f}% {postflop['overall_af']:>6.2f}  {profile}")
 
