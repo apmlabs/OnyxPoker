@@ -1007,7 +1007,7 @@ def postflop_action(hole_cards: List[Tuple[str, str]], board: List[Tuple[str, st
                     return ('bet', round(pot * 0.55, 2), f"{desc} - maniac barrels")
                 if street == 'river' and random.random() < 0.35:
                     return ('bet', round(pot * 0.6, 2), f"{desc} - maniac river bet")
-            if has_any_draw:
+            if has_any_draw and street != 'river':
                 return ('bet', round(pot * 0.5, 2), "maniac semi-bluffs")
             if street == 'flop' and random.random() < 0.50:
                 return ('bet', round(pot * 0.4, 2), "maniac c-bets air")
@@ -1021,7 +1021,7 @@ def postflop_action(hole_cards: List[Tuple[str, str]], board: List[Tuple[str, st
                 return ('call', 0, f"{desc} - maniac calls")
             if hand_info['has_any_pair']:
                 return ('call', 0, f"{desc} - maniac calls any pair")
-            if has_any_draw:
+            if has_any_draw and street != 'river':
                 return ('call', 0, "maniac calls with draw")
             if street == 'flop' and random.random() < 0.35:
                 return ('call', 0, "maniac floats flop")
@@ -1125,7 +1125,7 @@ def _postflop_value_maniac(hole_cards, board, pot, to_call, street, strength, de
                 if street == 'flop' and random.random() < 0.6:
                     return ('bet', round(pot * 0.33, 2), f"{desc} - bet bottom pair")
                 return ('check', 0, f"{desc} - check bottom pair")
-        if has_any_draw:
+        if has_any_draw and street != 'river':
             return ('bet', round(pot * 1.0, 2), "overbet draw")
         # C-bet with air - but NOT on dangerous boards
         is_monotone = hand_info.get('board_flush_suit') is not None
@@ -1299,7 +1299,7 @@ def _postflop_value_lord(hole_cards, board, pot, to_call, street, strength, desc
                 if street == 'flop':
                     return ('bet', round(pot * 0.33, 2), f"{desc} - bet bottom pair")
                 return ('check', 0, f"{desc} - check bottom pair")
-        if has_any_draw:
+        if has_any_draw and street != 'river':
             return ('bet', round(pot * 1.0, 2), "overbet draw")
         # Only c-bet when aggressor - but NOT on dangerous boards
         if is_aggressor and street == 'flop':
