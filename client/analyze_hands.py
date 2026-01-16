@@ -587,9 +587,210 @@ def main(min_bb=None, focus_strategy=None):
         if len(d['plays']) <= 4:
             print(f"       PLAY: {', '.join(d['plays'])}")
 
+def test_range_changes(min_bb=10):
+    """Test impact of proposed range changes."""
+    from poker_logic import STRATEGIES, expand_range
+    
+    hh_dir = '/home/ubuntu/mcpprojects/onyxpoker/idealistslp_extracted'
+    all_hands = parse_all_hands(hh_dir)
+    big_hands = [h for h in all_hands if abs(h['profit_bb']) >= min_bb]
+    
+    # Current value_lord ranges
+    current_call_open_ip = STRATEGIES['value_lord']['call_open_ip']
+    current_call_3bet = STRATEGIES['value_lord']['call_3bet']
+    
+    # Proposed changes
+    proposed_call_open_ip = current_call_open_ip | {'97s', '76s'}
+    proposed_call_3bet = current_call_3bet | {'ATs'}
+    
+    print("=" * 80)
+    print("TESTING PROPOSED RANGE CHANGES")
+    print("=" * 80)
+    print()
+    print("Proposed changes:")
+    print("  1. Add 97s, 76s to call_open_ip")
+    print("  2. Add ATs to call_3bet")
+    print()
+    
+    # Find hands affected by each change
+    affected_97s = []
+    affected_76s = []
+    affected_ATs_3bet = []
+    
+    for h in big_hands:
+        if not h['hand_str'] or not h['hero_position']:
+            continue
+        
+        facing, to_call = get_preflop_facing(h)
+        
+        # 97s/76s: would now call opens IP
+        if h['hand_str'] in ['97s', '76s'] and facing == 'open':
+            # Check if IP (CO, BTN)
+            if h['hero_position'] in ['CO', 'BTN']:
+                if h['hand_str'] == '97s':
+                    affected_97s.append(h)
+                else:
+                    affected_76s.append(h)
+        
+        # ATs: would now call 3bets
+        if h['hand_str'] == 'ATs' and facing == '3bet':
+            affected_ATs_3bet.append(h)
+        
+        # Also check if hero opened and then faced 3bet (parser bug workaround)
+        if h['hand_str'] == 'ATs' and h['hero_preflop_action'] == 'raise':
+            # Check if there was a 3bet after hero's open
+            for action in h['preflop_actions']:
+                if action['action'] == 'raise' and action['amount'] > to_call:
+                    affected_ATs_3bet.append(h)
+                    break
+    
+    print("IMPACT OF ADDING 97s TO call_open_ip (IP only):")
+    print("-" * 60)
+    total_97s = sum(h['profit_bb'] for h in affected_97s)
+    for h in affected_97s:
+        print(f"  {h['hand_str']:<6} {h['hero_position']:<4} {h['profit_bb']:>+7.1f} BB")
+    print(f"  TOTAL: {total_97s:>+7.1f} BB ({len(affected_97s)} hands)")
+    print()
+    
+    print("IMPACT OF ADDING 76s TO call_open_ip (IP only):")
+    print("-" * 60)
+    total_76s = sum(h['profit_bb'] for h in affected_76s)
+    for h in affected_76s:
+        print(f"  {h['hand_str']:<6} {h['hero_position']:<4} {h['profit_bb']:>+7.1f} BB")
+    print(f"  TOTAL: {total_76s:>+7.1f} BB ({len(affected_76s)} hands)")
+    print()
+    
+    print("IMPACT OF ADDING ATs TO call_3bet:")
+    print("-" * 60)
+    total_ATs = sum(h['profit_bb'] for h in affected_ATs_3bet)
+    for h in affected_ATs_3bet:
+        print(f"  {h['hand_str']:<6} {h['hero_position']:<4} {h['profit_bb']:>+7.1f} BB  board: {' '.join(h['board']) if h['board'] else '-'}")
+    print(f"  TOTAL: {total_ATs:>+7.1f} BB ({len(affected_ATs_3bet)} hands)")
+    print()
+    
+    print("=" * 80)
+    print("SUMMARY")
+    print("=" * 80)
+    print(f"  97s IP: {total_97s:>+7.1f} BB")
+    print(f"  76s IP: {total_76s:>+7.1f} BB")
+    print(f"  ATs 3bet: {total_ATs:>+7.1f} BB")
+    print(f"  TOTAL IMPACT: {total_97s + total_76s + total_ATs:>+7.1f} BB")
+
+def detailed_analysis(min_bb=10, strategy_name='value_lord'):
+    """Hand-by-hand analysis showing exactly where strategy would fold."""
+    hh_dir = '/home/ubuntu/mcpprojects/onyxpoker/idealistslp_extracted'
+    all_hands = parse_all_hands(hh_dir)
+    
+    # Filter to big hands
+    big_hands = [h for h in all_hands if abs(h['profit_bb']) >= min_bb]
+    
+    # Separate winners and losers
+    winners = sorted([h for h in big_hands if h['profit_bb'] > 0], key=lambda x: -x['profit_bb'])
+    losers = sorted([h for h in big_hands if h['profit_bb'] < 0], key=lambda x: x['profit_bb'])
+    
+    print("=" * 120)
+    print(f"DETAILED HAND-BY-HAND ANALYSIS: {strategy_name} on hands >= {min_bb} BB")
+    print("=" * 120)
+    
+    total_won = sum(h['hero_profit'] for h in winners)
+    total_lost = sum(abs(h['hero_profit']) for h in losers)
+    
+    print(f"\nSUMMARY:")
+    print(f"  Winners: {len(winners)} hands, €{total_won:.2f} ({sum(h['profit_bb'] for h in winners):.1f} BB)")
+    print(f"  Losers:  {len(losers)} hands, €{total_lost:.2f} ({sum(abs(h['profit_bb']) for h in losers):.1f} BB)")
+    print(f"  Net:     €{total_won - total_lost:.2f}")
+    
+    # Analyze each hand
+    strategy_saves = []  # Losers where strategy folds
+    strategy_misses = []  # Winners where strategy folds
+    
+    def analyze_single_hand(hand):
+        """Returns (fold_point, reason) or (None, None) if strategy plays through."""
+        # Check preflop
+        pf_action, pf_reason = evaluate_preflop(hand, strategy_name)
+        if pf_action == 'fold':
+            return ('preflop', pf_reason)
+        
+        # Check postflop
+        if hand['hero_preflop_action'] and hand['hero_preflop_action'] != 'fold':
+            situations = get_postflop_situations(hand)
+            for sit in situations:
+                action, reason = evaluate_postflop(hand, sit, strategy_name)
+                if action == 'fold':
+                    return (sit['street'], reason)
+        
+        return (None, None)
+    
+    print("\n" + "=" * 120)
+    print("LOSING HANDS (where strategy could SAVE money by folding)")
+    print("=" * 120)
+    print(f"\n{'Hand':<6} {'Pos':<4} {'Board':<20} {'Lost BB':>8} {'Strategy':>10} {'Fold Point':<10} Reason")
+    print("-" * 120)
+    
+    for h in losers:
+        fold_point, reason = analyze_single_hand(h)
+        board_str = ' '.join(h['board']) if h['board'] else '-'
+        
+        if fold_point:
+            strategy_saves.append({'hand': h, 'fold_point': fold_point, 'reason': reason})
+            status = "SAVES"
+        else:
+            status = "plays"
+        
+        print(f"{h['hand_str']:<6} {h['hero_position']:<4} {board_str:<20} {abs(h['profit_bb']):>8.1f} {status:>10} {fold_point or '-':<10} {reason or '-'}")
+    
+    print("\n" + "=" * 120)
+    print("WINNING HANDS (where strategy would MISS profit by folding)")
+    print("=" * 120)
+    print(f"\n{'Hand':<6} {'Pos':<4} {'Board':<20} {'Won BB':>8} {'Strategy':>10} {'Fold Point':<10} Reason")
+    print("-" * 120)
+    
+    for h in winners:
+        fold_point, reason = analyze_single_hand(h)
+        board_str = ' '.join(h['board']) if h['board'] else '-'
+        
+        if fold_point:
+            strategy_misses.append({'hand': h, 'fold_point': fold_point, 'reason': reason})
+            status = "MISSES"
+        else:
+            status = "plays"
+        
+        print(f"{h['hand_str']:<6} {h['hero_position']:<4} {board_str:<20} {h['profit_bb']:>8.1f} {status:>10} {fold_point or '-':<10} {reason or '-'}")
+    
+    # Summary
+    saved_bb = sum(abs(s['hand']['profit_bb']) for s in strategy_saves)
+    missed_bb = sum(m['hand']['profit_bb'] for m in strategy_misses)
+    
+    print("\n" + "=" * 120)
+    print("STRATEGY IMPACT SUMMARY")
+    print("=" * 120)
+    print(f"\nSAVES (folds losing hands):")
+    print(f"  {len(strategy_saves)} hands, {saved_bb:.1f} BB saved")
+    for s in sorted(strategy_saves, key=lambda x: x['hand']['profit_bb']):
+        h = s['hand']
+        print(f"    {h['hand_str']:<6} {h['hero_position']:<4} {abs(h['profit_bb']):>6.1f} BB - {s['fold_point']}: {s['reason']}")
+    
+    print(f"\nMISSES (folds winning hands):")
+    print(f"  {len(strategy_misses)} hands, {missed_bb:.1f} BB missed")
+    for m in sorted(strategy_misses, key=lambda x: -x['hand']['profit_bb']):
+        h = m['hand']
+        print(f"    {h['hand_str']:<6} {h['hero_position']:<4} {h['profit_bb']:>6.1f} BB - {m['fold_point']}: {m['reason']}")
+    
+    print(f"\nNET IMPACT: {saved_bb:.1f} - {missed_bb:.1f} = {saved_bb - missed_bb:+.1f} BB")
+    
+    return strategy_saves, strategy_misses
+
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='Analyze hand histories with strategies')
     parser.add_argument('--big', type=float, help='Only analyze hands >= N BB')
     parser.add_argument('--strategy', type=str, help='Focus on single strategy')
+    parser.add_argument('--detailed', action='store_true', help='Hand-by-hand detailed analysis')
+    parser.add_argument('--test-ranges', action='store_true', help='Test proposed range changes')
     args = parser.parse_args()
-    main(min_bb=args.big, focus_strategy=args.strategy)
+    
+    if args.test_ranges:
+        test_range_changes(min_bb=args.big or 10)
+    elif args.detailed:
+        detailed_analysis(min_bb=args.big or 10, strategy_name=args.strategy or 'value_lord')
+    else:
+        main(min_bb=args.big, focus_strategy=args.strategy)
