@@ -1,9 +1,15 @@
 #!/usr/bin/env python3
 """
-Comprehensive strategy evaluation on real PokerStars hand histories.
-Shows what each strategy would do differently and the impact.
+Analyze real PokerStars hand histories from idealistslp_extracted/.
+Shows what each strategy would do differently and the € impact.
+
+Usage:
+    python analyze_hands.py                    # Full analysis
+    python analyze_hands.py --big 10           # Only hands >= 10 BB
+    python analyze_hands.py --strategy value_lord  # Single strategy focus
 """
 
+import argparse
 import os
 import re
 import sys
@@ -11,7 +17,7 @@ sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 
 from poker_logic import preflop_action, postflop_action, STRATEGIES, analyze_hand
 
-ALL_STRATEGIES = ['kiro_lord', 'kiro_optimal', 'sonnet', 'value_lord', 'value_maniac', 'fish', 'nit', 'tag', 'lag', 'maniac']
+ALL_STRATEGIES = ['value_lord', 'value_maniac', 'kiro_lord', 'kiro_optimal', 'sonnet', 'nit', 'tag', 'lag', 'fish', 'maniac']
 
 def hand_to_str(cards):
     """Convert ['Ah', 'Kd'] to 'AKo'"""
@@ -345,22 +351,31 @@ def evaluate_postflop(hand, situation, strategy_name):
     except:
         return None, None
 
-def main():
+def main(min_bb=None, focus_strategy=None):
     hh_dir = '/home/ubuntu/mcpprojects/onyxpoker/idealistslp_extracted'
     all_hands = parse_all_hands(hh_dir)
     
-    print("=" * 130)
-    print("COMPREHENSIVE STRATEGY EVALUATION ON REAL POKERSTARS HANDS")
-    print("=" * 130)
+    # Filter by BB threshold if specified
+    if min_bb:
+        all_hands = [h for h in all_hands if abs(h['profit_bb']) >= min_bb]
+        print(f"Filtered to {len(all_hands)} hands with >= {min_bb} BB swing")
+        print()
+    
+    strategies = [focus_strategy] if focus_strategy else ALL_STRATEGIES
+    
+    print("=" * 100)
+    print("STRATEGY ANALYSIS ON REAL POKERSTARS HANDS")
+    print("=" * 100)
     print()
     
     # Basic stats
-    print(f"Total hands parsed: {len(all_hands)}")
+    print(f"Total hands: {len(all_hands)}")
     
     total_profit = sum(h['hero_profit'] for h in all_hands)
     total_bb = sum(h['profit_bb'] for h in all_hands)
     
-    print(f"Actual results: €{total_profit:.2f} ({total_bb:.1f} BB, {total_bb/len(all_hands)*100:.1f} BB/100)")
+    if all_hands:
+        print(f"Actual results: €{total_profit:.2f} ({total_bb:.1f} BB, {total_bb/len(all_hands)*100:.1f} BB/100)")
     print()
     
     # By stakes
@@ -376,13 +391,13 @@ def main():
     played = [h for h in all_hands if h['hero_preflop_action'] and h['hero_preflop_action'] != 'fold']
     folded = [h for h in all_hands if h['hero_preflop_action'] == 'fold' or h['hero_preflop_action'] is None]
     
-    print(f"Hands played: {len(played)} ({len(played)/len(all_hands)*100:.1f}%)")
-    print(f"Hands folded preflop: {len(folded)} ({len(folded)/len(all_hands)*100:.1f}%)")
+    print(f"Hands played: {len(played)} ({len(played)/len(all_hands)*100:.1f}%)" if all_hands else "")
+    print(f"Hands folded preflop: {len(folded)} ({len(folded)/len(all_hands)*100:.1f}%)" if all_hands else "")
     print()
     
     # Evaluate strategies
     results = {}
-    for strategy in ALL_STRATEGIES:
+    for strategy in strategies:
         results[strategy] = {
             'pf_would_fold': [],  # Hands where strategy would fold but hero played
             'pf_would_play': [],  # Hands where strategy would play but hero folded
@@ -393,7 +408,7 @@ def main():
         if not hand['hero_position'] or not hand['hand_str']:
             continue
         
-        for strategy in ALL_STRATEGIES:
+        for strategy in strategies:
             strat_action, _ = evaluate_preflop(hand, strategy)
             
             if strat_action == 'fold' and hand['hero_preflop_action'] and hand['hero_preflop_action'] != 'fold':
@@ -407,7 +422,7 @@ def main():
         # (if strategy folds preflop, it never sees postflop)
         if hand['hero_preflop_action'] and hand['hero_preflop_action'] != 'fold':
             situations = get_postflop_situations(hand)
-            for strategy in ALL_STRATEGIES:
+            for strategy in strategies:
                 # Skip if strategy would fold preflop (already counted above)
                 strat_pf_action, _ = evaluate_preflop(hand, strategy)
                 if strat_pf_action == 'fold':
@@ -434,7 +449,7 @@ def main():
     print("-" * 100)
     
     ranked = []
-    for strategy in ALL_STRATEGIES:
+    for strategy in strategies:
         r = results[strategy]
         
         # Preflop: hands strategy would fold that hero played
@@ -522,7 +537,7 @@ def main():
             continue
         
         actions = {}
-        for strategy in ALL_STRATEGIES:
+        for strategy in strategies:
             action, _ = evaluate_preflop(hand, strategy)
             if action:
                 actions[strategy] = action
@@ -558,4 +573,8 @@ def main():
             print(f"       PLAY: {', '.join(d['plays'])}")
 
 if __name__ == '__main__':
-    main()
+    parser = argparse.ArgumentParser(description='Analyze hand histories with strategies')
+    parser.add_argument('--big', type=float, help='Only analyze hands >= N BB')
+    parser.add_argument('--strategy', type=str, help='Focus on single strategy')
+    args = parser.parse_args()
+    main(min_bb=args.big, focus_strategy=args.strategy)
