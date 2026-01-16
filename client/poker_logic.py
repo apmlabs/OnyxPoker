@@ -1425,9 +1425,9 @@ def _postflop_value_maniac(hole_cards, board, pot, to_call, street, strength, de
                     return ('fold', 0, f"{desc} - fold (pocket under board)")
                 return ('call', 0, f"{desc} - call (pocket under board)")
             if hand_info['two_pair_type'] == 'pocket_over_board':
-                # QQ on TT = strong, only Tx beats us
-                if street == 'river' and pot_pct > 0.75:
-                    return ('fold', 0, f"{desc} - fold vs big river")
+                # QQ on TT = only Tx beats us, but if villain raises they have it
+                if street in ['turn', 'river'] and to_call > 0:
+                    return ('fold', 0, f"{desc} - fold pocket over vs raise")
                 return ('call', 0, f"{desc} - call (pocket over board)")
             if hand_info['two_pair_type'] == 'both_cards_hit':
                 return ('raise', round(to_call * 1.0, 2), f"{desc} - raise strong")
@@ -1603,9 +1603,9 @@ def _postflop_value_lord(hole_cards, board, pot, to_call, street, strength, desc
                     return ('fold', 0, f"{desc} - fold (pocket under board)")
                 return ('call', 0, f"{desc} - call (pocket under board)")
             if hand_info['two_pair_type'] == 'pocket_over_board':
-                # QQ on TT = strong, only Tx beats us
-                if street == 'river' and pot_pct > 0.75:
-                    return ('fold', 0, f"{desc} - fold vs big river")
+                # QQ on TT = only Tx beats us, but if villain raises they have it
+                if street in ['turn', 'river'] and to_call > 0:
+                    return ('fold', 0, f"{desc} - fold pocket over vs raise")
                 return ('call', 0, f"{desc} - call (pocket over board)")
             if hand_info['two_pair_type'] == 'both_cards_hit':
                 return ('raise', round(to_call * 1.0, 2), f"{desc} - raise strong")
