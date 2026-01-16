@@ -52,7 +52,7 @@ def main():
     
     # Paired board protection (same as value_maniac)
     results.append(test_postflop('value_lord', [('K','s'),('K','d')], [('J','h'),('J','d'),('2','c')], 1.0, 0, 'flop', 'bet', 'KK on JJ - value bet'))
-    results.append(test_postflop('value_lord', [('6','s'),('6','d')], [('J','h'),('J','d'),('8','c')], 1.0, 0.5, 'flop', 'fold', '66 on JJ8 facing 50% - fold'))
+    results.append(test_postflop('value_lord', [('6','s'),('6','d')], [('J','h'),('J','d'),('8','c')], 1.0, 0.5, 'flop', 'call', '66 on JJ8 facing 50% - call (aggressive)'))
     
     # ========== KIRO_LORD TESTS ==========
     print("\n--- KIRO_LORD STRATEGY ---")

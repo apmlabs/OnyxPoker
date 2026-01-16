@@ -72,6 +72,8 @@ class HelperBar:
         # Session state for aggressor tracking
         self.last_preflop_action = None  # 'open', 'call', or None
         self.last_pot = 0  # Track pot to detect new hands
+        self.last_street = None  # Track street for raise detection
+        self.last_hero_action = None  # Track hero's last action this street
         
         # Drag state
         self._drag_start_x = 0
@@ -290,6 +292,18 @@ class HelperBar:
                         else:
                             is_aggressor = True
                         table_data['is_aggressor'] = is_aggressor
+                        
+                        # Detect villain raise: hero already acted this street, now faces bet
+                        current_street = 'flop' if len(board) == 3 else ('turn' if len(board) == 4 else 'river')
+                        if current_street != self.last_street:
+                            self.last_hero_action = None
+                            self.last_street = current_street
+                        to_call = table_data.get('to_call', 0)
+                        is_facing_raise = self.last_hero_action in ('bet', 'raise', 'check') and to_call and to_call > 0
+                        if is_facing_raise:
+                            self.log(f"Villain raised on {current_street}!", "INFO")
+                        table_data['is_facing_raise'] = is_facing_raise
+                        
                         # Single decision with real to_call
                         decision = engine.get_action(table_data)
                         result = {**table_data, **decision}
@@ -343,8 +357,14 @@ class HelperBar:
         # Detect new hand (pot reset to blinds ~$0.07)
         if pot > 0 and pot <= 0.10 and self.last_pot > 0.10:
             self.last_preflop_action = None  # New hand started
+            self.last_street = None
+            self.last_hero_action = None
             self.log("New hand detected", "DEBUG")
         self.last_pot = pot
+        
+        # Track hero's action for next F9 press (used for raise detection)
+        if action in ('bet', 'raise', 'call', 'check', 'fold'):
+            self.last_hero_action = action
         
         # Track preflop aggressor for postflop decisions
         if not board:  # Preflop

@@ -217,13 +217,16 @@ class StrategyEngine:
             is_aggressor = table_data.get('is_aggressor', True)
             # Get actual number of opponents from vision (num_players - 1 = opponents)
             num_opponents = max(1, (table_data.get('num_players', 2) - 1))
+            is_facing_raise = table_data.get('is_facing_raise', False)
         else:
             is_aggressor = True  # Default for backward compatibility
             num_opponents = 1  # Default to heads-up
+            is_facing_raise = False
         
         action, bet_size, reasoning = postflop_action(
             hole_cards, board_cards, pot, to_call, street, is_ip, is_aggressor,
-            strategy=self.strategy_name, num_opponents=num_opponents
+            strategy=self.strategy_name, num_opponents=num_opponents,
+            is_facing_raise=is_facing_raise
         )
         
         # Get enhanced hand info

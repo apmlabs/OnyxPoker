@@ -909,7 +909,8 @@ def get_hand_info(hole_cards: List[Tuple[str, str]], board: List[Tuple[str, str]
 def postflop_action(hole_cards: List[Tuple[str, str]], board: List[Tuple[str, str]], 
                     pot: float, to_call: float, street: str, is_ip: bool,
                     is_aggressor: bool, archetype: str = None, strategy: str = None,
-                    num_opponents: int = 1, bb_size: float = 0.05) -> Tuple[str, float, str]:
+                    num_opponents: int = 1, bb_size: float = 0.05,
+                    is_facing_raise: bool = False) -> Tuple[str, float, str]:
     """
     Postflop decision based on strategy file rules.
     Returns (action, bet_size, reasoning).
@@ -1303,7 +1304,7 @@ def postflop_action(hole_cards: List[Tuple[str, str]], board: List[Tuple[str, st
     
     if strategy == 'value_lord':
         return _postflop_value_lord(hole_cards, board, pot, to_call, street,
-                                    strength, desc, has_any_draw, has_flush_draw, has_oesd, bb_size, is_aggressor)
+                                    strength, desc, has_any_draw, has_flush_draw, has_oesd, bb_size, is_aggressor, is_facing_raise)
     
     if strategy == 'optimal_stats':
         return _postflop_optimal_stats(hole_cards, board, pot, to_call, street, is_ip,
@@ -1522,7 +1523,7 @@ def _postflop_value_maniac(hole_cards, board, pot, to_call, street, strength, de
 
 
 def _postflop_value_lord(hole_cards, board, pot, to_call, street, strength, desc, has_any_draw, 
-                         has_flush_draw=False, has_oesd=False, bb_size=0.05, is_aggressor=False):
+                         has_flush_draw=False, has_oesd=False, bb_size=0.05, is_aggressor=False, is_facing_raise=False):
     """
     VALUE_LORD postflop - value_maniac with Session 41 improvements.
     Fixes: c-bet discipline, overpair aggression, bottom pair caution.
@@ -1611,13 +1612,17 @@ def _postflop_value_lord(hole_cards, board, pot, to_call, street, strength, desc
                     return ('call', 0, f"{desc} - call (pocket under board vs {pot_pct:.0%} pot)")
                 return ('fold', 0, f"{desc} - fold (pocket under board vs big bet)")
             if hand_info['two_pair_type'] == 'pocket_over_board':
-                # QQ on TT = only Tx beats us
-                # On paired board, overbet on river is scary (trips/boat)
+                # QQ on TT = only Tx beats us, but check-raise = trips
+                if is_facing_raise:
+                    return ('fold', 0, f"{desc} - fold pocket over vs check-raise (likely trips)")
                 if street == 'river' and pot_pct > 1.0:
                     return ('fold', 0, f"{desc} - fold pocket over vs river overbet")
                 return ('call', 0, f"{desc} - call (pocket over board)")
             if hand_info['two_pair_type'] == 'both_cards_hit':
                 # Two pair is strong but fold to extreme aggression (likely set/boat)
+                # Check-raise or 4-bet = monster at 2NL
+                if is_facing_raise:
+                    return ('fold', 0, f"{desc} - fold two pair vs check-raise (likely set+)")
                 if pot_pct > 1.0:
                     return ('fold', 0, f"{desc} - fold two pair vs overbet (likely set+)")
                 return ('raise', round(to_call * 1.0, 2), f"{desc} - raise strong")
@@ -1633,6 +1638,9 @@ def _postflop_value_lord(hole_cards, board, pot, to_call, street, strength, desc
                 return ('fold', 0, f"{desc} - fold underpair vs river bet")
             
             if hand_info['is_overpair']:
+                # Check-raise on river = trips/boat at 2NL
+                if is_facing_raise:
+                    return ('fold', 0, f"{desc} - fold overpair vs check-raise (likely trips+)")
                 if pot_pct > 1.0:
                     return ('fold', 0, f"{desc} - fold overpair vs {pot_pct:.0%} pot bet")
                 return ('call', 0, f"{desc} - call river")

@@ -721,11 +721,48 @@ def detailed_analysis(min_bb=10, strategy_name='value_lord'):
         
         return (None, None)
     
+    def get_play_analysis(hand):
+        """For hands strategy plays, return analysis of hand strength and villain action."""
+        from poker_logic import analyze_hand
+        
+        if not hand['board']:
+            return "preflop all-in"
+        
+        # Parse hero cards
+        hole = []
+        for c in hand['hero_cards']:
+            rank, suit = c[0], c[1].lower()
+            hole.append((rank, suit))
+        
+        # Parse board
+        board = []
+        for c in hand['board']:
+            rank, suit = c[0], c[1].lower()
+            board.append((rank, suit))
+        
+        info = analyze_hand(hole, board)
+        
+        # Check for villain raises in postflop
+        villain_raised = False
+        raise_street = None
+        for act in hand.get('postflop_actions', []):
+            if act['action'] == 'villain_raise':
+                villain_raised = True
+                raise_street = act['street']
+        
+        result = f"{info['desc']}"
+        if villain_raised:
+            result += f" [VILLAIN RAISED on {raise_street}]"
+        
+        return result
+    
     print("\n" + "=" * 120)
     print("LOSING HANDS (where strategy could SAVE money by folding)")
     print("=" * 120)
     print(f"\n{'Hand':<6} {'Pos':<4} {'Board':<20} {'Lost BB':>8} {'Strategy':>10} {'Fold Point':<10} Reason")
     print("-" * 120)
+    
+    strategy_plays = []  # Losers where strategy plays through
     
     for h in losers:
         fold_point, reason = analyze_single_hand(h)
@@ -734,10 +771,14 @@ def detailed_analysis(min_bb=10, strategy_name='value_lord'):
         if fold_point:
             strategy_saves.append({'hand': h, 'fold_point': fold_point, 'reason': reason})
             status = "SAVES"
+            detail = reason
         else:
+            play_analysis = get_play_analysis(h)
+            strategy_plays.append({'hand': h, 'analysis': play_analysis})
             status = "plays"
+            detail = play_analysis
         
-        print(f"{h['hand_str']:<6} {h['hero_position']:<4} {board_str:<20} {abs(h['profit_bb']):>8.1f} {status:>10} {fold_point or '-':<10} {reason or '-'}")
+        print(f"{h['hand_str']:<6} {h['hero_position']:<4} {board_str:<20} {abs(h['profit_bb']):>8.1f} {status:>10} {fold_point or '-':<10} {detail}")
     
     print("\n" + "=" * 120)
     print("WINNING HANDS (where strategy would MISS profit by folding)")
@@ -777,6 +818,31 @@ def detailed_analysis(min_bb=10, strategy_name='value_lord'):
         print(f"    {h['hand_str']:<6} {h['hero_position']:<4} {h['profit_bb']:>6.1f} BB - {m['fold_point']}: {m['reason']}")
     
     print(f"\nNET IMPACT: {saved_bb:.1f} - {missed_bb:.1f} = {saved_bb - missed_bb:+.1f} BB")
+    
+    # Analyze unsaved losses
+    if strategy_plays:
+        plays_bb = sum(abs(p['hand']['profit_bb']) for p in strategy_plays)
+        print(f"\n" + "=" * 120)
+        print(f"UNSAVED LOSSES (strategy plays, still loses): {len(strategy_plays)} hands, {plays_bb:.1f} BB")
+        print("=" * 120)
+        
+        # Categorize by villain raise
+        raised_hands = [p for p in strategy_plays if 'VILLAIN RAISED' in p['analysis']]
+        other_hands = [p for p in strategy_plays if 'VILLAIN RAISED' not in p['analysis']]
+        
+        if raised_hands:
+            raised_bb = sum(abs(p['hand']['profit_bb']) for p in raised_hands)
+            print(f"\n  VILLAIN RAISED (check-raise detection would help): {len(raised_hands)} hands, {raised_bb:.1f} BB")
+            for p in sorted(raised_hands, key=lambda x: x['hand']['profit_bb']):
+                h = p['hand']
+                print(f"    {h['hand_str']:<6} {h['hero_position']:<4} {abs(h['profit_bb']):>6.1f} BB - {p['analysis']}")
+        
+        if other_hands:
+            other_bb = sum(abs(p['hand']['profit_bb']) for p in other_hands)
+            print(f"\n  OTHER LOSSES (coolers/unavoidable): {len(other_hands)} hands, {other_bb:.1f} BB")
+            for p in sorted(other_hands, key=lambda x: x['hand']['profit_bb']):
+                h = p['hand']
+                print(f"    {h['hand_str']:<6} {h['hero_position']:<4} {abs(h['profit_bb']):>6.1f} BB - {p['analysis']}")
     
     return strategy_saves, strategy_misses
 
