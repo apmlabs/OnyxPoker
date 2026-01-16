@@ -1611,11 +1611,15 @@ def _postflop_value_lord(hole_cards, board, pot, to_call, street, strength, desc
                     return ('call', 0, f"{desc} - call (pocket under board vs {pot_pct:.0%} pot)")
                 return ('fold', 0, f"{desc} - fold (pocket under board vs big bet)")
             if hand_info['two_pair_type'] == 'pocket_over_board':
-                # QQ on TT = only Tx beats us, call reasonable bets
+                # QQ on TT = only Tx beats us
+                # On paired board, overbet on river is scary (trips/boat)
                 if street == 'river' and pot_pct > 1.0:
-                    return ('fold', 0, f"{desc} - fold pocket over vs overbet")
+                    return ('fold', 0, f"{desc} - fold pocket over vs river overbet")
                 return ('call', 0, f"{desc} - call (pocket over board)")
             if hand_info['two_pair_type'] == 'both_cards_hit':
+                # Two pair is strong but fold to extreme aggression (likely set/boat)
+                if pot_pct > 1.0:
+                    return ('fold', 0, f"{desc} - fold two pair vs overbet (likely set+)")
                 return ('raise', round(to_call * 1.0, 2), f"{desc} - raise strong")
             if hand_info['two_pair_type'] == 'one_card_board_pair' and is_dangerous_board_pair:
                 if is_big_bet or street == 'river':
