@@ -1,46 +1,50 @@
 # OnyxPoker - Status Tracking
 
-**Last Updated**: January 16, 2026 19:09 UTC
+**Last Updated**: January 16, 2026 20:41 UTC
 
-## 🎉 SESSION 45: Live Session Analysis 🎉
+## 🎉 SESSION 46: Strategy Evaluation & Default Switch 🎉
 
-**Session 45**: Analyzed 127-hand live session. All strategies outperform hero by 30-34 BB.
-
----
-
-## Current Status: SESSION 45 - Live Session Analysis
-
-**GOAL**: Compare kiro_lord, kiro_optimal, value_lord on today's live session.
-
-### Today's Session Results (127 hands, 5NL)
-| Strategy | Result | vs Hero |
-|----------|--------|---------|
-| **Hero (actual)** | **-69.6 BB** | -- |
-| **kiro_lord** | **-35.6 BB** | +34 BB better |
-| **kiro_optimal** | **-35.6 BB** | +34 BB better |
-| **value_lord** | **-39.6 BB** | +30 BB better |
-
-### Key Hands
-| Hand | Board | Hero | Profit | Strategies |
-|------|-------|------|--------|------------|
-| ATs | KcAdQsQhTd | PLAY | +96.4 BB | All CALL ✅ |
-| AKo | 3sTsQsAdQd | PLAY | -100.0 BB | All BET (lost anyway) |
-| A7s | Ac4d9c | PLAY | -11.6 BB | All FOLD ✅ saved |
-| QJo | 2dTd4d5c2s | PLAY | -9.0 BB | All FOLD ✅ saved |
-| JTs | 4s5s2cQd | PLAY | -14.4 BB | All CHECK ✅ |
-
-### Key Findings
-1. **kiro_lord = kiro_optimal** on this session (identical actions)
-2. **Strategies save ~34 BB** by folding losing hands (A7s, QJo, KTs)
-3. **value_lord slightly worse** - plays more hands, loses more
-4. **A6o +13.2 BB** - All strategies would fold (missed profit)
-
-### Files Created
-- `analyze_session.py` - Hand-by-hand session analysis tool
+**Session 46**: Fixed eval_real_hands.py postflop miss calculation. Ran PokerKit simulations. Switched default to value_lord.
 
 ---
 
-## Previous: SESSION 44 - PokerKit Integration + Eval Fixes
+## Current Status: SESSION 46 - Strategy Evaluation & Default Switch
+
+**GOAL**: Fix eval_real_hands.py, run PokerKit simulations, choose default strategy.
+
+### eval_real_hands.py Fix
+- Bug: Postflop miss was using `hero_profit` (whole hand) instead of `pot + to_call` (pot at decision)
+- Result: Postflop miss € dropped from €10+ to €4.64 for value_lord
+
+### Fixed Real Data Results (1,405 hands)
+| Strategy | PF Save | PF Miss | Post Save | Post Miss | **NET €** |
+|----------|---------|---------|-----------|-----------|-----------|
+| nit | €56.33 | €35.69 | €2.09 | €0.76 | **+€21.97** |
+| kiro_optimal | €43.60 | €26.29 | €5.50 | €1.12 | **+€21.69** |
+| sonnet | €43.60 | €26.29 | €5.50 | €1.12 | **+€21.69** |
+| kiro_lord | €43.60 | €26.29 | €5.50 | €4.07 | **+€18.74** |
+| value_maniac | €14.12 | €10.17 | €6.20 | €2.16 | **+€7.99** |
+| value_lord | €14.12 | €10.17 | €7.03 | €4.64 | **+€6.34** |
+
+### PokerKit Simulation Results (20,000 hands each)
+| Strategy | BB/100 |
+|----------|--------|
+| **value_maniac** | **+26.5** |
+| **value_lord** | **+24.1** |
+| kiro_lord | -8.8 |
+
+### Key Insight - Real Data vs Simulation
+- **Real data**: Tight strategies (kiro) win by folding losers
+- **PokerKit sim**: Aggressive strategies (value) win by extracting value from fish
+
+### Default Strategy Changed
+- Switched from `kiro_lord` to `value_lord`
+- value_lord: +24.1 BB/100 in PokerKit, more conservative c-betting than value_maniac
+- Commit: 95bc6eb
+
+---
+
+## Previous: SESSION 45 - Live Session Analysis
 
 **GOAL**: Validate OnyxPoker strategies using external poker engine (PokerKit).
 

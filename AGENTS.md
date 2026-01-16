@@ -58,11 +58,10 @@ PokerStars/Simulator Window
     Helper Bar UI (advice display)
 ```
 
-**Default Strategy**: `kiro_lord` (NEW - best on real data)
-- Tight preflop ranges (same as kiro_optimal)
-- Improved postflop: folds pocket_under_board, tighter TPGK thresholds
-- 100% accuracy on 14 key postflop scenarios
-- #1 on real data (€-31.68 vs kiro_optimal's €-32.06)
+**Default Strategy**: `value_lord` (switched Session 46)
+- +24.1 BB/100 in PokerKit simulation (20k hands)
+- More conservative c-betting than value_maniac
+- Aggressive value betting extracts more from fish
 
 **Key Design Principle**: All hand analysis uses `analyze_hand()` which computes properties directly from cards - NO string matching on descriptions.
 
@@ -301,6 +300,32 @@ cd client && python3 poker_sim.py 200000
 ---
 
 ## 📖 SESSION HISTORY & LESSONS LEARNED
+
+### Session 46: Strategy Evaluation & Default Switch (January 16, 2026)
+
+**Fixed eval_real_hands.py postflop miss calculation. Ran PokerKit simulations. Switched default to value_lord.**
+
+**eval_real_hands.py Bug Fix:**
+- Bug: Postflop miss was using `hero_profit` (whole hand result) instead of `pot + to_call` (pot at decision)
+- Impact: Postflop miss € dropped from €10+ to €4.64 for value_lord
+
+**PokerKit Simulation Results (20,000 hands each):**
+| Strategy | BB/100 |
+|----------|--------|
+| value_maniac | +26.5 |
+| value_lord | +24.1 |
+| kiro_lord | -8.8 |
+
+**Key Insight - Real Data vs Simulation:**
+- Real data: Tight strategies (kiro) win by folding losers
+- PokerKit sim: Aggressive strategies (value) win by extracting value from fish
+- Chose value_lord as default - good balance of aggression and discipline
+
+**Default Strategy Changed:**
+- Switched from `kiro_lord` to `value_lord`
+- Commit: 95bc6eb
+
+---
 
 ### Session 45: Live Session Analysis (January 16, 2026)
 
