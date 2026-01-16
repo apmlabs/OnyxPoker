@@ -1420,14 +1420,10 @@ def _postflop_value_maniac(hole_cards, board, pot, to_call, street, strength, de
         if strength == 3:
             # Pocket pair on paired board - differentiate over vs under
             if hand_info['two_pair_type'] == 'pocket_under_board':
-                # 66 on TT = weak, any Tx or 77+ beats us
-                # Flop: call vs <=60% to see if villain has it
-                # Turn/River: fold vs any bet (villain likely has trips)
-                if street == 'flop' and pot_pct <= 0.6:
-                    return ('call', 0, f"{desc} - call flop (pocket under board)")
-                if street in ['turn', 'river'] or pot_pct > 0.5:
-                    return ('fold', 0, f"{desc} - fold (pocket under board)")
-                return ('call', 0, f"{desc} - call (pocket under board)")
+                # 66 on TT = weak, but call small bets (villain may bluff)
+                if pot_pct <= 0.5:
+                    return ('call', 0, f"{desc} - call (pocket under board vs {pot_pct:.0%} pot)")
+                return ('fold', 0, f"{desc} - fold (pocket under board vs big bet)")
             if hand_info['two_pair_type'] == 'pocket_over_board':
                 # QQ on TT = only Tx beats us
                 # Key insight: if WE bet and villain RAISES, they have trips
@@ -1614,14 +1610,10 @@ def _postflop_value_lord(hole_cards, board, pot, to_call, street, strength, desc
         if strength == 3:
             # Pocket pair on paired board - differentiate over vs under
             if hand_info['two_pair_type'] == 'pocket_under_board':
-                # 66 on TT = weak, any Tx or 77+ beats us
-                # Flop: call vs <=60% to see if villain has it
-                # Turn/River: fold vs any bet (villain likely has trips)
-                if street == 'flop' and pot_pct <= 0.6:
-                    return ('call', 0, f"{desc} - call flop (pocket under board)")
-                if street in ['turn', 'river'] or pot_pct > 0.5:
-                    return ('fold', 0, f"{desc} - fold (pocket under board)")
-                return ('call', 0, f"{desc} - call (pocket under board)")
+                # 66 on TT = weak, but call small bets (villain may bluff)
+                if pot_pct <= 0.5:
+                    return ('call', 0, f"{desc} - call (pocket under board vs {pot_pct:.0%} pot)")
+                return ('fold', 0, f"{desc} - fold (pocket under board vs big bet)")
             if hand_info['two_pair_type'] == 'pocket_over_board':
                 # QQ on TT = only Tx beats us
                 # Key insight: if WE bet and villain RAISES, they have trips
@@ -1697,6 +1689,9 @@ def _postflop_value_lord(hole_cards, board, pot, to_call, street, strength, desc
             if hand_info['has_top_pair']:
                 if hand_info['has_good_kicker']:
                     # TPGK: Call normal bets, fold to huge overbets (shove = overpair/set)
+                    # But always call if we have a flush draw (extra equity)
+                    if hand_info.get('has_flush_draw'):
+                        return ('call', 0, f"{desc} - call TPGK + flush draw")
                     # Calculate effective bet size: to_call / (pot - to_call) for raise sizing
                     effective_pct = to_call / (pot - to_call) if pot > to_call else pot_pct
                     if street == 'flop':
