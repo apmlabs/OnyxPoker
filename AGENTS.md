@@ -95,6 +95,7 @@ onyxpoker/                    # Main repo (GitHub: apmlabs/OnyxPoker)
 │   ├── analyze_table_composition.py  # Classifies players into archetypes
 │   ├── analyze_archetype_behavior.py # Real vs simulated postflop behavior
 │   ├── analyze_bet_sizes.py          # Real bet sizes by archetype
+│   ├── analyze_session.py            # Hand-by-hand session analysis (NEW)
 │   │
 │   │ # === TESTS ===
 │   ├── audit_strategies.py   # Strategy file vs code (21 tests)
@@ -300,6 +301,34 @@ cd client && python3 poker_sim.py 200000
 ---
 
 ## 📖 SESSION HISTORY & LESSONS LEARNED
+
+### Session 45: Live Session Analysis (January 16, 2026)
+
+**Analyzed 127-hand live session comparing hero play vs kiro_lord, kiro_optimal, value_lord.**
+
+**Results:**
+| Strategy | Result | vs Hero |
+|----------|--------|---------|
+| Hero (actual) | -69.6 BB | -- |
+| kiro_lord | -35.6 BB | +34 BB better |
+| kiro_optimal | -35.6 BB | +34 BB better |
+| value_lord | -39.6 BB | +30 BB better |
+
+**Key Findings:**
+1. kiro_lord = kiro_optimal on this session (identical actions)
+2. Strategies save ~34 BB by folding losing hands (A7s, QJo, KTs)
+3. value_lord slightly worse - plays more hands, loses more
+4. A6o +13.2 BB - All strategies would fold (missed profit)
+
+**Big Hands:**
+- ATs on KcAdQsQhTd: +96.4 BB (all strategies CALL ✅)
+- AKo on 3sTsQsAdQd: -100 BB (all strategies BET - lost anyway)
+- A7s on Ac4d9c: -11.6 BB (all strategies FOLD ✅ saved)
+
+**Files Created:**
+- `analyze_session.py` - Hand-by-hand session analysis tool
+
+---
 
 ### Session 44: PokerKit Integration + Eval Fixes (January 16, 2026)
 
