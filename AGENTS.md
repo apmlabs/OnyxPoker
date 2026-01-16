@@ -80,21 +80,20 @@ onyxpoker/                    # Main repo (GitHub: apmlabs/OnyxPoker)
 │   ├── helper_bar.py         # Main UI (F9=advice, F10=bot, F11=stop, F12=hide)
 │   ├── vision_detector.py    # Full mode: gpt-5.2 for vision + decisions
 │   ├── vision_detector_lite.py # Lite mode: gpt-5.2 for vision only
-│   ├── strategy_engine.py    # Applies strategy (default: kiro_lord)
+│   ├── strategy_engine.py    # Applies strategy (default: value_lord)
 │   ├── poker_logic.py        # Hand eval, preflop/postflop logic, strategies + archetypes
 │   ├── poker_sim.py          # Monte Carlo simulator (200k+ hands)
-│   ├── pokerkit_adapter.py   # PokerKit integration for external validation
+│   ├── pokerkit_adapter.py   # PokerKit simulation with external engine
 │   │
-│   │ # === EVALUATION ===
-│   ├── eval_real_hands.py    # Evaluates on idealistslp (actual €€€ results)
+│   │ # === EVALUATION (on session logs: server/uploads/*.jsonl) ===
 │   ├── eval_strategies.py    # Evaluates on session logs (good/bad folds)
 │   ├── eval_deep.py          # Deep stats (VPIP/PFR/AF)
 │   │
-│   │ # === ANALYSIS ===
+│   │ # === ANALYSIS (on hand histories: idealistslp_extracted/*.txt) ===
+│   ├── analyze_hands.py      # Main HH analysis (--big N, --strategy X)
 │   ├── analyze_table_composition.py  # Classifies players into archetypes
 │   ├── analyze_archetype_behavior.py # Real vs simulated postflop behavior
 │   ├── analyze_bet_sizes.py          # Real bet sizes by archetype
-│   ├── analyze_session.py            # Hand-by-hand session analysis (NEW)
 │   │
 │   │ # === TESTS ===
 │   ├── audit_strategies.py   # Strategy file vs code (21 tests)
