@@ -1425,9 +1425,9 @@ def _postflop_value_maniac(hole_cards, board, pot, to_call, street, strength, de
                     return ('fold', 0, f"{desc} - fold (pocket under board)")
                 return ('call', 0, f"{desc} - call (pocket under board)")
             if hand_info['two_pair_type'] == 'pocket_over_board':
-                # QQ on TT = only Tx beats us, but if villain raises they have it
-                if street in ['turn', 'river'] and to_call > 0:
-                    return ('fold', 0, f"{desc} - fold pocket over vs raise")
+                # QQ on TT = only Tx beats us, fold to big bets (75%+ pot)
+                if street in ['turn', 'river'] and pot_pct > 0.75:
+                    return ('fold', 0, f"{desc} - fold pocket over vs big bet")
                 return ('call', 0, f"{desc} - call (pocket over board)")
             if hand_info['two_pair_type'] == 'both_cards_hit':
                 return ('raise', round(to_call * 1.0, 2), f"{desc} - raise strong")
@@ -1467,15 +1467,23 @@ def _postflop_value_maniac(hole_cards, board, pot, to_call, street, strength, de
             
             # UNDERPAIR DEFENSE: Fold underpairs to aggression on scary boards
             if hand_info['is_pocket_pair'] and not hand_info['is_overpair']:
+                pocket_val = hand_info.get('pocket_val', 0)
+                is_strong_underpair = pocket_val >= 8  # TT+ (T=8, J=9, Q=10, K=11)
+                
                 # Flop: Check-call once (see if villain slows down)
                 if street == 'flop' and pot_pct <= 0.5:
                     return ('call', 0, f"{desc} - call once (underpair)")
-                # Turn/river: Fold to continued aggression
-                if street in ['turn', 'river']:
-                    return ('fold', 0, f"{desc} - fold underpair vs aggression")
                 # Flop overbet: Fold immediately
                 if street == 'flop' and pot_pct > 0.5:
                     return ('fold', 0, f"{desc} - fold underpair vs overbet")
+                # Turn: Strong underpairs (JJ+) call small bets
+                if street == 'turn':
+                    if is_strong_underpair and pot_pct <= 0.5:
+                        return ('call', 0, f"{desc} - call strong underpair")
+                    return ('fold', 0, f"{desc} - fold underpair vs aggression")
+                # River: Fold all underpairs
+                if street == 'river':
+                    return ('fold', 0, f"{desc} - fold underpair river")
             
             # Fold weak pairs (bottom/middle) to overbets (100%+ pot)
             if pot_pct > 1.0 and strength <= 2 and not hand_info['has_top_pair'] and not hand_info['is_overpair']:
@@ -1603,9 +1611,9 @@ def _postflop_value_lord(hole_cards, board, pot, to_call, street, strength, desc
                     return ('fold', 0, f"{desc} - fold (pocket under board)")
                 return ('call', 0, f"{desc} - call (pocket under board)")
             if hand_info['two_pair_type'] == 'pocket_over_board':
-                # QQ on TT = only Tx beats us, but if villain raises they have it
-                if street in ['turn', 'river'] and to_call > 0:
-                    return ('fold', 0, f"{desc} - fold pocket over vs raise")
+                # QQ on TT = only Tx beats us, fold to big bets (75%+ pot)
+                if street in ['turn', 'river'] and pot_pct > 0.75:
+                    return ('fold', 0, f"{desc} - fold pocket over vs big bet")
                 return ('call', 0, f"{desc} - call (pocket over board)")
             if hand_info['two_pair_type'] == 'both_cards_hit':
                 return ('raise', round(to_call * 1.0, 2), f"{desc} - raise strong")
@@ -1651,15 +1659,23 @@ def _postflop_value_lord(hole_cards, board, pot, to_call, street, strength, desc
             
             # UNDERPAIR DEFENSE: Fold underpairs to aggression on scary boards
             if hand_info['is_pocket_pair'] and not hand_info['is_overpair']:
+                pocket_val = hand_info.get('pocket_val', 0)
+                is_strong_underpair = pocket_val >= 8  # TT+ (T=8, J=9, Q=10, K=11)
+                
                 # Flop: Check-call once (see if villain slows down)
                 if street == 'flop' and pot_pct <= 0.5:
                     return ('call', 0, f"{desc} - call once (underpair)")
-                # Turn/river: Fold to continued aggression
-                if street in ['turn', 'river']:
-                    return ('fold', 0, f"{desc} - fold underpair vs aggression")
                 # Flop overbet: Fold immediately
                 if street == 'flop' and pot_pct > 0.5:
                     return ('fold', 0, f"{desc} - fold underpair vs overbet")
+                # Turn: Strong underpairs (JJ+) call small bets
+                if street == 'turn':
+                    if is_strong_underpair and pot_pct <= 0.5:
+                        return ('call', 0, f"{desc} - call strong underpair")
+                    return ('fold', 0, f"{desc} - fold underpair vs aggression")
+                # River: Fold all underpairs
+                if street == 'river':
+                    return ('fold', 0, f"{desc} - fold underpair river")
             
             # TOP PAIR: Differentiate by kicker strength
             if hand_info['has_top_pair']:
@@ -1680,8 +1696,8 @@ def _postflop_value_lord(hole_cards, board, pot, to_call, street, strength, desc
                         return ('call', 0, f"{desc} - call TPGK river")
                     return ('fold', 0, f"{desc} - fold TPGK vs big river bet")
                 else:
-                    # TPWK: Call flop only, fold turn/river
-                    if street == 'flop' and pot_pct <= 0.4:
+                    # TPWK: Call flop vs normal bets, fold turn/river
+                    if street == 'flop' and pot_pct <= 0.5:
                         return ('call', 0, f"{desc} - call TPWK flop")
                     return ('fold', 0, f"{desc} - fold TPWK")
             
