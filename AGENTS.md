@@ -292,6 +292,43 @@ cd client && python3 poker_sim.py 200000
 
 ## 📖 SESSION HISTORY & LESSONS LEARNED
 
+### Session 43 Part 24: Real Table Composition Analysis (January 16, 2026)
+
+**MAJOR FINDING**: Real 5NL tables are MUCH tougher than simulation assumed!
+
+**Analysis Method**:
+- Parsed all hand histories from idealistslp_extracted/
+- Calculated VPIP/PFR for 71 players with 20+ hands
+- Classified archetypes based on industry-standard thresholds
+
+**Real vs Simulation Comparison**:
+| Archetype | Real 5NL | Old Sim | Difference |
+|-----------|----------|---------|------------|
+| Fish | **8.5%** | 60% | **-51.5%** |
+| Nit | 30.9% | 25% | +5.9% |
+| TAG | **38.6%** | 15% | **+23.6%** |
+| LAG | **22.0%** | 0% | **+22.0%** |
+| Maniac | 0% | 0% | same |
+
+**Key Insight**: Real 5NL is 60% aggressive players (TAG + LAG), only 8.5% fish!
+
+**Updated Simulation Results (100k hands, realistic tables)**:
+| Rank | Strategy | BB/100 |
+|------|----------|--------|
+| 1 | value_lord | +53.62 |
+| 2 | sonnet | +23.64 |
+| 3 | kiro_optimal | +17.87 |
+| 4 | kiro_lord | +14.64 |
+| 5 | optimal_stats | +10.39 |
+
+**Files Created**:
+- `analyze_table_composition.py` - Analyzes real hand histories for player archetypes
+
+**Files Modified**:
+- `poker_sim.py` - Updated table composition to match real data
+
+---
+
 ### Session 43 Part 23: Poker Rules Verification (January 16, 2026)
 
 **Challenge**: Verify simulation follows actual Texas Hold'em rules - hand rankings, betting order, player interactions.

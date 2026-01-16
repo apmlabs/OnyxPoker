@@ -284,23 +284,26 @@ def simulate_hand(players, dealer_pos):
 
 
 def get_table_configs():
-    """Return realistic 2NL table compositions based on real data analysis.
+    """Return realistic 5NL table compositions based on REAL data analysis.
     
-    Real 2NL data (1036 hands, 122 opponents):
-    - FISH: 55%
-    - NIT: 23%
-    - TAG: 12%
-    - LAG: 7%
-    - MANIAC: 3%
+    Real 5NL data (1209 hands, 71 players with 20+ hands):
+    - FISH: 8.5%
+    - NIT: 30.9%
+    - TAG: 38.6%
+    - LAG: 22.0%
+    - MANIAC: 0%
+    
+    This is MUCH tighter than previously assumed!
     """
     # 5 opponents per table, weighted by real distribution
+    # Target: ~10% fish, ~30% nit, ~40% tag, ~20% lag
     return [
-        ['fish', 'fish', 'fish', 'nit', 'tag'],      # 60% fish, 20% nit, 20% tag
-        ['fish', 'fish', 'fish', 'nit', 'nit'],      # 60% fish, 40% nit
-        ['fish', 'fish', 'nit', 'nit', 'tag'],       # 40% fish, 40% nit, 20% tag
-        ['fish', 'fish', 'fish', 'lag', 'tag'],      # 60% fish, 20% lag, 20% tag
-        ['fish', 'fish', 'nit', 'lag', 'maniac'],    # 40% fish, 20% nit, 20% lag, 20% maniac
-        ['fish', 'fish', 'fish', 'fish', 'nit'],     # 80% fish, 20% nit (soft table)
+        ['nit', 'tag', 'tag', 'lag', 'tag'],         # 20% nit, 60% tag, 20% lag
+        ['fish', 'nit', 'tag', 'tag', 'lag'],        # 20% fish, 20% nit, 40% tag, 20% lag
+        ['nit', 'nit', 'tag', 'tag', 'lag'],         # 40% nit, 40% tag, 20% lag
+        ['nit', 'tag', 'tag', 'lag', 'lag'],         # 20% nit, 40% tag, 40% lag
+        ['fish', 'nit', 'nit', 'tag', 'tag'],        # 20% fish, 40% nit, 40% tag
+        ['nit', 'tag', 'lag', 'lag', 'tag'],         # 20% nit, 40% tag, 40% lag
     ]
 
 
@@ -313,7 +316,7 @@ def run_simulation(num_hands=100000):
     
     print(f"Testing {len(bot_strategies)} strategies")
     print(f"Total hands: {num_hands:,}")
-    print(f"Table: 55% fish, 23% nit, 12% tag, 7% lag, 3% maniac (real 2NL data)\n", flush=True)
+    print(f"Table: ~10% fish, ~30% nit, ~40% tag, ~20% lag (REAL 5NL data)\n", flush=True)
     
     results = {bot: [] for bot in bot_strategies}
     
