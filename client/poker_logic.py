@@ -956,176 +956,165 @@ def postflop_action(hole_cards: List[Tuple[str, str]], board: List[Tuple[str, st
     # Get hand info for archetypes (no string matching)
     hand_info = analyze_hand(hole_cards, board)
     
-    # FISH: REAL AF 1.58, Median bet 62% pot
-    # Real: Check 40.7%, Bet 20.7%, Call 14.1%, Fold 23.0%, Raise 1.5%
-    # FISH: REAL AF 1.58, Median bet 62% pot
-    # Real: Check 40.7%, Bet 20.7%, Call 14.1%, Fold 23.0%, Raise 1.5%
+    # FISH: Target Check 40.7%, Bet 20.7%, Call 14.1%, Fold 23.0%, AF 1.58
     if archetype == 'fish':
         pot_pct = to_call / (pot + to_call) if to_call and pot else 0
         if to_call == 0 or to_call is None:
+            # Reduce bet frequency: was betting too much (28.9% vs 20.7%)
             if strength >= 4:
-                return ('bet', round(pot * 0.65, 2), f"{desc} - fish bets")
-            if strength >= 2 and random.random() < 0.45:
+                return ('bet', round(pot * 0.62, 2), f"{desc} - fish bets")
+            if strength >= 2 and random.random() < 0.30:  # Reduced from 0.45
                 return ('bet', round(pot * 0.60, 2), f"{desc} - fish bets pair")
-            if has_any_draw and random.random() < 0.30:
+            if has_any_draw and random.random() < 0.15:  # Reduced from 0.30
                 return ('bet', round(pot * 0.55, 2), f"{desc} - fish bets draw")
-            if random.random() < 0.10:
+            if random.random() < 0.05:  # Reduced from 0.10
                 return ('bet', round(pot * 0.50, 2), f"{desc} - fish donk bets")
             return ('check', 0, "fish checks")
         else:
-            # Real: Call 14.1%, Fold 23.0%, Raise 1.5% - need to fold more, call less
+            # Increase fold frequency: was folding too little (15.3% vs 23.0%)
             if strength >= 4:
                 return ('call', 0, f"{desc} - fish calls strong")
             if strength >= 3:
                 return ('call', 0, f"{desc} - fish calls two pair")
             if hand_info.get('has_top_pair'):
-                if pot_pct > 0.55:
+                if pot_pct > 0.45:  # Tightened from 0.55
                     return ('fold', 0, f"{desc} - fish folds top pair to big bet")
                 return ('call', 0, f"{desc} - fish calls top pair")
             if strength >= 2:
-                if pot_pct > 0.40:
+                if pot_pct > 0.30:  # Tightened from 0.40
                     return ('fold', 0, f"{desc} - fish folds to big bet")
-                if random.random() < 0.50:  # Only call 50% of time
+                if random.random() < 0.40:  # Reduced from 0.50
                     return ('call', 0, f"{desc} - fish calls pair")
                 return ('fold', 0, f"{desc} - fish folds pair")
-            if has_any_draw and pot_pct < 0.35:
+            if has_any_draw and pot_pct < 0.25:  # Tightened from 0.35
                 return ('call', 0, f"{desc} - fish calls draw")
-            # Air: fold most of the time
             return ('fold', 0, "fish folds")
     
-    # NIT: REAL AF 1.09, Median bet 54% pot
-    # Real: Check 45.9%, Bet 16.9%, Call 18.6%, Fold 15.3%, Raise 3.3%
-    # NIT: REAL AF 1.09, Median bet 54% pot
-    # Real: Check 45.9%, Bet 16.9%, Call 18.6%, Fold 15.3%, Raise 3.3%
+    # NIT: Target Check 45.9%, Bet 16.9%, Call 18.6%, Fold 15.3%, AF 1.09
     if archetype == 'nit':
         pot_pct = to_call / (pot + to_call) if to_call and pot else 0
         if to_call == 0 or to_call is None:
+            # Increase bet frequency: was betting too little (13.4% vs 16.9%)
             if strength >= 4:
-                return ('bet', round(pot * 0.55, 2), f"{desc} - nit value bets")
-            if strength >= 3 and random.random() < 0.40:
+                return ('bet', round(pot * 0.54, 2), f"{desc} - nit value bets")
+            if strength >= 3 and random.random() < 0.50:  # Increased from 0.40
                 return ('bet', round(pot * 0.50, 2), f"{desc} - nit bets two pair")
-            if strength >= 2 and random.random() < 0.20:
+            if strength >= 2 and random.random() < 0.25:  # Increased from 0.20
                 return ('bet', round(pot * 0.50, 2), f"{desc} - nit bets pair")
             return ('check', 0, "nit checks")
         else:
-            # Real: Call 18.6%, Fold 15.3%, Raise 3.3% - nits actually call more
+            # Nits call more than expected (18.6%), fold less (15.3%)
             if strength >= 4:
-                if random.random() < 0.20:  # Raise 3.3% of total
+                if random.random() < 0.15:
                     return ('raise', round(to_call * 1.0, 2), f"{desc} - nit raises")
                 return ('call', 0, f"{desc} - nit calls strong")
             if strength >= 3:
                 return ('call', 0, f"{desc} - nit calls two pair")
             if hand_info.get('has_top_pair'):
-                if pot_pct > 0.60:
+                if pot_pct > 0.65:  # Loosened from 0.60
                     return ('fold', 0, f"{desc} - nit folds to big bet")
                 return ('call', 0, f"{desc} - nit calls top pair")
-            # Weaker pairs: nits fold more
             if strength >= 2:
-                if pot_pct > 0.45:
+                if pot_pct > 0.50:  # Loosened from 0.45
                     return ('fold', 0, f"{desc} - nit folds weak pair")
-                if random.random() < 0.60:  # Call 60% of time
+                if random.random() < 0.70:  # Increased from 0.60
                     return ('call', 0, f"{desc} - nit calls pair")
                 return ('fold', 0, f"{desc} - nit folds pair")
-            if has_any_draw and pot_pct < 0.35:
+            if has_any_draw and pot_pct < 0.40:  # Loosened from 0.35
                 return ('call', 0, f"{desc} - nit calls draw")
             return ('fold', 0, f"{desc} - nit folds")
     
-    # TAG: REAL AF 1.77, Median bet 68% pot
-    # Real: Check 43.5%, Bet 20.7%, Call 13.4%, Fold 19.4%, Raise 3.0%
-    # TAG: REAL AF 1.77, Median bet 68% pot
-    # Real: Check 43.5%, Bet 20.7%, Call 13.4%, Fold 19.4%, Raise 3.0%
+    # TAG: Target Check 43.5%, Bet 20.7%, Call 13.4%, Fold 19.4%, AF 1.77
     if archetype == 'tag':
         pot_pct = to_call / (pot + to_call) if to_call and pot else 0
         if to_call == 0 or to_call is None:
             if strength >= 4:
-                return ('bet', round(pot * 0.70, 2), f"{desc} - tag value bets")
+                return ('bet', round(pot * 0.68, 2), f"{desc} - tag value bets")
             if strength >= 3:
                 if hand_info.get('two_pair_type') == 'pocket_under_board':
                     return ('check', 0, f"{desc} - tag checks weak two pair")
-                if random.random() < 0.65:
+                if random.random() < 0.60:  # Reduced from 0.65
                     return ('bet', round(pot * 0.65, 2), f"{desc} - tag bets two pair")
                 return ('check', 0, f"{desc} - tag checks two pair")
-            if strength >= 2 and random.random() < 0.35:
+            if strength >= 2 and random.random() < 0.30:  # Reduced from 0.35
                 return ('bet', round(pot * 0.60, 2), f"{desc} - tag bets pair")
-            if has_any_draw and random.random() < 0.30:
+            if has_any_draw and random.random() < 0.25:  # Reduced from 0.30
                 return ('bet', round(pot * 0.55, 2), f"{desc} - tag semi-bluffs")
             return ('check', 0, f"{desc} - tag checks")
         else:
-            # Real: Call 13.4%, Fold 19.4%, Raise 3.0% - need to fold more, call less
+            # Increase fold frequency: was folding too little (14.9% vs 19.4%)
             if hand_info.get('two_pair_type') == 'pocket_under_board':
-                if pot_pct > 0.40:
+                if pot_pct > 0.35:  # Tightened from 0.40
                     return ('fold', 0, f"{desc} - tag folds weak two pair")
                 return ('call', 0, f"{desc} - tag calls weak two pair")
             if strength >= 4:
-                if random.random() < 0.25:  # Raise 3% of total = ~25% of strong hands
+                if random.random() < 0.20:
                     return ('raise', round(to_call * 1.0, 2), f"{desc} - tag raises")
                 return ('call', 0, f"{desc} - tag calls strong")
             if strength >= 3:
                 return ('call', 0, f"{desc} - tag calls two pair")
             if hand_info.get('has_top_pair'):
-                if pot_pct > 0.50:
+                if pot_pct > 0.45:  # Tightened from 0.50
                     return ('fold', 0, f"{desc} - tag folds to big bet")
                 return ('call', 0, f"{desc} - tag calls top pair")
-            # Weaker pairs: fold more often
             if strength >= 2:
-                if pot_pct > 0.35:
+                if pot_pct > 0.30:  # Tightened from 0.35
                     return ('fold', 0, f"{desc} - tag folds weak pair")
-                if random.random() < 0.50:  # Only call 50% of time
+                if random.random() < 0.40:  # Reduced from 0.50
                     return ('call', 0, f"{desc} - tag calls pair")
                 return ('fold', 0, f"{desc} - tag folds pair")
             if has_any_draw:
-                if pot_pct > 0.40:
+                if pot_pct > 0.35:  # Tightened from 0.40
                     return ('fold', 0, f"{desc} - tag folds draw")
                 return ('call', 0, f"{desc} - tag calls draw")
-            # Air: fold most of the time
             return ('fold', 0, f"{desc} - tag folds")
     
-    # LAG: REAL AF 1.93, Median bet 54% pot
-    # Real: Check 36.6%, Bet 28.0%, Call 16.7%, Fold 14.6%, Raise 4.1%
+    # LAG: Target Check 36.6%, Bet 28.0%, Call 16.7%, Fold 14.6%, AF 1.93
     if archetype == 'lag':
         pot_pct = to_call / (pot + to_call) if to_call and pot else 0
         if to_call == 0 or to_call is None:
+            # Reduce bet frequency: was betting too much (37.3% vs 28.0%)
             if strength >= 4:
-                return ('bet', round(pot * 0.60, 2), f"{desc} - lag value bets")
+                return ('bet', round(pot * 0.54, 2), f"{desc} - lag value bets")
             if strength >= 3:
                 if hand_info.get('two_pair_type') == 'pocket_under_board':
                     return ('check', 0, f"{desc} - lag checks weak two pair")
-                return ('bet', round(pot * 0.55, 2), f"{desc} - lag bets two pair")
-            if hand_info['has_any_pair'] and random.random() < 0.55:
-                return ('bet', round(pot * 0.50, 2), f"{desc} - lag bets pair")
-            if has_any_draw and random.random() < 0.50:
-                return ('bet', round(pot * 0.45, 2), "lag semi-bluffs")
-            if street == 'flop' and random.random() < 0.30:
-                return ('bet', round(pot * 0.40, 2), "lag c-bets air")
+                if random.random() < 0.70:  # Reduced implicit 100%
+                    return ('bet', round(pot * 0.50, 2), f"{desc} - lag bets two pair")
+                return ('check', 0, f"{desc} - lag checks two pair")
+            if hand_info['has_any_pair'] and random.random() < 0.40:  # Reduced from 0.55
+                return ('bet', round(pot * 0.45, 2), f"{desc} - lag bets pair")
+            if has_any_draw and random.random() < 0.35:  # Reduced from 0.50
+                return ('bet', round(pot * 0.40, 2), "lag semi-bluffs")
+            if street == 'flop' and random.random() < 0.20:  # Reduced from 0.30
+                return ('bet', round(pot * 0.35, 2), "lag c-bets air")
             return ('check', 0, f"{desc} - lag checks")
         else:
-            # Real: Call 16.7%, Fold 14.6%, Raise 4.1% - need to fold more, call less
+            # LAG calls more (16.7%) and folds less (14.6%)
             if hand_info.get('two_pair_type') == 'pocket_under_board':
-                if pot_pct > 0.40:
+                if pot_pct > 0.45:  # Loosened from 0.40
                     return ('fold', 0, f"{desc} - lag folds weak two pair")
                 return ('call', 0, f"{desc} - lag calls weak two pair")
             if strength >= 4:
-                if random.random() < 0.30:  # Raise 4% of total = ~30% of strong hands
+                if random.random() < 0.25:
                     return ('raise', round(to_call * 1.0, 2), f"{desc} - lag raises")
                 return ('call', 0, f"{desc} - lag calls strong")
             if strength >= 3:
                 return ('call', 0, f"{desc} - lag calls two pair")
             if hand_info.get('has_top_pair'):
-                if pot_pct > 0.55:
+                if pot_pct > 0.60:  # Loosened from 0.55
                     return ('fold', 0, f"{desc} - lag folds to big bet")
                 return ('call', 0, f"{desc} - lag calls top pair")
-            # Weaker pairs: fold more often
             if strength >= 2:
-                if pot_pct > 0.40:
+                if pot_pct > 0.45:  # Loosened from 0.40
                     return ('fold', 0, f"{desc} - lag folds weak pair")
-                if random.random() < 0.55:  # Only call 55% of time
+                if random.random() < 0.60:  # Increased from 0.55
                     return ('call', 0, f"{desc} - lag calls pair")
                 return ('fold', 0, f"{desc} - lag folds pair")
             if has_any_draw:
-                if pot_pct > 0.45:
+                if pot_pct > 0.50:  # Loosened from 0.45
                     return ('fold', 0, f"{desc} - lag folds draw")
                 return ('call', 0, f"{desc} - lag calls draw")
-            # Air: fold most of the time
             return ('fold', 0, f"{desc} - lag folds")
     
     # MANIAC: AF 7.00 - Most aggressive, but still folds weak hands to overbets
