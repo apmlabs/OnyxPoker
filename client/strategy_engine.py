@@ -10,7 +10,7 @@ from poker_logic import (
     get_hand_info, analyze_hand
 )
 
-DEFAULT_STRATEGY = 'value_lord'
+DEFAULT_STRATEGY = 'kiro_lord'
 
 
 def get_hand_notation(cards: List[str]) -> str:
