@@ -83,6 +83,12 @@ def parse_hand(text, bb):
     button_seat = None
     seats = {}
     
+    # Track hero's investment per street
+    # Key insight: "raises to €X" means hero's TOTAL on this street is X
+    # "calls €X" means hero adds X more to their current street investment
+    # "bets €X" means hero adds X (first action on street)
+    street_invested = {'preflop': 0, 'flop': 0, 'turn': 0, 'river': 0}
+    
     for line in lines:
         # Button
         m = re.match(r"Table.*Seat #(\d+) is the button", line)
@@ -123,33 +129,52 @@ def parse_hand(text, bb):
             if m:
                 hand['board'].append(m.group(1))
         
-        # Uncalled bet returned
+        # Uncalled bet returned - subtract from current street
         if 'returned to idealistslp' in line:
             m = re.search(r'€([\d.]+)', line)
             if m:
-                hand['hero_invested'] -= float(m.group(1))
+                street_invested[current_street] -= float(m.group(1))
         
         # Hero actions
         if line.startswith('idealistslp:'):
-            # For raises, use "to €X" amount (total), not raise amount
-            if ': raises' in line:
-                m = re.search(r'to €([\d.]+)', line)
-            else:
-                m = re.search(r'€([\d.]+)', line)
-            if m:
-                hand['hero_invested'] += float(m.group(1))
-            
             action = None
-            if ': folds' in line:
+            amt = 0
+            
+            if ': raises' in line:
+                # "raises €X to €Y" - Y is hero's TOTAL on this street (replaces prior)
+                m = re.search(r'to €([\d.]+)', line)
+                if m:
+                    amt = float(m.group(1))
+                    street_invested[current_street] = amt  # REPLACE, not add
+                action = 'raise'
+            elif ': calls' in line:
+                # "calls €X" - X is ADDITIONAL amount
+                m = re.search(r'€([\d.]+)', line)
+                if m:
+                    amt = float(m.group(1))
+                    street_invested[current_street] += amt
+                action = 'call'
+            elif ': bets' in line:
+                # "bets €X" - X is the amount (first action on street)
+                m = re.search(r'€([\d.]+)', line)
+                if m:
+                    amt = float(m.group(1))
+                    street_invested[current_street] += amt
+                action = 'bet'
+            elif ': posts small blind' in line:
+                m = re.search(r'€([\d.]+)', line)
+                if m:
+                    amt = float(m.group(1))
+                    street_invested['preflop'] += amt
+            elif ': posts big blind' in line:
+                m = re.search(r'€([\d.]+)', line)
+                if m:
+                    amt = float(m.group(1))
+                    street_invested['preflop'] += amt
+            elif ': folds' in line:
                 action = 'fold'
             elif ': checks' in line:
                 action = 'check'
-            elif ': calls' in line:
-                action = 'call'
-            elif ': bets' in line:
-                action = 'bet'
-            elif ': raises' in line:
-                action = 'raise'
             
             if action and current_street == 'preflop' and hand['hero_preflop_action'] is None:
                 hand['hero_preflop_action'] = action
@@ -158,7 +183,7 @@ def parse_hand(text, bb):
                 hand['postflop_actions'].append({
                     'street': current_street,
                     'action': action,
-                    'amount': float(m.group(1)) if m else 0
+                    'amount': amt
                 })
         
         # Villain actions (for facing detection)
@@ -190,6 +215,9 @@ def parse_hand(text, bb):
             m = re.search(r'€([\d.]+)', line)
             if m:
                 hand['hero_won'] += float(m.group(1))
+    
+    # Calculate total invested from per-street tracking
+    hand['hero_invested'] = sum(street_invested.values())
     
     # Calculate position
     if hero_seat and button_seat and seats:
