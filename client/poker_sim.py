@@ -16,18 +16,19 @@ POSITIONS = ['UTG', 'MP', 'CO', 'BTN', 'SB', 'BB']
 def make_deck():
     return [(r, s) for r in RANKS for s in SUITS]
 
+STACK_SIZE = 100.0  # 100 BB stacks
+
 class Player:
     def __init__(self, name, strategy):
         self.name = name
         self.strategy = strategy
-        self.stack = 100.0
         self.stats = defaultdict(int)
         self.profit = 0.0
         self.cards = None
         self.hand_str = None
 
 def simulate_hand(players, dealer_pos):
-    """Simulate one hand with full postflop play."""
+    """Simulate one hand with full postflop play and proper stack limits."""
     deck = make_deck()
     random.shuffle(deck)
     
@@ -42,14 +43,19 @@ def simulate_hand(players, dealer_pos):
         idx = (dealer_pos + i + 1) % 6
         positions[players[idx].name] = pos
     
+    # Each player starts with STACK_SIZE BB
+    stacks = {p.name: STACK_SIZE for p in players}
     invested = {p.name: 0.0 for p in players}
     active = {p.name: True for p in players}
+    all_in = {p.name: False for p in players}
     
     # Post blinds
     sb_player = next(p for p in players if positions[p.name] == 'SB')
     bb_player = next(p for p in players if positions[p.name] == 'BB')
-    invested[sb_player.name] = 0.5
-    invested[bb_player.name] = 1.0
+    invested[sb_player.name] = min(0.5, stacks[sb_player.name])
+    invested[bb_player.name] = min(1.0, stacks[bb_player.name])
+    stacks[sb_player.name] -= invested[sb_player.name]
+    stacks[bb_player.name] -= invested[bb_player.name]
     
     # Preflop action
     opener = None
@@ -64,10 +70,19 @@ def simulate_hand(players, dealer_pos):
                 action_order.append(p)
                 break
     
-    # Real 2NL has 4.3% limps (from 1036-hand analysis)
+    def bet_amount(player, amount):
+        """Bet up to amount, limited by stack. Returns actual bet."""
+        actual = min(amount, stacks[player.name] + invested[player.name])
+        add = actual - invested[player.name]
+        if add > 0:
+            stacks[player.name] -= add
+            invested[player.name] = actual
+            if stacks[player.name] <= 0:
+                all_in[player.name] = True
+        return actual
     
     for p in action_order:
-        if not active[p.name]:
+        if not active[p.name] or all_in[p.name]:
             continue
         pos = positions[p.name]
         p.stats['hands'] += 1
@@ -77,16 +92,15 @@ def simulate_hand(players, dealer_pos):
             facing = 'none'
             action, _ = preflop_action(p.hand_str, pos, p.strategy, facing)
             
-            # Fish limp ~8% of hands they play (4.3% of total actions)
+            # Fish limp ~8% of hands they play
             if base == 'fish' and action == 'raise' and random.random() < 0.15:
-                # Limp instead of raise with weaker hands
-                invested[p.name] = 1.0  # 1 BB limp
+                bet_amount(p, 1.0)  # Limp
                 p.stats['vpip'] += 1
-                continue  # Don't set opener, allow others to act
+                continue
             
             if action == 'raise':
                 opener = p
-                invested[p.name] = open_size
+                bet_amount(p, open_size)
                 p.stats['vpip'] += 1
                 p.stats['pfr'] += 1
             elif pos != 'BB':
@@ -96,30 +110,27 @@ def simulate_hand(players, dealer_pos):
             action, _ = preflop_action(p.hand_str, pos, p.strategy, facing, positions[opener.name])
             if action == 'raise':
                 three_bettor = p
-                # Maniacs use variable 3-bet sizing (3x to 5x the open)
                 if base == 'maniac':
                     three_bet_mult = random.uniform(3.0, 5.0)
-                    invested[p.name] = open_size * three_bet_mult
+                    bet_amount(p, open_size * three_bet_mult)
                 else:
-                    invested[p.name] = three_bet_size
+                    bet_amount(p, three_bet_size)
                 p.stats['vpip'] += 1
                 p.stats['pfr'] += 1
             elif action == 'call':
-                invested[p.name] = open_size
+                bet_amount(p, invested[opener.name])
                 p.stats['vpip'] += 1
             else:
                 active[p.name] = False
     
-    # Limpers handled above (fish limp ~15% of their opens)
-    
     # Handle 3-bet response
-    if three_bettor and opener and active[opener.name]:
+    if three_bettor and opener and active[opener.name] and not all_in[opener.name]:
         action, _ = preflop_action(opener.hand_str, positions[opener.name], opener.strategy, '3bet')
         three_bet_amt = invested[three_bettor.name]
         if action == 'raise':
-            invested[opener.name] = three_bet_amt * 2.5  # 4-bet
+            bet_amount(opener, three_bet_amt * 2.5)  # 4-bet
         elif action == 'call':
-            invested[opener.name] = three_bet_amt
+            bet_amount(opener, three_bet_amt)
         else:
             active[opener.name] = False
     
@@ -148,49 +159,92 @@ def simulate_hand(players, dealer_pos):
         for _ in range(num_cards):
             board.append(deck.pop())
         
-        active_players = [p for p in players if active[p.name]]
-        if len(active_players) <= 1:
+        active_players = [p for p in players if active[p.name] and not all_in[p.name]]
+        if len([p for p in players if active[p.name]]) <= 1:
             break
+        # If everyone is all-in, just deal remaining cards
+        if len(active_players) == 0:
+            continue
         
-        # Postflop betting - simplified single orbit
+        # Postflop betting round
         pos_order = ['SB', 'BB', 'UTG', 'MP', 'CO', 'BTN']
-        street_order = sorted(active_players, key=lambda p: pos_order.index(positions[p.name]))
         
         current_bet = 0
         round_invested = {p.name: 0 for p in players}
+        bet_count = 0  # capped at 4
         
-        for p in street_order:
-            if not active[p.name]:
-                continue
+        needs_action = {p.name: True for p in players if active[p.name] and not all_in[p.name]}
+        
+        while any(needs_action.values()):
+            street_order = sorted([p for p in players if active[p.name] and not all_in[p.name]], 
+                                  key=lambda p: pos_order.index(positions[p.name]))
             
-            to_call = current_bet - round_invested[p.name]
-            is_ip = positions[p.name] in ['BTN', 'CO']
-            is_agg = (p == opener) or (p == three_bettor)
+            acted_this_orbit = False
+            for p in street_order:
+                if not active[p.name] or not needs_action[p.name] or all_in[p.name]:
+                    continue
+                
+                to_call = min(current_bet - round_invested[p.name], stacks[p.name])
+                is_ip = positions[p.name] in ['BTN', 'CO']
+                is_agg = (p == opener) or (p == three_bettor)
+                num_opponents = len([x for x in players if active[x.name] and x != p])
+                
+                base = p.base_strategy if hasattr(p, 'base_strategy') else p.name
+                archetype = base if base in ['fish', 'nit', 'tag', 'lag', 'maniac'] else None
+                strategy = base if base not in ['fish', 'nit', 'tag', 'lag', 'maniac'] else None
+                
+                action, bet_size, _ = postflop_action(
+                    list(p.cards), board, pot, to_call, street_name, is_ip, is_agg,
+                    archetype=archetype, strategy=strategy, num_opponents=num_opponents
+                )
+                
+                needs_action[p.name] = False
+                acted_this_orbit = True
+                
+                if action == 'fold':
+                    active[p.name] = False
+                elif action == 'call':
+                    # Call limited by stack
+                    actual_call = min(to_call, stacks[p.name])
+                    round_invested[p.name] += actual_call
+                    invested[p.name] += actual_call
+                    stacks[p.name] -= actual_call
+                    pot += actual_call
+                    if stacks[p.name] <= 0:
+                        all_in[p.name] = True
+                elif action in ['bet', 'raise']:
+                    if bet_count < 4:  # Can still raise
+                        # Limit bet to remaining stack
+                        total_wanted = to_call + bet_size
+                        actual_add = min(total_wanted, stacks[p.name])
+                        round_invested[p.name] += actual_add
+                        invested[p.name] += actual_add
+                        stacks[p.name] -= actual_add
+                        pot += actual_add
+                        current_bet = round_invested[p.name]
+                        bet_count += 1
+                        if stacks[p.name] <= 0:
+                            all_in[p.name] = True
+                        # Everyone else needs to act again (if not all-in)
+                        for other in players:
+                            if active[other.name] and other != p and not all_in[other.name]:
+                                needs_action[other.name] = True
+                    else:
+                        # Betting capped - just call
+                        actual_call = min(to_call, stacks[p.name])
+                        round_invested[p.name] += actual_call
+                        invested[p.name] += actual_call
+                        stacks[p.name] -= actual_call
+                        pot += actual_call
+                        if stacks[p.name] <= 0:
+                            all_in[p.name] = True
             
-            # Count active opponents
-            num_opponents = len([x for x in active_players if x != p]) - 1
-            
-            # Determine archetype vs bot strategy
-            base = p.base_strategy if hasattr(p, 'base_strategy') else p.name
-            archetype = base if base in ['fish', 'nit', 'tag', 'lag'] else None
-            strategy = base if base in ['gpt3', 'gpt4', 'sonnet', 'kiro_optimal'] else None
-            
-            action, bet_size, _ = postflop_action(
-                list(p.cards), board, pot, to_call, street_name, is_ip, is_agg,
-                archetype=archetype, strategy=strategy, num_opponents=num_opponents
-            )
-            
-            if action == 'fold':
-                active[p.name] = False
-            elif action == 'call':
-                round_invested[p.name] += to_call
-                invested[p.name] += to_call
-                pot += to_call
-            elif action in ['bet', 'raise']:
-                round_invested[p.name] += to_call + bet_size
-                invested[p.name] += to_call + bet_size
-                pot += to_call + bet_size
-                current_bet = round_invested[p.name]
+            # Safety: if no one acted, we're done
+            if not acted_this_orbit:
+                break
+            # Safety: if only one active non-all-in player, stop betting
+            if len([p for p in players if active[p.name] and not all_in[p.name]]) <= 1:
+                break
     
     # Showdown
     active_players = [p for p in players if active[p.name]]
@@ -254,7 +308,7 @@ def run_simulation(num_hands=100000):
     """Run simulation on realistic 2NL tables."""
     random.seed(None)
     
-    bot_strategies = ['optimal_stats', 'value_lord', 'value_maniac', 'value_max', 'kiro_v2', 'kiro_optimal', 'kiro_lord', 'gpt4', 'sonnet_max']
+    bot_strategies = ['optimal_stats', 'value_lord', 'kiro_optimal', 'kiro_lord', 'sonnet']
     tables = get_table_configs()
     
     print(f"Testing {len(bot_strategies)} strategies")
