@@ -458,9 +458,9 @@ def main(min_bb=None, focus_strategy=None):
         
         # Postflop: spots strategy would fold
         # For saves: use hand profit (what we actually lost)
-        # For misses: use pot at decision (what we could have won at that point, not final result)
+        # For misses: use hand profit (what we actually won)
         post_saved = sum(abs(h['hand']['hero_profit']) for h in r['post_would_fold'] if h['hand']['hero_profit'] < 0)
-        post_missed = sum(h['situation']['pot'] + h['situation']['to_call'] for h in r['post_would_fold'] if h['hand']['hero_profit'] > 0)
+        post_missed = sum(h['hand']['hero_profit'] for h in r['post_would_fold'] if h['hand']['hero_profit'] > 0)
         
         net = (pf_saved - pf_missed) + (post_saved - post_missed)
         
