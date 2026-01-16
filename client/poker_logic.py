@@ -1421,11 +1421,19 @@ def _postflop_value_maniac(hole_cards, board, pot, to_call, street, strength, de
             # Pocket pair on paired board - differentiate over vs under
             if hand_info['two_pair_type'] == 'pocket_under_board':
                 # 66 on TT = weak, any Tx or 77+ beats us
-                if is_big_bet:
+                # Flop: call vs <=60% to see if villain has it
+                # Turn/River: fold vs any bet (villain likely has trips)
+                if street == 'flop' and pot_pct <= 0.6:
+                    return ('call', 0, f"{desc} - call flop (pocket under board)")
+                if street in ['turn', 'river'] or pot_pct > 0.5:
                     return ('fold', 0, f"{desc} - fold (pocket under board)")
                 return ('call', 0, f"{desc} - call (pocket under board)")
             if hand_info['two_pair_type'] == 'pocket_over_board':
-                # QQ on TT = only Tx beats us, fold to big bets (75%+ pot)
+                # QQ on TT = only Tx beats us
+                # Key insight: if WE bet and villain RAISES, they have trips
+                is_facing_raise = is_aggressor and to_call > 0
+                if street in ['turn', 'river'] and is_facing_raise:
+                    return ('fold', 0, f"{desc} - fold pocket over vs raise")
                 if street in ['turn', 'river'] and pot_pct > 0.75:
                     return ('fold', 0, f"{desc} - fold pocket over vs big bet")
                 return ('call', 0, f"{desc} - call (pocket over board)")
@@ -1607,11 +1615,19 @@ def _postflop_value_lord(hole_cards, board, pot, to_call, street, strength, desc
             # Pocket pair on paired board - differentiate over vs under
             if hand_info['two_pair_type'] == 'pocket_under_board':
                 # 66 on TT = weak, any Tx or 77+ beats us
-                if is_big_bet:
+                # Flop: call vs <=60% to see if villain has it
+                # Turn/River: fold vs any bet (villain likely has trips)
+                if street == 'flop' and pot_pct <= 0.6:
+                    return ('call', 0, f"{desc} - call flop (pocket under board)")
+                if street in ['turn', 'river'] or pot_pct > 0.5:
                     return ('fold', 0, f"{desc} - fold (pocket under board)")
                 return ('call', 0, f"{desc} - call (pocket under board)")
             if hand_info['two_pair_type'] == 'pocket_over_board':
-                # QQ on TT = only Tx beats us, fold to big bets (75%+ pot)
+                # QQ on TT = only Tx beats us
+                # Key insight: if WE bet and villain RAISES, they have trips
+                is_facing_raise = is_aggressor and to_call > 0
+                if street in ['turn', 'river'] and is_facing_raise:
+                    return ('fold', 0, f"{desc} - fold pocket over vs raise")
                 if street in ['turn', 'river'] and pot_pct > 0.75:
                     return ('fold', 0, f"{desc} - fold pocket over vs big bet")
                 return ('call', 0, f"{desc} - call (pocket over board)")
