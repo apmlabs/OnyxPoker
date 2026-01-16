@@ -64,7 +64,7 @@ def simulate_hand(players, dealer_pos):
                 action_order.append(p)
                 break
     
-    # No limpers in 2NL Blitz (0% from 407-hand analysis)
+    # Real 2NL has 4.3% limps (from 1036-hand analysis)
     
     for p in action_order:
         if not active[p.name]:
@@ -77,7 +77,12 @@ def simulate_hand(players, dealer_pos):
             facing = 'none'
             action, _ = preflop_action(p.hand_str, pos, p.strategy, facing)
             
-            # Fish limp removed - real 2NL Blitz has 0% limps (from 407 hand analysis)
+            # Fish limp ~8% of hands they play (4.3% of total actions)
+            if base == 'fish' and action == 'raise' and random.random() < 0.15:
+                # Limp instead of raise with weaker hands
+                invested[p.name] = 1.0  # 1 BB limp
+                p.stats['vpip'] += 1
+                continue  # Don't set opener, allow others to act
             
             if action == 'raise':
                 opener = p
@@ -105,7 +110,7 @@ def simulate_hand(players, dealer_pos):
             else:
                 active[p.name] = False
     
-    # Limpers removed - real 2NL Blitz has 0% limps
+    # Limpers handled above (fish limp ~15% of their opens)
     
     # Handle 3-bet response
     if three_bettor and opener and active[opener.name]:
