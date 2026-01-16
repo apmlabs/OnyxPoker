@@ -430,11 +430,12 @@ def main(min_bb=None, focus_strategy=None):
                 
                 # Only count FIRST postflop fold (if fold flop, won't see turn)
                 for sit in situations:
-                    strat_action, _ = evaluate_postflop(hand, sit, strategy)
+                    strat_action, reason = evaluate_postflop(hand, sit, strategy)
                     if strat_action == 'fold' and sit['hero_action'] != 'fold':
                         results[strategy]['post_would_fold'].append({
                             'hand': hand,
-                            'situation': sit
+                            'situation': sit,
+                            'reason': reason
                         })
                         break  # Only count first fold per hand
     
@@ -522,7 +523,21 @@ def main(min_bb=None, focus_strategy=None):
         h = p['hand']
         s = p['situation']
         board = ' '.join(s['board'])
-        print(f"    {h['hand_str']:<6} on {board:<15} {s['street']:<5} pot={s['pot']:.2f} call={s['to_call']:.2f} -> saved {abs(h['profit_bb']):.1f} BB")
+        pot_pct = s['to_call'] / (s['pot'] + s['to_call']) if s['pot'] > 0 else 0
+        reason = p.get('reason', '')
+        print(f"    {h['hand_str']:<6} on {board:<18} {s['street']:<5} {pot_pct:>3.0%} pot -> saved {abs(h['profit_bb']):.1f} BB")
+        print(f"           Reason: {reason}")
+    
+    post_misses.sort(key=lambda x: -x['hand']['profit_bb'])
+    print(f"\n  BIGGEST POSTFLOP MISSES:")
+    for p in post_misses[:10]:
+        h = p['hand']
+        s = p['situation']
+        board = ' '.join(s['board'])
+        pot_pct = s['to_call'] / (s['pot'] + s['to_call']) if s['pot'] > 0 else 0
+        reason = p.get('reason', '')
+        print(f"    {h['hand_str']:<6} on {board:<18} {s['street']:<5} {pot_pct:>3.0%} pot -> missed {h['profit_bb']:.1f} BB")
+        print(f"           Reason: {reason}")
     
     # Strategy comparison on key hands
     print()
