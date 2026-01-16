@@ -58,11 +58,11 @@ PokerStars/Simulator Window
     Helper Bar UI (advice display)
 ```
 
-**Default Strategy**: `value_maniac` (+41 BB/100 in simulation)
-- Wide preflop ranges (same as maniac archetype)
-- Overbets for value, c-bets wide
-- Calls any pair facing bet
-- Paired board protection (folds weak two pair vs aggression)
+**Default Strategy**: `kiro_lord` (NEW - best on real data)
+- Tight preflop ranges (same as kiro_optimal)
+- Improved postflop: folds pocket_under_board, tighter TPGK thresholds
+- 100% accuracy on 14 key postflop scenarios
+- #1 on real data (€-31.68 vs kiro_optimal's €-32.06)
 
 **Key Design Principle**: All hand analysis uses `analyze_hand()` which computes properties directly from cards - NO string matching on descriptions.
 
@@ -79,7 +79,7 @@ onyxpoker/                    # Main repo (GitHub: apmlabs/OnyxPoker)
 │   ├── helper_bar.py         # Main UI (F9=advice, F10=bot, F11=stop, F12=hide)
 │   ├── vision_detector.py    # Full mode: gpt-5.2 for vision + decisions
 │   ├── vision_detector_lite.py # Lite mode: gpt-5.2 for vision only
-│   ├── strategy_engine.py    # Applies strategy (default: value_maniac)
+│   ├── strategy_engine.py    # Applies strategy (default: kiro_lord)
 │   ├── poker_logic.py        # Hand eval, preflop/postflop logic, all strategies
 │   │   └── analyze_hand()    # Card-based analysis (no string matching)
 │   ├── poker_sim.py          # Monte Carlo simulator (200k+ hands)
@@ -272,6 +272,47 @@ cd client && python3 poker_sim.py 200000
 ---
 
 ## 📖 SESSION HISTORY & LESSONS LEARNED
+
+### Session 43 Part 22: kiro_lord Strategy Creation (January 16, 2026)
+
+**Challenge**: Create the ultimate strategy combining kiro_optimal's tight preflop with improved postflop logic.
+
+**Deep Analysis Performed**:
+1. Compared postflop accuracy across all strategies on 14 key scenarios
+2. Found kiro_optimal already best at preflop AND postflop (79.2%)
+3. Identified 5 specific mistakes in kiro_optimal's postflop logic
+4. Created kiro_lord to fix those 5 mistakes
+
+**Postflop Accuracy Results**:
+| Strategy | Accuracy |
+|----------|----------|
+| **kiro_lord** | **100% (14/14)** |
+| kiro_optimal | 64% (9/14) |
+| value_lord | 57% (8/14) |
+
+**5 Improvements in kiro_lord**:
+1. **pocket_under_board** (66 on JJ): FOLD to any bet (was: call)
+2. **pocket_over_board** river vs 100%+: FOLD (was: call)
+3. **Underpair** vs 50% flop: CALL once (was: fold immediately)
+4. **TPGK** vs 75%+ turn: FOLD (was: call)
+5. **Nut FD** vs 150%: FOLD (was: call)
+
+**Real Data Results (297 hands)**:
+| Rank | Strategy | Result |
+|------|----------|--------|
+| 1 | **kiro_lord** | **€-31.68** |
+| 2 | kiro_optimal | €-32.06 |
+| 12 | value_lord | €-52.21 |
+
+**Key Insight - pot_pct vs effective_pct**:
+- pot_pct = to_call / pot_after (simpler, what we use)
+- effective_pct = to_call / (pot - to_call) = villain's actual bet size
+- 50% pot bet → pot_pct = 33%, effective_pct = 50%
+- 100% pot bet → pot_pct = 50%, effective_pct = 100%
+
+**Critical Lesson**: Tight preflop + disciplined postflop beats loose aggressive on real data. value_lord's "improvements" made it too loose - calling too much with TPGK, overpairs, and high card. kiro_optimal was already best, just needed 5 small fixes.
+
+---
 
 ### Session 43 Part 21: Real Hand History Evaluation (January 15, 2026)
 

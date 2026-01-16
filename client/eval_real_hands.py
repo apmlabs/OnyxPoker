@@ -12,7 +12,7 @@ sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 from poker_logic import preflop_action, postflop_action, STRATEGIES, analyze_hand
 
 ALL_STRATEGIES = [
-    'value_lord', 'value_maniac', 'optimal_stats', 'kiro_v2', 'kiro_optimal',
+    'kiro_lord', 'value_lord', 'value_maniac', 'optimal_stats', 'kiro_v2', 'kiro_optimal',
     'kiro5', 'sonnet_max', 'sonnet', 'gpt4', 'gpt3', '2nl_exploit', 'aggressive'
 ]
 
@@ -178,8 +178,8 @@ def parse_hand(text, bb):
                             'amount': amt
                         })
         
-        # Won
-        if 'idealistslp collected' in line:
+        # Won - only count 'from pot' to avoid double-counting with summary line
+        if 'idealistslp collected €' in line and 'from pot' in line:
             m = re.search(r'€([\d.]+)', line)
             if m:
                 hand['hero_won'] += float(m.group(1))
@@ -368,39 +368,47 @@ def main():
                 # Strategy would play, hero folded
                 results[strategy]['pf_would_play'].append(hand)
         
-        # Postflop evaluation
+        # Postflop evaluation - only for hands strategy would PLAY preflop
+        # (if strategy folds preflop, it never sees postflop)
         if hand['hero_preflop_action'] and hand['hero_preflop_action'] != 'fold':
             situations = get_postflop_situations(hand)
-            for sit in situations:
-                for strategy in ALL_STRATEGIES:
+            for strategy in ALL_STRATEGIES:
+                # Skip if strategy would fold preflop (already counted above)
+                strat_pf_action, _ = evaluate_preflop(hand, strategy)
+                if strat_pf_action == 'fold':
+                    continue
+                
+                # Only count FIRST postflop fold (if fold flop, won't see turn)
+                for sit in situations:
                     strat_action, _ = evaluate_postflop(hand, sit, strategy)
                     if strat_action == 'fold' and sit['hero_action'] != 'fold':
                         results[strategy]['post_would_fold'].append({
                             'hand': hand,
                             'situation': sit
                         })
+                        break  # Only count first fold per hand
     
     # Calculate impact
-    print("=" * 130)
-    print("STRATEGY IMPACT ANALYSIS")
-    print("=" * 130)
+    print("=" * 100)
+    print("STRATEGY IMPACT ANALYSIS (No Double-Counting)")
+    print("=" * 100)
     print()
     print("This shows what would happen if you followed each strategy instead of actual play:")
     print()
-    print(f"{'Strategy':<15} {'PF Folds':>8} {'Saved BB':>10} {'Missed BB':>10} {'Post Folds':>10} {'Post Saved':>10} {'Post Miss':>10} {'NET IMPACT':>12}")
-    print("-" * 130)
+    print(f"{'Strategy':<15} {'PF Folds':>8} {'PF Save€':>10} {'PF Miss€':>10} {'Post Folds':>10} {'Post Save€':>10} {'Post Miss€':>10} {'NET €':>10}")
+    print("-" * 100)
     
     ranked = []
     for strategy in ALL_STRATEGIES:
         r = results[strategy]
         
         # Preflop: hands strategy would fold that hero played
-        pf_saved = sum(abs(h['profit_bb']) for h in r['pf_would_fold'] if h['profit_bb'] < 0)
-        pf_missed = sum(h['profit_bb'] for h in r['pf_would_fold'] if h['profit_bb'] > 0)
+        pf_saved = sum(abs(h['hero_profit']) for h in r['pf_would_fold'] if h['hero_profit'] < 0)
+        pf_missed = sum(h['hero_profit'] for h in r['pf_would_fold'] if h['hero_profit'] > 0)
         
-        # Postflop: spots strategy would fold
-        post_saved = sum(abs(h['hand']['profit_bb']) for h in r['post_would_fold'] if h['hand']['profit_bb'] < 0)
-        post_missed = sum(h['hand']['profit_bb'] for h in r['post_would_fold'] if h['hand']['profit_bb'] > 0)
+        # Postflop: spots strategy would fold (already filtered for no overlap)
+        post_saved = sum(abs(h['hand']['hero_profit']) for h in r['post_would_fold'] if h['hand']['hero_profit'] < 0)
+        post_missed = sum(h['hand']['hero_profit'] for h in r['post_would_fold'] if h['hand']['hero_profit'] > 0)
         
         net = (pf_saved - pf_missed) + (post_saved - post_missed)
         
@@ -418,8 +426,8 @@ def main():
     ranked.sort(key=lambda x: x['net'], reverse=True)
     
     for r in ranked:
-        print(f"{r['strategy']:<15} {r['pf_folds']:>8} {r['pf_saved']:>10.1f} {r['pf_missed']:>10.1f} "
-              f"{r['post_folds']:>10} {r['post_saved']:>10.1f} {r['post_missed']:>10.1f} {r['net']:>+12.1f}")
+        print(f"{r['strategy']:<15} {r['pf_folds']:>8} {r['pf_saved']:>10.2f} {r['pf_missed']:>10.2f} "
+              f"{r['post_folds']:>10} {r['post_saved']:>10.2f} {r['post_missed']:>10.2f} {r['net']:>+10.2f}")
     
     # Top strategy details
     top = ranked[0]['strategy']

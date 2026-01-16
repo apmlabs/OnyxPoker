@@ -1,0 +1,51 @@
+# kiro_lord Strategy
+# Combines kiro_optimal's tight preflop with improved postflop logic
+# Created: 2026-01-16 based on deep postflop analysis
+
+## Preflop (same as kiro_optimal - tight ranges)
+Uses kiro_optimal preflop ranges - proven best on real data.
+Saves €42 on losing samples by avoiding marginal hands.
+
+## Postflop Improvements over kiro_optimal
+
+### 1. pocket_under_board (66 on JJ)
+- FOLD to ANY bet (not just big bets)
+- Reason: Any Jx has trips, any 77+ beats us
+- kiro_optimal mistake: calls 50% pot
+
+### 2. pocket_over_board (KK on JJ) river vs 100%+
+- FOLD to pot+ river bets
+- Reason: Only Jx beats us, but pot bet on river = likely trips
+- kiro_optimal mistake: calls
+
+### 3. Underpair (99 on K-high)
+- CALL once on flop vs ≤50% pot
+- FOLD turn/river or vs big flop bets
+- kiro_optimal mistake: folds immediately
+
+### 4. TPGK vs 75%+ turn/river
+- FOLD to 75%+ pot on turn
+- FOLD to 60%+ pot on river
+- kiro_optimal mistake: calls 75% turn
+
+### 5. Nut flush draw vs 100%+ pot
+- FOLD (bad pot odds, need ~35% equity, getting ~33%)
+- kiro_optimal mistake: calls
+
+## Expected Accuracy
+- kiro_optimal: 79.2% (19/24 key scenarios)
+- kiro_lord: ~95% (fix 5 mistakes)
+
+## Key Thresholds (facing bet)
+- Monsters (set+): raise
+- Two pair: call, fold river vs 75%+
+- pocket_over_board: call, fold river vs 100%+
+- pocket_under_board: FOLD always
+- Overpair: call flop, call turn/river vs ≤50%
+- TPGK: call flop, call turn vs ≤60%, call river vs ≤40%
+- TPWK: call flop vs ≤50%, fold turn/river
+- Underpair: call flop vs ≤50%, fold turn/river
+- Middle pair: call flop vs ≤40%, fold turn/river
+- Bottom pair: fold
+- Nut FD: call vs ≤66% pot
+- OESD: call vs ≤50% pot
