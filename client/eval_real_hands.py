@@ -11,7 +11,7 @@ sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 
 from poker_logic import preflop_action, postflop_action, STRATEGIES, analyze_hand
 
-ALL_STRATEGIES = ['kiro_lord', 'kiro_optimal', 'sonnet', 'value_lord', 'fish', 'nit', 'tag', 'lag', 'maniac']
+ALL_STRATEGIES = ['kiro_lord', 'kiro_optimal', 'sonnet', 'value_lord', 'value_maniac', 'fish', 'nit', 'tag', 'lag', 'maniac']
 
 def hand_to_str(cards):
     """Convert ['Ah', 'Kd'] to 'AKo'"""
@@ -441,9 +441,11 @@ def main():
         pf_saved = sum(abs(h['hero_profit']) for h in r['pf_would_fold'] if h['hero_profit'] < 0)
         pf_missed = sum(h['hero_profit'] for h in r['pf_would_fold'] if h['hero_profit'] > 0)
         
-        # Postflop: spots strategy would fold (already filtered for no overlap)
+        # Postflop: spots strategy would fold
+        # For saves: use hand profit (what we actually lost)
+        # For misses: use pot at decision (what we could have won at that point, not final result)
         post_saved = sum(abs(h['hand']['hero_profit']) for h in r['post_would_fold'] if h['hand']['hero_profit'] < 0)
-        post_missed = sum(h['hand']['hero_profit'] for h in r['post_would_fold'] if h['hand']['hero_profit'] > 0)
+        post_missed = sum(h['situation']['pot'] + h['situation']['to_call'] for h in r['post_would_fold'] if h['hand']['hero_profit'] > 0)
         
         net = (pf_saved - pf_missed) + (post_saved - post_missed)
         

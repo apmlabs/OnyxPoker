@@ -1478,9 +1478,10 @@ def _postflop_value_maniac(hole_cards, board, pot, to_call, street, strength, de
                     return ('fold', 0, f"{desc} - fold underpair vs overbet")
             
             # Fold weak pairs (bottom/middle) to overbets (100%+ pot)
-            if pot_pct > 1.0 and strength <= 2 and not hand_info['has_top_pair']:
+            if pot_pct > 1.0 and strength <= 2 and not hand_info['has_top_pair'] and not hand_info['is_overpair']:
                 return ('fold', 0, f"{desc} - fold weak pair vs overbet")
-            if pot_odds > 0.5 and not has_strong_draw:
+            # Fold weak pairs to all-in (but NOT overpairs)
+            if pot_odds > 0.5 and not has_strong_draw and not hand_info['is_overpair']:
                 return ('fold', 0, f"{desc} - fold pair vs all-in")
             return ('call', 0, f"{desc} - call pair")
         # Draw calling with conservative thresholds
@@ -1696,9 +1697,9 @@ def _postflop_value_lord(hole_cards, board, pot, to_call, street, strength, desc
                 return ('fold', 0, f"{desc} - fold bottom pair")
             
             # Generic pair logic (overpairs, pocket pairs)
-            if pot_pct > 1.0 and strength <= 2:
+            if pot_pct > 1.0 and strength <= 2 and not hand_info['is_overpair']:
                 return ('fold', 0, f"{desc} - fold weak pair vs overbet")
-            if pot_odds > 0.5 and not has_strong_draw:
+            if pot_odds > 0.5 and not has_strong_draw and not hand_info['is_overpair']:
                 return ('fold', 0, f"{desc} - fold pair vs all-in")
             return ('call', 0, f"{desc} - call pair")
         if has_any_draw and street != 'river':
