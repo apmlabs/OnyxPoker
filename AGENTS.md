@@ -300,6 +300,40 @@ cd client && python3 poker_sim.py 200000
 
 ## 📖 SESSION HISTORY & LESSONS LEARNED
 
+### Session 47: Check-Raise Detection (January 16, 2026)
+
+**Added villain check-raise detection to value_lord strategy.**
+
+**Problem Identified:**
+- Analyzed 28 losing hands (1244.1 BB) that value_lord plays through
+- Found 12 hands (613.8 BB) involved villain raises (check-raises)
+- At 2NL, villain check-raise = monster hand, not bluff
+
+**Implementation:**
+- Track `last_hero_action` per street across F9 presses
+- Detect villain raise: hero already acted (bet/raise/check) AND now faces to_call > 0
+- Pass `is_facing_raise` through helper_bar → strategy_engine → poker_logic
+
+**New Folds in value_lord:**
+- Two pair (both_cards_hit) vs check-raise → fold (likely set+)
+- Pocket over board (AA on 77) vs check-raise → fold (likely trips)
+- Overpair vs check-raise on river → fold (likely trips+)
+
+**Example Hands Saved:**
+- AJs (103 BB): Two pair vs full house, villain check-raise → 4-bet all-in on turn
+- AA (100 BB): Overpair vs trips, villain check-raise all-in on river
+
+**Analysis Tool Renamed:**
+- `analyze_hands.py` → `analyse_real_logs.py` (avoid confusion with `analyze_hand()`)
+- Enhanced to show villain raise detection in unsaved losses
+- Categorizes losses into "VILLAIN RAISED" vs "OTHER (coolers)"
+
+**Test Results:**
+- audit_strategies.py: 30/30 PASS
+- NET IMPACT on big hands: +158.8 BB (saves 248.8, misses 90.0)
+
+---
+
 ### Session 46: Strategy Evaluation & Default Switch (January 16, 2026)
 
 **Fixed eval_real_hands.py postflop miss calculation. Ran PokerKit simulations. Switched default to value_lord.**

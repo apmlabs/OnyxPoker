@@ -1,14 +1,55 @@
 # OnyxPoker - Status Tracking
 
-**Last Updated**: January 16, 2026 20:41 UTC
+**Last Updated**: January 16, 2026 23:20 UTC
 
-## 🎉 SESSION 46: Strategy Evaluation & Default Switch 🎉
+## 🎉 SESSION 47: Check-Raise Detection 🎉
 
-**Session 46**: Fixed eval_real_hands.py postflop miss calculation. Ran PokerKit simulations. Switched default to value_lord.
+**Session 47**: Added villain check-raise detection to value_lord. Renamed analyze_hands.py to analyse_real_logs.py.
 
 ---
 
-## Current Status: SESSION 46 - Strategy Evaluation & Default Switch
+## Current Status: SESSION 47 - Check-Raise Detection
+
+**GOAL**: Detect villain check-raises and fold appropriately with two pair/overpair.
+
+### Implementation
+- Track `last_hero_action` per street across F9 presses in helper_bar.py
+- Detect villain raise: hero already acted AND now faces to_call > 0
+- Pass `is_facing_raise` through strategy_engine to poker_logic
+
+### New Folds in value_lord
+| Hand Type | vs Check-Raise | Reason |
+|-----------|----------------|--------|
+| Two pair (both_cards_hit) | FOLD | Likely set+ |
+| Pocket over board (AA on 77) | FOLD | Likely trips |
+| Overpair on river | FOLD | Likely trips+ |
+
+### Analysis Results (hands >= 10 BB)
+| Category | Hands | BB |
+|----------|-------|-----|
+| SAVES (folds losing) | 11 | 248.8 |
+| MISSES (folds winning) | 7 | 90.0 |
+| **NET IMPACT** | - | **+158.8** |
+
+### Unsaved Losses Breakdown (28 hands, 1244.1 BB)
+| Category | Hands | BB |
+|----------|-------|-----|
+| VILLAIN RAISED (check-raise helps) | 12 | 613.8 |
+| OTHER (coolers/unavoidable) | 16 | 630.3 |
+
+### Files Changed
+- `helper_bar.py` - Track hero action, detect villain raise
+- `strategy_engine.py` - Pass is_facing_raise to postflop_action
+- `poker_logic.py` - Add is_facing_raise param, fold logic
+- `analyze_hands.py` → `analyse_real_logs.py` - Renamed + enhanced
+
+### Test Results
+- audit_strategies.py: 30/30 PASS
+- test_strategy_engine.py: 48/55 (unchanged)
+
+---
+
+## Previous: SESSION 46 - Strategy Evaluation & Default Switch
 
 **GOAL**: Fix eval_real_hands.py, run PokerKit simulations, choose default strategy.
 
