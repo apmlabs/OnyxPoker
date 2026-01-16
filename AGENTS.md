@@ -75,30 +75,38 @@ onyxpoker/                    # Main repo (GitHub: apmlabs/OnyxPoker)
 ├── AGENTS.md                 # Agent memory (NEVER DELETE)
 ├── AmazonQ.md                # Status tracking (NEVER DELETE)
 ├── README.md                 # Quick start (NEVER DELETE)
+├── idealistslp_extracted/    # Real PokerStars hand histories (1209 hands with €€€)
+│   └── HH*.txt               # Raw hand history files from live play
 ├── client/
 │   ├── helper_bar.py         # Main UI (F9=advice, F10=bot, F11=stop, F12=hide)
 │   ├── vision_detector.py    # Full mode: gpt-5.2 for vision + decisions
 │   ├── vision_detector_lite.py # Lite mode: gpt-5.2 for vision only
 │   ├── strategy_engine.py    # Applies strategy (default: kiro_lord)
-│   ├── poker_logic.py        # Hand eval, preflop/postflop logic, all strategies
-│   │   └── analyze_hand()    # Card-based analysis (no string matching)
+│   ├── poker_logic.py        # Hand eval, preflop/postflop logic, strategies + archetypes
 │   ├── poker_sim.py          # Monte Carlo simulator (200k+ hands)
-│   ├── audit_strategies.py   # Strategy file vs code verification (21 tests)
-│   ├── test_strategy_engine.py # Live code path tests (55 scenarios)
-│   ├── test_postflop.py      # Edge case tester (67 scenarios)
-│   ├── eval_strategies.py    # Real hand evaluator (1000+ hands from logs)
-│   ├── replay_logs.py        # Replay session logs through strategies
-│   ├── test_screenshots.py   # Offline vision testing
-│   ├── send_logs.py          # Upload logs to server
-│   ├── requirements.txt
+│   │
+│   │ # === EVALUATION ===
+│   ├── eval_real_hands.py    # Evaluates on idealistslp (actual €€€ results)
+│   ├── eval_strategies.py    # Evaluates on session logs (good/bad folds)
+│   ├── eval_deep.py          # Deep stats (VPIP/PFR/AF)
+│   │
+│   │ # === ANALYSIS ===
+│   ├── analyze_table_composition.py  # Classifies players into archetypes
+│   ├── analyze_archetype_behavior.py # Real vs simulated postflop behavior
+│   ├── analyze_bet_sizes.py          # Real bet sizes by archetype
+│   │
+│   │ # === TESTS ===
+│   ├── audit_strategies.py   # Strategy file vs code (21 tests)
+│   ├── test_strategy_engine.py # Live code path (55 tests)
+│   ├── test_postflop.py      # Edge cases (67 tests)
+│   ├── test_poker_rules.py   # Poker rules (24 tests)
+│   │
 │   └── pokerstrategy_*       # Strategy definition files (16 files)
 ├── server/
 │   ├── kiro_analyze.py       # Flask server on port 5001
-│   ├── requirements.txt
-│   └── uploads/              # Screenshots and logs (gitignored)
+│   └── uploads/              # Session logs + screenshots
 └── docs/
-    ├── DEPLOYMENT.md         # Setup guide
-    └── ANALYSIS_NOTES.md     # GPT decision analysis
+    └── DEPLOYMENT.md         # Setup guide
 ```
 
 ## 🖥️ CLIENT-SERVER ARCHITECTURE
@@ -291,6 +299,12 @@ cd client && python3 poker_sim.py 200000
 ---
 
 ## 📖 SESSION HISTORY & LESSONS LEARNED
+
+### Session 43 Part 25: Archetype Calibration (January 16, 2026)
+
+**Calibrated archetypes to match real postflop behavior. Simulation now +32 BB/100 (was +88).**
+
+---
 
 ### Session 43 Part 24: Real Table Composition Analysis (January 16, 2026)
 

@@ -1,53 +1,57 @@
 # OnyxPoker - Status Tracking
 
-**Last Updated**: January 16, 2026 14:48 UTC
+**Last Updated**: January 16, 2026 15:38 UTC
 
-## 🎉 MILESTONE: POKER RULES VERIFIED! 🎉
+## 🎉 MILESTONE: ARCHETYPES CALIBRATED! 🎉
 
-**Session 43 Part 23**: Deep verification that simulation follows actual Texas Hold'em rules. 24/24 tests passed.
+**Session 43 Part 25**: Simulated archetypes now behave like real players. Win rates dropped from +88 to +32 BB/100 - much more realistic.
 
 ---
 
-## Current Status: SESSION 43 Part 24 - Real Table Composition Analysis ✅
+## Current Status: SESSION 43 Part 25 - Archetype Behavior Calibration ✅
 
-**MAJOR FINDING**: Real 5NL tables are MUCH tougher than simulation assumed!
+**GOAL**: Make simulated archetypes match real player behavior (not just table composition).
 
-### Real vs Simulation Comparison
-| Archetype | Real 5NL | Old Sim | Difference |
-|-----------|----------|---------|------------|
-| Fish | **8.5%** | 60% | **-51.5%** |
-| Nit | 30.9% | 25% | +5.9% |
-| TAG | **38.6%** | 15% | **+23.6%** |
-| LAG | **22.0%** | 0% | **+22.0%** |
-| Maniac | 0% | 0% | same |
+### Calibration Results
+| Archetype | Metric | Real | Sim | Status |
+|-----------|--------|------|-----|--------|
+| Fish | Call% | 14.1% | 14.1% | ✅ |
+| Nit | Fold% | 15.3% | 14.6% | ✅ |
+| TAG | AF | 1.77 | 1.76 | ✅ |
+| LAG | Fold% | 14.6% | 14.2% | ✅ |
 
-### Key Insight
-Real 5NL is 60% aggressive players (TAG + LAG), only 8.5% fish!
-
-### Updated Simulation Results (100k hands, realistic tables)
+### Simulation Results (200k hands, calibrated archetypes)
 | Rank | Strategy | BB/100 |
 |------|----------|--------|
-| 1 | value_lord | +53.62 |
-| 2 | sonnet | +23.64 |
-| 3 | kiro_optimal | +17.87 |
-| 4 | kiro_lord | +14.64 |
-| 5 | optimal_stats | +10.39 |
+| 1 | value_lord | +32.14 |
+| 2 | sonnet | +14.46 |
+| 3 | kiro_optimal | +6.22 |
+| 4 | kiro_lord | +5.21 |
+| 5 | optimal_stats | +1.64 |
 
-### Files Created/Modified
-- `analyze_table_composition.py` - NEW: Analyzes real hand histories for player archetypes
-- `poker_sim.py` - Updated table composition to match real data
+### Real Hand Evaluation (eval_strategies.py)
+| Rank | Strategy | Est BB/100 |
+|------|----------|-----------|
+| 1 | value_lord | +21.9 |
+| 2 | sonnet | +20.0 |
+| 3 | kiro_optimal | +19.4 |
+| 4 | kiro_lord | +18.6 |
+
+### Key Changes
+- Archetypes now fold/call at realistic rates
+- Was: calling 30-38%, folding 11-19%
+- Now: calling 13-18%, folding 14-26%
+- Bet sizes increased to 54-68% pot (was 40-55%)
+
+### Files Modified
+- `poker_logic.py` - Recalibrated fish, nit, tag, lag archetypes
+- `analyze_archetype_behavior.py` - Now runs actual simulation
 
 ---
 
-## Previous: SESSION 43 Part 23 - Poker Rules Verification ✅
+## Previous: SESSION 43 Part 24 - Real Table Composition Analysis ✅
 
-**VERIFIED**: Simulation correctly implements Texas Hold'em rules.
-
-### Test Results: 24/24 PASSED
-
-**Hand Evaluation (8 tests):**
-- Hand Rankings (Royal→High Card)
-- Hand Comparison (higher beats lower)
+**MAJOR FINDING**: Real 5NL tables are MUCH tougher than simulation assumed!
 - Kicker Comparison
 - Special Straights (wheel, broadway)
 - Flush Detection
