@@ -376,7 +376,7 @@ def print_comparison(strategy_name, preflop, postflop):
         print("           This profile typically loses money long-term.")
 
 def main():
-    strategies = sys.argv[1:] if len(sys.argv) > 1 else ['optimal_stats', 'value_lord', 'value_maniac', 'sonnet', 'gpt4', 'kiro_v2']
+    strategies = sys.argv[1:] if len(sys.argv) > 1 else ['kiro_lord', 'kiro_optimal', 'sonnet', 'value_lord']
     
     print("\n" + "="*70)
     print("DEEP STRATEGY EVALUATION - ALL FEASIBLE STATS")

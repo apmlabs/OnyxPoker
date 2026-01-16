@@ -54,67 +54,42 @@ def main():
     results.append(test_postflop('value_lord', [('K','s'),('K','d')], [('J','h'),('J','d'),('2','c')], 1.0, 0, 'flop', 'bet', 'KK on JJ - value bet'))
     results.append(test_postflop('value_lord', [('6','s'),('6','d')], [('J','h'),('J','d'),('8','c')], 1.0, 0.5, 'flop', 'fold', '66 on JJ8 facing 50% - fold'))
     
-    # ========== VALUE_MANIAC TESTS ==========
-    print("\n--- VALUE_MANIAC STRATEGY ---")
-    print("Wide ranges, overbets, paired board protection")
+    # ========== KIRO_LORD TESTS ==========
+    print("\n--- KIRO_LORD STRATEGY ---")
+    print("kiro_optimal preflop + 5 postflop improvements")
     
-    # Preflop - wide ranges
-    results.append(test_preflop('value_maniac', 'A5s', 'BTN', 'none', 'raise', 'Wide open BTN'))
-    results.append(test_preflop('value_maniac', '43s', 'BTN', 'none', 'raise', 'Very wide BTN'))
-    results.append(test_preflop('value_maniac', 'K8s', 'BTN', 'none', 'raise', 'K8s open BTN'))
-    results.append(test_preflop('value_maniac', 'J7s', 'BTN', 'none', 'raise', 'J7s open BTN'))
+    # Preflop - tight ranges (same as kiro_optimal)
+    results.append(test_preflop('kiro_lord', 'AKs', 'UTG', 'none', 'raise', 'AKs open UTG'))
+    results.append(test_preflop('kiro_lord', 'JTs', 'BTN', 'none', 'raise', 'JTs open BTN'))
+    results.append(test_preflop('kiro_lord', '72o', 'BTN', 'none', 'fold', '72o fold BTN'))
     
-    # Postflop - value betting
-    results.append(test_postflop('value_maniac', [('A','s'),('A','d')], [('K','h'),('7','d'),('2','c')], 1.0, 0, 'flop', 'bet', 'AA overpair - value bet'))
-    results.append(test_postflop('value_maniac', [('K','s'),('Q','d')], [('K','h'),('7','d'),('2','c')], 1.0, 0, 'flop', 'bet', 'Top pair - value bet'))
+    # Postflop - pocket_under_board FOLD (improvement #1)
+    results.append(test_postflop('kiro_lord', [('6','s'),('6','d')], [('J','h'),('J','d'),('8','c')], 1.0, 0.3, 'flop', 'fold', '66 on JJ8 - fold pocket_under_board'))
     
-    # Paired board - KK on JJ (KK > JJ = strong)
-    results.append(test_postflop('value_maniac', [('K','s'),('K','d')], [('J','h'),('J','d'),('2','c')], 1.0, 0, 'flop', 'bet', 'KK on JJ - value bet (KK > JJ)'))
-    results.append(test_postflop('value_maniac', [('K','s'),('K','d')], [('J','h'),('J','d'),('2','c')], 1.0, 0.5, 'flop', 'call', 'KK on JJ facing bet - call (pocket over board, only Jx beats us)'))
+    # Postflop - pocket_over_board river vs 100%+ FOLD (improvement #2)
+    results.append(test_postflop('kiro_lord', [('K','s'),('K','d')], [('J','h'),('J','d'),('2','c'),('5','s'),('3','h')], 1.0, 0.55, 'river', 'fold', 'KK on JJ river vs 100%+ - fold'))
     
-    # Paired board - 66 on JJ (66 < JJ = weak)
-    results.append(test_postflop('value_maniac', [('6','s'),('6','d')], [('J','h'),('J','d'),('8','c')], 1.0, 0.5, 'flop', 'fold', '66 on JJ8 facing 50% - fold (66 < JJ)'))
-    results.append(test_postflop('value_maniac', [('6','s'),('6','d')], [('J','h'),('J','d'),('8','c')], 1.0, 0.3, 'flop', 'call', '66 on JJ8 facing 30% - call small'))
+    # Postflop - underpair vs 50% flop CALL once (improvement #3)
+    results.append(test_postflop('kiro_lord', [('J','s'),('J','d')], [('Q','h'),('4','d'),('7','c')], 1.0, 0.35, 'flop', 'call', 'JJ underpair vs 50% flop - call once'))
     
-    # Two pair (both cards hit)
-    results.append(test_postflop('value_maniac', [('A','s'),('7','d')], [('A','h'),('7','c'),('2','c')], 1.0, 0, 'flop', 'bet', 'A7 on A72 - value bet two pair'))
+    # Postflop - TPGK vs 75%+ turn FOLD (improvement #4)
+    results.append(test_postflop('kiro_lord', [('A','s'),('K','d')], [('A','h'),('7','c'),('2','d'),('5','s')], 1.0, 0.5, 'turn', 'fold', 'TPGK vs 75%+ turn - fold'))
     
-    # Facing bet - call pairs
-    results.append(test_postflop('value_maniac', [('K','s'),('K','d')], [('A','h'),('7','d'),('2','c')], 1.0, 0.5, 'flop', 'call', 'KK underpair to ace - call'))
-    results.append(test_postflop('value_maniac', [('5','s'),('5','d')], [('A','h'),('K','d'),('Q','c')], 1.0, 0.5, 'flop', 'call', '55 pocket pair - call'))
+    # ========== KIRO_OPTIMAL TESTS ==========
+    print("\n--- KIRO_OPTIMAL STRATEGY ---")
+    print("Tight preflop, sonnet-style postflop")
     
-    # ========== VALUE_MAX TESTS ==========
-    print("\n--- VALUE_MAX STRATEGY ---")
-    print("Smart aggression with pot odds, two pair strength matters")
+    # Preflop - tight ranges
+    results.append(test_preflop('kiro_optimal', 'AKs', 'UTG', 'none', 'raise', 'AKs open UTG'))
+    results.append(test_preflop('kiro_optimal', 'JTs', 'BTN', 'none', 'raise', 'JTs open BTN'))
+    results.append(test_preflop('kiro_optimal', '72o', 'BTN', 'none', 'fold', '72o fold BTN'))
     
-    # Two pair strength tests
-    results.append(test_postflop('value_max', [('T','s'),('T','d')], [('9','h'),('4','c'),('4','d')], 1.0, 0, 'flop', 'bet', 'TT on 944 - strong (TT > 44)'))
-    results.append(test_postflop('value_max', [('2','s'),('2','d')], [('9','h'),('9','c'),('4','d')], 1.0, 0, 'flop', 'bet', '22 on 994 - weak (22 < 99)'))
-    results.append(test_postflop('value_max', [('J','s'),('7','d')], [('7','h'),('6','c'),('J','d')], 1.0, 0, 'flop', 'bet', 'J7 on 76J - two pair (no board pair)'))
+    # Postflop - overpair value betting
+    results.append(test_postflop('kiro_optimal', [('Q','s'),('Q','d')], [('J','h'),('8','d'),('5','c')], 1.0, 0, 'flop', 'bet', 'QQ overpair - value bet'))
+    results.append(test_postflop('kiro_optimal', [('A','s'),('K','d')], [('A','h'),('7','c'),('2','d')], 1.0, 0, 'flop', 'bet', 'TPGK flop - bet'))
     
-    # Top pair facing bets
-    results.append(test_postflop('value_max', [('A','s'),('K','d')], [('A','h'),('7','c'),('2','d')], 1.0, 0.5, 'flop', 'call', 'TPGK facing 50% pot - call'))
-    
-    # ========== GPT4 TESTS ==========
-    print("\n--- GPT4 STRATEGY ---")
-    print("Board texture aware, smaller c-bets (25-35% dry), TPTK 2 streets")
-    
-    # Basic value betting
-    results.append(test_postflop('gpt4', [('A','s'),('A','d')], [('K','h'),('7','d'),('2','c')], 1.0, 0, 'flop', 'bet', 'AA on K72 - value bet'))
-    results.append(test_postflop('gpt4', [('K','s'),('K','d')], [('A','h'),('7','d'),('2','c')], 1.0, 0.5, 'flop', 'call', 'KK underpair to ace - call'))
-    
-    # TPTK: 2 streets for value (bet flop/turn, check river)
-    results.append(test_postflop('gpt4', [('A','s'),('K','d')], [('A','h'),('7','c'),('2','d')], 1.0, 0, 'flop', 'bet', 'TPTK flop - bet'))
-    results.append(test_postflop('gpt4', [('A','s'),('K','d')], [('A','h'),('7','c'),('2','d'),('5','s')], 1.0, 0, 'turn', 'bet', 'TPTK turn - bet'))
-    results.append(test_postflop('gpt4', [('A','s'),('K','d')], [('A','h'),('7','c'),('2','d'),('5','s'),('3','h')], 1.0, 0, 'river', 'check', 'TPTK river - check (2 streets only)'))
-    
-    # Weak top pair: bet once, then check
-    results.append(test_postflop('gpt4', [('K','s'),('7','d')], [('K','h'),('8','c'),('2','d')], 1.0, 0, 'flop', 'bet', 'TPWK flop - bet once'))
-    results.append(test_postflop('gpt4', [('K','s'),('7','d')], [('K','h'),('8','c'),('2','d'),('5','s')], 1.0, 0, 'turn', 'check', 'TPWK turn - check'))
-    
-    # Facing aggression: fold one pair to turn/river raises
-    results.append(test_postflop('gpt4', [('A','s'),('K','d')], [('A','h'),('7','c'),('2','d'),('5','s')], 1.0, 0.8, 'turn', 'fold', 'TPTK facing turn bet - fold (per file: fold one-pair)'))
-    results.append(test_postflop('gpt4', [('K','s'),('7','d')], [('K','h'),('8','c'),('2','d'),('5','s')], 1.0, 0.5, 'turn', 'fold', 'TPWK facing turn bet - fold'))
+    # Facing bets
+    results.append(test_postflop('kiro_optimal', [('K','s'),('K','d')], [('A','h'),('7','d'),('2','c')], 1.0, 0.5, 'flop', 'call', 'KK underpair to ace - call'))
     
     # ========== SONNET TESTS ==========
     print("\n--- SONNET STRATEGY ---")

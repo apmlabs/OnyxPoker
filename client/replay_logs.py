@@ -7,7 +7,7 @@ sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 
 from poker_logic import STRATEGIES, preflop_action, postflop_action
 
-STRATEGY_NAMES = ['value_max', 'sonnet', 'sonnet_max', 'gpt3', 'gpt4', 'aggressive']
+STRATEGY_NAMES = ['kiro_lord', 'kiro_optimal', 'sonnet', 'value_lord']
 
 def parse_hand(cards_list):
     """Convert ['As', '3c'] to 'A3o' format"""
