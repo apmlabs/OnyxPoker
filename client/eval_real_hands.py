@@ -123,9 +123,19 @@ def parse_hand(text, bb):
             if m:
                 hand['board'].append(m.group(1))
         
+        # Uncalled bet returned
+        if 'returned to idealistslp' in line:
+            m = re.search(r'€([\d.]+)', line)
+            if m:
+                hand['hero_invested'] -= float(m.group(1))
+        
         # Hero actions
         if line.startswith('idealistslp:'):
-            m = re.search(r'€([\d.]+)', line)
+            # For raises, use "to €X" amount (total), not raise amount
+            if ': raises' in line:
+                m = re.search(r'to €([\d.]+)', line)
+            else:
+                m = re.search(r'€([\d.]+)', line)
             if m:
                 hand['hero_invested'] += float(m.group(1))
             

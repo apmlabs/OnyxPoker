@@ -135,31 +135,29 @@ def random_5nl_table():
     return [random.choices(archetypes, weights)[0] for _ in range(5)]
 
 
-def simulate(strategies, num_hands=1000, show_progress=True):
-    """Run simulation, return BB/100 per strategy."""
-    results = {s: {'total': 0.0, 'hands': 0} for s in set(strategies)}
+def simulate(hero, num_hands=1000, show_progress=True):
+    """Run simulation, return BB/100 for hero strategy."""
+    total = 0.0
+    hands = 0
     
     for i in range(num_hands):
         opponents = random_5nl_table()
-        hero = strategies[i % len(strategies)]
         table = [hero] + opponents
         random.shuffle(table)
+        hero_idx = table.index(hero)
         
         try:
             payoffs = run_hand(table)
-            for j, s in enumerate(table):
-                if s in results:
-                    results[s]['total'] += payoffs[j]
-                    results[s]['hands'] += 1
-        except: pass
+            total += payoffs[hero_idx]
+            hands += 1
+        except:
+            pass
         
-        if show_progress and (i + 1) % 100 == 0:
+        if show_progress and (i + 1) % 1000 == 0:
             print(f"  {i + 1}/{num_hands} hands...", flush=True)
     
-    for s in results:
-        h = results[s]['hands']
-        results[s]['bb100'] = (results[s]['total'] / 0.02 / h * 100) if h else 0
-    return results
+    bb100 = (total / 0.02 / hands * 100) if hands else 0
+    return {'total': total, 'hands': hands, 'bb100': bb100}
 
 
 if __name__ == '__main__':
@@ -167,16 +165,10 @@ if __name__ == '__main__':
     num = int(sys.argv[1]) if len(sys.argv) > 1 else 1000
     
     print(f"PokerKit simulation: {num} hands per strategy", flush=True)
+    print("Opponents: random 5NL table (8.5% fish, 31% nit, 39% TAG, 22% LAG)")
     print("=" * 50, flush=True)
     
-    # Realistic 5NL table composition (from Session 43 Part 24 analysis):
-    # 8.5% fish, 31% nit, 39% TAG, 22% LAG
-    # For 6-max: 1 bot + 5 opponents
-    # Approx: 0-1 fish, 1-2 nit, 2 tag, 1 lag
-    table_5nl = ['nit', 'tag', 'tag', 'lag', 'nit']
-    
     for bot in ['value_lord', 'kiro_optimal', 'kiro_lord', 'sonnet']:
-        print(f"\nTesting {bot} vs 5NL table...", flush=True)
-        table = [bot] + table_5nl
-        r = simulate(table, num)
-        print(f"  Result: {r[bot]['bb100']:+.1f} BB/100 ({r[bot]['hands']} hands)", flush=True)
+        print(f"\nTesting {bot}...", flush=True)
+        r = simulate(bot, num)
+        print(f"  Result: {r['bb100']:+.1f} BB/100 ({r['hands']} hands)", flush=True)

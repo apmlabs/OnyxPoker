@@ -301,9 +301,32 @@ cd client && python3 poker_sim.py 200000
 
 ## 📖 SESSION HISTORY & LESSONS LEARNED
 
-### Session 44: PokerKit Integration (January 16, 2026)
+### Session 44: PokerKit Integration + Eval Fixes (January 16, 2026)
 
-**Integrated external PokerKit library for strategy validation with randomized table composition.**
+**Integrated external PokerKit library for strategy validation. Fixed critical bug in eval_real_hands.py.**
+
+**PokerKit Integration:**
+- Created `pokerkit_adapter.py` bridging OnyxPoker → PokerKit
+- Fixed simulate() to properly track hero for all hands (was only 1/6)
+- `random_5nl_table()` generates opponents matching real 5NL stats
+
+**PokerKit Results (5000 hands each):**
+| Strategy | BB/100 |
+|----------|--------|
+| value_lord | +23.5 |
+| kiro_optimal | -7.3 |
+| sonnet | -8.0 |
+| kiro_lord | -8.5 |
+
+**eval_real_hands.py Bug Fix:**
+- Bug 1: `raises €0.10 to €0.15` was taking €0.10 (raise amount), now takes €0.15 (total)
+- Bug 2: `Uncalled bet returned` was not being subtracted from invested
+- Result: Actual results changed from €-93.12 to €-16.00 (-29.9 BB/100)
+
+**Corrected Real Results:**
+- 5NL: 1036 hands, -41.2 BB/100
+- 10NL: 154 hands, +47.8 BB/100 (winning!)
+- 25NL: 19 hands, -42.7 BB/100
 
 **Why PokerKit?**
 - External validation of OnyxPoker strategies

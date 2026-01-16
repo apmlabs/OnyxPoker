@@ -1,24 +1,36 @@
 # OnyxPoker - Status Tracking
 
-**Last Updated**: January 16, 2026 16:05 UTC
+**Last Updated**: January 16, 2026 16:29 UTC
 
-## 🎉 MILESTONE: POKERKIT INTEGRATION COMPLETE! 🎉
+## 🎉 MILESTONE: POKERKIT INTEGRATION + EVAL FIX! 🎉
 
-**Session 44**: Integrated PokerKit external library for validation. Randomized table composition now matches real 5NL stats.
+**Session 44**: Fixed critical bug in eval_real_hands.py - actual results are €-16 not €-93! Also fixed PokerKit adapter to properly track hero for all 5000 hands.
 
 ---
 
-## Current Status: SESSION 44 - PokerKit Integration
+## Current Status: SESSION 44 - PokerKit Integration + Eval Fixes
 
 **GOAL**: Validate OnyxPoker strategies using external poker engine (PokerKit).
 
-### PokerKit Simulation Results (randomized 5NL tables)
+### PokerKit Simulation Results (5000 hands each, FIXED)
 | Strategy | BB/100 |
 |----------|--------|
-| value_lord | +14.1 |
-| kiro_lord | +2.2 |
-| kiro_optimal | -1.0 |
-| sonnet | -4.5 |
+| value_lord | +23.5 |
+| kiro_optimal | -7.3 |
+| sonnet | -8.0 |
+| kiro_lord | -8.5 |
+
+### eval_real_hands.py Bug Fix
+- Bug 1: `raises €0.10 to €0.15` was taking €0.10, now takes €0.15 (total)
+- Bug 2: `Uncalled bet returned` was not being subtracted from invested
+- Result: Actual results €-16.00 (-29.9 BB/100) not €-93.12 (-135.7 BB/100)
+
+### Corrected Real Results
+| Stakes | Hands | BB/100 |
+|--------|-------|--------|
+| 5NL | 1036 | -41.2 |
+| 10NL | 154 | **+47.8** |
+| 25NL | 19 | -42.7 |
 
 ### Key Features
 - **External validation**: PokerKit handles dealing, betting rules, showdowns
