@@ -230,16 +230,23 @@ def simulate_hand(players, dealer_pos):
 
 
 def get_table_configs():
-    """Return realistic 2NL table compositions based on log analysis."""
-    # REALISTIC 2NL BLITZ: Based on 886 hands of log analysis
-    # - 73% check postflop (very passive)
-    # - 21% c-bet (low aggression)  
-    # - Estimated: 60% fish, 25% nit, 15% tag
+    """Return realistic 2NL table compositions based on real data analysis.
+    
+    Real 2NL data (1036 hands, 122 opponents):
+    - FISH: 55%
+    - NIT: 23%
+    - TAG: 12%
+    - LAG: 7%
+    - MANIAC: 3%
+    """
+    # 5 opponents per table, weighted by real distribution
     return [
-        ['fish', 'fish', 'fish', 'nit', 'tag'],
-        ['fish', 'fish', 'fish', 'fish', 'nit'],
-        ['fish', 'fish', 'fish', 'nit', 'nit'],
-        ['fish', 'fish', 'nit', 'tag', 'fish'],
+        ['fish', 'fish', 'fish', 'nit', 'tag'],      # 60% fish, 20% nit, 20% tag
+        ['fish', 'fish', 'fish', 'nit', 'nit'],      # 60% fish, 40% nit
+        ['fish', 'fish', 'nit', 'nit', 'tag'],       # 40% fish, 40% nit, 20% tag
+        ['fish', 'fish', 'fish', 'lag', 'tag'],      # 60% fish, 20% lag, 20% tag
+        ['fish', 'fish', 'nit', 'lag', 'maniac'],    # 40% fish, 20% nit, 20% lag, 20% maniac
+        ['fish', 'fish', 'fish', 'fish', 'nit'],     # 80% fish, 20% nit (soft table)
     ]
 
 
@@ -252,7 +259,7 @@ def run_simulation(num_hands=100000):
     
     print(f"Testing {len(bot_strategies)} strategies")
     print(f"Total hands: {num_hands:,}")
-    print(f"Table: 60% fish, 25% nit, 15% tag (realistic 2NL)\n", flush=True)
+    print(f"Table: 55% fish, 23% nit, 12% tag, 7% lag, 3% maniac (real 2NL data)\n", flush=True)
     
     results = {bot: [] for bot in bot_strategies}
     

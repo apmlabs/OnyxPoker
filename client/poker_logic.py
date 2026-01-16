@@ -615,15 +615,20 @@ STRATEGIES = {
     },
 }
 
-# Player archetypes
+# Player archetypes - CALIBRATED TO REAL 2NL DATA (1036 hands, 122 opponents)
+# Real data: FISH 55%, NIT 23%, TAG 12%, LAG 7%, MANIAC 3%
+
+# FISH: VPIP 25.5%, PFR 14.6%, Limp 1.4%, AF 1.14
+# Loose passive - plays many hands, rarely raises, calls a lot postflop
 STRATEGIES['fish'] = {
     'name': 'Fish',
     'open': {
-        'UTG': expand_range('88+,ATs+,KQs,AJo+'),
-        'MP': expand_range('77+,A9s+,KJs+,QJs,ATo+,KQo'),
-        'CO': expand_range('66+,A7s+,KTs+,QTs+,JTs,ATo+,KJo+'),
-        'BTN': expand_range('55+,A5s+,K9s+,Q9s+,J9s+,T9s,98s,A9o+,KTo+,QJo'),
-        'SB': expand_range('66+,A7s+,K9s+,Q9s+,JTs,A9o+,KJo+'),
+        # Even wider ranges to hit 25% VPIP
+        'UTG': expand_range('55+,A6s+,K9s+,Q9s+,J9s+,T9s,98s,A9o+,KJo+,QJo'),
+        'MP': expand_range('44+,A4s+,K7s+,Q8s+,J8s+,T8s+,97s+,86s+,76s,65s,A7o+,KTo+,QTo+,JTo'),
+        'CO': expand_range('33+,A2s+,K5s+,Q6s+,J7s+,T7s+,96s+,85s+,74s+,64s+,54s,A5o+,K9o+,QTo+,JTo,T9o'),
+        'BTN': expand_range('22+,A2s+,K3s+,Q5s+,J6s+,T6s+,95s+,84s+,74s+,63s+,53s+,43s,A3o+,K8o+,Q9o+,J9o+,T9o,98o'),
+        'SB': expand_range('33+,A3s+,K6s+,Q7s+,J7s+,T7s+,96s+,86s+,76s,65s,A5o+,K9o+,QTo+,JTo'),
     },
     '3bet_vs': {'UTG': expand_range('QQ+,AKs'), 'MP': expand_range('QQ+,AKs'), 'CO': expand_range('QQ+,AKs'), 'BTN': expand_range('QQ+,AKs')},
     '3bet_bluff': set(),
@@ -632,34 +637,61 @@ STRATEGIES['fish'] = {
     'call_3bet': expand_range('QQ,JJ,TT,AKs,AKo,AQs,AQo,AJs,KQs'),
     '4bet': expand_range('AA,KK'),
     'call_wide': True,
+    'limp_pct': 0.06,  # 1.4% of total actions = ~6% of opens
 }
 
+# NIT: VPIP 10.7%, PFR 7.5%, AF 1.32
+# Very tight - only plays premium hands
 STRATEGIES['nit'] = {
     'name': 'Nit',
     'open': {
-        'UTG': expand_range('TT+,AQs+,AKo'),
-        'MP': expand_range('99+,AJs+,KQs,AQo+'),
-        'CO': expand_range('88+,ATs+,KQs,AJo+,KQo'),
-        'BTN': expand_range('77+,A9s+,KJs+,QJs,ATo+,KJo+'),
-        'SB': expand_range('88+,ATs+,KQs,AJo+'),
+        # Wider ranges to hit 10.7% VPIP
+        'UTG': expand_range('88+,AJs+,KQs,AQo+'),
+        'MP': expand_range('77+,ATs+,KJs+,QJs,AJo+,KQo'),
+        'CO': expand_range('66+,A9s+,KTs+,QTs+,JTs,ATo+,KJo+,QJo'),
+        'BTN': expand_range('55+,A7s+,K9s+,Q9s+,J9s+,T9s,98s,A9o+,KTo+,QJo'),
+        'SB': expand_range('66+,A8s+,KTs+,QTs+,JTs,ATo+,KJo+'),
     },
     '3bet_vs': {'UTG': expand_range('QQ+,AKs'), 'MP': expand_range('QQ+,AKs'), 'CO': expand_range('QQ+,AKs,AKo'), 'BTN': expand_range('QQ+,AKs,AKo')},
     '3bet_bluff': set(),
-    'call_open_ip': expand_range('JJ-88,AQs-AJs,KQs'),
-    'bb_defend': expand_range('TT-66,AQs-ATs,KQs,QJs,JTs'),
+    'call_open_ip': expand_range('JJ-66,AQs-ATs,KQs,KJs'),
+    'bb_defend': expand_range('TT-44,AQs-A8s,KQs,KJs,QJs,JTs'),
     'call_3bet': expand_range('QQ,AKs'),
     '4bet': expand_range('KK+'),
     'fold_wide': True,
 }
 
+# TAG: VPIP 20.2%, PFR 14.7%, AF 4.79
+# Tight aggressive - selective but aggressive when playing
+STRATEGIES['tag'] = {
+    'name': 'TAG',
+    'open': {
+        # Wider ranges to hit 20% VPIP
+        'UTG': expand_range('55+,A8s+,K9s+,Q9s+,J9s+,T9s,ATo+,KJo+,QJo'),
+        'MP': expand_range('44+,A6s+,K8s+,Q8s+,J8s+,T8s+,97s+,87s,76s,A9o+,KTo+,QTo+,JTo'),
+        'CO': expand_range('33+,A4s+,K6s+,Q7s+,J7s+,T7s+,96s+,85s+,75s,64s+,54s,A7o+,K9o+,QTo+,JTo,T9o'),
+        'BTN': expand_range('22+,A2s+,K4s+,Q6s+,J6s+,T6s+,95s+,84s+,74s+,63s+,53s+,43s,A5o+,K8o+,Q9o+,J9o+,T9o,98o'),
+        'SB': expand_range('33+,A3s+,K7s+,Q8s+,J8s+,T8s+,97s+,86s+,76s,65s,A7o+,K9o+,QTo+,JTo'),
+    },
+    '3bet_vs': {'UTG': expand_range('QQ+,AKs,AKo'), 'MP': expand_range('QQ+,AKs,AKo'), 'CO': expand_range('JJ+,AQs+,AKo'), 'BTN': expand_range('TT+,AQs+,AKo')},
+    '3bet_bluff': expand_range('A5s-A4s'),
+    'call_open_ip': expand_range('JJ-44,AQs-A9s,KQs-KTs,QJs,JTs,T9s,98s'),
+    'bb_defend': expand_range('TT-22,AJs-A2s,KTs+,Q9s+,J9s+,T8s+,97s+,86s+,76s,65s,A9o+,KJo,QJo'),
+    'call_3bet': expand_range('QQ,JJ,AKo,AQs'),
+    '4bet': expand_range('KK+,AKs'),
+}
+
+# LAG: VPIP 28.7%, PFR 23.5%, AF 6.75
+# Loose aggressive - plays many hands aggressively
 STRATEGIES['lag'] = {
     'name': 'LAG',
     'open': {
-        'UTG': expand_range('66+,A9s+,A5s-A2s,KTs+,QTs+,JTs,ATo+,KQo'),
-        'MP': expand_range('55+,A7s+,A5s-A2s,K9s+,Q9s+,J9s+,T9s,98s,ATo+,KJo+,QJo'),
-        'CO': expand_range('33+,A2s+,K7s+,Q8s+,J8s+,T8s+,97s+,86s+,76s,65s,54s,A8o+,KTo+,QTo+,JTo'),
-        'BTN': expand_range('22+,A2s+,K4s+,Q6s+,J7s+,T7s+,96s+,85s+,74s+,64s+,53s+,A5o+,K8o+,Q9o+,J9o+,T9o'),
-        'SB': expand_range('22+,A2s+,K6s+,Q8s+,J8s+,T8s+,97s+,86s+,76s,65s,A7o+,K9o+,QTo+'),
+        # Wider ranges to hit 28.7% VPIP
+        'UTG': expand_range('44+,A5s+,K8s+,Q9s+,J9s+,T8s+,97s+,87s,76s,A8o+,KTo+,QJo'),
+        'MP': expand_range('33+,A3s+,K6s+,Q7s+,J7s+,T7s+,96s+,85s+,75s,64s+,54s,A6o+,K9o+,QTo+,JTo,T9o'),
+        'CO': expand_range('22+,A2s+,K4s+,Q5s+,J6s+,T6s+,95s+,84s+,74s+,63s+,53s+,43s,A4o+,K8o+,Q9o+,J9o+,T9o,98o'),
+        'BTN': expand_range('22+,A2s+,K2s+,Q3s+,J5s+,T5s+,94s+,83s+,73s+,62s+,52s+,42s+,A2o+,K6o+,Q8o+,J8o+,T8o+,98o,87o'),
+        'SB': expand_range('22+,A2s+,K4s+,Q6s+,J6s+,T6s+,95s+,84s+,74s+,63s+,53s+,43s,A4o+,K8o+,Q9o+,J9o+,T9o'),
     },
     '3bet_vs': {'UTG': expand_range('QQ+,AKs,AKo,JJ'), 'MP': expand_range('JJ+,AKs,AKo,AQs,TT'), 'CO': expand_range('TT+,AQs+,AKo,AJs'), 'BTN': expand_range('TT+,AQs+,AKo,AJs,KQs')},
     '3bet_bluff': expand_range('A5s-A2s,K9s-K7s,Q9s,J9s,T9s,98s,87s,76s'),
@@ -669,32 +701,17 @@ STRATEGIES['lag'] = {
     '4bet': expand_range('QQ+,AKs'),
 }
 
-STRATEGIES['tag'] = {
-    'name': 'TAG',
-    'open': {
-        'UTG': expand_range('77+,ATs+,KQs,AQo+'),
-        'MP': expand_range('66+,A9s+,KJs+,QJs,JTs,AJo+,KQo'),
-        'CO': expand_range('55+,A7s+,K9s+,Q9s+,J9s+,T9s,98s,ATo+,KJo+,QJo'),
-        'BTN': expand_range('22+,A2s+,K8s+,Q9s+,J9s+,T8s+,97s+,87s,76s,65s,A9o+,KTo+,QJo'),
-        'SB': expand_range('55+,A5s+,K9s+,Q9s+,J9s+,T8s+,98s,87s,A9o+,KJo+'),
-    },
-    '3bet_vs': {'UTG': expand_range('QQ+,AKs,AKo'), 'MP': expand_range('QQ+,AKs,AKo'), 'CO': expand_range('JJ+,AQs+,AKo'), 'BTN': expand_range('TT+,AQs+,AKo')},
-    '3bet_bluff': expand_range('A5s-A4s'),
-    'call_open_ip': expand_range('JJ-55,AQs-ATs,KQs-KJs,QJs,JTs,T9s,98s'),
-    'bb_defend': expand_range('TT-22,AJs-A2s,KTs+,Q9s+,J9s+,T8s+,97s+,86s+,76s,65s,A9o+,KJo,QJo'),
-    'call_3bet': expand_range('QQ,JJ,AKo,AQs'),
-    '4bet': expand_range('KK+,AKs'),
-}
-
-# MANIAC: Very aggressive, 3-bets wide, overbets postflop (based on real 2NL data)
+# MANIAC: VPIP 48.6%, PFR 39.2%, AF 7.00
+# Very aggressive - plays almost half of hands, bets relentlessly
 STRATEGIES['maniac'] = {
     'name': 'Maniac',
     'open': {
-        'UTG': expand_range('55+,A7s+,A5s-A2s,KTs+,QTs+,JTs,T9s,ATo+,KJo+'),
-        'MP': expand_range('44+,A5s+,K8s+,Q9s+,J9s+,T8s+,97s+,87s,76s,A9o+,KTo+,QJo'),
-        'CO': expand_range('22+,A2s+,K5s+,Q7s+,J7s+,T7s+,96s+,85s+,75s,64s+,54s,A7o+,K9o+,QTo+,JTo'),
-        'BTN': expand_range('22+,A2s+,K2s+,Q4s+,J6s+,T6s+,95s+,84s+,74s+,63s+,53s+,43s,A2o+,K7o+,Q9o+,J9o+,T9o'),
-        'SB': expand_range('22+,A2s+,K4s+,Q6s+,J7s+,T7s+,96s+,85s+,75s,64s+,54s,A5o+,K8o+,QTo+,JTo'),
+        # Very wide ranges to hit 48.6% VPIP
+        'UTG': expand_range('33+,A3s+,K6s+,Q7s+,J7s+,T7s+,96s+,85s+,75s,64s+,54s,A5o+,K9o+,QTo+,JTo,T9o'),
+        'MP': expand_range('22+,A2s+,K4s+,Q5s+,J6s+,T6s+,95s+,84s+,74s+,63s+,53s+,43s,A3o+,K7o+,Q9o+,J9o+,T9o,98o'),
+        'CO': expand_range('22+,A2s+,K2s+,Q3s+,J4s+,T5s+,94s+,83s+,73s+,62s+,52s+,42s+,A2o+,K5o+,Q8o+,J8o+,T8o+,98o,87o'),
+        'BTN': expand_range('22+,A2s+,K2s+,Q2s+,J3s+,T4s+,93s+,82s+,72s+,62s+,52s+,42s+,32s,A2o+,K3o+,Q6o+,J7o+,T7o+,97o+,87o,76o'),
+        'SB': expand_range('22+,A2s+,K2s+,Q4s+,J5s+,T5s+,94s+,83s+,73s+,62s+,52s+,42s+,A2o+,K5o+,Q8o+,J8o+,T8o+,98o,87o'),
     },
     '3bet_vs': {'UTG': expand_range('TT+,AQs+,AKo,AJs,KQs'), 'MP': expand_range('99+,AJs+,AKo,AQo,KQs,QJs'), 'CO': expand_range('88+,ATs+,AJo+,KQs,KJs,QJs,JTs'), 'BTN': expand_range('77+,A9s+,ATo+,KJs+,KQo,QJs,JTs,T9s')},
     '3bet_bluff': expand_range('A5s-A2s,K9s-K6s,Q9s-Q8s,J9s,T9s,98s,87s,76s,65s,54s'),
@@ -929,132 +946,163 @@ def postflop_action(hole_cards: List[Tuple[str, str]], board: List[Tuple[str, st
         board_has_ace = False
         is_underpair_to_ace = False
     
-    # ARCHETYPES TUNED TO REAL 2NL BLITZ DATA (886 hands):
-    # - C-bet freq: 21% (very low!)
-    # - Bet sizing: mostly 33-50% pot
-    # - Players check A LOT (79% of flops checked through)
+    # ARCHETYPES TUNED TO REAL 2NL DATA (1036 hands, 122 opponents):
+    # FISH: Check 43%, Bet 17.5%, Call 17.7%, Fold 18.8%, AF 1.14
+    # NIT: Check 50.5%, Bet 14.9%, Call 13.5%, Fold 18.1%, AF 1.32
+    # TAG: Check 35.4%, Bet 35.8%, Call 7.8%, Fold 19.3%, AF 4.79
+    # LAG: Check 39.2%, Bet 36.0%, Call 6.4%, Fold 11.2%, AF 6.75
+    # MANIAC: Check 25%, Bet 47.5%, Call 7.5%, Fold 15%, AF 7.00
     
     # Get hand info for archetypes (no string matching)
     hand_info = analyze_hand(hole_cards, board)
     
-    # FISH: Passive, checks a lot, calls with any pair/draw
+    # FISH: AF 1.14 - Passive, checks a lot, calls with any pair/draw
+    # Real: Check 43%, Bet 17.5%, Call 17.7%, Fold 18.8%
     if archetype == 'fish':
         if to_call == 0 or to_call is None:
-            # Fish bet any pair or better ~65% of time (real data shows 23.5% bets)
+            # Fish bet strong hands
             if strength >= 4:
                 return ('bet', round(pot * 0.5, 2), f"{desc} - fish bets")
-            if strength >= 2:  # Any pair
-                if random.random() < 0.65:
-                    return ('bet', round(pot * 0.4, 2), f"{desc} - fish bets pair")
-            # Fish also donk bet draws ~40% of time
-            if has_any_draw and random.random() < 0.40:
+            # Fish bet pairs ~35% (to get 17.5% bet rate overall)
+            if strength >= 2 and random.random() < 0.35:
+                return ('bet', round(pot * 0.4, 2), f"{desc} - fish bets pair")
+            # Fish donk bet draws ~20%
+            if has_any_draw and random.random() < 0.20:
                 return ('bet', round(pot * 0.35, 2), f"{desc} - fish bets draw")
-            # Fish even bet air sometimes (10%)
-            if random.random() < 0.10:
+            # Fish donk bet air ~5%
+            if random.random() < 0.05:
                 return ('bet', round(pot * 0.33, 2), f"{desc} - fish donk bets")
             return ('check', 0, "fish checks")
         else:
-            # Fish call wide - any pair, any draw
-            if has_pair or has_any_draw:
-                return ('call', 0, f"{desc} - fish calls")
-            # Fish call with overcards sometimes (15%)
-            if random.random() < 0.15:
-                return ('call', 0, f"{desc} - fish calls light")
-            return ('fold', 0, "fish folds air")
+            # Fish call less often to match 17.7% call rate
+            if strength >= 4:
+                return ('call', 0, f"{desc} - fish calls strong")
+            if strength >= 3 and random.random() < 0.60:
+                return ('call', 0, f"{desc} - fish calls two pair")
+            if has_pair and random.random() < 0.45:
+                return ('call', 0, f"{desc} - fish calls pair")
+            if has_any_draw and random.random() < 0.30:
+                return ('call', 0, f"{desc} - fish calls draw")
+            # Fish fold more often (18.8% fold rate)
+            return ('fold', 0, "fish folds")
     
-    # NIT: Passive, bets strong hands, folds to aggression
+    # NIT: AF 1.32 - Very passive, only bets strong hands
+    # Real: Check 50.5%, Bet 14.9%, Call 13.5%, Fold 18.1%
     if archetype == 'nit':
         if to_call == 0 or to_call is None:
             if strength >= 4:
                 return ('bet', round(pot * 0.5, 2), f"{desc} - nit value bets")
-            if strength >= 2 and random.random() < 0.25:
-                return ('bet', round(pot * 0.4, 2), f"{desc} - nit bets")
+            if strength >= 3 and random.random() < 0.40:
+                return ('bet', round(pot * 0.45, 2), f"{desc} - nit bets two pair")
+            if strength >= 2 and random.random() < 0.15:
+                return ('bet', round(pot * 0.4, 2), f"{desc} - nit bets pair")
             return ('check', 0, "nit checks")
         else:
             if strength >= 4:
-                return ('call', 0, f"{desc} - nit calls")
-            if strength >= 2 and street == 'flop':
+                return ('call', 0, f"{desc} - nit calls strong")
+            if strength >= 3 and random.random() < 0.60:
+                return ('call', 0, f"{desc} - nit calls two pair")
+            if strength >= 2 and street == 'flop' and random.random() < 0.40:
                 return ('call', 0, f"{desc} - nit calls flop")
             return ('fold', 0, f"{desc} - nit folds")
     
-    # TAG: C-bets 50%, bets pairs, gives up without equity
+    # TAG: AF 4.79 - Aggressive, bets a lot, rarely calls
+    # Real: Check 35.4%, Bet 35.8%, Call 7.8%, Fold 19.3%
     if archetype == 'tag':
         if to_call == 0 or to_call is None:
+            # TAG bets strong hands always
             if strength >= 3:
-                return ('bet', round(pot * 0.50, 2), f"{desc} - tag value bets")
-            if strength >= 2:  # Any pair
-                if random.random() < 0.50:
-                    return ('bet', round(pot * 0.45, 2), f"{desc} - tag bets pair")
-            if has_any_draw and random.random() < 0.40:
-                return ('bet', round(pot * 0.40, 2), f"{desc} - tag semi-bluffs")
+                return ('bet', round(pot * 0.55, 2), f"{desc} - tag value bets")
+            # TAG bets pairs ~60%
+            if strength >= 2 and random.random() < 0.60:
+                return ('bet', round(pot * 0.50, 2), f"{desc} - tag bets pair")
+            # TAG semi-bluffs draws ~55%
+            if has_any_draw and random.random() < 0.55:
+                return ('bet', round(pot * 0.45, 2), f"{desc} - tag semi-bluffs")
+            # TAG c-bets air ~25%
+            if street == 'flop' and random.random() < 0.25:
+                return ('bet', round(pot * 0.40, 2), f"{desc} - tag c-bets")
             return ('check', 0, f"{desc} - tag checks")
         else:
+            # TAG rarely calls (7.8%) - either raises or folds
             if strength >= 4:
-                return ('call', 0, f"{desc} - tag calls")
-            if strength >= 2 and street != 'river':
-                return ('call', 0, f"{desc} - tag calls")
-            if has_any_draw and street == 'flop':
-                return ('call', 0, f"{desc} - tag calls draw")
+                if random.random() < 0.40:
+                    return ('raise', round(to_call * 2.5, 2), f"{desc} - tag raises")
+                return ('call', 0, f"{desc} - tag calls strong")
+            if strength >= 3 and random.random() < 0.30:
+                return ('call', 0, f"{desc} - tag calls two pair")
+            if strength >= 2 and street == 'flop' and random.random() < 0.15:
+                return ('call', 0, f"{desc} - tag calls flop")
             return ('fold', 0, f"{desc} - tag folds")
     
-    # LAG: C-bets 50%, medium sizing, more aggressive than others
+    # LAG: AF 6.75 - Very aggressive, bets relentlessly, almost never calls
+    # Real: Check 39.2%, Bet 36.0%, Call 6.4%, Fold 11.2%
     if archetype == 'lag':
         if to_call == 0 or to_call is None:
+            # LAG bets strong hands always
             if strength >= 3:
-                return ('bet', round(pot * 0.5, 2), f"{desc} - lag value bets")
-            if hand_info['has_any_pair']:
-                if street == 'flop' and random.random() < 0.50:
-                    return ('bet', round(pot * 0.4, 2), f"{desc} - lag c-bets")
-                if street == 'turn' and random.random() < 0.35:
-                    return ('bet', round(pot * 0.45, 2), f"{desc} - lag barrels")
-            if has_any_draw and random.random() < 0.5:
-                return ('bet', round(pot * 0.4, 2), "lag semi-bluffs")
-            if street == 'flop' and random.random() < 0.30:
-                return ('bet', round(pot * 0.33, 2), "lag c-bets air")
-            if street == 'river' and random.random() < 0.15:
-                return ('bet', round(pot * 0.45, 2), "lag river bluff")
+                return ('bet', round(pot * 0.60, 2), f"{desc} - lag value bets")
+            # LAG bets pairs ~65%
+            if hand_info['has_any_pair'] and random.random() < 0.65:
+                return ('bet', round(pot * 0.50, 2), f"{desc} - lag bets pair")
+            # LAG semi-bluffs draws ~60%
+            if has_any_draw and random.random() < 0.60:
+                return ('bet', round(pot * 0.50, 2), "lag semi-bluffs")
+            # LAG c-bets air ~35%
+            if street == 'flop' and random.random() < 0.35:
+                return ('bet', round(pot * 0.45, 2), "lag c-bets air")
+            # LAG barrels turn ~20%
+            if street == 'turn' and random.random() < 0.20:
+                return ('bet', round(pot * 0.50, 2), "lag barrels turn")
             return ('check', 0, f"{desc} - lag checks")
         else:
-            if strength >= 3:
-                return ('call', 0, f"{desc} - lag calls")
-            if hand_info['has_any_pair'] and street != 'river':
-                return ('call', 0, f"{desc} - lag floats")
+            # LAG rarely calls (6.4%) - raises or folds
+            if strength >= 4:
+                if random.random() < 0.50:
+                    return ('raise', round(to_call * 2.5, 2), f"{desc} - lag raises")
+                return ('call', 0, f"{desc} - lag calls strong")
+            if strength >= 3 and random.random() < 0.25:
+                return ('call', 0, f"{desc} - lag calls two pair")
             if has_flush_draw or has_oesd:
-                return ('call', 0, "lag calls with draw")
+                if random.random() < 0.20:
+                    return ('call', 0, "lag calls with draw")
             return ('fold', 0, f"{desc} - lag folds")
     
-    # MANIAC: Most aggressive, overbets sometimes, but still realistic
+    # MANIAC: AF 7.00 - Most aggressive, bets almost half the time
+    # Real: Check 25%, Bet 47.5%, Call 7.5%, Fold 15%
     if archetype == 'maniac':
         if to_call == 0 or to_call is None:
+            # Maniac bets strong hands big
             if strength >= 4:
                 return ('bet', round(pot * 0.75, 2), f"{desc} - maniac bets big")
             if strength >= 3:
-                return ('bet', round(pot * 0.6, 2), f"{desc} - maniac bets")
-            if hand_info['has_any_pair']:
-                if street == 'flop' and random.random() < 0.65:
-                    return ('bet', round(pot * 0.5, 2), f"{desc} - maniac c-bets")
-                if street == 'turn' and random.random() < 0.45:
-                    return ('bet', round(pot * 0.55, 2), f"{desc} - maniac barrels")
-                if street == 'river' and random.random() < 0.35:
-                    return ('bet', round(pot * 0.6, 2), f"{desc} - maniac river bet")
-            if has_any_draw and street != 'river':
-                return ('bet', round(pot * 0.5, 2), "maniac semi-bluffs")
+                return ('bet', round(pot * 0.65, 2), f"{desc} - maniac bets")
+            # Maniac bets pairs ~75%
+            if hand_info['has_any_pair'] and random.random() < 0.75:
+                return ('bet', round(pot * 0.55, 2), f"{desc} - maniac bets pair")
+            # Maniac semi-bluffs draws ~70%
+            if has_any_draw and street != 'river' and random.random() < 0.70:
+                return ('bet', round(pot * 0.55, 2), "maniac semi-bluffs")
+            # Maniac c-bets air ~50%
             if street == 'flop' and random.random() < 0.50:
-                return ('bet', round(pot * 0.4, 2), "maniac c-bets air")
+                return ('bet', round(pot * 0.50, 2), "maniac c-bets air")
             if street == 'turn' and random.random() < 0.30:
                 return ('bet', round(pot * 0.45, 2), "maniac barrels turn")
             if street == 'river' and random.random() < 0.20:
                 return ('bet', round(pot * 0.5, 2), "maniac river bluff")
             return ('check', 0, f"{desc} - maniac checks")
         else:
-            if strength >= 3:
-                return ('call', 0, f"{desc} - maniac calls")
-            if hand_info['has_any_pair']:
-                return ('call', 0, f"{desc} - maniac calls any pair")
-            if has_any_draw and street != 'river':
+            # Maniac rarely calls (7.5%) - raises or folds (AF 7.00)
+            if strength >= 4:
+                if random.random() < 0.60:
+                    return ('raise', round(to_call * 2.5, 2), f"{desc} - maniac raises")
+                return ('call', 0, f"{desc} - maniac calls strong")
+            if strength >= 3 and random.random() < 0.30:
+                return ('call', 0, f"{desc} - maniac calls two pair")
+            if hand_info['has_any_pair'] and street == 'flop' and random.random() < 0.20:
+                return ('call', 0, f"{desc} - maniac calls flop")
+            if has_any_draw and street != 'river' and random.random() < 0.15:
                 return ('call', 0, "maniac calls with draw")
-            if street == 'flop' and random.random() < 0.35:
-                return ('call', 0, "maniac floats flop")
             return ('fold', 0, f"{desc} - maniac folds")
     
     # BOT STRATEGIES - strategy-specific postflop logic
