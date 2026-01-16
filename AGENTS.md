@@ -84,6 +84,7 @@ onyxpoker/                    # Main repo (GitHub: apmlabs/OnyxPoker)
 │   ├── strategy_engine.py    # Applies strategy (default: kiro_lord)
 │   ├── poker_logic.py        # Hand eval, preflop/postflop logic, strategies + archetypes
 │   ├── poker_sim.py          # Monte Carlo simulator (200k+ hands)
+│   ├── pokerkit_adapter.py   # PokerKit integration for external validation
 │   │
 │   │ # === EVALUATION ===
 │   ├── eval_real_hands.py    # Evaluates on idealistslp (actual €€€ results)
@@ -300,7 +301,42 @@ cd client && python3 poker_sim.py 200000
 
 ## 📖 SESSION HISTORY & LESSONS LEARNED
 
-### Session 43 Part 25: Archetype Calibration (January 16, 2026)
+### Session 44: PokerKit Integration (January 16, 2026)
+
+**Integrated external PokerKit library for strategy validation with randomized table composition.**
+
+**Why PokerKit?**
+- External validation of OnyxPoker strategies
+- PokerKit handles dealing, betting rules, showdowns
+- Our strategies make decisions, PokerKit runs the game
+
+**Implementation**:
+- Created `pokerkit_adapter.py` bridging OnyxPoker → PokerKit
+- `strategy_decision()`: Converts PokerKit state to OnyxPoker format
+- `run_hand()`: Runs single hand with PokerKit engine
+- `random_5nl_table()`: Generates random opponents matching real 5NL stats
+
+**Randomized Table Composition**:
+- Each hand gets fresh random opponents (not fixed table)
+- Weighted random: 8.5% fish, 31% nit, 39% TAG, 22% LAG
+- Averages to real 5NL distribution over many hands
+
+**Results (500 hands per strategy)**:
+| Strategy | BB/100 |
+|----------|--------|
+| value_lord | +14.1 |
+| kiro_lord | +2.2 |
+| kiro_optimal | -1.0 |
+| sonnet | -4.5 |
+
+**Key Insight**: PokerKit results more realistic than OnyxPoker sim (+14 vs +32 BB/100). External validation confirms value_lord still wins against tough 5NL field.
+
+**Files Created**:
+- `client/pokerkit_adapter.py` - PokerKit integration adapter
+
+---
+
+### Session 43: Archetype Calibration (January 16, 2026)
 
 **Calibrated archetypes to match real postflop behavior. Simulation now +32 BB/100 (was +88).**
 

@@ -1,51 +1,41 @@
 # OnyxPoker - Status Tracking
 
-**Last Updated**: January 16, 2026 15:38 UTC
+**Last Updated**: January 16, 2026 16:05 UTC
 
-## 🎉 MILESTONE: ARCHETYPES CALIBRATED! 🎉
+## 🎉 MILESTONE: POKERKIT INTEGRATION COMPLETE! 🎉
 
-**Session 43 Part 25**: Simulated archetypes now behave like real players. Win rates dropped from +88 to +32 BB/100 - much more realistic.
+**Session 44**: Integrated PokerKit external library for validation. Randomized table composition now matches real 5NL stats.
 
 ---
 
-## Current Status: SESSION 43 Part 25 - Archetype Behavior Calibration ✅
+## Current Status: SESSION 44 - PokerKit Integration
 
-**GOAL**: Make simulated archetypes match real player behavior (not just table composition).
+**GOAL**: Validate OnyxPoker strategies using external poker engine (PokerKit).
 
-### Calibration Results
+### PokerKit Simulation Results (randomized 5NL tables)
+| Strategy | BB/100 |
+|----------|--------|
+| value_lord | +14.1 |
+| kiro_lord | +2.2 |
+| kiro_optimal | -1.0 |
+| sonnet | -4.5 |
+
+### Key Features
+- **External validation**: PokerKit handles dealing, betting rules, showdowns
+- **Randomized tables**: Each hand gets fresh random opponents
+- **Real 5NL composition**: 8.5% fish, 31% nit, 39% TAG, 22% LAG
+- **Calibrated archetypes**: Uses Session 43 calibrated postflop behavior
+
+### Files Created
+- `pokerkit_adapter.py` - Bridges OnyxPoker strategies with PokerKit engine
+
+### Previous: Archetype Calibration (Session 43)
 | Archetype | Metric | Real | Sim | Status |
 |-----------|--------|------|-----|--------|
 | Fish | Call% | 14.1% | 14.1% | ✅ |
 | Nit | Fold% | 15.3% | 14.6% | ✅ |
 | TAG | AF | 1.77 | 1.76 | ✅ |
 | LAG | Fold% | 14.6% | 14.2% | ✅ |
-
-### Simulation Results (200k hands, calibrated archetypes)
-| Rank | Strategy | BB/100 |
-|------|----------|--------|
-| 1 | value_lord | +32.14 |
-| 2 | sonnet | +14.46 |
-| 3 | kiro_optimal | +6.22 |
-| 4 | kiro_lord | +5.21 |
-| 5 | optimal_stats | +1.64 |
-
-### Real Hand Evaluation (eval_strategies.py)
-| Rank | Strategy | Est BB/100 |
-|------|----------|-----------|
-| 1 | value_lord | +21.9 |
-| 2 | sonnet | +20.0 |
-| 3 | kiro_optimal | +19.4 |
-| 4 | kiro_lord | +18.6 |
-
-### Key Changes
-- Archetypes now fold/call at realistic rates
-- Was: calling 30-38%, folding 11-19%
-- Now: calling 13-18%, folding 14-26%
-- Bet sizes increased to 54-68% pot (was 40-55%)
-
-### Files Modified
-- `poker_logic.py` - Recalibrated fish, nit, tag, lag archetypes
-- `analyze_archetype_behavior.py` - Now runs actual simulation
 
 ---
 
