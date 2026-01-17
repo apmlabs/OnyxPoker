@@ -1,6 +1,6 @@
 # OnyxPoker - Status Tracking
 
-**Last Updated**: January 17, 2026 20:55 UTC
+**Last Updated**: January 17, 2026 21:06 UTC
 
 ---
 
@@ -9,10 +9,10 @@
 ### What Works
 | Component | Status | Notes |
 |-----------|--------|-------|
-| helper_bar.py | ✅ | Postflop uses real to_call, BB shows defense |
+| helper_bar.py | ✅ | Line 2 shows position-specific 3-bet advice |
 | vision_detector_lite.py | ✅ | GPT-5.2 for vision only |
-| strategy_engine.py | ✅ | BB defense + min-raise thresholds |
-| poker_logic.py | ✅ | analyze_hand() for all hand analysis |
+| strategy_engine.py | ✅ | 3-bet/4-bet ranges + BB defense |
+| poker_logic.py | ✅ | Data-driven value_lord postflop |
 | poker_sim.py | ✅ | Full postflop simulation |
 | All test suites | ✅ | audit(30), strategy_engine(55), postflop(67), rules(24) |
 | Server | ✅ | 54.80.204.92:5001 |
@@ -33,6 +33,24 @@
 ---
 
 ## Session History
+
+### Session 52: Improved Preflop UI (January 17, 2026)
+
+**Enhanced "vs raise" line 2 with 3-bet guidance.**
+
+- Shows 3-bet advice: "4BET or CALL any", "3BET value, call 4bet", "3BET bluff or FOLD"
+- Position-specific when different: "UTG/MP/CO/BTN/SB: CALL 2.5bb | BB: CALL 3bb"
+- Compact when same for all positions
+
+**Example outputs:**
+```
+vs raise: 4BET or CALL any                              (AA, KK, AKs)
+vs raise: 3BET value, call 4bet                         (QQ, JJ, AQs)
+vs raise: 3BET bluff or FOLD                            (A5s, 87s)
+vs raise: UTG/MP/CO/BTN/SB: CALL 2.5bb | BB: CALL 3bb   (A9o, KTo)
+```
+
+---
 
 ### Session 51: Data-Driven Betting Strategy (January 17, 2026)
 
