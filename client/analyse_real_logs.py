@@ -593,7 +593,7 @@ def main(min_bb=None, focus_strategy=None):
         h = p['hand']
         s = p['situation']
         board = ' '.join(s['board'])
-        pot_pct = s['to_call'] / (s['pot'] + s['to_call']) if s['pot'] > 0 else 0
+        pot_pct = s['to_call'] / s['pot'] if s['pot'] > 0 else 0
         reason = p.get('reason', '')
         print(f"    {h['hand_str']:<6} on {board:<18} {s['street']:<5} {pot_pct:>3.0%} pot -> saved {abs(h['profit_bb']):.1f} BB")
         print(f"           Reason: {reason}")
@@ -604,7 +604,7 @@ def main(min_bb=None, focus_strategy=None):
         h = p['hand']
         s = p['situation']
         board = ' '.join(s['board'])
-        pot_pct = s['to_call'] / (s['pot'] + s['to_call']) if s['pot'] > 0 else 0
+        pot_pct = s['to_call'] / s['pot'] if s['pot'] > 0 else 0
         reason = p.get('reason', '')
         print(f"    {h['hand_str']:<6} on {board:<18} {s['street']:<5} {pot_pct:>3.0%} pot -> missed {h['profit_bb']:.1f} BB")
         print(f"           Reason: {reason}")

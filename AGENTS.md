@@ -311,6 +311,18 @@ cd client && python3 poker_sim.py 200000
 - `both_cards_hit`: A7 on A72 = STRONG
 - `one_card_board_pair`: K2 on K22 = depends on board pair rank
 
+**Pot Percentage vs Pot Odds (CRITICAL - standardized Jan 17 2026):**
+```python
+# pot_pct = bet sizing as % of pot (use for fold thresholds)
+pot_pct = to_call / pot  # €5 into €10 = 50%
+
+# pot_odds = equity needed to call (use for draw decisions)
+pot_odds = to_call / (pot + to_call)  # €5 into €10 = 33%
+```
+- Use `pot_pct` when comparing bet sizes: "fold if pot_pct > 0.6"
+- Use `pot_odds` when comparing equity: "call if equity > pot_odds"
+- NEVER mix them up - a 50% pot bet needs only 33% equity to call!
+
 ---
 
 ## 🔑 CRITICAL LESSONS

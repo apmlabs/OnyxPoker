@@ -1,6 +1,6 @@
 # OnyxPoker - Status Tracking
 
-**Last Updated**: January 17, 2026 21:47 UTC
+**Last Updated**: January 17, 2026 23:26 UTC
 
 ---
 
@@ -33,6 +33,33 @@
 ---
 
 ## Session History
+
+### Session 54: Pot Odds Standardization + Losing Hand Analysis (January 17, 2026)
+
+**Fixed pot_pct vs pot_odds confusion across entire codebase.**
+
+Bug: 5 archetype functions used `to_call / (pot + to_call)` (pot odds) but compared against bet sizing thresholds like 0.60 (pot percentage).
+
+```python
+# pot_pct = bet sizing as % of pot (use for fold thresholds)
+pot_pct = to_call / pot  # €5 into €10 = 50%
+
+# pot_odds = equity needed to call (use for draw decisions)
+pot_odds = to_call / (pot + to_call)  # €5 into €10 = 33%
+```
+
+Fixed lines 968, 1034, 1094, 1171, 1251 in poker_logic.py. Audit: 30/30 PASS.
+
+**Analyzed 18 losing hands (20BB+) that value_lord would still play:**
+
+| Hand | Board | Lost BB | Verdict |
+|------|-------|---------|---------|
+| AJs | 3s 4h Jc As 4d | 103.0 | Cooler - villain flopped 43s two pair |
+| AKo | 2d 3h 3c 6s 4h | 100.8 | Preflop all-in AKo vs KK |
+| AKo | 3s Ts Qs Ad Qd | 100.0 | River 64% pot vs 66% threshold - borderline |
+| AQs | 3h 9c 3s 9h 5h | 71.6 | Hero ignored strategy - value_lord says CHECK |
+
+**Key insight:** Most big losses are coolers (AKo vs KK, sets vs two pair). Strategy is sound.
 
 ### Session 52: Improved Preflop UI (January 17, 2026)
 

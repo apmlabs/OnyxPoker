@@ -965,7 +965,7 @@ def postflop_action(hole_cards: List[Tuple[str, str]], board: List[Tuple[str, st
     # Fish play loosely - bet more, call more than old sim
     if archetype == 'fish':
         # Real data: median 60%, avg 77% pot (Jan 17 2026)
-        pot_pct = to_call / (pot + to_call) if to_call and pot else 0
+        pot_pct = to_call / pot if pot > 0 else 0
         if to_call == 0 or to_call is None:
             # First to act - bet based on hand strength (bet more often)
             if strength >= 4:  # Sets+
@@ -1006,7 +1006,7 @@ def postflop_action(hole_cards: List[Tuple[str, str]], board: List[Tuple[str, st
                         return ('fold', 0, f"{desc} - fish folds TPGK to big bet")
                     return ('call', 0, f"{desc} - fish calls TPGK")
                 # TPWK - call more (was 0.35, now 0.45)
-                if pot_pct > 0.45:
+                if pot_pct > 0.65:
                     return ('fold', 0, f"{desc} - fish folds TPWK")
                 return ('call', 0, f"{desc} - fish calls top pair")
             if hand_info.get('is_overpair'):
@@ -1014,7 +1014,7 @@ def postflop_action(hole_cards: List[Tuple[str, str]], board: List[Tuple[str, st
                     return ('fold', 0, f"{desc} - fish folds overpair to big bet")
                 return ('call', 0, f"{desc} - fish calls overpair")
             if strength >= 2:  # Weaker pairs - call more
-                if pot_pct > 0.40:  # was 0.30
+                if pot_pct > 0.60:  # was 0.30
                     return ('fold', 0, f"{desc} - fish folds weak pair")
                 if random.random() < 0.65:  # was 0.50
                     return ('call', 0, f"{desc} - fish calls pair")
@@ -1031,7 +1031,7 @@ def postflop_action(hole_cards: List[Tuple[str, str]], board: List[Tuple[str, st
     # NIT: Target Check 48%, Bet 18%, Call 15%, Fold 17%
     # Nits are tight but call more than old sim assumed
     if archetype == 'nit':
-        pot_pct = to_call / (pot + to_call) if to_call and pot else 0
+        pot_pct = to_call / pot if pot > 0 else 0
         if to_call == 0 or to_call is None:
             # First to act - bet value hands more often
             if strength >= 4:  # Sets+
@@ -1055,7 +1055,7 @@ def postflop_action(hole_cards: List[Tuple[str, str]], board: List[Tuple[str, st
                     return ('raise', round(to_call * 1.0, 2), f"{desc} - nit raises")
                 return ('call', 0, f"{desc} - nit calls strong")
             if strength >= 3:
-                if hand_info.get('two_pair_type') == 'pocket_under_board' and pot_pct > 0.45:
+                if hand_info.get('two_pair_type') == 'pocket_under_board' and pot_pct > 0.65:
                     return ('fold', 0, f"{desc} - nit folds weak two pair")
                 return ('call', 0, f"{desc} - nit calls two pair")
             if hand_info.get('has_top_pair'):
@@ -1064,7 +1064,7 @@ def postflop_action(hole_cards: List[Tuple[str, str]], board: List[Tuple[str, st
                         return ('fold', 0, f"{desc} - nit folds TPGK to big bet")
                     return ('call', 0, f"{desc} - nit calls TPGK")
                 # TPWK - call more (was 0.35, now 0.45)
-                if pot_pct > 0.45:
+                if pot_pct > 0.65:
                     return ('fold', 0, f"{desc} - nit folds TPWK")
                 return ('call', 0, f"{desc} - nit calls top pair")
             if hand_info.get('is_overpair'):
@@ -1072,7 +1072,7 @@ def postflop_action(hole_cards: List[Tuple[str, str]], board: List[Tuple[str, st
                     return ('fold', 0, f"{desc} - nit folds overpair to big bet")
                 return ('call', 0, f"{desc} - nit calls overpair")
             if strength >= 2:  # Weaker pairs - call more
-                if pot_pct > 0.40:  # was 0.35
+                if pot_pct > 0.60:  # was 0.35
                     return ('fold', 0, f"{desc} - nit folds weak pair")
                 if hand_info.get('has_middle_pair') and random.random() < 0.60:  # was 0.55
                     return ('call', 0, f"{desc} - nit calls middle pair")
@@ -1091,7 +1091,7 @@ def postflop_action(hole_cards: List[Tuple[str, str]], board: List[Tuple[str, st
     # TAG: Target Check 39%, Bet 23%, Call 17%, Fold 19%
     # TAGs bet and call MORE than old sim - biggest gap to fix
     if archetype == 'tag':
-        pot_pct = to_call / (pot + to_call) if to_call and pot else 0
+        pot_pct = to_call / pot if pot > 0 else 0
         if to_call == 0 or to_call is None:
             # First to act - bet wider (was checking too much)
             if strength >= 4:  # Sets+
@@ -1131,7 +1131,7 @@ def postflop_action(hole_cards: List[Tuple[str, str]], board: List[Tuple[str, st
                 return ('call', 0, f"{desc} - tag calls strong")
             if strength >= 3:
                 if hand_info.get('two_pair_type') == 'pocket_under_board':
-                    if pot_pct > 0.45:  # was 0.35
+                    if pot_pct > 0.65:  # was 0.35
                         return ('fold', 0, f"{desc} - tag folds weak two pair")
                     return ('call', 0, f"{desc} - tag calls weak two pair")
                 return ('call', 0, f"{desc} - tag calls two pair")
@@ -1141,7 +1141,7 @@ def postflop_action(hole_cards: List[Tuple[str, str]], board: List[Tuple[str, st
                         return ('fold', 0, f"{desc} - tag folds TPGK to big bet")
                     return ('call', 0, f"{desc} - tag calls TPGK")
                 # TPWK - call more (was 0.30, now 0.45)
-                if pot_pct > 0.45:
+                if pot_pct > 0.65:
                     return ('fold', 0, f"{desc} - tag folds TPWK")
                 return ('call', 0, f"{desc} - tag calls top pair")
             if hand_info.get('is_overpair'):
@@ -1149,7 +1149,7 @@ def postflop_action(hole_cards: List[Tuple[str, str]], board: List[Tuple[str, st
                     return ('fold', 0, f"{desc} - tag folds overpair to big bet")
                 return ('call', 0, f"{desc} - tag calls overpair")
             if strength >= 2:  # Weaker pairs - call more
-                if pot_pct > 0.40:  # was 0.30
+                if pot_pct > 0.60:  # was 0.30
                     return ('fold', 0, f"{desc} - tag folds weak pair")
                 if random.random() < 0.55:  # was 0.35
                     return ('call', 0, f"{desc} - tag calls pair")
@@ -1168,7 +1168,7 @@ def postflop_action(hole_cards: List[Tuple[str, str]], board: List[Tuple[str, st
     # LAG: Target Check 38%, Bet 25%, Call 17%, Fold 17%
     # LAGs are aggressive - bet wide, call more than old sim
     if archetype == 'lag':
-        pot_pct = to_call / (pot + to_call) if to_call and pot else 0
+        pot_pct = to_call / pot if pot > 0 else 0
         if to_call == 0 or to_call is None:
             # First to act - bet wider range
             if strength >= 4:  # Sets+
@@ -1222,7 +1222,7 @@ def postflop_action(hole_cards: List[Tuple[str, str]], board: List[Tuple[str, st
                         return ('fold', 0, f"{desc} - lag folds TPGK to big bet")
                     return ('call', 0, f"{desc} - lag calls TPGK")
                 # TPWK - call more than TAG
-                if pot_pct > 0.40:
+                if pot_pct > 0.60:
                     return ('fold', 0, f"{desc} - lag folds TPWK")
                 return ('call', 0, f"{desc} - lag calls top pair")
             if hand_info.get('is_overpair'):
@@ -1230,7 +1230,7 @@ def postflop_action(hole_cards: List[Tuple[str, str]], board: List[Tuple[str, st
                     return ('fold', 0, f"{desc} - lag folds overpair to big bet")
                 return ('call', 0, f"{desc} - lag calls overpair")
             if strength >= 2:  # Weaker pairs - call more than TAG
-                if pot_pct > 0.40:
+                if pot_pct > 0.60:
                     return ('fold', 0, f"{desc} - lag folds weak pair")
                 if random.random() < 0.60:
                     return ('call', 0, f"{desc} - lag calls pair")
@@ -1248,7 +1248,7 @@ def postflop_action(hole_cards: List[Tuple[str, str]], board: List[Tuple[str, st
     
     # MANIAC: AF 7.00 - Most aggressive, but still folds weak hands to overbets
     if archetype == 'maniac':
-        pot_pct = to_call / (pot + to_call) if to_call and pot else 0
+        pot_pct = to_call / pot if pot > 0 else 0
         if to_call == 0 or to_call is None:
             if strength >= 4:
                 return ('bet', round(pot * 0.75, 2), f"{desc} - maniac bets big")
@@ -1471,7 +1471,7 @@ def _postflop_value_maniac(hole_cards, board, pot, to_call, street, strength, de
             if hand_info['has_bottom_pair']:
                 return ('fold', 0, f"{desc} - fold bottom pair on river")
             # Middle pair: fold to 40%+ pot bets
-            if hand_info['has_middle_pair'] and pot_pct > 0.4:
+            if hand_info['has_middle_pair'] and pot_pct > 0.6:
                 return ('fold', 0, f"{desc} - fold middle pair vs {pot_pct:.0%} pot")
             if strength >= 2:  # Top pair+ can call small river bets
                 return ('call', 0, f"{desc} - call river")
@@ -1567,6 +1567,13 @@ def _postflop_value_lord(hole_cards, board, pot, to_call, street, strength, desc
     
     # ~~~ PAIRED BOARD DISCIPLINE ~~~
     if is_double_paired and strength < 5:
+        # Pocket pair on double-paired = two pair (pocket + higher board pair)
+        # 2NL villains bluff too much - call unless huge bet
+        if hand_info['is_pocket_pair'] and strength == 3:
+            pct = to_call / pot if pot > 0 else 0
+            if pct > 0.75:
+                return ('fold', 0, f"{desc} - fold pocket pair on double-paired vs big bet")
+            return ('call', 0, f"{desc} - call pocket pair on double-paired")
         if to_call == 0:
             return ('check', 0, f"{desc} - check (double-paired board, need full house+)")
         return ('fold', 0, f"{desc} - fold (double-paired board, villain likely has full house)")
@@ -1670,25 +1677,26 @@ def _postflop_value_lord(hole_cards, board, pot, to_call, street, strength, desc
             return ('raise', round(to_call * 2, 2), f"{desc} - raise set+")
         
         # TWO PAIR: call or fold based on type and aggression
+        # 2NL villains check-raise bluff - only fold to >40% pot check-raises
         if strength == 3:
             if hand_info['two_pair_type'] == 'pocket_under_board':
                 if pot_pct <= 0.5:
                     return ('call', 0, f"{desc} - call pocket under vs {pot_pct:.0%}")
                 return ('fold', 0, f"{desc} - fold pocket under vs big bet")
             if hand_info['two_pair_type'] == 'pocket_over_board':
-                if is_facing_raise:
+                if is_facing_raise and pot_pct > 0.6:
                     return ('fold', 0, f"{desc} - fold pocket over vs check-raise")
                 return ('call', 0, f"{desc} - call pocket over")
             if hand_info['two_pair_type'] == 'both_cards_hit':
-                if is_facing_raise:
+                if is_facing_raise and pot_pct > 0.6:
                     return ('fold', 0, f"{desc} - fold two pair vs check-raise")
                 if pot_pct > 1.0:
                     return ('fold', 0, f"{desc} - fold two pair vs overbet")
                 return ('call', 0, f"{desc} - call two pair")
             if hand_info['two_pair_type'] == 'one_card_board_pair':
-                if is_facing_raise:
+                if is_facing_raise and pot_pct > 0.6:
                     return ('fold', 0, f"{desc} - fold one_card two pair vs check-raise")
-                if street == 'river' and pot_pct > 0.5:
+                if street == 'river' and pot_pct > 0.66:
                     return ('fold', 0, f"{desc} - fold one_card two pair river")
                 return ('call', 0, f"{desc} - call one_card two pair")
             return ('call', 0, f"{desc} - call two pair")
@@ -1705,7 +1713,7 @@ def _postflop_value_lord(hole_cards, board, pot, to_call, street, strength, desc
             
             # OVERPAIR: call small, fold big (50% overall)
             if hand_info['is_overpair']:
-                if is_facing_raise:
+                if is_facing_raise and pot_pct > 0.6:
                     return ('fold', 0, f"{desc} - fold overpair vs check-raise")
                 if pot_pct <= 0.5:
                     return ('call', 0, f"{desc} - call overpair river")
@@ -1745,7 +1753,7 @@ def _postflop_value_lord(hole_cards, board, pot, to_call, street, strength, desc
             
             # OVERPAIR: call (67% win rate)
             if hand_info['is_overpair']:
-                if is_facing_raise:
+                if is_facing_raise and pot_pct > 0.6:
                     return ('fold', 0, f"{desc} - fold overpair vs check-raise")
                 return ('call', 0, f"{desc} - call overpair turn")
             
