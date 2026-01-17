@@ -1,6 +1,6 @@
 # OnyxPoker - Status Tracking
 
-**Last Updated**: January 17, 2026 23:26 UTC
+**Last Updated**: January 17, 2026 23:50 UTC
 
 ---
 
@@ -33,6 +33,21 @@
 ---
 
 ## Session History
+
+### Session 55: Bottom Pair Discipline + Disaster Analysis (January 17, 2026)
+
+**Fixed pokerkit_adapter.py bug:** `bet` action wasn't handled (only `raise`), so postflop bets weren't being placed.
+
+**Added `--disasters` flag** to pokerkit_adapter.py - shows top 10 worst hands with full context.
+
+**Tightened bottom pair play:**
+- Before: Bottom pair treated same as middle pair (call ≤33% on turn/river)
+- After: Bottom pair folds turn/river always, calls flop only ≤33%
+
+**50k hand simulation results:**
+- BB/100: **+32.4** (up from +20 before fixes)
+- Top 10 disasters: 9/10 are coolers (flush vs higher flush, full house vs quads)
+- No more bottom pair calling down disasters
 
 ### Session 54: Pot Odds Standardization + Losing Hand Analysis (January 17, 2026)
 

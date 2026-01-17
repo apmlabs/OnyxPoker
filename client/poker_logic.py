@@ -1728,10 +1728,14 @@ def _postflop_value_lord(hole_cards, board, pot, to_call, street, strength, desc
                 return ('fold', 0, f"{desc} - fold TPWK river")
             
             # WEAK PAIR: 50% win but risky
-            if hand_info['has_middle_pair'] or hand_info['has_bottom_pair']:
+            if hand_info['has_middle_pair']:
                 if pot_pct <= 0.33:
-                    return ('call', 0, f"{desc} - call weak pair river small bet")
-                return ('fold', 0, f"{desc} - fold weak pair river")
+                    return ('call', 0, f"{desc} - call middle pair river small")
+                return ('fold', 0, f"{desc} - fold middle pair river")
+            
+            # BOTTOM PAIR: fold river always
+            if hand_info['has_bottom_pair']:
+                return ('fold', 0, f"{desc} - fold bottom pair river")
             
             return ('fold', 0, f"{desc} - fold river")
         
@@ -1764,10 +1768,14 @@ def _postflop_value_lord(hole_cards, board, pot, to_call, street, strength, desc
                 return ('fold', 0, f"{desc} - fold top pair vs {pot_pct:.0%}")
             
             # WEAK PAIR: fold turn (33-50% win)
-            if hand_info['has_middle_pair'] or hand_info['has_bottom_pair']:
+            if hand_info['has_middle_pair']:
                 if pot_pct <= 0.33:
-                    return ('call', 0, f"{desc} - call weak pair turn small")
-                return ('fold', 0, f"{desc} - fold weak pair turn")
+                    return ('call', 0, f"{desc} - call middle pair turn small")
+                return ('fold', 0, f"{desc} - fold middle pair turn")
+            
+            # BOTTOM PAIR: fold turn always
+            if hand_info['has_bottom_pair']:
+                return ('fold', 0, f"{desc} - fold bottom pair turn")
             
             return ('fold', 0, f"{desc} - fold turn")
         
@@ -1800,11 +1808,17 @@ def _postflop_value_lord(hole_cards, board, pot, to_call, street, strength, desc
                 return ('call', 0, f"{desc} - call top pair flop")
             return ('fold', 0, f"{desc} - fold top pair vs overbet")
         
-        # WEAK PAIR: call small (75% win rate surprisingly)
-        if hand_info['has_middle_pair'] or hand_info['has_bottom_pair']:
+        # MIDDLE PAIR: call small (75% win rate surprisingly)
+        if hand_info['has_middle_pair']:
             if pot_pct <= 0.5:
-                return ('call', 0, f"{desc} - call weak pair flop")
-            return ('fold', 0, f"{desc} - fold weak pair vs {pot_pct:.0%}")
+                return ('call', 0, f"{desc} - call middle pair flop")
+            return ('fold', 0, f"{desc} - fold middle pair vs {pot_pct:.0%}")
+        
+        # BOTTOM PAIR: call flop only small bets
+        if hand_info['has_bottom_pair']:
+            if pot_pct <= 0.33:
+                return ('call', 0, f"{desc} - call bottom pair flop small")
+            return ('fold', 0, f"{desc} - fold bottom pair flop")
         
         return ('fold', 0, f"{desc} - fold")
 
