@@ -435,10 +435,30 @@ class HelperBar:
                 
                 self.log(" | ".join(pos_actions), "DECISION")
                 
-                # Line 2: Call thresholds (vs raise)
-                call_info = all_positions.get('BTN', {}).get('call_info', '')
-                if call_info:
-                    self.log(f"vs raise: {call_info}", "INFO")
+                # Line 2: vs raise advice for all positions (if different)
+                vs_raise_by_pos = {}
+                for pos in ['UTG', 'MP', 'CO', 'BTN', 'SB', 'BB']:
+                    vs_raise_by_pos[pos] = all_positions[pos].get('call_info', 'FOLD')
+                
+                # Check if all positions have same advice
+                unique_advice = set(vs_raise_by_pos.values())
+                if len(unique_advice) == 1:
+                    # All same - show single advice
+                    self.log(f"vs raise: {list(unique_advice)[0]}", "INFO")
+                else:
+                    # Different advice - group by advice
+                    advice_to_pos = {}
+                    for pos, advice in vs_raise_by_pos.items():
+                        if advice not in advice_to_pos:
+                            advice_to_pos[advice] = []
+                        advice_to_pos[advice].append(pos)
+                    
+                    # Format: "EP/MP: FOLD | CO/BTN: 3BET | BB: CALL 3bb"
+                    parts = []
+                    for advice, positions in advice_to_pos.items():
+                        pos_str = '/'.join(positions)
+                        parts.append(f"{pos_str}: {advice}")
+                    self.log(f"vs raise: {' | '.join(parts)}", "INFO")
             else:
                 # Postflop or AI-only mode - show single decision
                 decision_str = f"=> {action.upper()}"

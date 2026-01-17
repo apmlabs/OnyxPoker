@@ -167,7 +167,7 @@ class StrategyEngine:
         
         # BB defend hands
         if position == 'BB' and in_bb_defend:
-            return "BB: CALL up to 3bb"
+            return "CALL up to 3bb"
         
         # Opening hands: can call min-raises only
         if in_open:
