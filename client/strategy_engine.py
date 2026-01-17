@@ -127,28 +127,38 @@ class StrategyEngine:
         }
     
     def _get_call_threshold(self, hand: str, position: str) -> str:
-        """Get max call amount for this hand in this position."""
+        """Get action vs raise for this hand in this position."""
         s = self.strategy
         
         # Check which ranges this hand is in
         in_4bet = hand in s.get('4bet', set())
         in_call_3bet = hand in s.get('call_3bet', set())
-        in_3bet = any(hand in s.get('3bet_vs', {}).get(pos, set()) 
-                      for pos in ['UTG', 'MP', 'CO', 'BTN'])
+        in_3bet_vs_pos = {}
+        for pos in ['UTG', 'MP', 'CO', 'BTN']:
+            in_3bet_vs_pos[pos] = hand in s.get('3bet_vs', {}).get(pos, set())
+        in_3bet_bluff = hand in s.get('3bet_bluff', set())
         in_call_ip = hand in s.get('call_open_ip', set())
         in_bb_defend = hand in s.get('bb_defend', set())
         in_open = hand in s.get('open', {}).get(position, set())
         
-        # Premium: AA, KK, QQ, AKs - can call any amount
+        # Premium: AA, KK - 4bet/call any
         if in_4bet:
-            return "CALL any"
+            return "4BET or CALL any"
         
-        # Strong: JJ, TT, AQs - can call 3bets
+        # Strong 3bet value hands (QQ+, AK)
+        if any(in_3bet_vs_pos.values()) and in_call_3bet:
+            return "3BET value, call 4bet"
+        
+        # 3bet bluff hands (A5s-A4s) - 3bet or fold
+        if in_3bet_bluff:
+            return "3BET bluff or FOLD"
+        
+        # Can call 3bets (JJ, TT, AQs)
         if in_call_3bet:
-            return "CALL up to 15bb"
+            return "CALL 3bet up to 15bb"
         
         # 3-bet hands that don't call 3bets - reraise or fold
-        if in_3bet and not in_call_ip:
+        if any(in_3bet_vs_pos.values()) and not in_call_ip:
             return "3BET or FOLD"
         
         # Calling hands IP (not BB-specific)
@@ -156,8 +166,8 @@ class StrategyEngine:
             return "CALL up to 4bb"
         
         # BB defend hands
-        if in_bb_defend:
-            return "CALL up to 3bb"
+        if position == 'BB' and in_bb_defend:
+            return "BB: CALL up to 3bb"
         
         # Opening hands: can call min-raises only
         if in_open:
