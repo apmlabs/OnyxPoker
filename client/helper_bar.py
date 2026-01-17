@@ -152,16 +152,16 @@ class HelperBar:
         right.pack_propagate(False)
 
         # Stats display (scrollable)
-        stats_scroll = scrolledtext.ScrolledText(right, font=('Courier', 28),
+        stats_scroll = scrolledtext.ScrolledText(right, font=('Courier', 20),
                                                 bg='#1a1a1a', fg='#ccc',
                                                 wrap='word', height=8)
         stats_scroll.pack(fill='both', expand=True, padx=5, pady=2)
         self.stats_text = stats_scroll
 
         # Color tags for stats
-        self.stats_text.tag_configure('HAND', foreground='#00ff00', font=('Courier', 28, 'bold'))
-        self.stats_text.tag_configure('DRAW', foreground='#00ffff', font=('Courier', 28))
-        self.stats_text.tag_configure('DANGER', foreground='#ff8800', font=('Courier', 24))
+        self.stats_text.tag_configure('HAND', foreground='#00ff00', font=('Courier', 20, 'bold'))
+        self.stats_text.tag_configure('DRAW', foreground='#00ffff', font=('Courier', 20))
+        self.stats_text.tag_configure('DANGER', foreground='#ff8800', font=('Courier', 17))
 
         # Time
         self.time_label = tk.Label(right, text="", font=('Arial', 9),
