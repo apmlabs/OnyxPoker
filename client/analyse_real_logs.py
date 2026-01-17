@@ -82,12 +82,14 @@ def parse_hand(text, bb):
         'hero_invested': 0,
         'hero_won': 0,
         'hero_preflop_action': None,
+        'preflop_pot': 0,  # Track pot going to flop
     }
     
     current_street = 'preflop'
     hero_seat = None
     button_seat = None
     seats = {}
+    preflop_pot = 0  # Track all preflop contributions
     
     # Track hero's investment per street
     # Key insight: "raises to €X" means hero's TOTAL on this street is X
@@ -118,9 +120,27 @@ def parse_hand(text, bb):
             hand['hero_cards'] = [m.group(1), m.group(2)]
             continue
         
+        # Track ALL preflop contributions (blinds, calls, raises)
+        if current_street == 'preflop':
+            if ': posts small blind' in line or ': posts big blind' in line:
+                m = re.search(r'€([\d.]+)', line)
+                if m:
+                    preflop_pot += float(m.group(1))
+            elif ': calls' in line:
+                m = re.search(r'€([\d.]+)', line)
+                if m:
+                    preflop_pot += float(m.group(1))
+            elif ': raises' in line:
+                # "raises €X to €Y" - Y is total put in by this player
+                m = re.search(r'to €([\d.]+)', line)
+                if m:
+                    preflop_pot += float(m.group(1))
+        
         # Streets
         if '*** FLOP ***' in line:
             current_street = 'flop'
+            # Save preflop pot before moving to flop
+            hand['preflop_pot'] = preflop_pot
             m = re.search(r'\[(\w\w) (\w\w) (\w\w)\]', line)
             if m:
                 hand['board'] = [m.group(1), m.group(2), m.group(3)]
@@ -302,23 +322,37 @@ def get_postflop_situations(hand):
             continue
         
         board = hand['board'][:board_len]
-        pot = 0
+        # Start with preflop pot
+        pot = hand.get('preflop_pot', 0)
         to_call = 0
         hero_action_on_street = None
+        hero_already_acted = False  # Track if hero bet/raised/checked before villain's action
+        is_facing_raise = False
         
         # Calculate pot and find hero's decision
         for action in hand['postflop_actions']:
             if action['street'] != street:
                 if action['street'] in ['flop', 'turn', 'river']:
-                    # Previous street
+                    # Previous street - add all actions to pot
                     if action['action'] in ['call', 'bet', 'raise', 'villain_bet', 'villain_raise']:
                         pot += action.get('amount', 0)
                 continue
             
+            # Current street - add hero's bet to pot before villain's action
+            if action['action'] in ['bet', 'raise']:
+                pot += action.get('amount', 0)
+                hero_already_acted = True
+            elif action['action'] == 'check':
+                hero_already_acted = True
+            
             if action['action'] in ['villain_bet', 'villain_raise']:
                 to_call = action['amount']
                 pot += action['amount']
-            elif action['action'] in ['fold', 'check', 'call', 'bet', 'raise']:
+                # If hero already acted and now faces a bet, it's a check-raise
+                if hero_already_acted:
+                    is_facing_raise = True
+            elif action['action'] in ['fold', 'call']:
+                # Hero's response to villain's bet
                 hero_action_on_street = action['action']
                 break
         
@@ -329,7 +363,8 @@ def get_postflop_situations(hand):
                 'pot': pot,
                 'to_call': to_call,
                 'is_aggressor': is_aggressor,
-                'hero_action': hero_action_on_street
+                'hero_action': hero_action_on_street,
+                'is_facing_raise': is_facing_raise
             })
     
     return situations
@@ -345,7 +380,8 @@ def evaluate_postflop(hand, situation, strategy_name):
             street=situation['street'],
             is_ip=True,
             is_aggressor=situation['is_aggressor'],
-            strategy=strategy_name
+            strategy=strategy_name,
+            is_facing_raise=situation.get('is_facing_raise', False)
         )
         return action, reason
     except:

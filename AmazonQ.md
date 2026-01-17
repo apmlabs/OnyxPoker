@@ -1,47 +1,33 @@
 # OnyxPoker - Status Tracking
 
-**Last Updated**: January 16, 2026 23:20 UTC
+**Last Updated**: January 17, 2026 00:20 UTC
 
-## 🎉 SESSION 47: Check-Raise Detection 🎉
+## 🎉 SESSION 48: Paired Board Discipline 🎉
 
-**Session 47**: Added villain check-raise detection to value_lord. Renamed analyze_hands.py to analyse_real_logs.py.
+**Session 48**: Added paired board discipline to value_lord - don't bet into paired/double-paired boards without strong hands.
 
 ---
 
-## Current Status: SESSION 47 - Check-Raise Detection
+## Current Status: SESSION 48 - Paired Board Discipline
 
-**GOAL**: Detect villain check-raises and fold appropriately with two pair/overpair.
+**GOAL**: Stop betting into paired boards with weak hands (saves ~110 BB on analyzed hands).
 
 ### Implementation
-- Track `last_hero_action` per street across F9 presses in helper_bar.py
-- Detect villain raise: hero already acted AND now faces to_call > 0
-- Pass `is_facing_raise` through strategy_engine to poker_logic
+- Added `is_double_paired_board` detection to `analyze_hand()`
+- Double-paired board (3399): CHECK unless full house+ (strength >= 5)
+- Single-paired board (77x): CHECK turn/river unless set+ (strength >= 4)
 
-### New Folds in value_lord
-| Hand Type | vs Check-Raise | Reason |
-|-----------|----------------|--------|
-| Two pair (both_cards_hit) | FOLD | Likely set+ |
-| Pocket over board (AA on 77) | FOLD | Likely trips |
-| Overpair on river | FOLD | Likely trips+ |
+### New Logic in value_lord
+| Board Type | Street | Action |
+|------------|--------|--------|
+| Double-paired (3399) | Any | CHECK unless full house+ |
+| Double-paired facing bet | Any | FOLD (villain likely has FH) |
+| Single-paired (77x) | Flop | Bet OK (pot control) |
+| Single-paired (77x) | Turn/River | CHECK unless set+ |
 
-### Analysis Results (hands >= 10 BB)
-| Category | Hands | BB |
-|----------|-------|-----|
-| SAVES (folds losing) | 11 | 248.8 |
-| MISSES (folds winning) | 7 | 90.0 |
-| **NET IMPACT** | - | **+158.8** |
-
-### Unsaved Losses Breakdown (28 hands, 1244.1 BB)
-| Category | Hands | BB |
-|----------|-------|-----|
-| VILLAIN RAISED (check-raise helps) | 12 | 613.8 |
-| OTHER (coolers/unavoidable) | 16 | 630.3 |
-
-### Files Changed
-- `helper_bar.py` - Track hero action, detect villain raise
-- `strategy_engine.py` - Pass is_facing_raise to postflop_action
-- `poker_logic.py` - Add is_facing_raise param, fold logic
-- `analyze_hands.py` → `analyse_real_logs.py` - Renamed + enhanced
+### Example Hands Saved
+- 88 on 5h7s7cTdAc: Now checks turn/river (saves ~64 BB)
+- AQs on 3h9c3s9h5h: Now checks all streets (saves ~70 BB)
 
 ### Test Results
 - audit_strategies.py: 30/30 PASS
@@ -49,7 +35,7 @@
 
 ---
 
-## Previous: SESSION 46 - Strategy Evaluation & Default Switch
+## Previous: SESSION 47 - Check-Raise Detection
 
 **GOAL**: Fix eval_real_hands.py, run PokerKit simulations, choose default strategy.
 

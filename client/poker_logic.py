@@ -42,6 +42,8 @@ def analyze_hand(hole_cards: List[Tuple[str, str]], board: List[Tuple[str, str]]
     board_trips = [r for r, c in board_rank_counts.items() if c >= 3]
     has_board_pair = len(board_pairs) > 0
     board_pair_val = max(RANK_VAL[r] for r in board_pairs) if board_pairs else None
+    # Double-paired board: two different pairs on board (e.g., 3399, 7722)
+    is_double_paired_board = len(board_pairs) >= 2
     
     # All cards combined
     all_ranks = hero_ranks + board_ranks
@@ -289,6 +291,7 @@ def analyze_hand(hole_cards: List[Tuple[str, str]], board: List[Tuple[str, str]]
         'pocket_val': pocket_val,
         'has_board_pair': has_board_pair,
         'board_pair_val': board_pair_val,
+        'is_double_paired_board': is_double_paired_board,
         'is_overpair': is_overpair,
         'is_underpair': is_underpair,
         'is_underpair_to_ace': is_underpair_to_ace,
@@ -1527,12 +1530,39 @@ def _postflop_value_lord(hole_cards, board, pot, to_call, street, strength, desc
     """
     VALUE_LORD postflop - value_maniac with Session 41 improvements.
     Fixes: c-bet discipline, overpair aggression, bottom pair caution.
+    Session 48: Paired board discipline - don't bet into paired/double-paired boards without strong hand.
     """
     hand_info = analyze_hand(hole_cards, board)
     bet_in_bb = to_call / bb_size if bb_size > 0 else 0
     is_big_bet = to_call > 0 and pot > 0 and to_call >= pot * 0.5
     is_dangerous_board_pair = hand_info['board_pair_val'] is not None and hand_info['board_pair_val'] >= 8  # T+
     has_strong_draw = has_flush_draw or has_oesd
+    is_paired_board = hand_info['has_board_pair']
+    is_double_paired = hand_info.get('is_double_paired_board', False)
+    
+    # SESSION 48: Paired board discipline
+    # On double-paired boards (3399, 7722), hero's "two pair" is just the board - worthless
+    # Any villain with a 3, 9, 7, or 2 has full house
+    # Only bet if we have full house or better (strength >= 5)
+    if is_double_paired and strength < 5:
+        # Hero has no real hand on double-paired board
+        if to_call == 0:
+            return ('check', 0, f"{desc} - check (double-paired board, need full house+)")
+        else:
+            # Facing bet on double-paired board without full house = fold
+            return ('fold', 0, f"{desc} - fold (double-paired board, villain likely has full house)")
+    
+    # SESSION 48: Single paired board discipline (77x, 33x)
+    # On turn/river, if villain called flop on paired board, they likely have trips
+    # Only continue betting with set+ (strength >= 4)
+    if is_paired_board and not is_double_paired and street in ['turn', 'river']:
+        # If we don't have set or better, check (don't bet into likely trips)
+        if strength < 4 and to_call == 0:
+            # Exception: overpair can still bet for thin value on turn
+            if hand_info['is_overpair'] and street == 'turn':
+                pass  # Let normal overpair logic handle it
+            else:
+                return ('check', 0, f"{desc} - check (paired board turn/river, villain may have trips)")
     
     # Check for straight board (4+ cards within 5-rank span = straight possible)
     board_vals = sorted([RANK_VAL[c[0]] for c in board], reverse=True) if board else []
@@ -1550,6 +1580,17 @@ def _postflop_value_lord(hole_cards, board, pot, to_call, street, strength, desc
         if strength >= 4:  # Set+
             return ('bet', round(pot * 1.25, 2), f"{desc} - overbet value")
         if strength >= 3:  # Two pair
+            # pocket_under_board (88 on TT): Any Tx has trips, any 99+ beats us - pot control
+            if hand_info['two_pair_type'] == 'pocket_under_board':
+                if street == 'flop':
+                    return ('bet', round(pot * 0.33, 2), f"{desc} - small bet (pot control)")
+                return ('check', 0, f"{desc} - check (pocket under board)")
+            # pocket_over_board (88 on 77): Any 7x has trips - pot control
+            if hand_info['two_pair_type'] == 'pocket_over_board':
+                if street == 'flop':
+                    return ('bet', round(pot * 0.5, 2), f"{desc} - bet (pot control)")
+                return ('check', 0, f"{desc} - check (pocket over board)")
+            # one_card_board_pair on dangerous board (K2 on K99): CHECK
             if hand_info['two_pair_type'] == 'one_card_board_pair' and is_dangerous_board_pair:
                 if street == 'flop':
                     return ('bet', round(pot * 0.33, 2), f"{desc} - small bet (pot control)")
@@ -1626,10 +1667,14 @@ def _postflop_value_lord(hole_cards, board, pot, to_call, street, strength, desc
                 if pot_pct > 1.0:
                     return ('fold', 0, f"{desc} - fold two pair vs overbet (likely set+)")
                 return ('raise', round(to_call * 1.0, 2), f"{desc} - raise strong")
-            if hand_info['two_pair_type'] == 'one_card_board_pair' and is_dangerous_board_pair:
-                if is_big_bet or street == 'river':
-                    return ('fold', 0, f"{desc} - fold (two pair on dangerous board)")
-                return ('call', 0, f"{desc} - call (but fold to more aggression)")
+            if hand_info['two_pair_type'] == 'one_card_board_pair':
+                # Check-raise = trips/set at 2NL
+                if is_facing_raise:
+                    return ('fold', 0, f"{desc} - fold one_card two pair vs check-raise (likely trips)")
+                if is_dangerous_board_pair:
+                    if is_big_bet or street == 'river':
+                        return ('fold', 0, f"{desc} - fold (two pair on dangerous board)")
+                    return ('call', 0, f"{desc} - call (but fold to more aggression)")
             return ('raise', round(to_call * 1.0, 2), f"{desc} - raise strong")
         pot_pct = to_call / pot if pot > 0 else 0
         if street == 'river':

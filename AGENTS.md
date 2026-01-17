@@ -300,6 +300,39 @@ cd client && python3 poker_sim.py 200000
 
 ## 📖 SESSION HISTORY & LESSONS LEARNED
 
+### Session 48: Paired Board Discipline (January 17, 2026)
+
+**Added paired board discipline to value_lord strategy.**
+
+**Problem Identified:**
+- Analyzed 4 losing hands from "OTHER LOSSES" category
+- Found 2 hands where hero bet 3 streets into paired boards with weak holdings
+- Hand 2 (88 on 77 board): Bet turn €0.82 + river €2.38 into likely trips
+- Hand 3 (AQs on 3399 board): Bet turn €0.82 + river €2.38 with just board two pair
+
+**Implementation:**
+- Added `is_double_paired_board` detection to `analyze_hand()`
+- Double-paired board (3399, 7722): Only bet with full house+ (strength >= 5)
+- Single-paired board (77x): Check turn/river unless we have set+ (strength >= 4)
+
+**New Logic in value_lord:**
+| Board Type | Street | Action |
+|------------|--------|--------|
+| Double-paired (3399) | Any | CHECK unless full house+ |
+| Double-paired facing bet | Any | FOLD (villain likely has FH) |
+| Single-paired (77x) | Flop | Bet OK (pot control) |
+| Single-paired (77x) | Turn/River | CHECK unless set+ |
+
+**Example Hands Saved:**
+- 88 on 5h7s7cTdAc: Now checks turn/river (saves ~64 BB)
+- AQs on 3h9c3s9h5h: Now checks all streets (saves ~70 BB)
+
+**Test Results:**
+- audit_strategies.py: 30/30 PASS
+- test_strategy_engine.py: 48/55 (unchanged)
+
+---
+
 ### Session 47: Check-Raise Detection (January 16, 2026)
 
 **Added villain check-raise detection to value_lord strategy.**
