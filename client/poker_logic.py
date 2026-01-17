@@ -730,7 +730,7 @@ STRATEGIES['maniac'] = {
 STRATEGIES['value_maniac'] = STRATEGIES['maniac'].copy()
 STRATEGIES['value_maniac']['name'] = 'Value Maniac'
 
-# value_lord: value_maniac with Session 41 improvements
+# value_lord: disciplined value betting with paired board awareness
 STRATEGIES['value_lord'] = STRATEGIES['maniac'].copy()
 STRATEGIES['value_lord']['name'] = 'Value Lord'
 
@@ -1364,6 +1364,7 @@ def _postflop_value_maniac(hole_cards, board, pot, to_call, street, strength, de
     """
     VALUE_MANIAC postflop - Overbets for value, calls wide, paired board protection.
     """
+    # ~~~ VALUE_MANIAC SETUP ~~~
     hand_info = analyze_hand(hole_cards, board)
     bet_in_bb = to_call / bb_size if bb_size > 0 else 0
     # Use pot-relative sizing for "big bet" - 60%+ pot is big
@@ -1372,7 +1373,7 @@ def _postflop_value_maniac(hole_cards, board, pot, to_call, street, strength, de
     has_strong_draw = has_flush_draw or has_oesd  # 8+ outs
     
     if to_call == 0 or to_call is None:
-        # No bet to call - bet for value
+        # ~~~ VALUE_MANIAC: NO BET TO CALL ~~~
         if strength >= 4:  # Set+
             return ('bet', round(pot * 1.25, 2), f"{desc} - overbet value")
         if strength >= 3:  # Two pair
@@ -1415,7 +1416,7 @@ def _postflop_value_maniac(hole_cards, board, pot, to_call, street, strength, de
             return ('bet', round(pot * 1.1, 2), "river bluff")
         return ('check', 0, f"{desc} - check")
     else:
-        # Facing bet - raise monsters, call pairs, fold air
+        # ~~~ VALUE_MANIAC: FACING BET ~~~
         pot_pct = to_call / pot if pot > 0 else 0
         if strength >= 6:
             return ('raise', round(to_call * 3, 2), f"{desc} - raise monster")
@@ -1469,7 +1470,8 @@ def _postflop_value_maniac(hole_cards, board, pot, to_call, street, strength, de
             pot_odds = to_call / (pot + to_call) if (pot + to_call) > 0 else 1
             pot_pct = to_call / pot if pot > 0 else 0
             
-            # UNDERPAIR DEFENSE: Fold underpairs to aggression on scary boards
+            # VALUE_MANIAC UNDERPAIR DEFENSE
+            # Fold underpairs to aggression on scary boards
             if hand_info['is_pocket_pair'] and not hand_info['is_overpair']:
                 pocket_val = hand_info.get('pocket_val', 0)
                 is_strong_underpair = pocket_val >= 8  # TT+ (T=8, J=9, Q=10, K=11)
@@ -1528,10 +1530,13 @@ def _postflop_value_maniac(hole_cards, board, pot, to_call, street, strength, de
 def _postflop_value_lord(hole_cards, board, pot, to_call, street, strength, desc, has_any_draw, 
                          has_flush_draw=False, has_oesd=False, bb_size=0.05, is_aggressor=False, is_facing_raise=False):
     """
-    VALUE_LORD postflop - value_maniac with Session 41 improvements.
-    Fixes: c-bet discipline, overpair aggression, bottom pair caution.
-    Session 48: Paired board discipline - don't bet into paired/double-paired boards without strong hand.
+    VALUE_LORD postflop - Disciplined value betting with paired board awareness.
+    - C-bet discipline: only c-bet when aggressor
+    - Overpair aggression: always bet overpairs
+    - Paired board discipline: check/fold without trips+ on paired boards
+    - Underpair defense: fold turn/river when overcard on board
     """
+    # ~~~ VALUE_LORD SETUP ~~~
     hand_info = analyze_hand(hole_cards, board)
     bet_in_bb = to_call / bb_size if bb_size > 0 else 0
     is_big_bet = to_call > 0 and pot > 0 and to_call >= pot * 0.5
@@ -1540,7 +1545,7 @@ def _postflop_value_lord(hole_cards, board, pot, to_call, street, strength, desc
     is_paired_board = hand_info['has_board_pair']
     is_double_paired = hand_info.get('is_double_paired_board', False)
     
-    # SESSION 48: Paired board discipline
+    # ~~~ VALUE_LORD: Paired board discipline ~~~
     # On double-paired boards (3399, 7722), hero's "two pair" is just the board - worthless
     # Any villain with a 3, 9, 7, or 2 has full house
     # Only bet if we have full house or better (strength >= 5)
@@ -1576,7 +1581,7 @@ def _postflop_value_lord(hole_cards, board, pot, to_call, street, strength, desc
                 break
     
     if to_call == 0 or to_call is None:
-        # No bet to call - bet for value
+        # ~~~ VALUE_LORD: NO BET TO CALL ~~~
         if strength >= 4:  # Set+
             return ('bet', round(pot * 1.25, 2), f"{desc} - overbet value")
         if strength >= 3:  # Two pair
@@ -1639,7 +1644,7 @@ def _postflop_value_lord(hole_cards, board, pot, to_call, street, strength, desc
             return ('bet', round(pot * 0.9, 2), "c-bet big")
         return ('check', 0, f"{desc} - check")
     else:
-        # Facing bet - same as value_maniac
+        # ~~~ VALUE_LORD: FACING BET ~~~
         pot_pct = to_call / pot if pot > 0 else 0
         if strength >= 6:
             return ('raise', round(to_call * 3, 2), f"{desc} - raise monster")
@@ -1714,25 +1719,15 @@ def _postflop_value_lord(hole_cards, board, pot, to_call, street, strength, desc
             pot_odds = to_call / (pot + to_call) if (pot + to_call) > 0 else 1
             pot_pct = to_call / pot if pot > 0 else 0
             
-            # UNDERPAIR DEFENSE: Fold underpairs to aggression on scary boards
+            # ~~~ VALUE_LORD: UNDERPAIR DEFENSE ~~~
+            # When there's an overcard on board, villain betting likely has us beat
+            # TT on Q-high board = any Qx, JJ+ beats us
             if hand_info['is_pocket_pair'] and not hand_info['is_overpair']:
-                pocket_val = hand_info.get('pocket_val', 0)
-                is_strong_underpair = pocket_val >= 8  # TT+ (T=8, J=9, Q=10, K=11)
-                
-                # Flop: Check-call once (see if villain slows down)
-                if street == 'flop' and pot_pct <= 0.5:
+                # Flop: Call once if small bet (see if villain slows down)
+                if street == 'flop' and pot_pct <= 0.4:
                     return ('call', 0, f"{desc} - call once (underpair)")
-                # Flop overbet: Fold immediately
-                if street == 'flop' and pot_pct > 0.5:
-                    return ('fold', 0, f"{desc} - fold underpair vs overbet")
-                # Turn: Strong underpairs (JJ+) call small bets
-                if street == 'turn':
-                    if is_strong_underpair and pot_pct <= 0.5:
-                        return ('call', 0, f"{desc} - call strong underpair")
-                    return ('fold', 0, f"{desc} - fold underpair vs aggression")
-                # River: Fold all underpairs
-                if street == 'river':
-                    return ('fold', 0, f"{desc} - fold underpair river")
+                # Flop 40%+ pot or Turn/River: Fold (overcard = we're beat)
+                return ('fold', 0, f"{desc} - fold underpair")
             
             # TOP PAIR: Differentiate by kicker strength
             if hand_info['has_top_pair']:
@@ -2700,7 +2695,7 @@ def _postflop_sonnet(hole_cards, board, pot, to_call, street, is_ip, is_aggresso
 def _postflop_sonnet_max(hole_cards, board, pot, to_call, street, is_ip, is_aggressor,
                          strength, desc, draws, combo_draw, has_flush_draw, has_oesd, has_any_draw):
     """
-    SONNET_MAX: Sonnet postflop + Session 33 fixes for 2NL fish-heavy tables.
+    SONNET_MAX: Sonnet postflop optimized for 2NL fish-heavy tables.
     Uses analyze_hand() for all hand property checks.
     """
     hand_info = analyze_hand(hole_cards, board)

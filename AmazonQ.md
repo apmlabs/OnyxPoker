@@ -1,33 +1,54 @@
 # OnyxPoker - Status Tracking
 
-**Last Updated**: January 17, 2026 00:20 UTC
+**Last Updated**: January 17, 2026 01:06 UTC
 
-## 🎉 SESSION 48: Paired Board Discipline 🎉
+## 🎉 SESSION 49: analyse_real_logs.py Bug Fixes 🎉
 
-**Session 48**: Added paired board discipline to value_lord - don't bet into paired/double-paired boards without strong hands.
+**Session 49**: Fixed two bugs in analyse_real_logs.py that were misclassifying hands.
 
 ---
 
-## Current Status: SESSION 48 - Paired Board Discipline
+## Current Status: SESSION 49 - Analysis Tool Bug Fixes
 
-**GOAL**: Stop betting into paired boards with weak hands (saves ~110 BB on analyzed hands).
+**GOAL**: Fix bugs causing incorrect hand categorization in analyse_real_logs.py
+
+### Bug #1: Postflop Savings Not Counting Folds
+- **Problem**: `calculate_postflop_savings()` only counted savings when strategy "checks", not when strategy "folds"
+- **Impact**: Hands where value_lord folds showed 0 BB saved
+- **Fix**: Count fold savings + all future street savings when folding
+
+### Bug #2: Wrong Preflop Raise Detection
+- **Problem**: `get_preflop_facing()` used `preflop_actions[0]` (first raise) instead of `preflop_actions[-1]` (last raise)
+- **Impact**: A9s vs 3bet (€0.45) was detected as vs open (€0.10)
+- **Fix**: Use last raise amount to determine what hero actually faced
+
+### Results After Fixes
+**A9s hand (73.0 BB loss)**: Now correctly shows as SAVES - value_lord folds A9s vs 3bet preflop
+
+### Full Analysis Results (1,422 hands)
+| Metric | Value |
+|--------|-------|
+| Actual results | -625.4 BB (-44.0 BB/100) |
+| **value_lord NET impact** | **+22.17 €** (~425 BB) |
+
+| Category | Hands | Saves | Misses | Net BB |
+|----------|-------|-------|--------|--------|
+| Preflop folds | 75 | 335.5 BB | 146.4 BB | +189.1 BB |
+| Postflop folds | 22 | 452.6 BB | 216.8 BB | +235.8 BB |
+| **Total** | 97 | 788.1 BB | 363.2 BB | **+424.9 BB** |
+
+**Bottom line**: Following value_lord would improve results by ~+30 BB/100
+
+---
+
+## Previous: SESSION 48 - Paired Board Discipline
+
+**GOAL**: Stop betting into paired boards with weak hands.
 
 ### Implementation
 - Added `is_double_paired_board` detection to `analyze_hand()`
 - Double-paired board (3399): CHECK unless full house+ (strength >= 5)
 - Single-paired board (77x): CHECK turn/river unless set+ (strength >= 4)
-
-### New Logic in value_lord
-| Board Type | Street | Action |
-|------------|--------|--------|
-| Double-paired (3399) | Any | CHECK unless full house+ |
-| Double-paired facing bet | Any | FOLD (villain likely has FH) |
-| Single-paired (77x) | Flop | Bet OK (pot control) |
-| Single-paired (77x) | Turn/River | CHECK unless set+ |
-
-### Example Hands Saved
-- 88 on 5h7s7cTdAc: Now checks turn/river (saves ~64 BB)
-- AQs on 3h9c3s9h5h: Now checks all streets (saves ~70 BB)
 
 ### Test Results
 - audit_strategies.py: 30/30 PASS

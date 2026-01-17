@@ -300,6 +300,62 @@ cd client && python3 poker_sim.py 200000
 
 ## 📖 SESSION HISTORY & LESSONS LEARNED
 
+### Session 49: analyse_real_logs.py Bug Fixes (January 17, 2026)
+
+**Fixed two bugs in analyse_real_logs.py that were misclassifying hands.**
+
+**Bug #1: Postflop Savings Not Counting Folds**
+- `calculate_postflop_savings()` only counted savings when strategy "checks"
+- When strategy "folds", savings were 0 even though we'd save all future bets
+- Fix: Count fold savings + all future street savings when folding
+
+```python
+# OLD: Only counted check savings
+if action == 'check' and hero_bets[street] > 0:
+    savings += hero_bets[street] / bb
+
+# NEW: Count fold savings + future streets
+if action in ['check', 'fold'] and hero_bets[street] > 0:
+    savings += hero_bets[street] / bb
+    if action == 'fold':
+        for future_street in streets[i+1:]:
+            savings += hero_bets[future_street] / bb
+        break
+```
+
+**Bug #2: Wrong Preflop Raise Detection**
+- `get_preflop_facing()` used `preflop_actions[0]` (first raise) instead of `preflop_actions[-1]` (last raise)
+- A9s vs 3bet (€0.45) was detected as vs open (€0.10) because code used first raise
+- Fix: Use last raise amount to determine what hero actually faced
+
+```python
+# OLD: Used first raise (wrong when hero called a 3bet)
+call_amount = preflop_actions[0].get('amount', 0)
+
+# NEW: Use last raise (what hero actually called)
+call_amount = preflop_actions[-1].get('amount', 0)
+```
+
+**Impact:**
+- A9s (73.0 BB loss) now correctly shows as SAVES - value_lord folds A9s vs 3bet preflop
+- UNSAVED LOSSES dropped from 12 hands to 11 hands
+
+**Full Analysis Results (1,422 hands):**
+| Metric | Value |
+|--------|-------|
+| Actual results | -625.4 BB (-44.0 BB/100) |
+| **value_lord NET impact** | **+22.17 €** (~425 BB) |
+
+| Category | Hands | Saves | Misses | Net BB |
+|----------|-------|-------|--------|--------|
+| Preflop folds | 75 | 335.5 BB | 146.4 BB | +189.1 BB |
+| Postflop folds | 22 | 452.6 BB | 216.8 BB | +235.8 BB |
+| **Total** | 97 | 788.1 BB | 363.2 BB | **+424.9 BB** |
+
+**Critical Lesson:** When hero calls preflop, use the LAST raise amount (what they actually called), not the first raise. Array indexing matters: `[-1]` vs `[0]`.
+
+---
+
 ### Session 48: Paired Board Discipline (January 17, 2026)
 
 **Added paired board discipline to value_lord strategy.**

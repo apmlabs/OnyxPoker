@@ -269,15 +269,49 @@ def get_preflop_facing(hand):
     facing = 'none'
     to_call = hand['bb']
     
-    for action in hand['preflop_actions']:
-        if action['action'] == 'raise':
-            if facing == 'none':
+    # If hero's first action was raise and it's the only/first raise, hero opened
+    hero_action = hand.get('hero_preflop_action')
+    preflop_actions = hand.get('preflop_actions', [])
+    
+    # Count raises before hero's action
+    # preflop_actions only contains hero's actions, so if hero raised, they opened
+    # We need to check if there were villain raises BEFORE hero acted
+    # Since we only track hero actions, if hero raised it means they opened or 3bet
+    
+    # Simple heuristic: if hero raised and amount is small (2-4bb), they opened
+    # If hero raised and amount is larger (6bb+), they likely 3bet
+    if hero_action == 'raise' and preflop_actions:
+        raise_amount = preflop_actions[0].get('amount', 0)
+        bb = hand['bb']
+        raise_bb = raise_amount / bb if bb > 0 else 0
+        
+        # Standard open is 2-7bb, 3bet is typically 3x the open (8-15bb)
+        if raise_bb <= 7:
+            # Hero opened, facing = none
+            return 'none', 0
+        elif raise_bb <= 18:
+            # Hero 3bet, was facing open
+            facing = 'open'
+            to_call = 0  # Hero already acted
+        else:
+            # Hero 4bet, was facing 3bet
+            facing = '3bet'
+            to_call = 0
+    elif hero_action == 'call':
+        # Hero called, so was facing something
+        # Use the LAST raise amount (what hero actually called)
+        if preflop_actions:
+            call_amount = preflop_actions[-1].get('amount', 0)
+            bb = hand['bb']
+            call_bb = call_amount / bb if bb > 0 else 0
+            
+            if call_bb <= 4:
                 facing = 'open'
-            elif facing == 'open':
+            elif call_bb <= 15:
                 facing = '3bet'
-            elif facing == '3bet':
+            else:
                 facing = '4bet'
-            to_call = action['amount']
+            to_call = call_amount
     
     # Adjust for blinds
     if hand['hero_position'] == 'SB':
@@ -762,7 +796,7 @@ def detailed_analysis(min_bb=10, strategy_name='value_lord'):
         from poker_logic import analyze_hand
         
         if not hand['board']:
-            return "preflop all-in"
+            return "preflop all-in", 0
         
         # Parse hero cards
         hole = []
@@ -790,7 +824,73 @@ def detailed_analysis(min_bb=10, strategy_name='value_lord'):
         if villain_raised:
             result += f" [VILLAIN RAISED on {raise_street}]"
         
-        return result
+        # Calculate postflop savings
+        postflop_savings_bb = calculate_postflop_savings(hand, strategy_name)
+        
+        return result, postflop_savings_bb
+    
+    def calculate_postflop_savings(hand, strategy_name):
+        """Calculate how much strategy would save by checking instead of betting."""
+        from poker_logic import postflop_action, analyze_hand
+        
+        if not hand['board']:
+            return 0
+        
+        # Parse hero cards
+        hole = []
+        for c in hand['hero_cards']:
+            rank, suit = c[0], c[1].lower()
+            hole.append((rank, suit))
+        
+        bb = hand['bb']
+        savings = 0
+        
+        # Get hero's actual bets per street from postflop_actions (all are hero actions)
+        hero_bets = {'flop': 0, 'turn': 0, 'river': 0}
+        for act in hand.get('postflop_actions', []):
+            if act['action'] in ['bet', 'raise']:
+                hero_bets[act['street']] += act.get('amount', 0)
+        
+        # Simulate strategy on each street
+        streets = ['flop', 'turn', 'river']
+        board_cards = hand['board']
+        
+        for i, street in enumerate(streets):
+            if i == 0:
+                board = board_cards[:3] if len(board_cards) >= 3 else []
+            elif i == 1:
+                board = board_cards[:4] if len(board_cards) >= 4 else []
+            else:
+                board = board_cards[:5] if len(board_cards) >= 5 else []
+            
+            if not board:
+                continue
+            
+            # Parse board for strategy
+            parsed_board = []
+            for c in board:
+                rank, suit = c[0], c[1].lower()
+                parsed_board.append((rank, suit))
+            
+            # What would strategy do? (assume no bet to call, we're checking if strategy would bet)
+            try:
+                action, size, reason = postflop_action(
+                    hole, parsed_board, 1.0, 0, street, True,
+                    strategy=strategy_name, is_aggressor=True
+                )
+                
+                # If strategy checks/folds but hero bet, that's savings
+                if action in ['check', 'fold'] and hero_bets[street] > 0:
+                    savings += hero_bets[street] / bb
+                    # If fold, also save all future street bets
+                    if action == 'fold':
+                        for future_street in streets[i+1:]:
+                            savings += hero_bets[future_street] / bb
+                        break  # No more streets after fold
+            except:
+                pass
+        
+        return savings
     
     print("\n" + "=" * 120)
     print("LOSING HANDS (where strategy could SAVE money by folding)")
@@ -809,8 +909,8 @@ def detailed_analysis(min_bb=10, strategy_name='value_lord'):
             status = "SAVES"
             detail = reason
         else:
-            play_analysis = get_play_analysis(h)
-            strategy_plays.append({'hand': h, 'analysis': play_analysis})
+            play_analysis, postflop_savings = get_play_analysis(h)
+            strategy_plays.append({'hand': h, 'analysis': play_analysis, 'postflop_savings': postflop_savings})
             status = "plays"
             detail = play_analysis
         
@@ -858,8 +958,12 @@ def detailed_analysis(min_bb=10, strategy_name='value_lord'):
     # Analyze unsaved losses
     if strategy_plays:
         plays_bb = sum(abs(p['hand']['profit_bb']) for p in strategy_plays)
+        postflop_savings_bb = sum(p.get('postflop_savings', 0) for p in strategy_plays)
+        net_loss_bb = plays_bb - postflop_savings_bb
+        
         print(f"\n" + "=" * 120)
-        print(f"UNSAVED LOSSES (strategy plays, still loses): {len(strategy_plays)} hands, {plays_bb:.1f} BB")
+        print(f"UNSAVED LOSSES (strategy plays, still loses): {len(strategy_plays)} hands")
+        print(f"  Total lost: {plays_bb:.1f} BB | Postflop savings: {postflop_savings_bb:.1f} BB | Net loss: {net_loss_bb:.1f} BB")
         print("=" * 120)
         
         # Categorize by villain raise
@@ -868,17 +972,23 @@ def detailed_analysis(min_bb=10, strategy_name='value_lord'):
         
         if raised_hands:
             raised_bb = sum(abs(p['hand']['profit_bb']) for p in raised_hands)
-            print(f"\n  VILLAIN RAISED (check-raise detection would help): {len(raised_hands)} hands, {raised_bb:.1f} BB")
+            raised_savings = sum(p.get('postflop_savings', 0) for p in raised_hands)
+            print(f"\n  VILLAIN RAISED (check-raise detection would help): {len(raised_hands)} hands, {raised_bb:.1f} BB lost, {raised_savings:.1f} BB saved")
             for p in sorted(raised_hands, key=lambda x: x['hand']['profit_bb']):
                 h = p['hand']
-                print(f"    {h['hand_str']:<6} {h['hero_position']:<4} {abs(h['profit_bb']):>6.1f} BB - {p['analysis']}")
+                savings = p.get('postflop_savings', 0)
+                savings_str = f" [saves {savings:.1f} BB]" if savings > 0 else ""
+                print(f"    {h['hand_str']:<6} {h['hero_position']:<4} {abs(h['profit_bb']):>6.1f} BB - {p['analysis']}{savings_str}")
         
         if other_hands:
             other_bb = sum(abs(p['hand']['profit_bb']) for p in other_hands)
-            print(f"\n  OTHER LOSSES (coolers/unavoidable): {len(other_hands)} hands, {other_bb:.1f} BB")
+            other_savings = sum(p.get('postflop_savings', 0) for p in other_hands)
+            print(f"\n  OTHER LOSSES (coolers/unavoidable): {len(other_hands)} hands, {other_bb:.1f} BB lost, {other_savings:.1f} BB saved")
             for p in sorted(other_hands, key=lambda x: x['hand']['profit_bb']):
                 h = p['hand']
-                print(f"    {h['hand_str']:<6} {h['hero_position']:<4} {abs(h['profit_bb']):>6.1f} BB - {p['analysis']}")
+                savings = p.get('postflop_savings', 0)
+                savings_str = f" [saves {savings:.1f} BB]" if savings > 0 else ""
+                print(f"    {h['hand_str']:<6} {h['hero_position']:<4} {abs(h['profit_bb']):>6.1f} BB - {p['analysis']}{savings_str}")
     
     return strategy_saves, strategy_misses
 
