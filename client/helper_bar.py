@@ -152,17 +152,16 @@ class HelperBar:
         right.pack_propagate(False)
 
         # Stats display (scrollable)
-        stats_scroll = scrolledtext.ScrolledText(right, font=('Courier', 9),
+        stats_scroll = scrolledtext.ScrolledText(right, font=('Courier', 28),
                                                 bg='#1a1a1a', fg='#ccc',
-                                                wrap='word', height=20)
+                                                wrap='word', height=8)
         stats_scroll.pack(fill='both', expand=True, padx=5, pady=2)
         self.stats_text = stats_scroll
 
         # Color tags for stats
-        self.stats_text.tag_configure('TRUE', foreground='#00ff00')
-        self.stats_text.tag_configure('FALSE', foreground='#666')
-        self.stats_text.tag_configure('HEADER', foreground='#ffff00', font=('Courier', 9, 'bold'))
-        self.stats_text.tag_configure('VALUE', foreground='#00ffff')
+        self.stats_text.tag_configure('HAND', foreground='#00ff00', font=('Courier', 28, 'bold'))
+        self.stats_text.tag_configure('DRAW', foreground='#00ffff', font=('Courier', 28))
+        self.stats_text.tag_configure('DANGER', foreground='#ff8800', font=('Courier', 24))
 
         # Time
         self.time_label = tk.Label(right, text="", font=('Arial', 9),
@@ -523,124 +522,68 @@ class HelperBar:
         self.time_label.config(text=f"{elapsed:.1f}s")
 
     def _update_stats_display(self, result):
-        """Update the decision stats panel with analyze_hand() output"""
+        """Update the decision stats panel - clean, minimal display"""
         self.stats_text.delete('1.0', 'end')
         
-        # Get analyze_hand stats if available
-        hand_analysis = result.get('hand_analysis', {})
-        if not hand_analysis or not hand_analysis.get('valid'):
-            self.stats_text.insert('end', "No hand analysis available\n")
+        hand = result.get('hand_analysis', {})
+        if not hand or not hand.get('valid'):
+            self.stats_text.insert('end', "No hand\n", 'HAND')
             return
         
-        # Equity info (at top, no title)
-        equity = result.get('equity', 0)
-        outs = result.get('outs', 0)
-        if equity > 0:
-            self.stats_text.insert('end', f"Win probability: {equity}%\n", 'VALUE')
-        if outs > 0:
-            self.stats_text.insert('end', f"Outs: {outs}\n", 'VALUE')
+        # 1. HAND STRENGTH (what you have)
+        strength = hand.get('strength', 0)
+        if strength >= 8:
+            self.stats_text.insert('end', "STRAIGHT FLUSH\n", 'HAND')
+        elif strength == 7:
+            self.stats_text.insert('end', "QUADS\n", 'HAND')
+        elif strength == 6:
+            self.stats_text.insert('end', "FULL HOUSE\n", 'HAND')
+        elif hand.get('has_flush'):
+            nut = " (NUT)" if hand.get('is_nut_flush') else ""
+            self.stats_text.insert('end', f"FLUSH{nut}\n", 'HAND')
+        elif hand.get('has_straight'):
+            self.stats_text.insert('end', "STRAIGHT\n", 'HAND')
+        elif hand.get('has_set'):
+            self.stats_text.insert('end', "SET\n", 'HAND')
+        elif hand.get('has_trips'):
+            self.stats_text.insert('end', "TRIPS\n", 'HAND')
+        elif hand.get('has_two_pair'):
+            tp = hand.get('two_pair_type', '')
+            self.stats_text.insert('end', f"TWO PAIR ({tp})\n", 'HAND')
+        elif hand.get('is_overpair'):
+            self.stats_text.insert('end', "OVERPAIR\n", 'HAND')
+        elif hand.get('has_top_pair'):
+            k = "good K" if hand.get('has_good_kicker') else "weak K"
+            self.stats_text.insert('end', f"TOP PAIR ({k})\n", 'HAND')
+        elif hand.get('has_middle_pair'):
+            self.stats_text.insert('end', "MIDDLE PAIR\n", 'HAND')
+        elif hand.get('has_bottom_pair'):
+            self.stats_text.insert('end', "BOTTOM PAIR\n", 'HAND')
+        elif hand.get('is_pocket_pair'):
+            self.stats_text.insert('end', "UNDERPAIR\n", 'HAND')
+        else:
+            self.stats_text.insert('end', "HIGH CARD\n", 'HAND')
         
-        # Flush/straight draws
-        if hand_analysis.get('has_flush_draw'):
-            nut = " (NUT)" if hand_analysis.get('is_nut_flush_draw') else ""
-            self.stats_text.insert('end', f"has_flush_draw: ", 'VALUE')
-            self.stats_text.insert('end', f"TRUE{nut}\n", 'TRUE')
-        else:
-            self.stats_text.insert('end', "has_flush_draw: ", 'VALUE')
-            self.stats_text.insert('end', "FALSE\n", 'FALSE')
-        if hand_analysis.get('has_flush'):
-            self.stats_text.insert('end', "has_flush: ", 'VALUE')
-            self.stats_text.insert('end', "TRUE\n", 'TRUE')
-        else:
-            self.stats_text.insert('end', "has_flush: ", 'VALUE')
-            self.stats_text.insert('end', "FALSE\n", 'FALSE')
-        if hand_analysis.get('has_straight_draw'):
-            self.stats_text.insert('end', "has_straight_draw: ", 'VALUE')
-            self.stats_text.insert('end', "TRUE\n", 'TRUE')
-        else:
-            self.stats_text.insert('end', "has_straight_draw: ", 'VALUE')
-            self.stats_text.insert('end', "FALSE\n", 'FALSE')
-        if hand_analysis.get('has_straight'):
-            self.stats_text.insert('end', "has_straight: ", 'VALUE')
-            self.stats_text.insert('end', "TRUE\n", 'TRUE')
-        else:
-            self.stats_text.insert('end', "has_straight: ", 'VALUE')
-            self.stats_text.insert('end', "FALSE\n", 'FALSE')
-        # Board info
-        self.stats_text.insert('end', "=== STATS ===\n", 'HEADER')
-        # Board texture warnings (only show if active)
-        board_straight_combos = hand_analysis.get('board_straight_combos', [])
-        if board_straight_combos:
-            combos_str = ', '.join(board_straight_combos)
-            self.stats_text.insert('end', f"Straight possible: {combos_str}\n", 'VALUE')
-        board_flush_suit = hand_analysis.get('board_flush_suit')
-        if board_flush_suit:
-            self.stats_text.insert('end', f"Flush possible: {board_flush_suit}\n", 'VALUE')
-        if hand_analysis.get('has_board_pair'):
-            val = hand_analysis.get('board_pair_val', 0)
-            self.stats_text.insert('end', f"has_board_pair: ", 'VALUE')
-            self.stats_text.insert('end', f"TRUE ({val})\n", 'TRUE')
-        else:
-            self.stats_text.insert('end', "has_board_pair: ", 'VALUE')
-            self.stats_text.insert('end', "FALSE\n", 'FALSE')
-        if hand_analysis.get('has_ace_on_board'):
-            self.stats_text.insert('end', "has_ace_on_board: ", 'VALUE')
-            self.stats_text.insert('end', "TRUE\n", 'TRUE')
-        else:
-            self.stats_text.insert('end', "has_ace_on_board: ", 'VALUE')
-            self.stats_text.insert('end', "FALSE\n", 'FALSE')
-        # Sets/trips (near bottom)
-        if hand_analysis.get('has_set'):
-            self.stats_text.insert('end', "has_set: ", 'VALUE')
-            self.stats_text.insert('end', "TRUE\n", 'TRUE')
-        elif hand_analysis.get('has_trips'):
-            self.stats_text.insert('end', "has_trips: ", 'VALUE')
-            self.stats_text.insert('end', "TRUE\n", 'TRUE')
-        # Other pairs (near bottom)
-        if hand_analysis.get('has_middle_pair'):
-            self.stats_text.insert('end', "has_middle_pair: ", 'VALUE')
-            self.stats_text.insert('end', "TRUE\n", 'TRUE')
-        if hand_analysis.get('has_bottom_pair'):
-            self.stats_text.insert('end', "has_bottom_pair: ", 'VALUE')
-            self.stats_text.insert('end', "TRUE\n", 'TRUE')
-        # Overpair/underpair (near bottom, no title)
-        if hand_analysis.get('is_overpair'):
-            self.stats_text.insert('end', "is_overpair: ", 'VALUE')
-            self.stats_text.insert('end', "TRUE\n", 'TRUE')
-        else:
-            self.stats_text.insert('end', "is_overpair: ", 'VALUE')
-            self.stats_text.insert('end', "FALSE\n", 'FALSE')
-        if hand_analysis.get('is_underpair_to_ace'):
-            self.stats_text.insert('end', "is_underpair_to_ace: ", 'VALUE')
-            self.stats_text.insert('end', "TRUE\n", 'TRUE')
-        else:
-            self.stats_text.insert('end', "is_underpair_to_ace: ", 'VALUE')
-            self.stats_text.insert('end', "FALSE\n", 'FALSE')
-        # Hand properties (at bottom, no title)
-        # Pocket pair info
-        if hand_analysis.get('is_pocket_pair'):
-            val = hand_analysis.get('pocket_val', 0)
-            self.stats_text.insert('end', f"is_pocket_pair: ", 'VALUE')
-            self.stats_text.insert('end', f"TRUE ({val})\n", 'TRUE')
-        else:
-            self.stats_text.insert('end', "is_pocket_pair: ", 'VALUE')
-            self.stats_text.insert('end', "FALSE\n", 'FALSE')
-        # Top pair
-        if hand_analysis.get('has_top_pair'):
-            kicker = "good" if hand_analysis.get('has_good_kicker') else "weak"
-            self.stats_text.insert('end', f"has_top_pair: ", 'VALUE')
-            self.stats_text.insert('end', f"TRUE ({kicker} kicker)\n", 'TRUE')
-        else:
-            self.stats_text.insert('end', "has_top_pair: ", 'VALUE')
-            self.stats_text.insert('end', "FALSE\n", 'FALSE')
-        # Two pair
-        if hand_analysis.get('has_two_pair'):
-            tp_type = hand_analysis.get('two_pair_type', 'unknown')
-            self.stats_text.insert('end', f"has_two_pair: ", 'VALUE')
-            self.stats_text.insert('end', f"TRUE ({tp_type})\n", 'TRUE')
-        else:
-            self.stats_text.insert('end', "has_two_pair: ", 'VALUE')
-            self.stats_text.insert('end', "FALSE\n", 'FALSE')
+        # 2. DRAWS (only if present)
+        draws = []
+        if hand.get('has_flush_draw'):
+            nut = " NUT" if hand.get('is_nut_flush_draw') else ""
+            draws.append(f"Flush draw{nut}")
+        if hand.get('has_straight_draw'):
+            draws.append("Straight draw")
+        if draws:
+            self.stats_text.insert('end', '\n'.join(draws) + '\n', 'DRAW')
+        
+        # 3. BOARD DANGERS (only if present)
+        dangers = []
+        if hand.get('board_flush_suit'):
+            dangers.append("Flush possible")
+        if hand.get('board_straight_combos'):
+            dangers.append("Straight possible")
+        if hand.get('has_board_pair'):
+            dangers.append("Board paired")
+        if dangers:
+            self.stats_text.insert('end', '---\n' + '\n'.join(dangers) + '\n', 'DANGER')
 
     def on_f10(self):
         """Toggle bot mode"""

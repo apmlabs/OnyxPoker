@@ -1,6 +1,6 @@
 # OnyxPoker - Status Tracking
 
-**Last Updated**: January 17, 2026 21:06 UTC
+**Last Updated**: January 17, 2026 21:47 UTC
 
 ---
 
@@ -49,6 +49,21 @@ vs raise: 3BET value, call 4bet                         (QQ, JJ, AQs)
 vs raise: 3BET bluff or FOLD                            (A5s, 87s)
 vs raise: UTG/MP/CO/BTN/SB: CALL 2.5bb | BB: CALL 3bb   (A9o, KTo)
 ```
+
+---
+
+### Session 53: Stats Panel Cleanup + Archetype Calibration (January 17, 2026)
+
+**UI: Cleaned up right stats panel**
+- Removed verbose TRUE/FALSE spam
+- Now shows only: hand strength (green), draws (cyan), board dangers (orange)
+- Font 3x bigger (28pt vs 9pt) for readability
+
+**Simulation: Updated archetype postflop behavior**
+- Real data showed sim opponents check too much (47-55% vs 38-48% real)
+- TAG had biggest gap: now bets TPWK 50% (was 30%), calls +20%
+- All archetypes bet and call more, matching real 2NL behavior
+- value_lord still ~+19 BB/100 against tougher opponents
 
 ---
 
