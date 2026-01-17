@@ -74,7 +74,7 @@ onyxpoker/                    # Main repo (GitHub: apmlabs/OnyxPoker)
 ├── AGENTS.md                 # Agent memory (NEVER DELETE)
 ├── AmazonQ.md                # Status tracking (NEVER DELETE)
 ├── README.md                 # Quick start (NEVER DELETE)
-├── idealistslp_extracted/    # Real PokerStars hand histories (1209 hands with €€€)
+├── idealistslp_extracted/    # Real PokerStars hand histories (1422 hands)
 │   └── HH*.txt               # Raw hand history files from live play
 ├── client/
 │   ├── helper_bar.py         # Main UI (F9=advice, F10=bot, F11=stop, F12=hide)
@@ -85,18 +85,18 @@ onyxpoker/                    # Main repo (GitHub: apmlabs/OnyxPoker)
 │   ├── poker_sim.py          # Monte Carlo simulator (200k+ hands)
 │   ├── pokerkit_adapter.py   # PokerKit simulation with external engine
 │   │
-│   │ # === EVALUATION (on session logs: server/uploads/*.jsonl) ===
-│   ├── eval_strategies.py    # Evaluates on session logs (good/bad folds)
-│   ├── eval_deep.py          # Deep stats (VPIP/PFR/AF)
-│   │
 │   │ # === ANALYSIS (on hand histories: idealistslp_extracted/*.txt) ===
-│   ├── analyze_hands.py      # Main HH analysis (--big N, --strategy X)
+│   ├── analyse_real_logs.py  # Main HH analysis (--big N, --strategy X, --detailed)
 │   ├── analyze_table_composition.py  # Classifies players into archetypes
 │   ├── analyze_archetype_behavior.py # Real vs simulated postflop behavior
 │   ├── analyze_bet_sizes.py          # Real bet sizes by archetype
 │   │
+│   │ # === EVALUATION (on session logs: server/uploads/*.jsonl) ===
+│   ├── eval_strategies.py    # Evaluates on session logs (good/bad folds)
+│   ├── eval_deep.py          # Deep stats (VPIP/PFR/AF)
+│   │
 │   │ # === TESTS ===
-│   ├── audit_strategies.py   # Strategy file vs code (21 tests)
+│   ├── audit_strategies.py   # Strategy file vs code (30 tests)
 │   ├── test_strategy_engine.py # Live code path (55 tests)
 │   ├── test_postflop.py      # Edge cases (67 tests)
 │   ├── test_poker_rules.py   # Poker rules (24 tests)
