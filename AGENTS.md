@@ -217,10 +217,12 @@ Simulates 200k+ hands against realistic opponent archetypes.
 cd client && python3 poker_sim.py 200000
 ```
 
-**Table composition** (realistic 2NL):
-- 60% fish (loose passive)
+**Table composition** (realistic 2NL, updated Jan 17 2026):
+- 12% fish (loose passive)
 - 25% nit (ultra tight)
-- 15% tag (tight aggressive)
+- 39% tag (tight aggressive)
+- 23% lag (loose aggressive)
+- 1% maniac
 
 ### Testing Workflow
 1. Make strategy change in `poker_logic.py`

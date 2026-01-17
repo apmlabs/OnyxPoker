@@ -1,6 +1,6 @@
 # OnyxPoker - Status Tracking
 
-**Last Updated**: January 17, 2026 01:12 UTC
+**Last Updated**: January 17, 2026 20:55 UTC
 
 ---
 
@@ -18,27 +18,84 @@
 | Server | ✅ | 54.80.204.92:5001 |
 
 ### Default Strategy: `value_lord`
-- +24.1 BB/100 in PokerKit simulation
-- Conservative c-betting, aggressive value betting
+- Data-driven betting/calling from 2,018 real hands
+- 50% pot standard sizing, c-bet max 4BB
+- Never call river high card (0% win rate)
 
-### Latest Simulation Results (100k hands, realistic 2NL)
-| Rank | Strategy | BB/100 |
-|------|----------|--------|
-| 1 | kiro_optimal | +38.64 |
-| 2 | kiro5 | +38.30 |
-| 3 | maniac | +34.38 |
-| 4 | value_maniac | +20.74 |
-| 5 | value_lord | +18.86 |
-
-### Real Data Results (1,422 hands with value_lord)
+### Real Data Results (2,018 hands)
 | Metric | Value |
 |--------|-------|
-| Actual results | -625.4 BB (-44.0 BB/100) |
-| value_lord NET impact | **+424.9 BB** (~+30 BB/100 improvement) |
+| Hands analyzed | 2,018 |
+| value_lord NET impact (20BB+) | **+348.6 BB** |
+| Saves | 18 hands, +909 BB |
+| Misses | 10 hands, -560 BB |
 
 ---
 
 ## Session History
+
+### Session 51: Data-Driven Betting Strategy (January 17, 2026)
+
+**Rewrote value_lord based on 2,018 real hand analysis.**
+
+Created `analyze_betting_strategy.py` to analyze all bets/calls by:
+- Street (flop/turn/river)
+- Hand strength (high card, TPWK, TPGK, two pair, set, etc.)
+- Bet size buckets (0-4BB, 4-10BB, 10-20BB, 20+BB)
+- Aggressor status
+
+**Key Findings:**
+| Pattern | Win Rate | Action |
+|---------|----------|--------|
+| Flop high card c-bet as aggressor | 60% | Bet max 4BB |
+| Flop high card NOT aggressor >10BB | 0% | Never bet |
+| Turn high card bet | 36% | Don't bet |
+| Turn weak pair bet | 33% | Don't bet |
+| River high card call | 0% (6 calls) | Never call |
+| Top pair flop bet | 78-89% | Bet 50% pot |
+
+**value_lord Changes:**
+- Betting: 50% pot standard, c-bet capped at 4BB, no turn bluffs
+- Calling: Never call river high card, fold turn weak hands
+
+**Impact on real hands (20BB+):**
+- SAVES: 18 hands, +909 BB
+- MISSES: 10 hands, -560 BB
+- NET: **+348.6 BB**
+
+---
+
+### Session 50: Simulation Calibration (January 17, 2026)
+
+**Updated simulation to match real 2NL table data.**
+
+Ran all three analysis scripts on new hand histories:
+- `analyze_table_composition.py` - Player archetype distribution
+- `analyze_bet_sizes.py` - Real bet sizes by archetype
+- `analyze_archetype_behavior.py` - Check/bet/call/fold frequencies
+
+**Table Composition Update (pokerkit_adapter.py)**
+| Archetype | Old | New (Real) |
+|-----------|-----|------------|
+| fish | 8.5% | **12%** |
+| nit | 31% | **25%** |
+| tag | 39% | 39% |
+| lag | 22% | **23%** |
+| maniac | 0% | **1%** |
+
+**Bet Size Update (poker_logic.py)**
+| Archetype | Old Range | New (Real Median) |
+|-----------|-----------|-------------------|
+| fish | 35-62% | **40-70%** (median 51%) |
+| nit | 45-54% | **60-70%** (median 65%) |
+| tag | 45-68% | **50-72%** (median 56%) |
+| lag | 35-55% | **45-70%** (median 59%) |
+
+**Key Finding:** Real players bet bigger than simulation assumed, especially nits (65% vs 45-50%).
+
+**Impact:** value_lord drops from +24.8 to ~+18 BB/100 - more realistic against tougher opponents.
+
+---
 
 ### Session 49: analyse_real_logs.py Bug Fixes (January 17, 2026)
 

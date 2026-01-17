@@ -127,18 +127,18 @@ def run_hand(strategies, verbose=False):
 
 
 def random_5nl_table():
-    """Generate random 5-player table matching real 5NL composition.
-    Target: 8.5% fish, 31% nit, 39% TAG, 22% LAG (from Session 43 Part 24)
+    """Generate random 5-player table matching real 2NL composition.
+    Updated Jan 17 2026 from analyze_table_composition.py:
+    Real: 12% fish, 25% nit, 39% TAG, 23% LAG, 1% maniac
     """
-    archetypes = ['fish', 'nit', 'tag', 'lag']
-    weights = [0.085, 0.31, 0.39, 0.22]
+    archetypes = ['fish', 'nit', 'tag', 'lag', 'maniac']
+    weights = [0.12, 0.25, 0.39, 0.23, 0.01]
     return [random.choices(archetypes, weights)[0] for _ in range(5)]
 
 
 def simulate(hero, num_hands=1000, show_progress=True):
-    """Run simulation, return BB/100 for hero strategy."""
-    total = 0.0
-    hands = 0
+    """Run simulation, return BB/100 and detailed stats for hero strategy."""
+    results = []  # per-hand BB results
     
     for i in range(num_hands):
         opponents = random_5nl_table()
@@ -148,27 +148,59 @@ def simulate(hero, num_hands=1000, show_progress=True):
         
         try:
             payoffs = run_hand(table)
-            total += payoffs[hero_idx]
-            hands += 1
+            bb_result = payoffs[hero_idx] / 0.02  # convert to BB
+            results.append(bb_result)
         except:
             pass
         
         if show_progress and (i + 1) % 1000 == 0:
             print(f"  {i + 1}/{num_hands} hands...", flush=True)
     
-    bb100 = (total / 0.02 / hands * 100) if hands else 0
-    return {'total': total, 'hands': hands, 'bb100': bb100}
+    import statistics
+    hands = len(results)
+    total_bb = sum(results)
+    bb100 = (total_bb / hands * 100) if hands else 0
+    
+    # Detailed stats
+    stdev = statistics.stdev(results) if hands > 1 else 0
+    wins = [r for r in results if r > 0]
+    losses = [r for r in results if r < 0]
+    
+    return {
+        'hands': hands,
+        'bb100': bb100,
+        'total_bb': total_bb,
+        'stdev': stdev,
+        'stdev_100': stdev * 10,  # stdev per 100 hands
+        'win_rate': len(wins) / hands * 100 if hands else 0,
+        'avg_win': sum(wins) / len(wins) if wins else 0,
+        'avg_loss': sum(losses) / len(losses) if losses else 0,
+        'max_win': max(results) if results else 0,
+        'max_loss': min(results) if results else 0,
+    }
 
 
 if __name__ == '__main__':
     import sys
     num = int(sys.argv[1]) if len(sys.argv) > 1 else 1000
+    strat = sys.argv[2] if len(sys.argv) > 2 else None
     
-    print(f"PokerKit simulation: {num} hands per strategy", flush=True)
-    print("Opponents: random 5NL table (8.5% fish, 31% nit, 39% TAG, 22% LAG)")
+    strategies = [strat] if strat else ['value_lord', 'kiro_optimal', 'kiro_lord', 'sonnet']
+    
+    print(f"PokerKit simulation: {num} hands", flush=True)
+    print("Opponents: random 2NL table (12% fish, 25% nit, 39% TAG, 23% LAG, 1% maniac)")
     print("=" * 50, flush=True)
     
-    for bot in ['value_lord', 'kiro_optimal', 'kiro_lord', 'sonnet']:
+    for bot in strategies:
         print(f"\nTesting {bot}...", flush=True)
         r = simulate(bot, num)
-        print(f"  Result: {r['bb100']:+.1f} BB/100 ({r['hands']} hands)", flush=True)
+        print(f"\n  === {bot} Results ===")
+        print(f"  BB/100:     {r['bb100']:+.2f}")
+        print(f"  Total BB:   {r['total_bb']:+.1f}")
+        print(f"  Hands:      {r['hands']}")
+        print(f"  StdDev:     {r['stdev']:.2f} BB/hand ({r['stdev_100']:.1f} BB/100)")
+        print(f"  Win Rate:   {r['win_rate']:.1f}% of hands")
+        print(f"  Avg Win:    {r['avg_win']:+.2f} BB")
+        print(f"  Avg Loss:   {r['avg_loss']:.2f} BB")
+        print(f"  Max Win:    {r['max_win']:+.1f} BB")
+        print(f"  Max Loss:   {r['max_loss']:.1f} BB")
