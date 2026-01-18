@@ -26,58 +26,47 @@
 - 50% pot standard sizing, c-bet max 4BB
 - Never call river high card (0% win rate)
 
-### Player Database (565 players, gap threshold = 5%)
+### Player Database (565 players, deep research classification)
 | Archetype | Count | % | Advice |
 |-----------|-------|---|--------|
-| fish | 195 | 34.5% | bet any pair big, never bluff |
-| nit | 132 | 23.4% | raise any hand in position, fold to their 3bet |
-| rock | 101 | 17.9% | raise any hand in position, fold if they bet |
-| tag | 67 | 11.9% | vs their raise: only TT+/AK |
-| maniac | 38 | 6.7% | vs their raise: only QQ+/AK, then call down |
-| lag | 32 | 5.7% | vs their raise: only 99+/AQ+, then call down |
+| fish | 190 | 33.6% | bet any pair big, never bluff |
+| nit | 144 | 25.5% | raise any hand in position, fold to their 3bet |
+| rock | 83 | 14.7% | raise any hand in position, fold if they bet |
+| maniac | 50 | 8.8% | vs their raise: only QQ+/AK, then call down |
+| lag | 49 | 8.7% | vs their raise: only 99+/AQ+, then call down |
+| tag | 49 | 8.7% | vs their raise: only TT+/AK |
 
 ---
 
 ## Session History
 
-### Session 58: V2 Vision with Player Detection (January 18, 2026)
+### Session 59: Deep Research Classification (January 18, 2026)
 
-**Implemented V2 vision system for opponent tracking.**
+**Refined archetype classification based on comprehensive research from PokerTracker, Poker Copilot, SmartPokerStudy, 2+2, Reddit.**
 
-**New Features:**
-- `--visionv2` flag for helper_bar.py
-- Player name detection from screenshots
-- Opponent stats lookup from player_stats.json
-- Archetype classification with industry-standard thresholds
-- Actionable advice per opponent in sidebar
+**Key Changes:**
+- Fish: VPIP 40+ (was 52+), added "gap > PFR = fish" rule
+- Maniac: VPIP 40+ (was 50+) with PFR 30+
+- LAG: VPIP 26-35, gap ≤10 (was ≤12)
+- Nit: VPIP ≤18 (was ≤14)
+- Rock: VPIP ≤20, PFR ≤5
 
-**Industry-Standard Classification (source: 888poker.com):**
-
-Key insight: **Gap = VPIP - PFR**. 888poker says "rarely >5% gap for LAG, >5% = loose-passive"
-
-| Archetype | VPIP | Gap (VPIP-PFR) | Logic |
-|-----------|------|----------------|-------|
-| maniac | >40 | any | AND PFR>30 |
-| fish | >40 | any | very loose |
-| nit | <15 | any | ultra tight |
-| lag | >25 | ≤5 | loose aggressive |
-| fish | >25 | >5 | loose passive |
-| tag | 15-25 | ≤5 | tight aggressive |
-| rock | 15-25 | >5 | tight passive |
-
-**Player Database Distribution (565 players):**
-| Archetype | Count | % |
-|-----------|-------|---|
-| fish | 195 | 34.5% |
-| nit | 132 | 23.4% |
-| rock | 101 | 17.9% |
-| tag | 67 | 11.9% |
-| maniac | 38 | 6.7% |
-| lag | 32 | 5.7% |
+**Research-Based Classification:**
+| Archetype | VPIP | PFR | Gap | Key Rule |
+|-----------|------|-----|-----|----------|
+| Maniac | 40+ | 30+ | any | Both very high |
+| Fish | 40+ | <20 | any | Loose passive |
+| Fish | 25+ | any | >PFR | gap > PFR = fish |
+| Nit | ≤18 | any | any | Ultra tight |
+| Rock | ≤20 | ≤5 | any | Tight passive |
+| TAG | 18-25 | 15+ | ≤5 | Solid reg |
+| LAG | 26-35 | 20+ | ≤10 | Loose aggressive |
 
 **Single Source of Truth:**
-- `build_player_stats.py` creates player_stats.json with archetypes
-- All analysis scripts read FROM the DB (no duplicate classification)
+- `build_player_stats.py` creates player_stats.json with archetypes AND advice
+- `helper_bar.py` reads advice from DB (no duplicate logic)
+
+### Session 58: V2 Vision with Player Detection (January 18, 2026)
 - helper_bar.py reads archetypes from DB, only stores advice text
 
 **Sidebar Display:**

@@ -73,23 +73,23 @@ python helper_bar.py --visionv2
 
 ### Player Database Architecture
 **Single Source of Truth:**
-- `build_player_stats.py` - Creates player_stats.json with industry-standard classification
+- `build_player_stats.py` - Creates player_stats.json with archetypes AND advice
 - All analysis scripts READ from DB (no duplicate classification logic)
-- helper_bar.py reads archetypes from DB, only stores advice text
+- helper_bar.py reads advice directly from DB
 
-**Industry-Standard Classification (888poker.com):**
+**Deep Research Classification (PokerTracker, Poker Copilot, 2+2, Reddit):**
 
-Key: Gap = VPIP - PFR. 888poker: "rarely >5% gap for LAG, >5% = loose-passive"
+Key rule: gap > PFR = fish (for loose players VPIP 25+)
 
-| Archetype | VPIP | Gap (VPIP-PFR) |
-|-----------|------|----------------|
-| maniac | >40, PFR>30 | any |
-| fish | >40 | any (very loose) |
-| nit | <15 | any (ultra tight) |
-| lag | >25 | ≤5 (aggressive) |
-| fish | >25 | >5 (passive) |
-| tag | 15-25 | ≤5 (aggressive) |
-| rock | 15-25 | >5 (passive) |
+| Archetype | VPIP | PFR | Gap | Key Rule |
+|-----------|------|-----|-----|----------|
+| Maniac | 40+ | 30+ | any | Both very high |
+| Fish | 40+ | <20 | any | Loose passive |
+| Fish | 25+ | any | >PFR | gap > PFR = fish |
+| Nit | ≤18 | any | any | Ultra tight |
+| Rock | ≤20 | ≤5 | any | Tight passive |
+| TAG | 18-25 | 15+ | ≤5 | Solid reg |
+| LAG | 26-35 | 20+ | ≤10 | Loose aggressive |
 
 ### Default Strategy: `value_lord` (switched Session 46)
 - +24.1 BB/100 in PokerKit simulation (20k hands)

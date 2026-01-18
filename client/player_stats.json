@@ -5,7 +5,8 @@
     "pfr": 7.1,
     "3bet": 0.0,
     "af": 0.29,
-    "archetype": "fish"
+    "archetype": "fish",
+    "advice": "bet any pair big, never bluff"
   },
   "olijmandrea": {
     "hands": 50,
@@ -13,7 +14,8 @@
     "pfr": 4.0,
     "3bet": 0.0,
     "af": 1.5,
-    "archetype": "nit"
+    "archetype": "nit",
+    "advice": "raise any hand in position, fold to their 3bet"
   },
   "gregoss054": {
     "hands": 22,
@@ -21,7 +23,8 @@
     "pfr": 13.6,
     "3bet": 12.5,
     "af": 3,
-    "archetype": "rock"
+    "archetype": "rock",
+    "advice": "raise any hand in position, fold if they bet"
   },
   "Moncerrate42": {
     "hands": 59,
@@ -29,7 +32,8 @@
     "pfr": 23.7,
     "3bet": 0.0,
     "af": 2.0,
-    "archetype": "lag"
+    "archetype": "lag",
+    "advice": "vs their raise: only 99+/AQ+, then call down"
   },
   "PaateMolle": {
     "hands": 7,
@@ -37,7 +41,8 @@
     "pfr": 0.0,
     "3bet": 0.0,
     "af": 0,
-    "archetype": "fish"
+    "archetype": "fish",
+    "advice": "bet any pair big, never bluff"
   },
   "STEAKssss": {
     "hands": 8,
@@ -45,7 +50,8 @@
     "pfr": 25.0,
     "3bet": 0.0,
     "af": 1,
-    "archetype": "fish"
+    "archetype": "fish",
+    "advice": "bet any pair big, never bluff"
   },
   "Foulekparo94400": {
     "hands": 61,
@@ -53,7 +59,8 @@
     "pfr": 19.7,
     "3bet": 20.0,
     "af": 3.0,
-    "archetype": "fish"
+    "archetype": "fish",
+    "advice": "bet any pair big, never bluff"
   },
   "Grifffe": {
     "hands": 9,
@@ -61,7 +68,8 @@
     "pfr": 11.1,
     "3bet": 0.0,
     "af": 2,
-    "archetype": "rock"
+    "archetype": "rock",
+    "advice": "raise any hand in position, fold if they bet"
   },
   "sarm1988": {
     "hands": 33,
@@ -69,7 +77,8 @@
     "pfr": 6.1,
     "3bet": 0.0,
     "af": 3.0,
-    "archetype": "nit"
+    "archetype": "nit",
+    "advice": "raise any hand in position, fold to their 3bet"
   },
   "DINO2418": {
     "hands": 7,
@@ -77,7 +86,8 @@
     "pfr": 14.3,
     "3bet": 0,
     "af": 3,
-    "archetype": "fish"
+    "archetype": "fish",
+    "advice": "bet any pair big, never bluff"
   },
   "baggio422": {
     "hands": 9,
@@ -85,7 +95,8 @@
     "pfr": 22.2,
     "3bet": 0.0,
     "af": 6.0,
-    "archetype": "fish"
+    "archetype": "fish",
+    "advice": "bet any pair big, never bluff"
   },
   "FELIPE439": {
     "hands": 58,
@@ -93,7 +104,8 @@
     "pfr": 13.8,
     "3bet": 0.0,
     "af": 4.0,
-    "archetype": "rock"
+    "archetype": "rock",
+    "advice": "raise any hand in position, fold if they bet"
   },
   "XWALLA77": {
     "hands": 49,
@@ -101,7 +113,8 @@
     "pfr": 16.3,
     "3bet": 6.2,
     "af": 0.67,
-    "archetype": "lag"
+    "archetype": "fish",
+    "advice": "bet any pair big, never bluff"
   },
   "Bestiote": {
     "hands": 44,
@@ -109,7 +122,8 @@
     "pfr": 18.2,
     "3bet": 6.7,
     "af": 3.0,
-    "archetype": "tag"
+    "archetype": "tag",
+    "advice": "vs their raise: only TT+/AK"
   },
   "Penumbrita": {
     "hands": 22,
@@ -117,7 +131,8 @@
     "pfr": 9.1,
     "3bet": 0.0,
     "af": 0.0,
-    "archetype": "fish"
+    "archetype": "rock",
+    "advice": "raise any hand in position, fold if they bet"
   },
   "lmiranda.pt": {
     "hands": 5,
@@ -125,7 +140,8 @@
     "pfr": 40.0,
     "3bet": 0,
     "af": 1,
-    "archetype": "lag"
+    "archetype": "maniac",
+    "advice": "vs their raise: only QQ+/AK, then call down"
   },
   "Tiagofpsousa": {
     "hands": 5,
@@ -133,7 +149,8 @@
     "pfr": 20.0,
     "3bet": 0.0,
     "af": 0.33,
-    "archetype": "fish"
+    "archetype": "fish",
+    "advice": "bet any pair big, never bluff"
   },
   "cumoni": {
     "hands": 18,
@@ -141,7 +158,8 @@
     "pfr": 11.1,
     "3bet": 0.0,
     "af": 0.5,
-    "archetype": "fish"
+    "archetype": "fish",
+    "advice": "bet any pair big, never bluff"
   },
   "rockurhead1": {
     "hands": 6,
@@ -149,7 +167,8 @@
     "pfr": 0.0,
     "3bet": 0.0,
     "af": 0,
-    "archetype": "fish"
+    "archetype": "fish",
+    "advice": "bet any pair big, never bluff"
   },
   "nunofasousa2021": {
     "hands": 24,
@@ -157,7 +176,8 @@
     "pfr": 25.0,
     "3bet": 10.0,
     "af": 1.67,
-    "archetype": "fish"
+    "archetype": "fish",
+    "advice": "bet any pair big, never bluff"
   },
   "paul20025": {
     "hands": 12,
@@ -165,7 +185,8 @@
     "pfr": 0.0,
     "3bet": 0.0,
     "af": 6.0,
-    "archetype": "rock"
+    "archetype": "rock",
+    "advice": "raise any hand in position, fold if they bet"
   },
   "Elseparatio": {
     "hands": 16,
@@ -173,7 +194,8 @@
     "pfr": 18.8,
     "3bet": 0.0,
     "af": 1.0,
-    "archetype": "fish"
+    "archetype": "fish",
+    "advice": "bet any pair big, never bluff"
   },
   "massked": {
     "hands": 18,
@@ -181,7 +203,8 @@
     "pfr": 16.7,
     "3bet": 0.0,
     "af": 0,
-    "archetype": "rock"
+    "archetype": "nit",
+    "advice": "raise any hand in position, fold to their 3bet"
   },
   "RuiBorgesTasca": {
     "hands": 11,
@@ -189,7 +212,8 @@
     "pfr": 9.1,
     "3bet": 0.0,
     "af": 1.0,
-    "archetype": "rock"
+    "archetype": "rock",
+    "advice": "raise any hand in position, fold if they bet"
   },
   "flaviopsc": {
     "hands": 55,
@@ -197,7 +221,8 @@
     "pfr": 14.5,
     "3bet": 16.7,
     "af": 1.0,
-    "archetype": "rock"
+    "archetype": "rock",
+    "advice": "raise any hand in position, fold if they bet"
   },
   "rafale032": {
     "hands": 56,
@@ -205,7 +230,8 @@
     "pfr": 10.7,
     "3bet": 0.0,
     "af": 0.2,
-    "archetype": "nit"
+    "archetype": "nit",
+    "advice": "raise any hand in position, fold to their 3bet"
   },
   "crmLL": {
     "hands": 124,
@@ -213,7 +239,8 @@
     "pfr": 8.1,
     "3bet": 0.0,
     "af": 0.79,
-    "archetype": "fish"
+    "archetype": "fish",
+    "advice": "bet any pair big, never bluff"
   },
   "Jorgebcn76": {
     "hands": 157,
@@ -221,7 +248,8 @@
     "pfr": 15.9,
     "3bet": 9.3,
     "af": 1.57,
-    "archetype": "lag"
+    "archetype": "fish",
+    "advice": "bet any pair big, never bluff"
   },
   "nonoficial": {
     "hands": 7,
@@ -229,7 +257,8 @@
     "pfr": 0.0,
     "3bet": 0.0,
     "af": 0,
-    "archetype": "nit"
+    "archetype": "nit",
+    "advice": "raise any hand in position, fold to their 3bet"
   },
   "zevsmoura": {
     "hands": 11,
@@ -237,7 +266,8 @@
     "pfr": 27.3,
     "3bet": 28.6,
     "af": 1.0,
-    "archetype": "lag"
+    "archetype": "lag",
+    "advice": "vs their raise: only 99+/AQ+, then call down"
   },
   "Hofmann22": {
     "hands": 15,
@@ -245,7 +275,8 @@
     "pfr": 20.0,
     "3bet": 16.7,
     "af": 1.5,
-    "archetype": "lag"
+    "archetype": "lag",
+    "advice": "vs their raise: only 99+/AQ+, then call down"
   },
   "adfm75": {
     "hands": 22,
@@ -253,7 +284,8 @@
     "pfr": 9.1,
     "3bet": 0.0,
     "af": 0.0,
-    "archetype": "rock"
+    "archetype": "rock",
+    "advice": "raise any hand in position, fold if they bet"
   },
   "david6255": {
     "hands": 14,
@@ -261,7 +293,8 @@
     "pfr": 21.4,
     "3bet": 33.3,
     "af": 2,
-    "archetype": "fish"
+    "archetype": "fish",
+    "advice": "bet any pair big, never bluff"
   },
   "scaramouche84": {
     "hands": 10,
@@ -269,7 +302,8 @@
     "pfr": 20.0,
     "3bet": 0.0,
     "af": 0,
-    "archetype": "tag"
+    "archetype": "tag",
+    "advice": "vs their raise: only TT+/AK"
   },
   "chelius869": {
     "hands": 22,
@@ -277,7 +311,8 @@
     "pfr": 13.6,
     "3bet": 0.0,
     "af": 2.5,
-    "archetype": "rock"
+    "archetype": "rock",
+    "advice": "raise any hand in position, fold if they bet"
   },
   "Cacartiflette01": {
     "hands": 10,
@@ -285,7 +320,8 @@
     "pfr": 10.0,
     "3bet": 0.0,
     "af": 0.5,
-    "archetype": "rock"
+    "archetype": "rock",
+    "advice": "raise any hand in position, fold if they bet"
   },
   "trinityandme": {
     "hands": 26,
@@ -293,7 +329,8 @@
     "pfr": 0.0,
     "3bet": 0.0,
     "af": 0.0,
-    "archetype": "nit"
+    "archetype": "rock",
+    "advice": "raise any hand in position, fold if they bet"
   },
   "Pipps33": {
     "hands": 10,
@@ -301,7 +338,8 @@
     "pfr": 20.0,
     "3bet": 0.0,
     "af": 0.33,
-    "archetype": "fish"
+    "archetype": "fish",
+    "advice": "bet any pair big, never bluff"
   },
   "franelbombazo": {
     "hands": 11,
@@ -309,7 +347,8 @@
     "pfr": 9.1,
     "3bet": 0.0,
     "af": 0.0,
-    "archetype": "fish"
+    "archetype": "fish",
+    "advice": "bet any pair big, never bluff"
   },
   "lobitillo": {
     "hands": 7,
@@ -317,7 +356,8 @@
     "pfr": 14.3,
     "3bet": 0.0,
     "af": 0,
-    "archetype": "nit"
+    "archetype": "nit",
+    "advice": "raise any hand in position, fold to their 3bet"
   },
   "leobcn9": {
     "hands": 11,
@@ -325,7 +365,8 @@
     "pfr": 18.2,
     "3bet": 0.0,
     "af": 5,
-    "archetype": "fish"
+    "archetype": "fish",
+    "advice": "bet any pair big, never bluff"
   },
   "matheus15567": {
     "hands": 6,
@@ -333,7 +374,8 @@
     "pfr": 16.7,
     "3bet": 0.0,
     "af": 0,
-    "archetype": "fish"
+    "archetype": "fish",
+    "advice": "bet any pair big, never bluff"
   },
   "geovannyhanna": {
     "hands": 8,
@@ -341,7 +383,8 @@
     "pfr": 25.0,
     "3bet": 0.0,
     "af": 0,
-    "archetype": "lag"
+    "archetype": "tag",
+    "advice": "vs their raise: only TT+/AK"
   },
   "SlymJx": {
     "hands": 5,
@@ -349,7 +392,8 @@
     "pfr": 20.0,
     "3bet": 50.0,
     "af": 0,
-    "archetype": "tag"
+    "archetype": "tag",
+    "advice": "vs their raise: only TT+/AK"
   },
   "jash1945": {
     "hands": 9,
@@ -357,7 +401,8 @@
     "pfr": 0.0,
     "3bet": 0.0,
     "af": 0,
-    "archetype": "nit"
+    "archetype": "nit",
+    "advice": "raise any hand in position, fold to their 3bet"
   },
   "00789": {
     "hands": 71,
@@ -365,7 +410,8 @@
     "pfr": 18.3,
     "3bet": 4.2,
     "af": 0.67,
-    "archetype": "fish"
+    "archetype": "fish",
+    "advice": "bet any pair big, never bluff"
   },
   "Gregcalifornia": {
     "hands": 6,
@@ -373,7 +419,8 @@
     "pfr": 0.0,
     "3bet": 0.0,
     "af": 0.0,
-    "archetype": "fish"
+    "archetype": "fish",
+    "advice": "bet any pair big, never bluff"
   },
   "zhouweiyi888": {
     "hands": 33,
@@ -381,7 +428,8 @@
     "pfr": 21.2,
     "3bet": 25.0,
     "af": 0.33,
-    "archetype": "fish"
+    "archetype": "fish",
+    "advice": "bet any pair big, never bluff"
   },
   "ZharOdin": {
     "hands": 8,
@@ -389,7 +437,8 @@
     "pfr": 25.0,
     "3bet": 0.0,
     "af": 0,
-    "archetype": "lag"
+    "archetype": "tag",
+    "advice": "vs their raise: only TT+/AK"
   },
   "kurekuro": {
     "hands": 10,
@@ -397,7 +446,8 @@
     "pfr": 20.0,
     "3bet": 0.0,
     "af": 2,
-    "archetype": "fish"
+    "archetype": "fish",
+    "advice": "bet any pair big, never bluff"
   },
   "jgrodriguez061": {
     "hands": 7,
@@ -405,7 +455,8 @@
     "pfr": 42.9,
     "3bet": 0,
     "af": 0,
-    "archetype": "maniac"
+    "archetype": "maniac",
+    "advice": "vs their raise: only QQ+/AK, then call down"
   },
   "joan837": {
     "hands": 15,
@@ -413,7 +464,8 @@
     "pfr": 0.0,
     "3bet": 0.0,
     "af": 1.0,
-    "archetype": "fish"
+    "archetype": "fish",
+    "advice": "bet any pair big, never bluff"
   },
   "more457": {
     "hands": 54,
@@ -421,7 +473,8 @@
     "pfr": 9.3,
     "3bet": 6.2,
     "af": 0.67,
-    "archetype": "rock"
+    "archetype": "rock",
+    "advice": "raise any hand in position, fold if they bet"
   },
   "AA00717": {
     "hands": 7,
@@ -429,7 +482,8 @@
     "pfr": 14.3,
     "3bet": 0.0,
     "af": 1,
-    "archetype": "fish"
+    "archetype": "fish",
+    "advice": "bet any pair big, never bluff"
   },
   "Cidzor": {
     "hands": 6,
@@ -437,7 +491,8 @@
     "pfr": 0.0,
     "3bet": 0,
     "af": 0,
-    "archetype": "fish"
+    "archetype": "fish",
+    "advice": "bet any pair big, never bluff"
   },
   "smrj1976": {
     "hands": 59,
@@ -445,7 +500,8 @@
     "pfr": 8.5,
     "3bet": 9.1,
     "af": 1.0,
-    "archetype": "nit"
+    "archetype": "nit",
+    "advice": "raise any hand in position, fold to their 3bet"
   },
   "adricrack970": {
     "hands": 72,
@@ -453,7 +509,8 @@
     "pfr": 27.8,
     "3bet": 26.3,
     "af": 2.0,
-    "archetype": "lag"
+    "archetype": "lag",
+    "advice": "vs their raise: only 99+/AQ+, then call down"
   },
   "priam83": {
     "hands": 5,
@@ -461,7 +518,8 @@
     "pfr": 20.0,
     "3bet": 0.0,
     "af": 0,
-    "archetype": "tag"
+    "archetype": "tag",
+    "advice": "vs their raise: only TT+/AK"
   },
   "felgas1968": {
     "hands": 9,
@@ -469,7 +527,8 @@
     "pfr": 33.3,
     "3bet": 0.0,
     "af": 0.0,
-    "archetype": "maniac"
+    "archetype": "maniac",
+    "advice": "vs their raise: only QQ+/AK, then call down"
   },
   "MassasMassas": {
     "hands": 5,
@@ -477,7 +536,8 @@
     "pfr": 0.0,
     "3bet": 0.0,
     "af": 0,
-    "archetype": "nit"
+    "archetype": "nit",
+    "advice": "raise any hand in position, fold to their 3bet"
   },
   "safelifetop": {
     "hands": 16,
@@ -485,7 +545,8 @@
     "pfr": 0.0,
     "3bet": 0,
     "af": 0,
-    "archetype": "nit"
+    "archetype": "nit",
+    "advice": "raise any hand in position, fold to their 3bet"
   },
   "alvarogda26": {
     "hands": 8,
@@ -493,7 +554,8 @@
     "pfr": 0.0,
     "3bet": 0.0,
     "af": 1.0,
-    "archetype": "rock"
+    "archetype": "rock",
+    "advice": "raise any hand in position, fold if they bet"
   },
   "jockosssssss": {
     "hands": 11,
@@ -501,7 +563,8 @@
     "pfr": 0.0,
     "3bet": 0.0,
     "af": 0.33,
-    "archetype": "fish"
+    "archetype": "fish",
+    "advice": "bet any pair big, never bluff"
   },
   "vicen7010": {
     "hands": 29,
@@ -509,7 +572,8 @@
     "pfr": 3.4,
     "3bet": 0.0,
     "af": 1.0,
-    "archetype": "nit"
+    "archetype": "rock",
+    "advice": "raise any hand in position, fold if they bet"
   },
   "trumoan": {
     "hands": 48,
@@ -517,7 +581,8 @@
     "pfr": 18.8,
     "3bet": 4.8,
     "af": 0.5,
-    "archetype": "fish"
+    "archetype": "fish",
+    "advice": "bet any pair big, never bluff"
   },
   "brra$1414": {
     "hands": 8,
@@ -525,7 +590,8 @@
     "pfr": 12.5,
     "3bet": 0.0,
     "af": 3.0,
-    "archetype": "rock"
+    "archetype": "rock",
+    "advice": "raise any hand in position, fold if they bet"
   },
   "lorocontento": {
     "hands": 39,
@@ -533,7 +599,8 @@
     "pfr": 7.7,
     "3bet": 15.4,
     "af": 0,
-    "archetype": "nit"
+    "archetype": "nit",
+    "advice": "raise any hand in position, fold to their 3bet"
   },
   "txone73": {
     "hands": 11,
@@ -541,7 +608,8 @@
     "pfr": 18.2,
     "3bet": 0.0,
     "af": 1,
-    "archetype": "nit"
+    "archetype": "tag",
+    "advice": "vs their raise: only TT+/AK"
   },
   "seriomarkos": {
     "hands": 30,
@@ -549,7 +617,8 @@
     "pfr": 20.0,
     "3bet": 12.5,
     "af": 0.5,
-    "archetype": "fish"
+    "archetype": "fish",
+    "advice": "bet any pair big, never bluff"
   },
   "dragonfly2467": {
     "hands": 88,
@@ -557,7 +626,8 @@
     "pfr": 13.6,
     "3bet": 5.0,
     "af": 0.4,
-    "archetype": "rock"
+    "archetype": "rock",
+    "advice": "raise any hand in position, fold if they bet"
   },
   "NOWAY3131": {
     "hands": 8,
@@ -565,7 +635,8 @@
     "pfr": 12.5,
     "3bet": 0.0,
     "af": 0,
-    "archetype": "nit"
+    "archetype": "nit",
+    "advice": "raise any hand in position, fold to their 3bet"
   },
   "DaniiRama": {
     "hands": 23,
@@ -573,7 +644,8 @@
     "pfr": 13.0,
     "3bet": 16.7,
     "af": 3.0,
-    "archetype": "rock"
+    "archetype": "rock",
+    "advice": "raise any hand in position, fold if they bet"
   },
   "cirsa888": {
     "hands": 39,
@@ -581,7 +653,8 @@
     "pfr": 23.1,
     "3bet": 16.7,
     "af": 1.2,
-    "archetype": "lag"
+    "archetype": "fish",
+    "advice": "bet any pair big, never bluff"
   },
   "saharkesler": {
     "hands": 83,
@@ -589,7 +662,8 @@
     "pfr": 16.9,
     "3bet": 3.3,
     "af": 1.0,
-    "archetype": "rock"
+    "archetype": "fish",
+    "advice": "bet any pair big, never bluff"
   },
   "Janpaul112": {
     "hands": 20,
@@ -597,7 +671,8 @@
     "pfr": 20.0,
     "3bet": 16.7,
     "af": 0,
-    "archetype": "tag"
+    "archetype": "tag",
+    "advice": "vs their raise: only TT+/AK"
   },
   "DrTrinityy": {
     "hands": 41,
@@ -605,7 +680,8 @@
     "pfr": 24.4,
     "3bet": 37.5,
     "af": 2.0,
-    "archetype": "lag"
+    "archetype": "lag",
+    "advice": "vs their raise: only 99+/AQ+, then call down"
   },
   "<KA$!N\u00d6>": {
     "hands": 29,
@@ -613,7 +689,8 @@
     "pfr": 3.4,
     "3bet": 0.0,
     "af": 0,
-    "archetype": "nit"
+    "archetype": "nit",
+    "advice": "raise any hand in position, fold to their 3bet"
   },
   "ibic22": {
     "hands": 23,
@@ -621,7 +698,8 @@
     "pfr": 30.4,
     "3bet": 0.0,
     "af": 1.0,
-    "archetype": "lag"
+    "archetype": "lag",
+    "advice": "vs their raise: only 99+/AQ+, then call down"
   },
   "fAAQQndo17": {
     "hands": 37,
@@ -629,7 +707,8 @@
     "pfr": 16.2,
     "3bet": 25.0,
     "af": 0.0,
-    "archetype": "rock"
+    "archetype": "fish",
+    "advice": "bet any pair big, never bluff"
   },
   "MakesMeRich": {
     "hands": 108,
@@ -637,7 +716,8 @@
     "pfr": 20.4,
     "3bet": 6.2,
     "af": 1.0,
-    "archetype": "tag"
+    "archetype": "tag",
+    "advice": "vs their raise: only TT+/AK"
   },
   "Ischadia": {
     "hands": 30,
@@ -645,7 +725,8 @@
     "pfr": 20.0,
     "3bet": 14.3,
     "af": 1.5,
-    "archetype": "lag"
+    "archetype": "lag",
+    "advice": "vs their raise: only 99+/AQ+, then call down"
   },
   "sukocash": {
     "hands": 23,
@@ -653,7 +734,8 @@
     "pfr": 21.7,
     "3bet": 0.0,
     "af": 2,
-    "archetype": "tag"
+    "archetype": "tag",
+    "advice": "vs their raise: only TT+/AK"
   },
   "oierzula": {
     "hands": 6,
@@ -661,7 +743,8 @@
     "pfr": 16.7,
     "3bet": 0.0,
     "af": 0.0,
-    "archetype": "fish"
+    "archetype": "fish",
+    "advice": "bet any pair big, never bluff"
   },
   "chiinche": {
     "hands": 55,
@@ -669,7 +752,8 @@
     "pfr": 3.6,
     "3bet": 0.0,
     "af": 0.29,
-    "archetype": "nit"
+    "archetype": "nit",
+    "advice": "raise any hand in position, fold to their 3bet"
   },
   "byturbin": {
     "hands": 16,
@@ -677,7 +761,8 @@
     "pfr": 18.8,
     "3bet": 0.0,
     "af": 2,
-    "archetype": "lag"
+    "archetype": "fish",
+    "advice": "bet any pair big, never bluff"
   },
   "metamex": {
     "hands": 5,
@@ -685,7 +770,8 @@
     "pfr": 20.0,
     "3bet": 0.0,
     "af": 0,
-    "archetype": "tag"
+    "archetype": "tag",
+    "advice": "vs their raise: only TT+/AK"
   },
   "SrWatanabe": {
     "hands": 41,
@@ -693,7 +779,8 @@
     "pfr": 4.9,
     "3bet": 14.3,
     "af": 3.0,
-    "archetype": "fish"
+    "archetype": "fish",
+    "advice": "bet any pair big, never bluff"
   },
   "saintblair": {
     "hands": 13,
@@ -701,7 +788,8 @@
     "pfr": 23.1,
     "3bet": 0.0,
     "af": 1,
-    "archetype": "fish"
+    "archetype": "tag",
+    "advice": "vs their raise: only TT+/AK"
   },
   "chaval231": {
     "hands": 6,
@@ -709,7 +797,8 @@
     "pfr": 0.0,
     "3bet": 0.0,
     "af": 0,
-    "archetype": "fish"
+    "archetype": "fish",
+    "advice": "bet any pair big, never bluff"
   },
   "Portugalkin2025": {
     "hands": 32,
@@ -717,7 +806,8 @@
     "pfr": 15.6,
     "3bet": 7.1,
     "af": 7,
-    "archetype": "rock"
+    "archetype": "tag",
+    "advice": "vs their raise: only TT+/AK"
   },
   "Ivangennaro": {
     "hands": 30,
@@ -725,7 +815,8 @@
     "pfr": 10.0,
     "3bet": 0.0,
     "af": 1.0,
-    "archetype": "nit"
+    "archetype": "nit",
+    "advice": "raise any hand in position, fold to their 3bet"
   },
   "ehouiJedebute": {
     "hands": 24,
@@ -733,7 +824,8 @@
     "pfr": 4.2,
     "3bet": 0.0,
     "af": 2,
-    "archetype": "nit"
+    "archetype": "nit",
+    "advice": "raise any hand in position, fold to their 3bet"
   },
   "llodio": {
     "hands": 45,
@@ -741,7 +833,8 @@
     "pfr": 22.2,
     "3bet": 12.5,
     "af": 5.0,
-    "archetype": "tag"
+    "archetype": "tag",
+    "advice": "vs their raise: only TT+/AK"
   },
   "Markpartebragas": {
     "hands": 83,
@@ -749,7 +842,8 @@
     "pfr": 16.9,
     "3bet": 7.7,
     "af": 3.25,
-    "archetype": "rock"
+    "archetype": "fish",
+    "advice": "bet any pair big, never bluff"
   },
   "ATOJ5": {
     "hands": 121,
@@ -757,7 +851,8 @@
     "pfr": 17.4,
     "3bet": 11.4,
     "af": 1.31,
-    "archetype": "lag"
+    "archetype": "fish",
+    "advice": "bet any pair big, never bluff"
   },
   "SGB36": {
     "hands": 8,
@@ -765,7 +860,8 @@
     "pfr": 12.5,
     "3bet": 0.0,
     "af": 2.0,
-    "archetype": "rock"
+    "archetype": "rock",
+    "advice": "raise any hand in position, fold if they bet"
   },
   "Cathaysanauz": {
     "hands": 123,
@@ -773,7 +869,8 @@
     "pfr": 22.0,
     "3bet": 8.6,
     "af": 1.0,
-    "archetype": "lag"
+    "archetype": "lag",
+    "advice": "vs their raise: only 99+/AQ+, then call down"
   },
   "KarmaPoker24": {
     "hands": 9,
@@ -781,7 +878,8 @@
     "pfr": 0.0,
     "3bet": 0.0,
     "af": 1,
-    "archetype": "nit"
+    "archetype": "nit",
+    "advice": "raise any hand in position, fold to their 3bet"
   },
   "PauloATDias": {
     "hands": 17,
@@ -789,7 +887,8 @@
     "pfr": 5.9,
     "3bet": 0.0,
     "af": 1,
-    "archetype": "rock"
+    "archetype": "nit",
+    "advice": "raise any hand in position, fold to their 3bet"
   },
   "calopoker_10": {
     "hands": 44,
@@ -797,7 +896,8 @@
     "pfr": 29.5,
     "3bet": 41.2,
     "af": 2.67,
-    "archetype": "lag"
+    "archetype": "lag",
+    "advice": "vs their raise: only 99+/AQ+, then call down"
   },
   "ElThepo": {
     "hands": 40,
@@ -805,7 +905,8 @@
     "pfr": 17.5,
     "3bet": 8.3,
     "af": 2,
-    "archetype": "tag"
+    "archetype": "tag",
+    "advice": "vs their raise: only TT+/AK"
   },
   "Pecadorll": {
     "hands": 21,
@@ -813,7 +914,8 @@
     "pfr": 19.0,
     "3bet": 0.0,
     "af": 0,
-    "archetype": "tag"
+    "archetype": "tag",
+    "advice": "vs their raise: only TT+/AK"
   },
   "Sophist\u00eas": {
     "hands": 9,
@@ -821,7 +923,8 @@
     "pfr": 0.0,
     "3bet": 0.0,
     "af": 1,
-    "archetype": "nit"
+    "archetype": "nit",
+    "advice": "raise any hand in position, fold to their 3bet"
   },
   "nicotrollier": {
     "hands": 9,
@@ -829,7 +932,8 @@
     "pfr": 11.1,
     "3bet": 0.0,
     "af": 0.0,
-    "archetype": "rock"
+    "archetype": "rock",
+    "advice": "raise any hand in position, fold if they bet"
   },
   "afanasius": {
     "hands": 10,
@@ -837,7 +941,8 @@
     "pfr": 20.0,
     "3bet": 0.0,
     "af": 3,
-    "archetype": "tag"
+    "archetype": "tag",
+    "advice": "vs their raise: only TT+/AK"
   },
   "pisuleto": {
     "hands": 11,
@@ -845,7 +950,8 @@
     "pfr": 0.0,
     "3bet": 0.0,
     "af": 0,
-    "archetype": "nit"
+    "archetype": "nit",
+    "advice": "raise any hand in position, fold to their 3bet"
   },
   "LAPeriferia": {
     "hands": 22,
@@ -853,7 +959,8 @@
     "pfr": 4.5,
     "3bet": 0.0,
     "af": 1,
-    "archetype": "nit"
+    "archetype": "nit",
+    "advice": "raise any hand in position, fold to their 3bet"
   },
   "Cat&Me": {
     "hands": 5,
@@ -861,7 +968,8 @@
     "pfr": 0.0,
     "3bet": 0.0,
     "af": 0,
-    "archetype": "nit"
+    "archetype": "nit",
+    "advice": "raise any hand in position, fold to their 3bet"
   },
   "SOYPACO11": {
     "hands": 27,
@@ -869,7 +977,8 @@
     "pfr": 7.4,
     "3bet": 0.0,
     "af": 0.0,
-    "archetype": "nit"
+    "archetype": "nit",
+    "advice": "raise any hand in position, fold to their 3bet"
   },
   "santamarier": {
     "hands": 5,
@@ -877,7 +986,8 @@
     "pfr": 0.0,
     "3bet": 0.0,
     "af": 0,
-    "archetype": "rock"
+    "archetype": "rock",
+    "advice": "raise any hand in position, fold if they bet"
   },
   "Megiusftv": {
     "hands": 34,
@@ -885,7 +995,8 @@
     "pfr": 17.6,
     "3bet": 0.0,
     "af": 5.0,
-    "archetype": "fish"
+    "archetype": "fish",
+    "advice": "bet any pair big, never bluff"
   },
   "chancara": {
     "hands": 10,
@@ -893,7 +1004,8 @@
     "pfr": 10.0,
     "3bet": 0.0,
     "af": 2,
-    "archetype": "rock"
+    "archetype": "rock",
+    "advice": "raise any hand in position, fold if they bet"
   },
   "Castillejo117": {
     "hands": 14,
@@ -901,7 +1013,8 @@
     "pfr": 7.1,
     "3bet": 0.0,
     "af": 0,
-    "archetype": "nit"
+    "archetype": "nit",
+    "advice": "raise any hand in position, fold to their 3bet"
   },
   "P-BRUTUS": {
     "hands": 55,
@@ -909,7 +1022,8 @@
     "pfr": 0.0,
     "3bet": 0.0,
     "af": 2.5,
-    "archetype": "fish"
+    "archetype": "fish",
+    "advice": "bet any pair big, never bluff"
   },
   "kastlemoney": {
     "hands": 82,
@@ -917,7 +1031,8 @@
     "pfr": 13.4,
     "3bet": 0.0,
     "af": 6.0,
-    "archetype": "nit"
+    "archetype": "nit",
+    "advice": "raise any hand in position, fold to their 3bet"
   },
   "oscarmol": {
     "hands": 12,
@@ -925,7 +1040,8 @@
     "pfr": 33.3,
     "3bet": 0.0,
     "af": 2,
-    "archetype": "lag"
+    "archetype": "lag",
+    "advice": "vs their raise: only 99+/AQ+, then call down"
   },
   "Raditz-Z84": {
     "hands": 12,
@@ -933,7 +1049,8 @@
     "pfr": 16.7,
     "3bet": 0.0,
     "af": 0.75,
-    "archetype": "fish"
+    "archetype": "fish",
+    "advice": "bet any pair big, never bluff"
   },
   "Galapian2": {
     "hands": 6,
@@ -941,7 +1058,8 @@
     "pfr": 16.7,
     "3bet": 0.0,
     "af": 0.0,
-    "archetype": "fish"
+    "archetype": "fish",
+    "advice": "bet any pair big, never bluff"
   },
   "TerBett": {
     "hands": 26,
@@ -949,7 +1067,8 @@
     "pfr": 7.7,
     "3bet": 14.3,
     "af": 2.0,
-    "archetype": "rock"
+    "archetype": "rock",
+    "advice": "raise any hand in position, fold if they bet"
   },
   "monsieur881": {
     "hands": 14,
@@ -957,7 +1076,8 @@
     "pfr": 28.6,
     "3bet": 0.0,
     "af": 3,
-    "archetype": "lag"
+    "archetype": "lag",
+    "advice": "vs their raise: only 99+/AQ+, then call down"
   },
   "titi58250": {
     "hands": 11,
@@ -965,7 +1085,8 @@
     "pfr": 0.0,
     "3bet": 0.0,
     "af": 0.0,
-    "archetype": "fish"
+    "archetype": "fish",
+    "advice": "bet any pair big, never bluff"
   },
   "LEXTORMUR": {
     "hands": 33,
@@ -973,7 +1094,8 @@
     "pfr": 15.2,
     "3bet": 0.0,
     "af": 1.0,
-    "archetype": "rock"
+    "archetype": "fish",
+    "advice": "bet any pair big, never bluff"
   },
   "Tonypi27": {
     "hands": 27,
@@ -981,7 +1103,8 @@
     "pfr": 7.4,
     "3bet": 0.0,
     "af": 6.0,
-    "archetype": "nit"
+    "archetype": "nit",
+    "advice": "raise any hand in position, fold to their 3bet"
   },
   "prouchte": {
     "hands": 11,
@@ -989,7 +1112,8 @@
     "pfr": 9.1,
     "3bet": 0.0,
     "af": 2,
-    "archetype": "rock"
+    "archetype": "rock",
+    "advice": "raise any hand in position, fold if they bet"
   },
   "BurpeeBroadJump": {
     "hands": 9,
@@ -997,7 +1121,8 @@
     "pfr": 0.0,
     "3bet": 0.0,
     "af": 0.5,
-    "archetype": "rock"
+    "archetype": "rock",
+    "advice": "raise any hand in position, fold if they bet"
   },
   "ManoelCR": {
     "hands": 7,
@@ -1005,7 +1130,8 @@
     "pfr": 28.6,
     "3bet": 0.0,
     "af": 0.0,
-    "archetype": "fish"
+    "archetype": "fish",
+    "advice": "bet any pair big, never bluff"
   },
   "toni290178": {
     "hands": 27,
@@ -1013,7 +1139,8 @@
     "pfr": 0.0,
     "3bet": 0.0,
     "af": 0,
-    "archetype": "fish"
+    "archetype": "fish",
+    "advice": "bet any pair big, never bluff"
   },
   "Bamm6": {
     "hands": 21,
@@ -1021,7 +1148,8 @@
     "pfr": 19.0,
     "3bet": 0.0,
     "af": 2.0,
-    "archetype": "fish"
+    "archetype": "tag",
+    "advice": "vs their raise: only TT+/AK"
   },
   "bufu92": {
     "hands": 5,
@@ -1029,7 +1157,8 @@
     "pfr": 20.0,
     "3bet": 0,
     "af": 0,
-    "archetype": "tag"
+    "archetype": "tag",
+    "advice": "vs their raise: only TT+/AK"
   },
   "jafonsso": {
     "hands": 11,
@@ -1037,7 +1166,8 @@
     "pfr": 9.1,
     "3bet": 0.0,
     "af": 2,
-    "archetype": "fish"
+    "archetype": "fish",
+    "advice": "bet any pair big, never bluff"
   },
   "imnataa": {
     "hands": 7,
@@ -1045,7 +1175,8 @@
     "pfr": 0.0,
     "3bet": 0.0,
     "af": 0.0,
-    "archetype": "fish"
+    "archetype": "fish",
+    "advice": "bet any pair big, never bluff"
   },
   "Sull91": {
     "hands": 5,
@@ -1053,7 +1184,8 @@
     "pfr": 20.0,
     "3bet": 0,
     "af": 4,
-    "archetype": "fish"
+    "archetype": "fish",
+    "advice": "bet any pair big, never bluff"
   },
   "PetroniloPT": {
     "hands": 12,
@@ -1061,7 +1193,8 @@
     "pfr": 16.7,
     "3bet": 0.0,
     "af": 1.5,
-    "archetype": "rock"
+    "archetype": "nit",
+    "advice": "raise any hand in position, fold to their 3bet"
   },
   "kikooo823": {
     "hands": 11,
@@ -1069,7 +1202,8 @@
     "pfr": 0.0,
     "3bet": 0.0,
     "af": 0,
-    "archetype": "nit"
+    "archetype": "nit",
+    "advice": "raise any hand in position, fold to their 3bet"
   },
   "GGSCR29": {
     "hands": 15,
@@ -1077,7 +1211,8 @@
     "pfr": 13.3,
     "3bet": 0.0,
     "af": 0,
-    "archetype": "nit"
+    "archetype": "nit",
+    "advice": "raise any hand in position, fold to their 3bet"
   },
   "barripoker3": {
     "hands": 16,
@@ -1085,7 +1220,8 @@
     "pfr": 12.5,
     "3bet": 14.3,
     "af": 0,
-    "archetype": "nit"
+    "archetype": "nit",
+    "advice": "raise any hand in position, fold to their 3bet"
   },
   "FllanosB": {
     "hands": 63,
@@ -1093,7 +1229,8 @@
     "pfr": 15.9,
     "3bet": 5.0,
     "af": 2.25,
-    "archetype": "fish"
+    "archetype": "fish",
+    "advice": "bet any pair big, never bluff"
   },
   "timaria74": {
     "hands": 10,
@@ -1101,7 +1238,8 @@
     "pfr": 10.0,
     "3bet": 0.0,
     "af": 0.0,
-    "archetype": "fish"
+    "archetype": "fish",
+    "advice": "bet any pair big, never bluff"
   },
   "WalterW10000": {
     "hands": 9,
@@ -1109,7 +1247,8 @@
     "pfr": 33.3,
     "3bet": 0.0,
     "af": 0.5,
-    "archetype": "maniac"
+    "archetype": "maniac",
+    "advice": "vs their raise: only QQ+/AK, then call down"
   },
   "laetigreg05": {
     "hands": 8,
@@ -1117,7 +1256,8 @@
     "pfr": 0.0,
     "3bet": 0.0,
     "af": 0.0,
-    "archetype": "fish"
+    "archetype": "fish",
+    "advice": "bet any pair big, never bluff"
   },
   "al3xitto25": {
     "hands": 157,
@@ -1125,7 +1265,8 @@
     "pfr": 10.2,
     "3bet": 2.0,
     "af": 1.17,
-    "archetype": "rock"
+    "archetype": "nit",
+    "advice": "raise any hand in position, fold to their 3bet"
   },
   "mentalist1479": {
     "hands": 40,
@@ -1133,7 +1274,8 @@
     "pfr": 15.0,
     "3bet": 0.0,
     "af": 3.0,
-    "archetype": "fish"
+    "archetype": "fish",
+    "advice": "bet any pair big, never bluff"
   },
   "MaxisZeus": {
     "hands": 60,
@@ -1141,7 +1283,8 @@
     "pfr": 5.0,
     "3bet": 0.0,
     "af": 0.0,
-    "archetype": "nit"
+    "archetype": "nit",
+    "advice": "raise any hand in position, fold to their 3bet"
   },
   "Fuckhazar": {
     "hands": 94,
@@ -1149,7 +1292,8 @@
     "pfr": 12.8,
     "3bet": 6.7,
     "af": 4.0,
-    "archetype": "rock"
+    "archetype": "rock",
+    "advice": "raise any hand in position, fold if they bet"
   },
   "Munia14": {
     "hands": 36,
@@ -1157,7 +1301,8 @@
     "pfr": 19.4,
     "3bet": 15.4,
     "af": 3.0,
-    "archetype": "tag"
+    "archetype": "tag",
+    "advice": "vs their raise: only TT+/AK"
   },
   "javoallin": {
     "hands": 19,
@@ -1165,7 +1310,8 @@
     "pfr": 15.8,
     "3bet": 0.0,
     "af": 2.5,
-    "archetype": "rock"
+    "archetype": "fish",
+    "advice": "bet any pair big, never bluff"
   },
   "tropa8": {
     "hands": 30,
@@ -1173,7 +1319,8 @@
     "pfr": 36.7,
     "3bet": 55.6,
     "af": 1.67,
-    "archetype": "lag"
+    "archetype": "maniac",
+    "advice": "vs their raise: only QQ+/AK, then call down"
   },
   "pablow0804": {
     "hands": 10,
@@ -1181,7 +1328,8 @@
     "pfr": 20.0,
     "3bet": 0.0,
     "af": 1.0,
-    "archetype": "tag"
+    "archetype": "tag",
+    "advice": "vs their raise: only TT+/AK"
   },
   "neoswan": {
     "hands": 5,
@@ -1189,7 +1337,8 @@
     "pfr": 40.0,
     "3bet": 0.0,
     "af": 0,
-    "archetype": "lag"
+    "archetype": "maniac",
+    "advice": "vs their raise: only QQ+/AK, then call down"
   },
   "Angelfs7": {
     "hands": 6,
@@ -1197,7 +1346,8 @@
     "pfr": 0.0,
     "3bet": 0.0,
     "af": 0,
-    "archetype": "nit"
+    "archetype": "nit",
+    "advice": "raise any hand in position, fold to their 3bet"
   },
   "Xinatown": {
     "hands": 10,
@@ -1205,7 +1355,8 @@
     "pfr": 10.0,
     "3bet": 0.0,
     "af": 2,
-    "archetype": "rock"
+    "archetype": "rock",
+    "advice": "raise any hand in position, fold if they bet"
   },
   "CondeVnCount": {
     "hands": 32,
@@ -1213,7 +1364,8 @@
     "pfr": 12.5,
     "3bet": 0.0,
     "af": 0,
-    "archetype": "rock"
+    "archetype": "nit",
+    "advice": "raise any hand in position, fold to their 3bet"
   },
   "IFern23": {
     "hands": 14,
@@ -1221,7 +1373,8 @@
     "pfr": 0.0,
     "3bet": 0.0,
     "af": 2,
-    "archetype": "nit"
+    "archetype": "rock",
+    "advice": "raise any hand in position, fold if they bet"
   },
   "israelmerlon": {
     "hands": 9,
@@ -1229,7 +1382,8 @@
     "pfr": 33.3,
     "3bet": 0.0,
     "af": 3,
-    "archetype": "lag"
+    "archetype": "maniac",
+    "advice": "vs their raise: only QQ+/AK, then call down"
   },
   "yosii11": {
     "hands": 5,
@@ -1237,7 +1391,8 @@
     "pfr": 0.0,
     "3bet": 0.0,
     "af": 0,
-    "archetype": "nit"
+    "archetype": "nit",
+    "advice": "raise any hand in position, fold to their 3bet"
   },
   "Suave1984": {
     "hands": 106,
@@ -1245,7 +1400,8 @@
     "pfr": 13.2,
     "3bet": 8.3,
     "af": 1.0,
-    "archetype": "rock"
+    "archetype": "rock",
+    "advice": "raise any hand in position, fold if they bet"
   },
   "Tonchofitness": {
     "hands": 19,
@@ -1253,7 +1409,8 @@
     "pfr": 26.3,
     "3bet": 40.0,
     "af": 1.0,
-    "archetype": "lag"
+    "archetype": "lag",
+    "advice": "vs their raise: only 99+/AQ+, then call down"
   },
   "TommyPhil": {
     "hands": 57,
@@ -1261,7 +1418,8 @@
     "pfr": 12.3,
     "3bet": 11.1,
     "af": 2,
-    "archetype": "rock"
+    "archetype": "nit",
+    "advice": "raise any hand in position, fold to their 3bet"
   },
   "big_vvhaIe": {
     "hands": 13,
@@ -1269,7 +1427,8 @@
     "pfr": 0.0,
     "3bet": 0.0,
     "af": 1,
-    "archetype": "nit"
+    "archetype": "nit",
+    "advice": "raise any hand in position, fold to their 3bet"
   },
   "RemRois51": {
     "hands": 19,
@@ -1277,7 +1436,8 @@
     "pfr": 15.8,
     "3bet": 11.1,
     "af": 5,
-    "archetype": "rock"
+    "archetype": "nit",
+    "advice": "raise any hand in position, fold to their 3bet"
   },
   "molinersky": {
     "hands": 12,
@@ -1285,7 +1445,8 @@
     "pfr": 41.7,
     "3bet": 0.0,
     "af": 4.0,
-    "archetype": "lag"
+    "archetype": "maniac",
+    "advice": "vs their raise: only QQ+/AK, then call down"
   },
   "luiscosta82": {
     "hands": 21,
@@ -1293,7 +1454,8 @@
     "pfr": 4.8,
     "3bet": 0.0,
     "af": 0,
-    "archetype": "nit"
+    "archetype": "nit",
+    "advice": "raise any hand in position, fold to their 3bet"
   },
   "born2tiltyall": {
     "hands": 63,
@@ -1301,7 +1463,8 @@
     "pfr": 20.6,
     "3bet": 14.3,
     "af": 2.33,
-    "archetype": "lag"
+    "archetype": "lag",
+    "advice": "vs their raise: only 99+/AQ+, then call down"
   },
   "NEMOXYX": {
     "hands": 121,
@@ -1309,7 +1472,8 @@
     "pfr": 15.7,
     "3bet": 11.4,
     "af": 2.67,
-    "archetype": "rock"
+    "archetype": "nit",
+    "advice": "raise any hand in position, fold to their 3bet"
   },
   "BetBenny": {
     "hands": 9,
@@ -1317,7 +1481,8 @@
     "pfr": 0.0,
     "3bet": 0.0,
     "af": 1,
-    "archetype": "fish"
+    "archetype": "fish",
+    "advice": "bet any pair big, never bluff"
   },
   "b0x2b0x": {
     "hands": 11,
@@ -1325,7 +1490,8 @@
     "pfr": 27.3,
     "3bet": 40.0,
     "af": 6,
-    "archetype": "lag"
+    "archetype": "lag",
+    "advice": "vs their raise: only 99+/AQ+, then call down"
   },
   "titus&mus": {
     "hands": 54,
@@ -1333,7 +1499,8 @@
     "pfr": 9.3,
     "3bet": 0.0,
     "af": 3.0,
-    "archetype": "nit"
+    "archetype": "nit",
+    "advice": "raise any hand in position, fold to their 3bet"
   },
   "juan@luis800": {
     "hands": 25,
@@ -1341,7 +1508,8 @@
     "pfr": 8.0,
     "3bet": 0.0,
     "af": 0,
-    "archetype": "nit"
+    "archetype": "nit",
+    "advice": "raise any hand in position, fold to their 3bet"
   },
   "Luiismofre": {
     "hands": 23,
@@ -1349,7 +1517,8 @@
     "pfr": 30.4,
     "3bet": 28.6,
     "af": 3.0,
-    "archetype": "lag"
+    "archetype": "lag",
+    "advice": "vs their raise: only 99+/AQ+, then call down"
   },
   "palanquilla0": {
     "hands": 11,
@@ -1357,7 +1526,8 @@
     "pfr": 9.1,
     "3bet": 0.0,
     "af": 0.0,
-    "archetype": "nit"
+    "archetype": "nit",
+    "advice": "raise any hand in position, fold to their 3bet"
   },
   "el_heniek": {
     "hands": 53,
@@ -1365,7 +1535,8 @@
     "pfr": 11.3,
     "3bet": 6.2,
     "af": 2.0,
-    "archetype": "fish"
+    "archetype": "fish",
+    "advice": "bet any pair big, never bluff"
   },
   "ArchiBolding": {
     "hands": 7,
@@ -1373,7 +1544,8 @@
     "pfr": 0.0,
     "3bet": 0.0,
     "af": 0,
-    "archetype": "nit"
+    "archetype": "nit",
+    "advice": "raise any hand in position, fold to their 3bet"
   },
   "caacmad": {
     "hands": 14,
@@ -1381,7 +1553,8 @@
     "pfr": 14.3,
     "3bet": 0.0,
     "af": 2.0,
-    "archetype": "fish"
+    "archetype": "fish",
+    "advice": "bet any pair big, never bluff"
   },
   "HGrenha": {
     "hands": 13,
@@ -1389,7 +1562,8 @@
     "pfr": 15.4,
     "3bet": 0.0,
     "af": 1.0,
-    "archetype": "rock"
+    "archetype": "fish",
+    "advice": "bet any pair big, never bluff"
   },
   "marry24": {
     "hands": 30,
@@ -1397,7 +1571,8 @@
     "pfr": 46.7,
     "3bet": 28.6,
     "af": 6,
-    "archetype": "maniac"
+    "archetype": "maniac",
+    "advice": "vs their raise: only QQ+/AK, then call down"
   },
   "Diefa4466": {
     "hands": 36,
@@ -1405,7 +1580,8 @@
     "pfr": 25.0,
     "3bet": 20.0,
     "af": 3.0,
-    "archetype": "lag"
+    "archetype": "lag",
+    "advice": "vs their raise: only 99+/AQ+, then call down"
   },
   "mattar212": {
     "hands": 22,
@@ -1413,7 +1589,8 @@
     "pfr": 13.6,
     "3bet": 0.0,
     "af": 0.5,
-    "archetype": "fish"
+    "archetype": "fish",
+    "advice": "bet any pair big, never bluff"
   },
   "NELSONRIO75": {
     "hands": 6,
@@ -1421,7 +1598,8 @@
     "pfr": 16.7,
     "3bet": 0.0,
     "af": 0,
-    "archetype": "rock"
+    "archetype": "nit",
+    "advice": "raise any hand in position, fold to their 3bet"
   },
   "psgfan53": {
     "hands": 11,
@@ -1429,7 +1607,8 @@
     "pfr": 36.4,
     "3bet": 25.0,
     "af": 1.33,
-    "archetype": "maniac"
+    "archetype": "maniac",
+    "advice": "vs their raise: only QQ+/AK, then call down"
   },
   "Tir0Lir01904": {
     "hands": 12,
@@ -1437,7 +1616,8 @@
     "pfr": 16.7,
     "3bet": 0.0,
     "af": 2.0,
-    "archetype": "rock"
+    "archetype": "fish",
+    "advice": "bet any pair big, never bluff"
   },
   "Elrubik09": {
     "hands": 20,
@@ -1445,7 +1625,8 @@
     "pfr": 15.0,
     "3bet": 16.7,
     "af": 6,
-    "archetype": "rock"
+    "archetype": "fish",
+    "advice": "bet any pair big, never bluff"
   },
   "BuonaLettura": {
     "hands": 8,
@@ -1453,7 +1634,8 @@
     "pfr": 25.0,
     "3bet": 0.0,
     "af": 0.0,
-    "archetype": "fish"
+    "archetype": "fish",
+    "advice": "bet any pair big, never bluff"
   },
   "GleQbenny": {
     "hands": 21,
@@ -1461,7 +1643,8 @@
     "pfr": 9.5,
     "3bet": 0.0,
     "af": 0.0,
-    "archetype": "nit"
+    "archetype": "nit",
+    "advice": "raise any hand in position, fold to their 3bet"
   },
   "biogaia": {
     "hands": 9,
@@ -1469,7 +1652,8 @@
     "pfr": 22.2,
     "3bet": 0.0,
     "af": 0.33,
-    "archetype": "fish"
+    "archetype": "fish",
+    "advice": "bet any pair big, never bluff"
   },
   "iam_xCidx": {
     "hands": 26,
@@ -1477,7 +1661,8 @@
     "pfr": 19.2,
     "3bet": 12.5,
     "af": 1.0,
-    "archetype": "lag"
+    "archetype": "lag",
+    "advice": "vs their raise: only 99+/AQ+, then call down"
   },
   "pirilampo68": {
     "hands": 5,
@@ -1485,7 +1670,8 @@
     "pfr": 0.0,
     "3bet": 0.0,
     "af": 0,
-    "archetype": "fish"
+    "archetype": "fish",
+    "advice": "bet any pair big, never bluff"
   },
   "caroleli10": {
     "hands": 15,
@@ -1493,7 +1679,8 @@
     "pfr": 13.3,
     "3bet": 25.0,
     "af": 0.0,
-    "archetype": "fish"
+    "archetype": "fish",
+    "advice": "bet any pair big, never bluff"
   },
   "Pulgosu.es": {
     "hands": 88,
@@ -1501,7 +1688,8 @@
     "pfr": 11.4,
     "3bet": 2.9,
     "af": 1.0,
-    "archetype": "nit"
+    "archetype": "nit",
+    "advice": "raise any hand in position, fold to their 3bet"
   },
   "AcesCrAAcker": {
     "hands": 12,
@@ -1509,7 +1697,8 @@
     "pfr": 33.3,
     "3bet": 0.0,
     "af": 0.0,
-    "archetype": "lag"
+    "archetype": "maniac",
+    "advice": "vs their raise: only QQ+/AK, then call down"
   },
   "VEGAYAEM": {
     "hands": 17,
@@ -1517,7 +1706,8 @@
     "pfr": 11.8,
     "3bet": 25.0,
     "af": 1.0,
-    "archetype": "fish"
+    "archetype": "fish",
+    "advice": "bet any pair big, never bluff"
   },
   "max97741": {
     "hands": 12,
@@ -1525,7 +1715,8 @@
     "pfr": 16.7,
     "3bet": 0.0,
     "af": 2,
-    "archetype": "rock"
+    "archetype": "nit",
+    "advice": "raise any hand in position, fold to their 3bet"
   },
   "5sebas": {
     "hands": 42,
@@ -1533,7 +1724,8 @@
     "pfr": 23.8,
     "3bet": 15.4,
     "af": 2.5,
-    "archetype": "lag"
+    "archetype": "lag",
+    "advice": "vs their raise: only 99+/AQ+, then call down"
   },
   "punisher1106": {
     "hands": 7,
@@ -1541,7 +1733,8 @@
     "pfr": 0.0,
     "3bet": 0.0,
     "af": 0,
-    "archetype": "nit"
+    "archetype": "rock",
+    "advice": "raise any hand in position, fold if they bet"
   },
   "TiraFinos94": {
     "hands": 41,
@@ -1549,7 +1742,8 @@
     "pfr": 29.3,
     "3bet": 0.0,
     "af": 1.5,
-    "archetype": "lag"
+    "archetype": "lag",
+    "advice": "vs their raise: only 99+/AQ+, then call down"
   },
   "pingu_771": {
     "hands": 59,
@@ -1557,7 +1751,8 @@
     "pfr": 13.6,
     "3bet": 15.8,
     "af": 2.0,
-    "archetype": "rock"
+    "archetype": "nit",
+    "advice": "raise any hand in position, fold to their 3bet"
   },
   "JENOFONTE73": {
     "hands": 26,
@@ -1565,7 +1760,8 @@
     "pfr": 11.5,
     "3bet": 0.0,
     "af": 4,
-    "archetype": "rock"
+    "archetype": "nit",
+    "advice": "raise any hand in position, fold to their 3bet"
   },
   "Zz8crackS": {
     "hands": 16,
@@ -1573,7 +1769,8 @@
     "pfr": 6.2,
     "3bet": 0.0,
     "af": 2,
-    "archetype": "rock"
+    "archetype": "rock",
+    "advice": "raise any hand in position, fold if they bet"
   },
   "kikomi30": {
     "hands": 9,
@@ -1581,7 +1778,8 @@
     "pfr": 11.1,
     "3bet": 0.0,
     "af": 1.0,
-    "archetype": "fish"
+    "archetype": "fish",
+    "advice": "bet any pair big, never bluff"
   },
   "Jlopes77": {
     "hands": 6,
@@ -1589,7 +1787,8 @@
     "pfr": 0.0,
     "3bet": 0.0,
     "af": 0,
-    "archetype": "nit"
+    "archetype": "nit",
+    "advice": "raise any hand in position, fold to their 3bet"
   },
   "ecuinas": {
     "hands": 7,
@@ -1597,7 +1796,8 @@
     "pfr": 14.3,
     "3bet": 0.0,
     "af": 0.0,
-    "archetype": "fish"
+    "archetype": "fish",
+    "advice": "bet any pair big, never bluff"
   },
   "Jorc@n": {
     "hands": 15,
@@ -1605,7 +1805,8 @@
     "pfr": 0.0,
     "3bet": 0.0,
     "af": 0,
-    "archetype": "nit"
+    "archetype": "nit",
+    "advice": "raise any hand in position, fold to their 3bet"
   },
   "toxinho35": {
     "hands": 5,
@@ -1613,7 +1814,8 @@
     "pfr": 0.0,
     "3bet": 0.0,
     "af": 0,
-    "archetype": "nit"
+    "archetype": "nit",
+    "advice": "raise any hand in position, fold to their 3bet"
   },
   "77samuel33": {
     "hands": 10,
@@ -1621,7 +1823,8 @@
     "pfr": 30.0,
     "3bet": 0.0,
     "af": 1.0,
-    "archetype": "lag"
+    "archetype": "maniac",
+    "advice": "vs their raise: only QQ+/AK, then call down"
   },
   "Km500s": {
     "hands": 12,
@@ -1629,7 +1832,8 @@
     "pfr": 8.3,
     "3bet": 0.0,
     "af": 2.0,
-    "archetype": "fish"
+    "archetype": "fish",
+    "advice": "bet any pair big, never bluff"
   },
   "minisusy": {
     "hands": 14,
@@ -1637,7 +1841,8 @@
     "pfr": 14.3,
     "3bet": 0.0,
     "af": 2,
-    "archetype": "nit"
+    "archetype": "nit",
+    "advice": "raise any hand in position, fold to their 3bet"
   },
   "ZixZ596": {
     "hands": 15,
@@ -1645,7 +1850,8 @@
     "pfr": 0.0,
     "3bet": 0.0,
     "af": 0.67,
-    "archetype": "rock"
+    "archetype": "rock",
+    "advice": "raise any hand in position, fold if they bet"
   },
   "jpachelbel": {
     "hands": 5,
@@ -1653,7 +1859,8 @@
     "pfr": 20.0,
     "3bet": 0,
     "af": 1,
-    "archetype": "fish"
+    "archetype": "fish",
+    "advice": "bet any pair big, never bluff"
   },
   "Cachola777": {
     "hands": 11,
@@ -1661,7 +1868,8 @@
     "pfr": 18.2,
     "3bet": 0,
     "af": 0.0,
-    "archetype": "fish"
+    "archetype": "fish",
+    "advice": "bet any pair big, never bluff"
   },
   "Probirss": {
     "hands": 5,
@@ -1669,7 +1877,8 @@
     "pfr": 20.0,
     "3bet": 0.0,
     "af": 0.5,
-    "archetype": "fish"
+    "archetype": "fish",
+    "advice": "bet any pair big, never bluff"
   },
   "terrydandres": {
     "hands": 26,
@@ -1677,7 +1886,8 @@
     "pfr": 34.6,
     "3bet": 0.0,
     "af": 0.8,
-    "archetype": "maniac"
+    "archetype": "maniac",
+    "advice": "vs their raise: only QQ+/AK, then call down"
   },
   "Xoseanro510": {
     "hands": 8,
@@ -1685,7 +1895,8 @@
     "pfr": 12.5,
     "3bet": 50.0,
     "af": 1,
-    "archetype": "rock"
+    "archetype": "rock",
+    "advice": "raise any hand in position, fold if they bet"
   },
   "jc_barriuso": {
     "hands": 33,
@@ -1693,7 +1904,8 @@
     "pfr": 9.1,
     "3bet": 0.0,
     "af": 0.0,
-    "archetype": "rock"
+    "archetype": "nit",
+    "advice": "raise any hand in position, fold to their 3bet"
   },
   "ManuyPablo": {
     "hands": 20,
@@ -1701,7 +1913,8 @@
     "pfr": 15.0,
     "3bet": 0.0,
     "af": 0.0,
-    "archetype": "fish"
+    "archetype": "fish",
+    "advice": "bet any pair big, never bluff"
   },
   "OdontoWhite": {
     "hands": 6,
@@ -1709,7 +1922,8 @@
     "pfr": 16.7,
     "3bet": 0.0,
     "af": 1,
-    "archetype": "rock"
+    "archetype": "nit",
+    "advice": "raise any hand in position, fold to their 3bet"
   },
   "MORENODCADI": {
     "hands": 7,
@@ -1717,7 +1931,8 @@
     "pfr": 14.3,
     "3bet": 0.0,
     "af": 0,
-    "archetype": "nit"
+    "archetype": "nit",
+    "advice": "raise any hand in position, fold to their 3bet"
   },
   "2tortosa": {
     "hands": 10,
@@ -1725,7 +1940,8 @@
     "pfr": 30.0,
     "3bet": 0.0,
     "af": 2.5,
-    "archetype": "maniac"
+    "archetype": "maniac",
+    "advice": "vs their raise: only QQ+/AK, then call down"
   },
   "TJDasNeves": {
     "hands": 7,
@@ -1733,7 +1949,8 @@
     "pfr": 0.0,
     "3bet": 0.0,
     "af": 0,
-    "archetype": "nit"
+    "archetype": "nit",
+    "advice": "raise any hand in position, fold to their 3bet"
   },
   "jeffbref": {
     "hands": 9,
@@ -1741,7 +1958,8 @@
     "pfr": 22.2,
     "3bet": 50.0,
     "af": 0,
-    "archetype": "fish"
+    "archetype": "fish",
+    "advice": "bet any pair big, never bluff"
   },
   "saint-imier": {
     "hands": 38,
@@ -1749,7 +1967,8 @@
     "pfr": 10.5,
     "3bet": 11.1,
     "af": 2.0,
-    "archetype": "rock"
+    "archetype": "nit",
+    "advice": "raise any hand in position, fold to their 3bet"
   },
   "Fiveen": {
     "hands": 7,
@@ -1757,7 +1976,8 @@
     "pfr": 28.6,
     "3bet": 0,
     "af": 0.5,
-    "archetype": "lag"
+    "archetype": "lag",
+    "advice": "vs their raise: only 99+/AQ+, then call down"
   },
   "Barrasrz": {
     "hands": 9,
@@ -1765,7 +1985,8 @@
     "pfr": 0.0,
     "3bet": 0.0,
     "af": 0,
-    "archetype": "fish"
+    "archetype": "fish",
+    "advice": "bet any pair big, never bluff"
   },
   "DegoSan": {
     "hands": 12,
@@ -1773,7 +1994,8 @@
     "pfr": 33.3,
     "3bet": 0.0,
     "af": 0.25,
-    "archetype": "lag"
+    "archetype": "maniac",
+    "advice": "vs their raise: only QQ+/AK, then call down"
   },
   "momonozo": {
     "hands": 13,
@@ -1781,7 +2003,8 @@
     "pfr": 7.7,
     "3bet": 0.0,
     "af": 0.0,
-    "archetype": "fish"
+    "archetype": "rock",
+    "advice": "raise any hand in position, fold if they bet"
   },
   "duartediogo": {
     "hands": 15,
@@ -1789,7 +2012,8 @@
     "pfr": 20.0,
     "3bet": 0.0,
     "af": 0,
-    "archetype": "fish"
+    "archetype": "fish",
+    "advice": "bet any pair big, never bluff"
   },
   "wouziwouza": {
     "hands": 51,
@@ -1797,7 +2021,8 @@
     "pfr": 11.8,
     "3bet": 8.3,
     "af": 3,
-    "archetype": "nit"
+    "archetype": "nit",
+    "advice": "raise any hand in position, fold to their 3bet"
   },
   "Pollonidas94": {
     "hands": 5,
@@ -1805,7 +2030,8 @@
     "pfr": 0.0,
     "3bet": 0.0,
     "af": 0,
-    "archetype": "rock"
+    "archetype": "rock",
+    "advice": "raise any hand in position, fold if they bet"
   },
   "altercados87": {
     "hands": 5,
@@ -1813,7 +2039,8 @@
     "pfr": 40.0,
     "3bet": 0.0,
     "af": 3.0,
-    "archetype": "maniac"
+    "archetype": "maniac",
+    "advice": "vs their raise: only QQ+/AK, then call down"
   },
   "loicman66": {
     "hands": 12,
@@ -1821,7 +2048,8 @@
     "pfr": 8.3,
     "3bet": 0.0,
     "af": 1,
-    "archetype": "fish"
+    "archetype": "fish",
+    "advice": "bet any pair big, never bluff"
   },
   "andresrodr8": {
     "hands": 14,
@@ -1829,7 +2057,8 @@
     "pfr": 7.1,
     "3bet": 0.0,
     "af": 0.0,
-    "archetype": "rock"
+    "archetype": "rock",
+    "advice": "raise any hand in position, fold if they bet"
   },
   "SirButterman": {
     "hands": 65,
@@ -1837,7 +2066,8 @@
     "pfr": 13.8,
     "3bet": 26.3,
     "af": 1.43,
-    "archetype": "rock"
+    "archetype": "rock",
+    "advice": "raise any hand in position, fold if they bet"
   },
   "KerenR": {
     "hands": 58,
@@ -1845,7 +2075,8 @@
     "pfr": 19.0,
     "3bet": 13.0,
     "af": 6.0,
-    "archetype": "lag"
+    "archetype": "lag",
+    "advice": "vs their raise: only 99+/AQ+, then call down"
   },
   "zz3phyr": {
     "hands": 7,
@@ -1853,7 +2084,8 @@
     "pfr": 28.6,
     "3bet": 0,
     "af": 0,
-    "archetype": "lag"
+    "archetype": "lag",
+    "advice": "vs their raise: only 99+/AQ+, then call down"
   },
   "Ferchyman77": {
     "hands": 24,
@@ -1861,7 +2093,8 @@
     "pfr": 8.3,
     "3bet": 0.0,
     "af": 0,
-    "archetype": "nit"
+    "archetype": "nit",
+    "advice": "raise any hand in position, fold to their 3bet"
   },
   "\u00f1lkjh33": {
     "hands": 18,
@@ -1869,7 +2102,8 @@
     "pfr": 38.9,
     "3bet": 16.7,
     "af": 2.33,
-    "archetype": "maniac"
+    "archetype": "maniac",
+    "advice": "vs their raise: only QQ+/AK, then call down"
   },
   "Indutory": {
     "hands": 11,
@@ -1877,7 +2111,8 @@
     "pfr": 45.5,
     "3bet": 20.0,
     "af": 2,
-    "archetype": "lag"
+    "archetype": "maniac",
+    "advice": "vs their raise: only QQ+/AK, then call down"
   },
   "mikoandy69": {
     "hands": 67,
@@ -1885,7 +2120,8 @@
     "pfr": 1.5,
     "3bet": 0.0,
     "af": 1.62,
-    "archetype": "fish"
+    "archetype": "fish",
+    "advice": "bet any pair big, never bluff"
   },
   "vayewis": {
     "hands": 36,
@@ -1893,7 +2129,8 @@
     "pfr": 25.0,
     "3bet": 10.0,
     "af": 1.6,
-    "archetype": "lag"
+    "archetype": "fish",
+    "advice": "bet any pair big, never bluff"
   },
   "Mr.Skills29": {
     "hands": 14,
@@ -1901,7 +2138,8 @@
     "pfr": 21.4,
     "3bet": 25.0,
     "af": 2,
-    "archetype": "tag"
+    "archetype": "tag",
+    "advice": "vs their raise: only TT+/AK"
   },
   "feerry61": {
     "hands": 13,
@@ -1909,7 +2147,8 @@
     "pfr": 46.2,
     "3bet": 20.0,
     "af": 0,
-    "archetype": "lag"
+    "archetype": "maniac",
+    "advice": "vs their raise: only QQ+/AK, then call down"
   },
   "juanki37": {
     "hands": 26,
@@ -1917,7 +2156,8 @@
     "pfr": 19.2,
     "3bet": 10.0,
     "af": 1.67,
-    "archetype": "lag"
+    "archetype": "lag",
+    "advice": "vs their raise: only 99+/AQ+, then call down"
   },
   "rusosky1000": {
     "hands": 60,
@@ -1925,7 +2165,8 @@
     "pfr": 8.3,
     "3bet": 0.0,
     "af": 1.0,
-    "archetype": "nit"
+    "archetype": "nit",
+    "advice": "raise any hand in position, fold to their 3bet"
   },
   "nofunfuma": {
     "hands": 39,
@@ -1933,7 +2174,8 @@
     "pfr": 12.8,
     "3bet": 9.1,
     "af": 3.0,
-    "archetype": "nit"
+    "archetype": "nit",
+    "advice": "raise any hand in position, fold to their 3bet"
   },
   "N3xtTIm35": {
     "hands": 53,
@@ -1941,7 +2183,8 @@
     "pfr": 20.8,
     "3bet": 0.0,
     "af": 0.86,
-    "archetype": "lag"
+    "archetype": "lag",
+    "advice": "vs their raise: only 99+/AQ+, then call down"
   },
   "HungerG@me": {
     "hands": 15,
@@ -1949,7 +2192,8 @@
     "pfr": 6.7,
     "3bet": 12.5,
     "af": 1.0,
-    "archetype": "fish"
+    "archetype": "fish",
+    "advice": "bet any pair big, never bluff"
   },
   "technoboy72": {
     "hands": 37,
@@ -1957,7 +2201,8 @@
     "pfr": 18.9,
     "3bet": 21.4,
     "af": 2.0,
-    "archetype": "lag"
+    "archetype": "fish",
+    "advice": "bet any pair big, never bluff"
   },
   "MelucheLeVieux": {
     "hands": 57,
@@ -1965,7 +2210,8 @@
     "pfr": 15.8,
     "3bet": 0.0,
     "af": 2.67,
-    "archetype": "rock"
+    "archetype": "fish",
+    "advice": "bet any pair big, never bluff"
   },
   "Macicled": {
     "hands": 31,
@@ -1973,7 +2219,8 @@
     "pfr": 16.1,
     "3bet": 0.0,
     "af": 1.5,
-    "archetype": "rock"
+    "archetype": "fish",
+    "advice": "bet any pair big, never bluff"
   },
   "EktorKing": {
     "hands": 22,
@@ -1981,7 +2228,8 @@
     "pfr": 4.5,
     "3bet": 0.0,
     "af": 0.0,
-    "archetype": "nit"
+    "archetype": "nit",
+    "advice": "raise any hand in position, fold to their 3bet"
   },
   "chumy8": {
     "hands": 20,
@@ -1989,7 +2237,8 @@
     "pfr": 15.0,
     "3bet": 14.3,
     "af": 0,
-    "archetype": "rock"
+    "archetype": "nit",
+    "advice": "raise any hand in position, fold to their 3bet"
   },
   "MaxiMick": {
     "hands": 9,
@@ -1997,7 +2246,8 @@
     "pfr": 22.2,
     "3bet": 0.0,
     "af": 4,
-    "archetype": "lag"
+    "archetype": "fish",
+    "advice": "bet any pair big, never bluff"
   },
   "Sapsiase": {
     "hands": 29,
@@ -2005,7 +2255,8 @@
     "pfr": 27.6,
     "3bet": 30.0,
     "af": 2,
-    "archetype": "lag"
+    "archetype": "lag",
+    "advice": "vs their raise: only 99+/AQ+, then call down"
   },
   "danielalmi": {
     "hands": 36,
@@ -2013,7 +2264,8 @@
     "pfr": 22.2,
     "3bet": 0.0,
     "af": 1.75,
-    "archetype": "fish"
+    "archetype": "fish",
+    "advice": "bet any pair big, never bluff"
   },
   "MiguelViana17": {
     "hands": 7,
@@ -2021,7 +2273,8 @@
     "pfr": 28.6,
     "3bet": 33.3,
     "af": 0,
-    "archetype": "fish"
+    "archetype": "fish",
+    "advice": "bet any pair big, never bluff"
   },
   "papuchi957": {
     "hands": 9,
@@ -2029,7 +2282,8 @@
     "pfr": 33.3,
     "3bet": 20.0,
     "af": 1,
-    "archetype": "lag"
+    "archetype": "maniac",
+    "advice": "vs their raise: only QQ+/AK, then call down"
   },
   "byrex2233": {
     "hands": 7,
@@ -2037,7 +2291,8 @@
     "pfr": 0.0,
     "3bet": 0.0,
     "af": 0,
-    "archetype": "nit"
+    "archetype": "nit",
+    "advice": "raise any hand in position, fold to their 3bet"
   },
   "Andrewv69": {
     "hands": 13,
@@ -2045,7 +2300,8 @@
     "pfr": 0.0,
     "3bet": 0.0,
     "af": 1.0,
-    "archetype": "rock"
+    "archetype": "rock",
+    "advice": "raise any hand in position, fold if they bet"
   },
   "boscos1966": {
     "hands": 8,
@@ -2053,7 +2309,8 @@
     "pfr": 0.0,
     "3bet": 0.0,
     "af": 0,
-    "archetype": "nit"
+    "archetype": "rock",
+    "advice": "raise any hand in position, fold if they bet"
   },
   "manolo1953": {
     "hands": 9,
@@ -2061,7 +2318,8 @@
     "pfr": 0.0,
     "3bet": 0.0,
     "af": 0,
-    "archetype": "nit"
+    "archetype": "nit",
+    "advice": "raise any hand in position, fold to their 3bet"
   },
   "hope201319": {
     "hands": 16,
@@ -2069,7 +2327,8 @@
     "pfr": 12.5,
     "3bet": 0.0,
     "af": 1,
-    "archetype": "rock"
+    "archetype": "rock",
+    "advice": "raise any hand in position, fold if they bet"
   },
   "Hisense99": {
     "hands": 18,
@@ -2077,7 +2336,8 @@
     "pfr": 16.7,
     "3bet": 16.7,
     "af": 2,
-    "archetype": "lag"
+    "archetype": "fish",
+    "advice": "bet any pair big, never bluff"
   },
   "anonimo337": {
     "hands": 20,
@@ -2085,7 +2345,8 @@
     "pfr": 10.0,
     "3bet": 0.0,
     "af": 1,
-    "archetype": "fish"
+    "archetype": "fish",
+    "advice": "bet any pair big, never bluff"
   },
   "glandeur66": {
     "hands": 20,
@@ -2093,7 +2354,8 @@
     "pfr": 30.0,
     "3bet": 25.0,
     "af": 10,
-    "archetype": "maniac"
+    "archetype": "maniac",
+    "advice": "vs their raise: only QQ+/AK, then call down"
   },
   "Coronel_Bdoc": {
     "hands": 15,
@@ -2101,7 +2363,8 @@
     "pfr": 40.0,
     "3bet": 50.0,
     "af": 5.0,
-    "archetype": "lag"
+    "archetype": "maniac",
+    "advice": "vs their raise: only QQ+/AK, then call down"
   },
   "Agonista": {
     "hands": 21,
@@ -2109,7 +2372,8 @@
     "pfr": 4.8,
     "3bet": 0.0,
     "af": 2,
-    "archetype": "rock"
+    "archetype": "rock",
+    "advice": "raise any hand in position, fold if they bet"
   },
   "Rourou1734": {
     "hands": 17,
@@ -2117,7 +2381,8 @@
     "pfr": 23.5,
     "3bet": 100.0,
     "af": 5.0,
-    "archetype": "fish"
+    "archetype": "fish",
+    "advice": "bet any pair big, never bluff"
   },
   "HOLLIFOUTERE": {
     "hands": 10,
@@ -2125,7 +2390,8 @@
     "pfr": 10.0,
     "3bet": 0.0,
     "af": 1,
-    "archetype": "fish"
+    "archetype": "fish",
+    "advice": "bet any pair big, never bluff"
   },
   "eooooo": {
     "hands": 43,
@@ -2133,7 +2399,8 @@
     "pfr": 20.9,
     "3bet": 6.2,
     "af": 3.5,
-    "archetype": "lag"
+    "archetype": "lag",
+    "advice": "vs their raise: only 99+/AQ+, then call down"
   },
   "migueli\u00f1o22": {
     "hands": 5,
@@ -2141,7 +2408,8 @@
     "pfr": 0.0,
     "3bet": 0.0,
     "af": 0,
-    "archetype": "nit"
+    "archetype": "nit",
+    "advice": "raise any hand in position, fold to their 3bet"
   },
   "xavi906": {
     "hands": 19,
@@ -2149,7 +2417,8 @@
     "pfr": 15.8,
     "3bet": 0.0,
     "af": 2.0,
-    "archetype": "fish"
+    "archetype": "fish",
+    "advice": "bet any pair big, never bluff"
   },
   "gusarapo": {
     "hands": 8,
@@ -2157,7 +2426,8 @@
     "pfr": 37.5,
     "3bet": 33.3,
     "af": 0,
-    "archetype": "lag"
+    "archetype": "lag",
+    "advice": "vs their raise: only 99+/AQ+, then call down"
   },
   "franzafra123": {
     "hands": 13,
@@ -2165,7 +2435,8 @@
     "pfr": 7.7,
     "3bet": 0.0,
     "af": 0.0,
-    "archetype": "fish"
+    "archetype": "rock",
+    "advice": "raise any hand in position, fold if they bet"
   },
   "damianmg10": {
     "hands": 22,
@@ -2173,7 +2444,8 @@
     "pfr": 27.3,
     "3bet": 0.0,
     "af": 5,
-    "archetype": "lag"
+    "archetype": "lag",
+    "advice": "vs their raise: only 99+/AQ+, then call down"
   },
   "filology5": {
     "hands": 52,
@@ -2181,7 +2453,8 @@
     "pfr": 11.5,
     "3bet": 0.0,
     "af": 0.5,
-    "archetype": "rock"
+    "archetype": "rock",
+    "advice": "raise any hand in position, fold if they bet"
   },
   "Martial333": {
     "hands": 13,
@@ -2189,7 +2462,8 @@
     "pfr": 7.7,
     "3bet": 0.0,
     "af": 4,
-    "archetype": "fish"
+    "archetype": "rock",
+    "advice": "raise any hand in position, fold if they bet"
   },
   "Jac-58": {
     "hands": 20,
@@ -2197,7 +2471,8 @@
     "pfr": 15.0,
     "3bet": 0.0,
     "af": 5.0,
-    "archetype": "fish"
+    "archetype": "fish",
+    "advice": "bet any pair big, never bluff"
   },
   "Desdjepu": {
     "hands": 8,
@@ -2205,7 +2480,8 @@
     "pfr": 12.5,
     "3bet": 0.0,
     "af": 0.0,
-    "archetype": "nit"
+    "archetype": "nit",
+    "advice": "raise any hand in position, fold to their 3bet"
   },
   "IgancioGB": {
     "hands": 15,
@@ -2213,7 +2489,8 @@
     "pfr": 13.3,
     "3bet": 0.0,
     "af": 0,
-    "archetype": "nit"
+    "archetype": "nit",
+    "advice": "raise any hand in position, fold to their 3bet"
   },
   "babybouchettes": {
     "hands": 5,
@@ -2221,7 +2498,8 @@
     "pfr": 0.0,
     "3bet": 0,
     "af": 0,
-    "archetype": "nit"
+    "archetype": "nit",
+    "advice": "raise any hand in position, fold to their 3bet"
   },
   "ivansalgueiro": {
     "hands": 5,
@@ -2229,7 +2507,8 @@
     "pfr": 20.0,
     "3bet": 0,
     "af": 0,
-    "archetype": "tag"
+    "archetype": "tag",
+    "advice": "vs their raise: only TT+/AK"
   },
   "jpvacas": {
     "hands": 17,
@@ -2237,7 +2516,8 @@
     "pfr": 23.5,
     "3bet": 25.0,
     "af": 4,
-    "archetype": "fish"
+    "archetype": "tag",
+    "advice": "vs their raise: only TT+/AK"
   },
   "ludstickk1": {
     "hands": 7,
@@ -2245,7 +2525,8 @@
     "pfr": 0.0,
     "3bet": 0.0,
     "af": 0,
-    "archetype": "nit"
+    "archetype": "nit",
+    "advice": "raise any hand in position, fold to their 3bet"
   },
   "Marya1956": {
     "hands": 18,
@@ -2253,7 +2534,8 @@
     "pfr": 16.7,
     "3bet": 0.0,
     "af": 3,
-    "archetype": "rock"
+    "archetype": "fish",
+    "advice": "bet any pair big, never bluff"
   },
   "gates1960": {
     "hands": 5,
@@ -2261,7 +2543,8 @@
     "pfr": 0.0,
     "3bet": 0.0,
     "af": 0.0,
-    "archetype": "fish"
+    "archetype": "fish",
+    "advice": "bet any pair big, never bluff"
   },
   "ganadores13": {
     "hands": 6,
@@ -2269,7 +2552,8 @@
     "pfr": 16.7,
     "3bet": 0.0,
     "af": 1,
-    "archetype": "rock"
+    "archetype": "nit",
+    "advice": "raise any hand in position, fold to their 3bet"
   },
   "2501990": {
     "hands": 24,
@@ -2277,7 +2561,8 @@
     "pfr": 12.5,
     "3bet": 0.0,
     "af": 3,
-    "archetype": "rock"
+    "archetype": "nit",
+    "advice": "raise any hand in position, fold to their 3bet"
   },
   "galzu369": {
     "hands": 17,
@@ -2285,7 +2570,8 @@
     "pfr": 11.8,
     "3bet": 14.3,
     "af": 1.0,
-    "archetype": "fish"
+    "archetype": "fish",
+    "advice": "bet any pair big, never bluff"
   },
   "oneminuteone": {
     "hands": 10,
@@ -2293,7 +2579,8 @@
     "pfr": 10.0,
     "3bet": 0.0,
     "af": 0.0,
-    "archetype": "rock"
+    "archetype": "rock",
+    "advice": "raise any hand in position, fold if they bet"
   },
   "mariano62": {
     "hands": 7,
@@ -2301,7 +2588,8 @@
     "pfr": 0.0,
     "3bet": 0.0,
     "af": 0.0,
-    "archetype": "nit"
+    "archetype": "rock",
+    "advice": "raise any hand in position, fold if they bet"
   },
   "Ikeeraldaii": {
     "hands": 7,
@@ -2309,7 +2597,8 @@
     "pfr": 14.3,
     "3bet": 0.0,
     "af": 0,
-    "archetype": "nit"
+    "archetype": "nit",
+    "advice": "raise any hand in position, fold to their 3bet"
   },
   "culosone": {
     "hands": 22,
@@ -2317,7 +2606,8 @@
     "pfr": 18.2,
     "3bet": 0.0,
     "af": 4,
-    "archetype": "fish"
+    "archetype": "fish",
+    "advice": "bet any pair big, never bluff"
   },
   "ansbgarde": {
     "hands": 6,
@@ -2325,7 +2615,8 @@
     "pfr": 16.7,
     "3bet": 0.0,
     "af": 0,
-    "archetype": "fish"
+    "archetype": "fish",
+    "advice": "bet any pair big, never bluff"
   },
   "Rogelio2": {
     "hands": 15,
@@ -2333,7 +2624,8 @@
     "pfr": 6.7,
     "3bet": 0.0,
     "af": 0.0,
-    "archetype": "fish"
+    "archetype": "fish",
+    "advice": "bet any pair big, never bluff"
   },
   "LLinusLLovefan": {
     "hands": 12,
@@ -2341,7 +2633,8 @@
     "pfr": 8.3,
     "3bet": 0.0,
     "af": 1.0,
-    "archetype": "fish"
+    "archetype": "fish",
+    "advice": "bet any pair big, never bluff"
   },
   "tiago61220": {
     "hands": 6,
@@ -2349,7 +2642,8 @@
     "pfr": 0.0,
     "3bet": 0.0,
     "af": 1,
-    "archetype": "fish"
+    "archetype": "fish",
+    "advice": "bet any pair big, never bluff"
   },
   "Uyquetardeee": {
     "hands": 11,
@@ -2357,7 +2651,8 @@
     "pfr": 18.2,
     "3bet": 0.0,
     "af": 4,
-    "archetype": "fish"
+    "archetype": "fish",
+    "advice": "bet any pair big, never bluff"
   },
   "EcoS41": {
     "hands": 15,
@@ -2365,7 +2660,8 @@
     "pfr": 0.0,
     "3bet": 0.0,
     "af": 0.5,
-    "archetype": "fish"
+    "archetype": "fish",
+    "advice": "bet any pair big, never bluff"
   },
   "Baumito": {
     "hands": 22,
@@ -2373,7 +2669,8 @@
     "pfr": 9.1,
     "3bet": 0.0,
     "af": 2.0,
-    "archetype": "fish"
+    "archetype": "fish",
+    "advice": "bet any pair big, never bluff"
   },
   "Hot4grinD": {
     "hands": 5,
@@ -2381,7 +2678,8 @@
     "pfr": 40.0,
     "3bet": 0.0,
     "af": 1,
-    "archetype": "maniac"
+    "archetype": "maniac",
+    "advice": "vs their raise: only QQ+/AK, then call down"
   },
   "F4N\u00e17ic0": {
     "hands": 7,
@@ -2389,7 +2687,8 @@
     "pfr": 42.9,
     "3bet": 0.0,
     "af": 2.0,
-    "archetype": "maniac"
+    "archetype": "maniac",
+    "advice": "vs their raise: only QQ+/AK, then call down"
   },
   "j.cerqueira": {
     "hands": 31,
@@ -2397,7 +2696,8 @@
     "pfr": 3.2,
     "3bet": 12.5,
     "af": 2,
-    "archetype": "nit"
+    "archetype": "rock",
+    "advice": "raise any hand in position, fold if they bet"
   },
   "losi10": {
     "hands": 29,
@@ -2405,7 +2705,8 @@
     "pfr": 3.4,
     "3bet": 0.0,
     "af": 0.83,
-    "archetype": "fish"
+    "archetype": "fish",
+    "advice": "bet any pair big, never bluff"
   },
   "MENDACANELO": {
     "hands": 30,
@@ -2413,7 +2714,8 @@
     "pfr": 13.3,
     "3bet": 9.1,
     "af": 3,
-    "archetype": "nit"
+    "archetype": "nit",
+    "advice": "raise any hand in position, fold to their 3bet"
   },
   "elpinkysharky": {
     "hands": 9,
@@ -2421,7 +2723,8 @@
     "pfr": 44.4,
     "3bet": 50.0,
     "af": 1,
-    "archetype": "maniac"
+    "archetype": "maniac",
+    "advice": "vs their raise: only QQ+/AK, then call down"
   },
   "PetitMaki404": {
     "hands": 33,
@@ -2429,7 +2732,8 @@
     "pfr": 18.2,
     "3bet": 7.7,
     "af": 4.0,
-    "archetype": "nit"
+    "archetype": "tag",
+    "advice": "vs their raise: only TT+/AK"
   },
   "LazyZboubi": {
     "hands": 10,
@@ -2437,7 +2741,8 @@
     "pfr": 10.0,
     "3bet": 0.0,
     "af": 0,
-    "archetype": "rock"
+    "archetype": "rock",
+    "advice": "raise any hand in position, fold if they bet"
   },
   "elcrack87": {
     "hands": 12,
@@ -2445,7 +2750,8 @@
     "pfr": 0.0,
     "3bet": 0.0,
     "af": 1.0,
-    "archetype": "nit"
+    "archetype": "rock",
+    "advice": "raise any hand in position, fold if they bet"
   },
   "CHOIN8581": {
     "hands": 14,
@@ -2453,7 +2759,8 @@
     "pfr": 14.3,
     "3bet": 0.0,
     "af": 1,
-    "archetype": "rock"
+    "archetype": "rock",
+    "advice": "raise any hand in position, fold if they bet"
   },
   "Evita.evit": {
     "hands": 6,
@@ -2461,7 +2768,8 @@
     "pfr": 16.7,
     "3bet": 0.0,
     "af": 0.25,
-    "archetype": "fish"
+    "archetype": "fish",
+    "advice": "bet any pair big, never bluff"
   },
   "steph68manon": {
     "hands": 11,
@@ -2469,7 +2777,8 @@
     "pfr": 0.0,
     "3bet": 0.0,
     "af": 0,
-    "archetype": "nit"
+    "archetype": "nit",
+    "advice": "raise any hand in position, fold to their 3bet"
   },
   "guiyermo1980": {
     "hands": 14,
@@ -2477,7 +2786,8 @@
     "pfr": 0.0,
     "3bet": 0.0,
     "af": 1.0,
-    "archetype": "fish"
+    "archetype": "fish",
+    "advice": "bet any pair big, never bluff"
   },
   "ringostuf": {
     "hands": 5,
@@ -2485,7 +2795,8 @@
     "pfr": 20.0,
     "3bet": 0.0,
     "af": 0,
-    "archetype": "fish"
+    "archetype": "fish",
+    "advice": "bet any pair big, never bluff"
   },
   "hernandS&G": {
     "hands": 15,
@@ -2493,7 +2804,8 @@
     "pfr": 20.0,
     "3bet": 20.0,
     "af": 1,
-    "archetype": "tag"
+    "archetype": "tag",
+    "advice": "vs their raise: only TT+/AK"
   },
   "emiliojjv": {
     "hands": 7,
@@ -2501,7 +2813,8 @@
     "pfr": 14.3,
     "3bet": 50.0,
     "af": 1,
-    "archetype": "nit"
+    "archetype": "nit",
+    "advice": "raise any hand in position, fold to their 3bet"
   },
   "Beni97844": {
     "hands": 18,
@@ -2509,7 +2822,8 @@
     "pfr": 22.2,
     "3bet": 16.7,
     "af": 0.8,
-    "archetype": "fish"
+    "archetype": "fish",
+    "advice": "bet any pair big, never bluff"
   },
   "SOSCHI007": {
     "hands": 12,
@@ -2517,7 +2831,8 @@
     "pfr": 8.3,
     "3bet": 16.7,
     "af": 2.0,
-    "archetype": "fish"
+    "archetype": "fish",
+    "advice": "bet any pair big, never bluff"
   },
   "fiku1": {
     "hands": 13,
@@ -2525,7 +2840,8 @@
     "pfr": 0.0,
     "3bet": 0.0,
     "af": 0,
-    "archetype": "nit"
+    "archetype": "rock",
+    "advice": "raise any hand in position, fold if they bet"
   },
   "sikikis": {
     "hands": 15,
@@ -2533,7 +2849,8 @@
     "pfr": 26.7,
     "3bet": 0.0,
     "af": 2.0,
-    "archetype": "fish"
+    "archetype": "fish",
+    "advice": "bet any pair big, never bluff"
   },
   "rare12345": {
     "hands": 37,
@@ -2541,7 +2858,8 @@
     "pfr": 27.0,
     "3bet": 0.0,
     "af": 5.0,
-    "archetype": "lag"
+    "archetype": "lag",
+    "advice": "vs their raise: only 99+/AQ+, then call down"
   },
   "miguelams27": {
     "hands": 19,
@@ -2549,7 +2867,8 @@
     "pfr": 15.8,
     "3bet": 0.0,
     "af": 0,
-    "archetype": "rock"
+    "archetype": "fish",
+    "advice": "bet any pair big, never bluff"
   },
   "JuanSoto22": {
     "hands": 5,
@@ -2557,7 +2876,8 @@
     "pfr": 40.0,
     "3bet": 0,
     "af": 0,
-    "archetype": "maniac"
+    "archetype": "maniac",
+    "advice": "vs their raise: only QQ+/AK, then call down"
   },
   "geraard90": {
     "hands": 9,
@@ -2565,7 +2885,8 @@
     "pfr": 22.2,
     "3bet": 25.0,
     "af": 0.5,
-    "archetype": "lag"
+    "archetype": "fish",
+    "advice": "bet any pair big, never bluff"
   },
   "Jmmz87": {
     "hands": 6,
@@ -2573,7 +2894,8 @@
     "pfr": 33.3,
     "3bet": 0.0,
     "af": 3.0,
-    "archetype": "lag"
+    "archetype": "lag",
+    "advice": "vs their raise: only 99+/AQ+, then call down"
   },
   "boogychat": {
     "hands": 6,
@@ -2581,7 +2903,8 @@
     "pfr": 16.7,
     "3bet": 0,
     "af": 3,
-    "archetype": "fish"
+    "archetype": "fish",
+    "advice": "bet any pair big, never bluff"
   },
   "LittleVerole": {
     "hands": 15,
@@ -2589,7 +2912,8 @@
     "pfr": 6.7,
     "3bet": 0.0,
     "af": 0.5,
-    "archetype": "rock"
+    "archetype": "rock",
+    "advice": "raise any hand in position, fold if they bet"
   },
   "juancathree": {
     "hands": 18,
@@ -2597,7 +2921,8 @@
     "pfr": 22.2,
     "3bet": 0.0,
     "af": 0.67,
-    "archetype": "lag"
+    "archetype": "fish",
+    "advice": "bet any pair big, never bluff"
   },
   "pepkoyote": {
     "hands": 11,
@@ -2605,7 +2930,8 @@
     "pfr": 18.2,
     "3bet": 25.0,
     "af": 1.33,
-    "archetype": "fish"
+    "archetype": "fish",
+    "advice": "bet any pair big, never bluff"
   },
   "SexybabySexymum": {
     "hands": 13,
@@ -2613,7 +2939,8 @@
     "pfr": 23.1,
     "3bet": 0.0,
     "af": 1,
-    "archetype": "fish"
+    "archetype": "tag",
+    "advice": "vs their raise: only TT+/AK"
   },
   "MATADOR473": {
     "hands": 6,
@@ -2621,7 +2948,8 @@
     "pfr": 0.0,
     "3bet": 0.0,
     "af": 0,
-    "archetype": "nit"
+    "archetype": "nit",
+    "advice": "raise any hand in position, fold to their 3bet"
   },
   "lulula24": {
     "hands": 7,
@@ -2629,7 +2957,8 @@
     "pfr": 28.6,
     "3bet": 0.0,
     "af": 0,
-    "archetype": "lag"
+    "archetype": "lag",
+    "advice": "vs their raise: only 99+/AQ+, then call down"
   },
   "ra14sg": {
     "hands": 13,
@@ -2637,7 +2966,8 @@
     "pfr": 23.1,
     "3bet": 16.7,
     "af": 4.0,
-    "archetype": "fish"
+    "archetype": "fish",
+    "advice": "bet any pair big, never bluff"
   },
   "nunodias1221": {
     "hands": 6,
@@ -2645,7 +2975,8 @@
     "pfr": 0.0,
     "3bet": 0,
     "af": 2,
-    "archetype": "fish"
+    "archetype": "fish",
+    "advice": "bet any pair big, never bluff"
   },
   "MAVERICK298": {
     "hands": 6,
@@ -2653,7 +2984,8 @@
     "pfr": 16.7,
     "3bet": 0.0,
     "af": 1,
-    "archetype": "fish"
+    "archetype": "fish",
+    "advice": "bet any pair big, never bluff"
   },
   "sanpistakio": {
     "hands": 6,
@@ -2661,7 +2993,8 @@
     "pfr": 0.0,
     "3bet": 0.0,
     "af": 0,
-    "archetype": "nit"
+    "archetype": "nit",
+    "advice": "raise any hand in position, fold to their 3bet"
   },
   "grangui64": {
     "hands": 8,
@@ -2669,7 +3002,8 @@
     "pfr": 12.5,
     "3bet": 0.0,
     "af": 1,
-    "archetype": "rock"
+    "archetype": "rock",
+    "advice": "raise any hand in position, fold if they bet"
   },
   "aleexv07": {
     "hands": 6,
@@ -2677,7 +3011,8 @@
     "pfr": 33.3,
     "3bet": 0,
     "af": 1,
-    "archetype": "maniac"
+    "archetype": "maniac",
+    "advice": "vs their raise: only QQ+/AK, then call down"
   },
   "Cachel_66": {
     "hands": 14,
@@ -2685,7 +3020,8 @@
     "pfr": 21.4,
     "3bet": 0.0,
     "af": 3.0,
-    "archetype": "lag"
+    "archetype": "lag",
+    "advice": "vs their raise: only 99+/AQ+, then call down"
   },
   "joseagrao": {
     "hands": 13,
@@ -2693,7 +3029,8 @@
     "pfr": 23.1,
     "3bet": 0.0,
     "af": 0.4,
-    "archetype": "fish"
+    "archetype": "fish",
+    "advice": "bet any pair big, never bluff"
   },
   "darkzazel": {
     "hands": 7,
@@ -2701,7 +3038,8 @@
     "pfr": 14.3,
     "3bet": 0.0,
     "af": 0.0,
-    "archetype": "fish"
+    "archetype": "fish",
+    "advice": "bet any pair big, never bluff"
   },
   "Nofcknidea888": {
     "hands": 16,
@@ -2709,7 +3047,8 @@
     "pfr": 25.0,
     "3bet": 0.0,
     "af": 0.4,
-    "archetype": "fish"
+    "archetype": "fish",
+    "advice": "bet any pair big, never bluff"
   },
   "Pstoleroloco": {
     "hands": 5,
@@ -2717,7 +3056,8 @@
     "pfr": 20.0,
     "3bet": 0.0,
     "af": 1.0,
-    "archetype": "fish"
+    "archetype": "fish",
+    "advice": "bet any pair big, never bluff"
   },
   "xaval01": {
     "hands": 46,
@@ -2725,7 +3065,8 @@
     "pfr": 26.1,
     "3bet": 10.0,
     "af": 3.0,
-    "archetype": "lag"
+    "archetype": "lag",
+    "advice": "vs their raise: only 99+/AQ+, then call down"
   },
   "SmOuL123": {
     "hands": 5,
@@ -2733,7 +3074,8 @@
     "pfr": 20.0,
     "3bet": 50.0,
     "af": 0.0,
-    "archetype": "fish"
+    "archetype": "fish",
+    "advice": "bet any pair big, never bluff"
   },
   "VirginLola": {
     "hands": 9,
@@ -2741,7 +3083,8 @@
     "pfr": 33.3,
     "3bet": 0.0,
     "af": 0,
-    "archetype": "lag"
+    "archetype": "lag",
+    "advice": "vs their raise: only 99+/AQ+, then call down"
   },
   "rnb333": {
     "hands": 23,
@@ -2749,7 +3092,8 @@
     "pfr": 8.7,
     "3bet": 11.1,
     "af": 1.0,
-    "archetype": "rock"
+    "archetype": "rock",
+    "advice": "raise any hand in position, fold if they bet"
   },
   "pompavana": {
     "hands": 16,
@@ -2757,7 +3101,8 @@
     "pfr": 6.2,
     "3bet": 0.0,
     "af": 0,
-    "archetype": "nit"
+    "archetype": "nit",
+    "advice": "raise any hand in position, fold to their 3bet"
   },
   "NCabral_SCP": {
     "hands": 18,
@@ -2765,7 +3110,8 @@
     "pfr": 0.0,
     "3bet": 0.0,
     "af": 0,
-    "archetype": "nit"
+    "archetype": "nit",
+    "advice": "raise any hand in position, fold to their 3bet"
   },
   "tonid00kie": {
     "hands": 13,
@@ -2773,7 +3119,8 @@
     "pfr": 15.4,
     "3bet": 0.0,
     "af": 2,
-    "archetype": "fish"
+    "archetype": "fish",
+    "advice": "bet any pair big, never bluff"
   },
   "gago537": {
     "hands": 8,
@@ -2781,7 +3128,8 @@
     "pfr": 25.0,
     "3bet": 0.0,
     "af": 1.0,
-    "archetype": "fish"
+    "archetype": "fish",
+    "advice": "bet any pair big, never bluff"
   },
   "CaputMuck": {
     "hands": 16,
@@ -2789,7 +3137,8 @@
     "pfr": 31.2,
     "3bet": 0.0,
     "af": 1,
-    "archetype": "lag"
+    "archetype": "lag",
+    "advice": "vs their raise: only 99+/AQ+, then call down"
   },
   "Dsuarezv": {
     "hands": 7,
@@ -2797,7 +3146,8 @@
     "pfr": 28.6,
     "3bet": 0.0,
     "af": 0,
-    "archetype": "lag"
+    "archetype": "lag",
+    "advice": "vs their raise: only 99+/AQ+, then call down"
   },
   "fenoltaleina": {
     "hands": 8,
@@ -2805,7 +3155,8 @@
     "pfr": 0.0,
     "3bet": 0.0,
     "af": 0.0,
-    "archetype": "rock"
+    "archetype": "rock",
+    "advice": "raise any hand in position, fold if they bet"
   },
   "liu0508": {
     "hands": 8,
@@ -2813,7 +3164,8 @@
     "pfr": 12.5,
     "3bet": 50.0,
     "af": 2.5,
-    "archetype": "fish"
+    "archetype": "fish",
+    "advice": "bet any pair big, never bluff"
   },
   "josepoker195": {
     "hands": 9,
@@ -2821,7 +3173,8 @@
     "pfr": 22.2,
     "3bet": 0.0,
     "af": 0,
-    "archetype": "lag"
+    "archetype": "fish",
+    "advice": "bet any pair big, never bluff"
   },
   "toriko94": {
     "hands": 6,
@@ -2829,7 +3182,8 @@
     "pfr": 16.7,
     "3bet": 0.0,
     "af": 1,
-    "archetype": "fish"
+    "archetype": "fish",
+    "advice": "bet any pair big, never bluff"
   },
   "zmpoker75": {
     "hands": 5,
@@ -2837,7 +3191,8 @@
     "pfr": 0.0,
     "3bet": 0.0,
     "af": 2.0,
-    "archetype": "fish"
+    "archetype": "fish",
+    "advice": "bet any pair big, never bluff"
   },
   "wjordi98": {
     "hands": 5,
@@ -2845,7 +3200,8 @@
     "pfr": 40.0,
     "3bet": 0.0,
     "af": 1,
-    "archetype": "maniac"
+    "archetype": "maniac",
+    "advice": "vs their raise: only QQ+/AK, then call down"
   },
   "ICrakYrHoles": {
     "hands": 28,
@@ -2853,7 +3209,8 @@
     "pfr": 17.9,
     "3bet": 66.7,
     "af": 0,
-    "archetype": "tag"
+    "archetype": "tag",
+    "advice": "vs their raise: only TT+/AK"
   },
   "richh74": {
     "hands": 5,
@@ -2861,7 +3218,8 @@
     "pfr": 60.0,
     "3bet": 0.0,
     "af": 1.0,
-    "archetype": "maniac"
+    "archetype": "maniac",
+    "advice": "vs their raise: only QQ+/AK, then call down"
   },
   "Pffft71": {
     "hands": 7,
@@ -2869,7 +3227,8 @@
     "pfr": 14.3,
     "3bet": 0.0,
     "af": 3,
-    "archetype": "nit"
+    "archetype": "nit",
+    "advice": "raise any hand in position, fold to their 3bet"
   },
   "1Tr3c3": {
     "hands": 10,
@@ -2877,7 +3236,8 @@
     "pfr": 10.0,
     "3bet": 0.0,
     "af": 1,
-    "archetype": "rock"
+    "archetype": "rock",
+    "advice": "raise any hand in position, fold if they bet"
   },
   "terevila.pt": {
     "hands": 5,
@@ -2885,7 +3245,8 @@
     "pfr": 0.0,
     "3bet": 0.0,
     "af": 0,
-    "archetype": "nit"
+    "archetype": "nit",
+    "advice": "raise any hand in position, fold to their 3bet"
   },
   "m0r3n0_bcn_7": {
     "hands": 7,
@@ -2893,7 +3254,8 @@
     "pfr": 0.0,
     "3bet": 0.0,
     "af": 0,
-    "archetype": "nit"
+    "archetype": "nit",
+    "advice": "raise any hand in position, fold to their 3bet"
   },
   "vincelard44": {
     "hands": 12,
@@ -2901,7 +3263,8 @@
     "pfr": 25.0,
     "3bet": 0.0,
     "af": 1,
-    "archetype": "lag"
+    "archetype": "tag",
+    "advice": "vs their raise: only TT+/AK"
   },
   "neirdanaej": {
     "hands": 8,
@@ -2909,7 +3272,8 @@
     "pfr": 25.0,
     "3bet": 0.0,
     "af": 2,
-    "archetype": "fish"
+    "archetype": "fish",
+    "advice": "bet any pair big, never bluff"
   },
   "anar1312": {
     "hands": 33,
@@ -2917,7 +3281,8 @@
     "pfr": 3.0,
     "3bet": 0.0,
     "af": 1.0,
-    "archetype": "rock"
+    "archetype": "rock",
+    "advice": "raise any hand in position, fold if they bet"
   },
   "MDFARHA72": {
     "hands": 6,
@@ -2925,7 +3290,8 @@
     "pfr": 0.0,
     "3bet": 0.0,
     "af": 0,
-    "archetype": "nit"
+    "archetype": "nit",
+    "advice": "raise any hand in position, fold to their 3bet"
   },
   "eGarriga": {
     "hands": 36,
@@ -2933,7 +3299,8 @@
     "pfr": 16.7,
     "3bet": 11.1,
     "af": 4,
-    "archetype": "rock"
+    "archetype": "fish",
+    "advice": "bet any pair big, never bluff"
   },
   "PokiAA": {
     "hands": 11,
@@ -2941,7 +3308,8 @@
     "pfr": 18.2,
     "3bet": 0.0,
     "af": 0.5,
-    "archetype": "fish"
+    "archetype": "fish",
+    "advice": "bet any pair big, never bluff"
   },
   "xXAAmONXx": {
     "hands": 18,
@@ -2949,7 +3317,8 @@
     "pfr": 5.6,
     "3bet": 0.0,
     "af": 0,
-    "archetype": "nit"
+    "archetype": "nit",
+    "advice": "raise any hand in position, fold to their 3bet"
   },
   "PokerIzGood": {
     "hands": 8,
@@ -2957,7 +3326,8 @@
     "pfr": 37.5,
     "3bet": 0.0,
     "af": 3.0,
-    "archetype": "maniac"
+    "archetype": "maniac",
+    "advice": "vs their raise: only QQ+/AK, then call down"
   },
   "juantiogot": {
     "hands": 13,
@@ -2965,7 +3335,8 @@
     "pfr": 23.1,
     "3bet": 0.0,
     "af": 3.0,
-    "archetype": "fish"
+    "archetype": "fish",
+    "advice": "bet any pair big, never bluff"
   },
   "brujAAveriia": {
     "hands": 9,
@@ -2973,7 +3344,8 @@
     "pfr": 11.1,
     "3bet": 0.0,
     "af": 0.5,
-    "archetype": "rock"
+    "archetype": "rock",
+    "advice": "raise any hand in position, fold if they bet"
   },
   "bfg0007": {
     "hands": 8,
@@ -2981,7 +3353,8 @@
     "pfr": 0.0,
     "3bet": 0.0,
     "af": 0,
-    "archetype": "nit"
+    "archetype": "rock",
+    "advice": "raise any hand in position, fold if they bet"
   },
   "sim19ks": {
     "hands": 19,
@@ -2989,7 +3362,8 @@
     "pfr": 31.6,
     "3bet": 0.0,
     "af": 4.0,
-    "archetype": "fish"
+    "archetype": "maniac",
+    "advice": "vs their raise: only QQ+/AK, then call down"
   },
   "Josskijano": {
     "hands": 5,
@@ -2997,7 +3371,8 @@
     "pfr": 0.0,
     "3bet": 0.0,
     "af": 0,
-    "archetype": "nit"
+    "archetype": "nit",
+    "advice": "raise any hand in position, fold to their 3bet"
   },
   "washorage52": {
     "hands": 9,
@@ -3005,7 +3380,8 @@
     "pfr": 0.0,
     "3bet": 0.0,
     "af": 0,
-    "archetype": "rock"
+    "archetype": "rock",
+    "advice": "raise any hand in position, fold if they bet"
   },
   "3Du-nOOb": {
     "hands": 5,
@@ -3013,7 +3389,8 @@
     "pfr": 0.0,
     "3bet": 0.0,
     "af": 0,
-    "archetype": "nit"
+    "archetype": "nit",
+    "advice": "raise any hand in position, fold to their 3bet"
   },
   "Rucostaa": {
     "hands": 11,
@@ -3021,7 +3398,8 @@
     "pfr": 18.2,
     "3bet": 20.0,
     "af": 0.0,
-    "archetype": "lag"
+    "archetype": "lag",
+    "advice": "vs their raise: only 99+/AQ+, then call down"
   },
   "Crossnar": {
     "hands": 6,
@@ -3029,7 +3407,8 @@
     "pfr": 16.7,
     "3bet": 0.0,
     "af": 1.0,
-    "archetype": "fish"
+    "archetype": "fish",
+    "advice": "bet any pair big, never bluff"
   },
   "sycolll": {
     "hands": 11,
@@ -3037,7 +3416,8 @@
     "pfr": 0.0,
     "3bet": 0.0,
     "af": 0,
-    "archetype": "nit"
+    "archetype": "nit",
+    "advice": "raise any hand in position, fold to their 3bet"
   },
   "pimpflo4545": {
     "hands": 7,
@@ -3045,7 +3425,8 @@
     "pfr": 0.0,
     "3bet": 0.0,
     "af": 0,
-    "archetype": "nit"
+    "archetype": "nit",
+    "advice": "raise any hand in position, fold to their 3bet"
   },
   "troski2010": {
     "hands": 6,
@@ -3053,7 +3434,8 @@
     "pfr": 0.0,
     "3bet": 0,
     "af": 1.0,
-    "archetype": "nit"
+    "archetype": "rock",
+    "advice": "raise any hand in position, fold if they bet"
   },
   "lemur119": {
     "hands": 8,
@@ -3061,7 +3443,8 @@
     "pfr": 12.5,
     "3bet": 0.0,
     "af": 1.0,
-    "archetype": "fish"
+    "archetype": "fish",
+    "advice": "bet any pair big, never bluff"
   },
   "pzjohn": {
     "hands": 17,
@@ -3069,7 +3452,8 @@
     "pfr": 0.0,
     "3bet": 0.0,
     "af": 0.0,
-    "archetype": "fish"
+    "archetype": "fish",
+    "advice": "bet any pair big, never bluff"
   },
   "MendesOnfire": {
     "hands": 10,
@@ -3077,7 +3461,8 @@
     "pfr": 0.0,
     "3bet": 0.0,
     "af": 0,
-    "archetype": "nit"
+    "archetype": "nit",
+    "advice": "raise any hand in position, fold to their 3bet"
   },
   "vexochas": {
     "hands": 15,
@@ -3085,7 +3470,8 @@
     "pfr": 0.0,
     "3bet": 0.0,
     "af": 0.0,
-    "archetype": "nit"
+    "archetype": "nit",
+    "advice": "raise any hand in position, fold to their 3bet"
   },
   "datkeire01": {
     "hands": 21,
@@ -3093,7 +3479,8 @@
     "pfr": 4.8,
     "3bet": 16.7,
     "af": 0.5,
-    "archetype": "nit"
+    "archetype": "rock",
+    "advice": "raise any hand in position, fold if they bet"
   },
   "escur\u00e7or": {
     "hands": 7,
@@ -3101,7 +3488,8 @@
     "pfr": 42.9,
     "3bet": 50.0,
     "af": 0,
-    "archetype": "lag"
+    "archetype": "maniac",
+    "advice": "vs their raise: only QQ+/AK, then call down"
   },
   "xminix23": {
     "hands": 8,
@@ -3109,7 +3497,8 @@
     "pfr": 37.5,
     "3bet": 33.3,
     "af": 1.5,
-    "archetype": "lag"
+    "archetype": "lag",
+    "advice": "vs their raise: only 99+/AQ+, then call down"
   },
   "alielg95": {
     "hands": 10,
@@ -3117,7 +3506,8 @@
     "pfr": 40.0,
     "3bet": 33.3,
     "af": 1.0,
-    "archetype": "maniac"
+    "archetype": "maniac",
+    "advice": "vs their raise: only QQ+/AK, then call down"
   },
   "Mantonio007": {
     "hands": 11,
@@ -3125,7 +3515,8 @@
     "pfr": 18.2,
     "3bet": 0.0,
     "af": 0.67,
-    "archetype": "fish"
+    "archetype": "fish",
+    "advice": "bet any pair big, never bluff"
   },
   "mest1708": {
     "hands": 46,
@@ -3133,7 +3524,8 @@
     "pfr": 17.4,
     "3bet": 13.3,
     "af": 1.0,
-    "archetype": "tag"
+    "archetype": "tag",
+    "advice": "vs their raise: only TT+/AK"
   },
   "QuinteFul377": {
     "hands": 8,
@@ -3141,7 +3533,8 @@
     "pfr": 0.0,
     "3bet": 0.0,
     "af": 0,
-    "archetype": "nit"
+    "archetype": "nit",
+    "advice": "raise any hand in position, fold to their 3bet"
   },
   "Penha17213": {
     "hands": 19,
@@ -3149,7 +3542,8 @@
     "pfr": 21.1,
     "3bet": 0.0,
     "af": 0,
-    "archetype": "tag"
+    "archetype": "tag",
+    "advice": "vs their raise: only TT+/AK"
   },
   "guerreirokis": {
     "hands": 8,
@@ -3157,7 +3551,8 @@
     "pfr": 12.5,
     "3bet": 0.0,
     "af": 0,
-    "archetype": "rock"
+    "archetype": "rock",
+    "advice": "raise any hand in position, fold if they bet"
   },
   "lorena2720": {
     "hands": 8,
@@ -3165,7 +3560,8 @@
     "pfr": 12.5,
     "3bet": 16.7,
     "af": 0.0,
-    "archetype": "rock"
+    "archetype": "rock",
+    "advice": "raise any hand in position, fold if they bet"
   },
   "chechu8888": {
     "hands": 7,
@@ -3173,7 +3569,8 @@
     "pfr": 28.6,
     "3bet": 0,
     "af": 1,
-    "archetype": "fish"
+    "archetype": "fish",
+    "advice": "bet any pair big, never bluff"
   },
   "rockola14": {
     "hands": 8,
@@ -3181,7 +3578,8 @@
     "pfr": 0.0,
     "3bet": 0.0,
     "af": 0,
-    "archetype": "nit"
+    "archetype": "rock",
+    "advice": "raise any hand in position, fold if they bet"
   },
   "diarouga": {
     "hands": 11,
@@ -3189,7 +3587,8 @@
     "pfr": 36.4,
     "3bet": 16.7,
     "af": 2,
-    "archetype": "lag"
+    "archetype": "lag",
+    "advice": "vs their raise: only 99+/AQ+, then call down"
   },
   "kokks2": {
     "hands": 40,
@@ -3197,7 +3596,8 @@
     "pfr": 22.5,
     "3bet": 10.0,
     "af": 1.0,
-    "archetype": "lag"
+    "archetype": "tag",
+    "advice": "vs their raise: only TT+/AK"
   },
   "jaumecher": {
     "hands": 5,
@@ -3205,7 +3605,8 @@
     "pfr": 40.0,
     "3bet": 0,
     "af": 0.0,
-    "archetype": "maniac"
+    "archetype": "maniac",
+    "advice": "vs their raise: only QQ+/AK, then call down"
   },
   "Laura_Lluna": {
     "hands": 11,
@@ -3213,7 +3614,8 @@
     "pfr": 0.0,
     "3bet": 0.0,
     "af": 0,
-    "archetype": "rock"
+    "archetype": "rock",
+    "advice": "raise any hand in position, fold if they bet"
   },
   "Clonetrik": {
     "hands": 6,
@@ -3221,7 +3623,8 @@
     "pfr": 33.3,
     "3bet": 0.0,
     "af": 1,
-    "archetype": "maniac"
+    "archetype": "maniac",
+    "advice": "vs their raise: only QQ+/AK, then call down"
   },
   "Dovene11": {
     "hands": 6,
@@ -3229,7 +3632,8 @@
     "pfr": 0.0,
     "3bet": 0.0,
     "af": 0,
-    "archetype": "nit"
+    "archetype": "nit",
+    "advice": "raise any hand in position, fold to their 3bet"
   },
   "BEN7379": {
     "hands": 14,
@@ -3237,7 +3641,8 @@
     "pfr": 0.0,
     "3bet": 0.0,
     "af": 0,
-    "archetype": "nit"
+    "archetype": "nit",
+    "advice": "raise any hand in position, fold to their 3bet"
   },
   "educastellon": {
     "hands": 17,
@@ -3245,7 +3650,8 @@
     "pfr": 17.6,
     "3bet": 0.0,
     "af": 1.5,
-    "archetype": "fish"
+    "archetype": "fish",
+    "advice": "bet any pair big, never bluff"
   },
   "defbal": {
     "hands": 13,
@@ -3253,7 +3659,8 @@
     "pfr": 23.1,
     "3bet": 0.0,
     "af": 4,
-    "archetype": "fish"
+    "archetype": "fish",
+    "advice": "bet any pair big, never bluff"
   },
   "javlex3": {
     "hands": 7,
@@ -3261,7 +3668,8 @@
     "pfr": 14.3,
     "3bet": 0.0,
     "af": 3.0,
-    "archetype": "nit"
+    "archetype": "nit",
+    "advice": "raise any hand in position, fold to their 3bet"
   },
   "ManiRami": {
     "hands": 5,
@@ -3269,7 +3677,8 @@
     "pfr": 0.0,
     "3bet": 0,
     "af": 0,
-    "archetype": "nit"
+    "archetype": "nit",
+    "advice": "raise any hand in position, fold to their 3bet"
   },
   "itimao": {
     "hands": 5,
@@ -3277,7 +3686,8 @@
     "pfr": 20.0,
     "3bet": 0.0,
     "af": 0,
-    "archetype": "tag"
+    "archetype": "tag",
+    "advice": "vs their raise: only TT+/AK"
   },
   "JYBastille": {
     "hands": 8,
@@ -3285,7 +3695,8 @@
     "pfr": 25.0,
     "3bet": 100.0,
     "af": 3,
-    "archetype": "lag"
+    "archetype": "tag",
+    "advice": "vs their raise: only TT+/AK"
   },
   "SergiMarti99": {
     "hands": 6,
@@ -3293,7 +3704,8 @@
     "pfr": 33.3,
     "3bet": 0.0,
     "af": 0,
-    "archetype": "maniac"
+    "archetype": "maniac",
+    "advice": "vs their raise: only QQ+/AK, then call down"
   },
   "madmanMortigan": {
     "hands": 5,
@@ -3301,7 +3713,8 @@
     "pfr": 40.0,
     "3bet": 0.0,
     "af": 1,
-    "archetype": "maniac"
+    "archetype": "maniac",
+    "advice": "vs their raise: only QQ+/AK, then call down"
   },
   "colman30": {
     "hands": 12,
@@ -3309,7 +3722,8 @@
     "pfr": 0.0,
     "3bet": 0.0,
     "af": 0,
-    "archetype": "nit"
+    "archetype": "nit",
+    "advice": "raise any hand in position, fold to their 3bet"
   },
   "carlosbrugal": {
     "hands": 9,
@@ -3317,7 +3731,8 @@
     "pfr": 11.1,
     "3bet": 0.0,
     "af": 0,
-    "archetype": "nit"
+    "archetype": "nit",
+    "advice": "raise any hand in position, fold to their 3bet"
   },
   "NJGR1": {
     "hands": 7,
@@ -3325,7 +3740,8 @@
     "pfr": 14.3,
     "3bet": 0.0,
     "af": 0.0,
-    "archetype": "nit"
+    "archetype": "nit",
+    "advice": "raise any hand in position, fold to their 3bet"
   },
   "CHIN_AS_87": {
     "hands": 7,
@@ -3333,7 +3749,8 @@
     "pfr": 14.3,
     "3bet": 0.0,
     "af": 0,
-    "archetype": "nit"
+    "archetype": "nit",
+    "advice": "raise any hand in position, fold to their 3bet"
   },
   "iveyruizao": {
     "hands": 7,
@@ -3341,7 +3758,8 @@
     "pfr": 14.3,
     "3bet": 0.0,
     "af": 0,
-    "archetype": "nit"
+    "archetype": "nit",
+    "advice": "raise any hand in position, fold to their 3bet"
   },
   "dewolt123": {
     "hands": 15,
@@ -3349,7 +3767,8 @@
     "pfr": 13.3,
     "3bet": 0.0,
     "af": 0.5,
-    "archetype": "fish"
+    "archetype": "fish",
+    "advice": "bet any pair big, never bluff"
   },
   "vasili1111": {
     "hands": 8,
@@ -3357,7 +3776,8 @@
     "pfr": 25.0,
     "3bet": 0.0,
     "af": 0.0,
-    "archetype": "fish"
+    "archetype": "fish",
+    "advice": "bet any pair big, never bluff"
   },
   "MDKristian": {
     "hands": 14,
@@ -3365,7 +3785,8 @@
     "pfr": 14.3,
     "3bet": 50.0,
     "af": 3,
-    "archetype": "rock"
+    "archetype": "rock",
+    "advice": "raise any hand in position, fold if they bet"
   },
   "LK5574": {
     "hands": 19,
@@ -3373,7 +3794,8 @@
     "pfr": 15.8,
     "3bet": 0.0,
     "af": 3,
-    "archetype": "rock"
+    "archetype": "fish",
+    "advice": "bet any pair big, never bluff"
   },
   "Darkat79": {
     "hands": 17,
@@ -3381,7 +3803,8 @@
     "pfr": 35.3,
     "3bet": 33.3,
     "af": 1.25,
-    "archetype": "lag"
+    "archetype": "maniac",
+    "advice": "vs their raise: only QQ+/AK, then call down"
   },
   "sebzinzin": {
     "hands": 5,
@@ -3389,7 +3812,8 @@
     "pfr": 20.0,
     "3bet": 0.0,
     "af": 0.0,
-    "archetype": "fish"
+    "archetype": "fish",
+    "advice": "bet any pair big, never bluff"
   },
   "EtSaKaZu": {
     "hands": 5,
@@ -3397,7 +3821,8 @@
     "pfr": 20.0,
     "3bet": 0,
     "af": 0,
-    "archetype": "fish"
+    "archetype": "fish",
+    "advice": "bet any pair big, never bluff"
   },
   "luckyjanito": {
     "hands": 7,
@@ -3405,7 +3830,8 @@
     "pfr": 0.0,
     "3bet": 0.0,
     "af": 0.0,
-    "archetype": "fish"
+    "archetype": "fish",
+    "advice": "bet any pair big, never bluff"
   },
   "monchito1233": {
     "hands": 5,
@@ -3413,7 +3839,8 @@
     "pfr": 0.0,
     "3bet": 0.0,
     "af": 0.0,
-    "archetype": "rock"
+    "archetype": "rock",
+    "advice": "raise any hand in position, fold if they bet"
   },
   "evmiso": {
     "hands": 10,
@@ -3421,7 +3848,8 @@
     "pfr": 20.0,
     "3bet": 0.0,
     "af": 1,
-    "archetype": "tag"
+    "archetype": "tag",
+    "advice": "vs their raise: only TT+/AK"
   },
   "1filibustero": {
     "hands": 10,
@@ -3429,7 +3857,8 @@
     "pfr": 10.0,
     "3bet": 0.0,
     "af": 1,
-    "archetype": "fish"
+    "archetype": "fish",
+    "advice": "bet any pair big, never bluff"
   },
   "350ZJHN": {
     "hands": 6,
@@ -3437,7 +3866,8 @@
     "pfr": 0.0,
     "3bet": 0.0,
     "af": 0,
-    "archetype": "nit"
+    "archetype": "nit",
+    "advice": "raise any hand in position, fold to their 3bet"
   },
   "eyeeel": {
     "hands": 9,
@@ -3445,7 +3875,8 @@
     "pfr": 22.2,
     "3bet": 0.0,
     "af": 0,
-    "archetype": "tag"
+    "archetype": "tag",
+    "advice": "vs their raise: only TT+/AK"
   },
   "panddore": {
     "hands": 7,
@@ -3453,7 +3884,8 @@
     "pfr": 0.0,
     "3bet": 0.0,
     "af": 0,
-    "archetype": "nit"
+    "archetype": "nit",
+    "advice": "raise any hand in position, fold to their 3bet"
   },
   "riomagico": {
     "hands": 10,
@@ -3461,7 +3893,8 @@
     "pfr": 30.0,
     "3bet": 0.0,
     "af": 0,
-    "archetype": "lag"
+    "archetype": "maniac",
+    "advice": "vs their raise: only QQ+/AK, then call down"
   },
   "aixosi": {
     "hands": 14,
@@ -3469,7 +3902,8 @@
     "pfr": 21.4,
     "3bet": 0.0,
     "af": 2.5,
-    "archetype": "fish"
+    "archetype": "fish",
+    "advice": "bet any pair big, never bluff"
   },
   "jkmni": {
     "hands": 9,
@@ -3477,7 +3911,8 @@
     "pfr": 33.3,
     "3bet": 50.0,
     "af": 0,
-    "archetype": "lag"
+    "archetype": "maniac",
+    "advice": "vs their raise: only QQ+/AK, then call down"
   },
   "pobrekenny": {
     "hands": 8,
@@ -3485,7 +3920,8 @@
     "pfr": 12.5,
     "3bet": 0.0,
     "af": 2,
-    "archetype": "rock"
+    "archetype": "rock",
+    "advice": "raise any hand in position, fold if they bet"
   },
   "Sigiilo": {
     "hands": 5,
@@ -3493,7 +3929,8 @@
     "pfr": 20.0,
     "3bet": 0.0,
     "af": 0.0,
-    "archetype": "tag"
+    "archetype": "tag",
+    "advice": "vs their raise: only TT+/AK"
   },
   "Wyern": {
     "hands": 7,
@@ -3501,7 +3938,8 @@
     "pfr": 0.0,
     "3bet": 0.0,
     "af": 0,
-    "archetype": "nit"
+    "archetype": "nit",
+    "advice": "raise any hand in position, fold to their 3bet"
   },
   "Espl\u00f3tago": {
     "hands": 11,
@@ -3509,7 +3947,8 @@
     "pfr": 27.3,
     "3bet": 0.0,
     "af": 1,
-    "archetype": "fish"
+    "archetype": "fish",
+    "advice": "bet any pair big, never bluff"
   },
   "ciceron0077": {
     "hands": 14,
@@ -3517,7 +3956,8 @@
     "pfr": 14.3,
     "3bet": 0.0,
     "af": 1,
-    "archetype": "nit"
+    "archetype": "nit",
+    "advice": "raise any hand in position, fold to their 3bet"
   },
   "MRodM": {
     "hands": 5,
@@ -3525,7 +3965,8 @@
     "pfr": 40.0,
     "3bet": 0,
     "af": 1,
-    "archetype": "lag"
+    "archetype": "maniac",
+    "advice": "vs their raise: only QQ+/AK, then call down"
   },
   "jbf12345678": {
     "hands": 8,
@@ -3533,7 +3974,8 @@
     "pfr": 25.0,
     "3bet": 0.0,
     "af": 0,
-    "archetype": "lag"
+    "archetype": "tag",
+    "advice": "vs their raise: only TT+/AK"
   },
   "Tiburzi0": {
     "hands": 6,
@@ -3541,7 +3983,8 @@
     "pfr": 16.7,
     "3bet": 0.0,
     "af": 1.0,
-    "archetype": "fish"
+    "archetype": "fish",
+    "advice": "bet any pair big, never bluff"
   },
   "ShAArkAAtack": {
     "hands": 8,
@@ -3549,7 +3992,8 @@
     "pfr": 25.0,
     "3bet": 0.0,
     "af": 1.0,
-    "archetype": "fish"
+    "archetype": "fish",
+    "advice": "bet any pair big, never bluff"
   },
   "affranchi38": {
     "hands": 16,
@@ -3557,7 +4001,8 @@
     "pfr": 25.0,
     "3bet": 0.0,
     "af": 1.0,
-    "archetype": "lag"
+    "archetype": "lag",
+    "advice": "vs their raise: only 99+/AQ+, then call down"
   },
   "qazfdsa": {
     "hands": 6,
@@ -3565,7 +4010,8 @@
     "pfr": 16.7,
     "3bet": 0.0,
     "af": 1.0,
-    "archetype": "fish"
+    "archetype": "fish",
+    "advice": "bet any pair big, never bluff"
   },
   "metod66": {
     "hands": 6,
@@ -3573,7 +4019,8 @@
     "pfr": 16.7,
     "3bet": 50.0,
     "af": 0,
-    "archetype": "fish"
+    "archetype": "fish",
+    "advice": "bet any pair big, never bluff"
   },
   "FERMINANDRES": {
     "hands": 13,
@@ -3581,7 +4028,8 @@
     "pfr": 15.4,
     "3bet": 0.0,
     "af": 1,
-    "archetype": "rock"
+    "archetype": "nit",
+    "advice": "raise any hand in position, fold to their 3bet"
   },
   "Pabley27": {
     "hands": 33,
@@ -3589,7 +4037,8 @@
     "pfr": 12.1,
     "3bet": 8.3,
     "af": 3.0,
-    "archetype": "rock"
+    "archetype": "rock",
+    "advice": "raise any hand in position, fold if they bet"
   },
   "goodluckcris": {
     "hands": 7,
@@ -3597,7 +4046,8 @@
     "pfr": 14.3,
     "3bet": 50.0,
     "af": 2,
-    "archetype": "nit"
+    "archetype": "nit",
+    "advice": "raise any hand in position, fold to their 3bet"
   },
   "PokerPowerMPF": {
     "hands": 30,
@@ -3605,7 +4055,8 @@
     "pfr": 3.3,
     "3bet": 0.0,
     "af": 0.5,
-    "archetype": "nit"
+    "archetype": "nit",
+    "advice": "raise any hand in position, fold to their 3bet"
   },
   "Estrabao": {
     "hands": 6,
@@ -3613,7 +4064,8 @@
     "pfr": 0.0,
     "3bet": 0.0,
     "af": 0,
-    "archetype": "nit"
+    "archetype": "nit",
+    "advice": "raise any hand in position, fold to their 3bet"
   },
   "averel38": {
     "hands": 8,
@@ -3621,7 +4073,8 @@
     "pfr": 25.0,
     "3bet": 20.0,
     "af": 0.5,
-    "archetype": "fish"
+    "archetype": "fish",
+    "advice": "bet any pair big, never bluff"
   },
   "AntonioMCCL": {
     "hands": 11,
@@ -3629,7 +4082,8 @@
     "pfr": 0.0,
     "3bet": 0.0,
     "af": 5,
-    "archetype": "fish"
+    "archetype": "fish",
+    "advice": "bet any pair big, never bluff"
   },
   "albertos18": {
     "hands": 6,
@@ -3637,7 +4091,8 @@
     "pfr": 16.7,
     "3bet": 33.3,
     "af": 1,
-    "archetype": "rock"
+    "archetype": "nit",
+    "advice": "raise any hand in position, fold to their 3bet"
   },
   "PeveH": {
     "hands": 7,
@@ -3645,7 +4100,8 @@
     "pfr": 28.6,
     "3bet": 50.0,
     "af": 0.0,
-    "archetype": "fish"
+    "archetype": "fish",
+    "advice": "bet any pair big, never bluff"
   },
   "okpaulo": {
     "hands": 5,
@@ -3653,7 +4109,8 @@
     "pfr": 20.0,
     "3bet": 0.0,
     "af": 0,
-    "archetype": "fish"
+    "archetype": "fish",
+    "advice": "bet any pair big, never bluff"
   },
   "SUPERHARMONY": {
     "hands": 12,
@@ -3661,7 +4118,8 @@
     "pfr": 25.0,
     "3bet": 0.0,
     "af": 1,
-    "archetype": "lag"
+    "archetype": "lag",
+    "advice": "vs their raise: only 99+/AQ+, then call down"
   },
   "eljesus996": {
     "hands": 7,
@@ -3669,7 +4127,8 @@
     "pfr": 14.3,
     "3bet": 0.0,
     "af": 2,
-    "archetype": "fish"
+    "archetype": "fish",
+    "advice": "bet any pair big, never bluff"
   },
   "ElReplicante": {
     "hands": 7,
@@ -3677,7 +4136,8 @@
     "pfr": 14.3,
     "3bet": 0.0,
     "af": 0,
-    "archetype": "nit"
+    "archetype": "nit",
+    "advice": "raise any hand in position, fold to their 3bet"
   },
   "MiaPrincesa": {
     "hands": 12,
@@ -3685,7 +4145,8 @@
     "pfr": 16.7,
     "3bet": 0.0,
     "af": 4,
-    "archetype": "rock"
+    "archetype": "fish",
+    "advice": "bet any pair big, never bluff"
   },
   "sintemblar": {
     "hands": 7,
@@ -3693,7 +4154,8 @@
     "pfr": 0.0,
     "3bet": 0,
     "af": 0,
-    "archetype": "nit"
+    "archetype": "nit",
+    "advice": "raise any hand in position, fold to their 3bet"
   },
   "hyperion570": {
     "hands": 6,
@@ -3701,7 +4163,8 @@
     "pfr": 0.0,
     "3bet": 0,
     "af": 0,
-    "archetype": "nit"
+    "archetype": "nit",
+    "advice": "raise any hand in position, fold to their 3bet"
   },
   "LaChouette_9": {
     "hands": 5,
@@ -3709,7 +4172,8 @@
     "pfr": 40.0,
     "3bet": 100.0,
     "af": 0.5,
-    "archetype": "maniac"
+    "archetype": "maniac",
+    "advice": "vs their raise: only QQ+/AK, then call down"
   },
   "BARROS.jm": {
     "hands": 5,
@@ -3717,7 +4181,8 @@
     "pfr": 0.0,
     "3bet": 0.0,
     "af": 1,
-    "archetype": "fish"
+    "archetype": "fish",
+    "advice": "bet any pair big, never bluff"
   },
   "DavizSJ": {
     "hands": 9,
@@ -3725,7 +4190,8 @@
     "pfr": 22.2,
     "3bet": 0.0,
     "af": 2.0,
-    "archetype": "tag"
+    "archetype": "tag",
+    "advice": "vs their raise: only TT+/AK"
   },
   "zobryst": {
     "hands": 10,
@@ -3733,7 +4199,8 @@
     "pfr": 10.0,
     "3bet": 0.0,
     "af": 0,
-    "archetype": "rock"
+    "archetype": "rock",
+    "advice": "raise any hand in position, fold if they bet"
   },
   "manolitin": {
     "hands": 8,
@@ -3741,7 +4208,8 @@
     "pfr": 12.5,
     "3bet": 0.0,
     "af": 1,
-    "archetype": "nit"
+    "archetype": "nit",
+    "advice": "raise any hand in position, fold to their 3bet"
   },
   "LuisGR90": {
     "hands": 31,
@@ -3749,7 +4217,8 @@
     "pfr": 12.9,
     "3bet": 0.0,
     "af": 3,
-    "archetype": "rock"
+    "archetype": "rock",
+    "advice": "raise any hand in position, fold if they bet"
   },
   "lucascucu99": {
     "hands": 8,
@@ -3757,7 +4226,8 @@
     "pfr": 25.0,
     "3bet": 0.0,
     "af": 2.0,
-    "archetype": "fish"
+    "archetype": "fish",
+    "advice": "bet any pair big, never bluff"
   },
   "wsx25": {
     "hands": 8,
@@ -3765,7 +4235,8 @@
     "pfr": 37.5,
     "3bet": 0.0,
     "af": 1.0,
-    "archetype": "lag"
+    "archetype": "lag",
+    "advice": "vs their raise: only 99+/AQ+, then call down"
   },
   "truxote22": {
     "hands": 8,
@@ -3773,7 +4244,8 @@
     "pfr": 0.0,
     "3bet": 0.0,
     "af": 0,
-    "archetype": "nit"
+    "archetype": "rock",
+    "advice": "raise any hand in position, fold if they bet"
   },
   "Xexugol": {
     "hands": 5,
@@ -3781,7 +4253,8 @@
     "pfr": 40.0,
     "3bet": 0.0,
     "af": 0.0,
-    "archetype": "lag"
+    "archetype": "maniac",
+    "advice": "vs their raise: only QQ+/AK, then call down"
   },
   "anonio9": {
     "hands": 13,
@@ -3789,7 +4262,8 @@
     "pfr": 15.4,
     "3bet": 0.0,
     "af": 3.0,
-    "archetype": "fish"
+    "archetype": "fish",
+    "advice": "bet any pair big, never bluff"
   },
   "Elemdi": {
     "hands": 12,
@@ -3797,7 +4271,8 @@
     "pfr": 16.7,
     "3bet": 0.0,
     "af": 0,
-    "archetype": "rock"
+    "archetype": "nit",
+    "advice": "raise any hand in position, fold to their 3bet"
   },
   "NAlexandru22": {
     "hands": 9,
@@ -3805,7 +4280,8 @@
     "pfr": 44.4,
     "3bet": 33.3,
     "af": 1,
-    "archetype": "maniac"
+    "archetype": "maniac",
+    "advice": "vs their raise: only QQ+/AK, then call down"
   },
   "tatch62": {
     "hands": 5,
@@ -3813,7 +4289,8 @@
     "pfr": 20.0,
     "3bet": 0.0,
     "af": 1.0,
-    "archetype": "fish"
+    "archetype": "fish",
+    "advice": "bet any pair big, never bluff"
   },
   "rosko99100": {
     "hands": 13,
@@ -3821,7 +4298,8 @@
     "pfr": 30.8,
     "3bet": 0.0,
     "af": 1,
-    "archetype": "lag"
+    "archetype": "lag",
+    "advice": "vs their raise: only 99+/AQ+, then call down"
   },
   "Nekal3": {
     "hands": 5,
@@ -3829,7 +4307,8 @@
     "pfr": 20.0,
     "3bet": 0,
     "af": 0,
-    "archetype": "fish"
+    "archetype": "fish",
+    "advice": "bet any pair big, never bluff"
   },
   "fran198769": {
     "hands": 12,
@@ -3837,7 +4316,8 @@
     "pfr": 25.0,
     "3bet": 14.3,
     "af": 0,
-    "archetype": "lag"
+    "archetype": "tag",
+    "advice": "vs their raise: only TT+/AK"
   },
   "DeividBox980": {
     "hands": 10,
@@ -3845,7 +4325,8 @@
     "pfr": 10.0,
     "3bet": 0.0,
     "af": 3,
-    "archetype": "nit"
+    "archetype": "nit",
+    "advice": "raise any hand in position, fold to their 3bet"
   },
   "LMRPokerstar": {
     "hands": 10,
@@ -3853,7 +4334,8 @@
     "pfr": 10.0,
     "3bet": 0,
     "af": 2,
-    "archetype": "nit"
+    "archetype": "nit",
+    "advice": "raise any hand in position, fold to their 3bet"
   },
   "c0sta9": {
     "hands": 14,
@@ -3861,7 +4343,8 @@
     "pfr": 0.0,
     "3bet": 0.0,
     "af": 0.0,
-    "archetype": "nit"
+    "archetype": "nit",
+    "advice": "raise any hand in position, fold to their 3bet"
   },
   "Jorlogar": {
     "hands": 7,
@@ -3869,7 +4352,8 @@
     "pfr": 28.6,
     "3bet": 0.0,
     "af": 1,
-    "archetype": "lag"
+    "archetype": "lag",
+    "advice": "vs their raise: only 99+/AQ+, then call down"
   },
   "gaereset": {
     "hands": 5,
@@ -3877,7 +4361,8 @@
     "pfr": 20.0,
     "3bet": 0.0,
     "af": 0,
-    "archetype": "tag"
+    "archetype": "tag",
+    "advice": "vs their raise: only TT+/AK"
   },
   "JCA311": {
     "hands": 26,
@@ -3885,7 +4370,8 @@
     "pfr": 3.8,
     "3bet": 0.0,
     "af": 2.5,
-    "archetype": "fish"
+    "archetype": "fish",
+    "advice": "bet any pair big, never bluff"
   },
   "VaneITEe": {
     "hands": 9,
@@ -3893,7 +4379,8 @@
     "pfr": 0.0,
     "3bet": 0.0,
     "af": 1,
-    "archetype": "nit"
+    "archetype": "nit",
+    "advice": "raise any hand in position, fold to their 3bet"
   },
   "pkbestone": {
     "hands": 10,
@@ -3901,7 +4388,8 @@
     "pfr": 0.0,
     "3bet": 0.0,
     "af": 0,
-    "archetype": "nit"
+    "archetype": "nit",
+    "advice": "raise any hand in position, fold to their 3bet"
   },
   "Showman1111": {
     "hands": 5,
@@ -3909,7 +4397,8 @@
     "pfr": 0.0,
     "3bet": 0.0,
     "af": 0.0,
-    "archetype": "fish"
+    "archetype": "fish",
+    "advice": "bet any pair big, never bluff"
   },
   "rolua8086": {
     "hands": 7,
@@ -3917,7 +4406,8 @@
     "pfr": 0.0,
     "3bet": 0.0,
     "af": 0,
-    "archetype": "fish"
+    "archetype": "fish",
+    "advice": "bet any pair big, never bluff"
   },
   "guilhemoh2": {
     "hands": 5,
@@ -3925,7 +4415,8 @@
     "pfr": 20.0,
     "3bet": 0.0,
     "af": 1,
-    "archetype": "fish"
+    "archetype": "fish",
+    "advice": "bet any pair big, never bluff"
   },
   "Jumby34": {
     "hands": 8,
@@ -3933,7 +4424,8 @@
     "pfr": 0.0,
     "3bet": 0.0,
     "af": 0,
-    "archetype": "nit"
+    "archetype": "nit",
+    "advice": "raise any hand in position, fold to their 3bet"
   },
   "carloslova": {
     "hands": 13,
@@ -3941,7 +4433,8 @@
     "pfr": 15.4,
     "3bet": 0.0,
     "af": 3.0,
-    "archetype": "fish"
+    "archetype": "fish",
+    "advice": "bet any pair big, never bluff"
   },
   "SETA244": {
     "hands": 24,
@@ -3949,7 +4442,8 @@
     "pfr": 12.5,
     "3bet": 0.0,
     "af": 1,
-    "archetype": "nit"
+    "archetype": "nit",
+    "advice": "raise any hand in position, fold to their 3bet"
   },
   "fernando3768": {
     "hands": 19,
@@ -3957,7 +4451,8 @@
     "pfr": 10.5,
     "3bet": 0.0,
     "af": 3.0,
-    "archetype": "rock"
+    "archetype": "rock",
+    "advice": "raise any hand in position, fold if they bet"
   },
   "cachondeo126": {
     "hands": 6,
@@ -3965,7 +4460,8 @@
     "pfr": 0.0,
     "3bet": 0.0,
     "af": 0,
-    "archetype": "nit"
+    "archetype": "nit",
+    "advice": "raise any hand in position, fold to their 3bet"
   },
   "Tete1020": {
     "hands": 6,
@@ -3973,7 +4469,8 @@
     "pfr": 0.0,
     "3bet": 0.0,
     "af": 1.0,
-    "archetype": "fish"
+    "archetype": "fish",
+    "advice": "bet any pair big, never bluff"
   },
   "jcravo": {
     "hands": 11,
@@ -3981,7 +4478,8 @@
     "pfr": 9.1,
     "3bet": 0.0,
     "af": 0,
-    "archetype": "nit"
+    "archetype": "nit",
+    "advice": "raise any hand in position, fold to their 3bet"
   },
   "iburgue": {
     "hands": 11,
@@ -3989,7 +4487,8 @@
     "pfr": 0.0,
     "3bet": 0.0,
     "af": 0,
-    "archetype": "nit"
+    "archetype": "nit",
+    "advice": "raise any hand in position, fold to their 3bet"
   },
   "plural21": {
     "hands": 7,
@@ -3997,7 +4496,8 @@
     "pfr": 28.6,
     "3bet": 0.0,
     "af": 0.0,
-    "archetype": "lag"
+    "archetype": "lag",
+    "advice": "vs their raise: only 99+/AQ+, then call down"
   },
   "elie2398": {
     "hands": 5,
@@ -4005,7 +4505,8 @@
     "pfr": 0.0,
     "3bet": 0.0,
     "af": 0.0,
-    "archetype": "rock"
+    "archetype": "rock",
+    "advice": "raise any hand in position, fold if they bet"
   },
   "ExcaliTur": {
     "hands": 5,
@@ -4013,7 +4514,8 @@
     "pfr": 0.0,
     "3bet": 0,
     "af": 0,
-    "archetype": "nit"
+    "archetype": "nit",
+    "advice": "raise any hand in position, fold to their 3bet"
   },
   "mumtazz81": {
     "hands": 5,
@@ -4021,7 +4523,8 @@
     "pfr": 0.0,
     "3bet": 0.0,
     "af": 0.0,
-    "archetype": "rock"
+    "archetype": "rock",
+    "advice": "raise any hand in position, fold if they bet"
   },
   "ferm71f": {
     "hands": 10,
@@ -4029,7 +4532,8 @@
     "pfr": 20.0,
     "3bet": 0.0,
     "af": 1,
-    "archetype": "tag"
+    "archetype": "tag",
+    "advice": "vs their raise: only TT+/AK"
   },
   "Mental1989": {
     "hands": 5,
@@ -4037,7 +4541,8 @@
     "pfr": 20.0,
     "3bet": 0.0,
     "af": 0,
-    "archetype": "fish"
+    "archetype": "fish",
+    "advice": "bet any pair big, never bluff"
   },
   "cobra131165": {
     "hands": 11,
@@ -4045,7 +4550,8 @@
     "pfr": 0.0,
     "3bet": 0.0,
     "af": 0,
-    "archetype": "rock"
+    "archetype": "rock",
+    "advice": "raise any hand in position, fold if they bet"
   },
   "estrellabea": {
     "hands": 6,
@@ -4053,7 +4559,8 @@
     "pfr": 0.0,
     "3bet": 0.0,
     "af": 0.0,
-    "archetype": "nit"
+    "archetype": "rock",
+    "advice": "raise any hand in position, fold if they bet"
   },
   "pixussss": {
     "hands": 26,
@@ -4061,7 +4568,8 @@
     "pfr": 23.1,
     "3bet": 12.5,
     "af": 2,
-    "archetype": "lag"
+    "archetype": "fish",
+    "advice": "bet any pair big, never bluff"
   },
   "Cruasan17": {
     "hands": 14,
@@ -4069,7 +4577,8 @@
     "pfr": 7.1,
     "3bet": 0.0,
     "af": 0,
-    "archetype": "rock"
+    "archetype": "rock",
+    "advice": "raise any hand in position, fold if they bet"
   },
   "fouthkings": {
     "hands": 10,
@@ -4077,7 +4586,8 @@
     "pfr": 30.0,
     "3bet": 0.0,
     "af": 4,
-    "archetype": "maniac"
+    "archetype": "maniac",
+    "advice": "vs their raise: only QQ+/AK, then call down"
   },
   "indiiiopraiiia": {
     "hands": 7,
@@ -4085,7 +4595,8 @@
     "pfr": 14.3,
     "3bet": 0,
     "af": 0,
-    "archetype": "fish"
+    "archetype": "fish",
+    "advice": "bet any pair big, never bluff"
   },
   "manuelmadruga": {
     "hands": 5,
@@ -4093,7 +4604,8 @@
     "pfr": 20.0,
     "3bet": 0.0,
     "af": 0,
-    "archetype": "fish"
+    "archetype": "fish",
+    "advice": "bet any pair big, never bluff"
   },
   "Gabriel2002c": {
     "hands": 9,
@@ -4101,7 +4613,8 @@
     "pfr": 22.2,
     "3bet": 0.0,
     "af": 3.0,
-    "archetype": "tag"
+    "archetype": "tag",
+    "advice": "vs their raise: only TT+/AK"
   },
   "DANIFRR": {
     "hands": 8,
@@ -4109,7 +4622,8 @@
     "pfr": 25.0,
     "3bet": 50.0,
     "af": 2.0,
-    "archetype": "lag"
+    "archetype": "tag",
+    "advice": "vs their raise: only TT+/AK"
   },
   "guybrushD": {
     "hands": 6,
@@ -4117,7 +4631,8 @@
     "pfr": 33.3,
     "3bet": 0.0,
     "af": 3,
-    "archetype": "maniac"
+    "archetype": "maniac",
+    "advice": "vs their raise: only QQ+/AK, then call down"
   },
   "AlexTheSavag": {
     "hands": 9,
@@ -4125,7 +4640,8 @@
     "pfr": 11.1,
     "3bet": 0.0,
     "af": 0,
-    "archetype": "nit"
+    "archetype": "nit",
+    "advice": "raise any hand in position, fold to their 3bet"
   },
   "troncoespacial": {
     "hands": 8,
@@ -4133,7 +4649,8 @@
     "pfr": 0.0,
     "3bet": 0.0,
     "af": 0.67,
-    "archetype": "fish"
+    "archetype": "fish",
+    "advice": "bet any pair big, never bluff"
   },
   "equipiere": {
     "hands": 9,
@@ -4141,7 +4658,8 @@
     "pfr": 0.0,
     "3bet": 0.0,
     "af": 2.0,
-    "archetype": "fish"
+    "archetype": "fish",
+    "advice": "bet any pair big, never bluff"
   },
   "zythor": {
     "hands": 5,
@@ -4149,7 +4667,8 @@
     "pfr": 0.0,
     "3bet": 0.0,
     "af": 0,
-    "archetype": "nit"
+    "archetype": "nit",
+    "advice": "raise any hand in position, fold to their 3bet"
   },
   "MisterBinss": {
     "hands": 6,
@@ -4157,7 +4676,8 @@
     "pfr": 50.0,
     "3bet": 0.0,
     "af": 2,
-    "archetype": "maniac"
+    "archetype": "maniac",
+    "advice": "vs their raise: only QQ+/AK, then call down"
   },
   "Dude23323": {
     "hands": 8,
@@ -4165,7 +4685,8 @@
     "pfr": 12.5,
     "3bet": 0.0,
     "af": 1.0,
-    "archetype": "nit"
+    "archetype": "nit",
+    "advice": "raise any hand in position, fold to their 3bet"
   },
   "Juanclapa": {
     "hands": 5,
@@ -4173,7 +4694,8 @@
     "pfr": 0.0,
     "3bet": 0,
     "af": 0.5,
-    "archetype": "fish"
+    "archetype": "fish",
+    "advice": "bet any pair big, never bluff"
   },
   "Albeprez": {
     "hands": 5,
@@ -4181,7 +4703,8 @@
     "pfr": 0.0,
     "3bet": 0.0,
     "af": 1,
-    "archetype": "fish"
+    "archetype": "fish",
+    "advice": "bet any pair big, never bluff"
   },
   "DonCorleoPT": {
     "hands": 19,
@@ -4189,7 +4712,8 @@
     "pfr": 15.8,
     "3bet": 0.0,
     "af": 1,
-    "archetype": "rock"
+    "archetype": "fish",
+    "advice": "bet any pair big, never bluff"
   },
   "XuanKold": {
     "hands": 9,
@@ -4197,7 +4721,8 @@
     "pfr": 22.2,
     "3bet": 0.0,
     "af": 1.0,
-    "archetype": "lag"
+    "archetype": "fish",
+    "advice": "bet any pair big, never bluff"
   },
   "bmnd14": {
     "hands": 5,
@@ -4205,7 +4730,8 @@
     "pfr": 40.0,
     "3bet": 0.0,
     "af": 2.0,
-    "archetype": "maniac"
+    "archetype": "maniac",
+    "advice": "vs their raise: only QQ+/AK, then call down"
   },
   "Louxo": {
     "hands": 6,
@@ -4213,7 +4739,8 @@
     "pfr": 50.0,
     "3bet": 0.0,
     "af": 0,
-    "archetype": "maniac"
+    "archetype": "maniac",
+    "advice": "vs their raise: only QQ+/AK, then call down"
   },
   "Muix": {
     "hands": 5,
@@ -4221,7 +4748,8 @@
     "pfr": 20.0,
     "3bet": 0.0,
     "af": 1,
-    "archetype": "fish"
+    "archetype": "fish",
+    "advice": "bet any pair big, never bluff"
   },
   "Gwiande": {
     "hands": 5,
@@ -4229,7 +4757,8 @@
     "pfr": 0.0,
     "3bet": 0.0,
     "af": 0,
-    "archetype": "nit"
+    "archetype": "nit",
+    "advice": "raise any hand in position, fold to their 3bet"
   },
   "transecola": {
     "hands": 6,
@@ -4237,7 +4766,8 @@
     "pfr": 0.0,
     "3bet": 0.0,
     "af": 0.0,
-    "archetype": "nit"
+    "archetype": "rock",
+    "advice": "raise any hand in position, fold if they bet"
   },
   "elcabo360": {
     "hands": 9,
@@ -4245,7 +4775,8 @@
     "pfr": 22.2,
     "3bet": 0.0,
     "af": 0,
-    "archetype": "tag"
+    "archetype": "tag",
+    "advice": "vs their raise: only TT+/AK"
   },
   "xapi666": {
     "hands": 9,
@@ -4253,7 +4784,8 @@
     "pfr": 33.3,
     "3bet": 0.0,
     "af": 6,
-    "archetype": "lag"
+    "archetype": "lag",
+    "advice": "vs their raise: only 99+/AQ+, then call down"
   },
   "peterpunkkkk": {
     "hands": 7,
@@ -4261,7 +4793,8 @@
     "pfr": 0.0,
     "3bet": 0.0,
     "af": 0.0,
-    "archetype": "nit"
+    "archetype": "rock",
+    "advice": "raise any hand in position, fold if they bet"
   },
   "adridelaf": {
     "hands": 5,
@@ -4269,7 +4802,8 @@
     "pfr": 0.0,
     "3bet": 0.0,
     "af": 0,
-    "archetype": "rock"
+    "archetype": "rock",
+    "advice": "raise any hand in position, fold if they bet"
   },
   "lkbIbgz": {
     "hands": 5,
@@ -4277,7 +4811,8 @@
     "pfr": 0.0,
     "3bet": 0.0,
     "af": 0,
-    "archetype": "nit"
+    "archetype": "nit",
+    "advice": "raise any hand in position, fold to their 3bet"
   },
   "QQpkrQQ": {
     "hands": 6,
@@ -4285,7 +4820,8 @@
     "pfr": 0.0,
     "3bet": 0.0,
     "af": 0,
-    "archetype": "nit"
+    "archetype": "nit",
+    "advice": "raise any hand in position, fold to their 3bet"
   },
   "NIHHIL0": {
     "hands": 6,
@@ -4293,7 +4829,8 @@
     "pfr": 16.7,
     "3bet": 0.0,
     "af": 0.0,
-    "archetype": "fish"
+    "archetype": "fish",
+    "advice": "bet any pair big, never bluff"
   },
   "daenerys28": {
     "hands": 7,
@@ -4301,7 +4838,8 @@
     "pfr": 14.3,
     "3bet": 25.0,
     "af": 0,
-    "archetype": "nit"
+    "archetype": "nit",
+    "advice": "raise any hand in position, fold to their 3bet"
   },
   "stian19": {
     "hands": 6,
@@ -4309,7 +4847,8 @@
     "pfr": 0.0,
     "3bet": 0.0,
     "af": 2,
-    "archetype": "fish"
+    "archetype": "fish",
+    "advice": "bet any pair big, never bluff"
   },
   "osseni": {
     "hands": 6,
@@ -4317,7 +4856,8 @@
     "pfr": 16.7,
     "3bet": 0.0,
     "af": 0,
-    "archetype": "rock"
+    "archetype": "nit",
+    "advice": "raise any hand in position, fold to their 3bet"
   },
   "Pinchoglobo": {
     "hands": 13,
@@ -4325,7 +4865,8 @@
     "pfr": 30.8,
     "3bet": 66.7,
     "af": 3,
-    "archetype": "lag"
+    "archetype": "lag",
+    "advice": "vs their raise: only 99+/AQ+, then call down"
   },
   "saifoufou": {
     "hands": 8,
@@ -4333,7 +4874,8 @@
     "pfr": 0.0,
     "3bet": 0.0,
     "af": 1,
-    "archetype": "nit"
+    "archetype": "rock",
+    "advice": "raise any hand in position, fold if they bet"
   },
   "dthprde": {
     "hands": 6,
@@ -4341,7 +4883,8 @@
     "pfr": 16.7,
     "3bet": 0.0,
     "af": 1.0,
-    "archetype": "fish"
+    "archetype": "fish",
+    "advice": "bet any pair big, never bluff"
   },
   "kevyncito": {
     "hands": 15,
@@ -4349,7 +4892,8 @@
     "pfr": 26.7,
     "3bet": 0.0,
     "af": 3,
-    "archetype": "lag"
+    "archetype": "lag",
+    "advice": "vs their raise: only 99+/AQ+, then call down"
   },
   "46peter46": {
     "hands": 15,
@@ -4357,7 +4901,8 @@
     "pfr": 6.7,
     "3bet": 0.0,
     "af": 1,
-    "archetype": "nit"
+    "archetype": "nit",
+    "advice": "raise any hand in position, fold to their 3bet"
   },
   "ninetsoua999": {
     "hands": 5,
@@ -4365,7 +4910,8 @@
     "pfr": 20.0,
     "3bet": 0,
     "af": 0,
-    "archetype": "tag"
+    "archetype": "tag",
+    "advice": "vs their raise: only TT+/AK"
   },
   "Rppopy": {
     "hands": 11,
@@ -4373,7 +4919,8 @@
     "pfr": 18.2,
     "3bet": 0.0,
     "af": 0,
-    "archetype": "nit"
+    "archetype": "tag",
+    "advice": "vs their raise: only TT+/AK"
   },
   "loilon_10": {
     "hands": 5,
@@ -4381,7 +4928,8 @@
     "pfr": 0.0,
     "3bet": 0.0,
     "af": 2,
-    "archetype": "fish"
+    "archetype": "fish",
+    "advice": "bet any pair big, never bluff"
   },
   "SrTTSC": {
     "hands": 11,
@@ -4389,7 +4937,8 @@
     "pfr": 18.2,
     "3bet": 25.0,
     "af": 2,
-    "archetype": "nit"
+    "archetype": "tag",
+    "advice": "vs their raise: only TT+/AK"
   },
   "Trycatchthis": {
     "hands": 7,
@@ -4397,7 +4946,8 @@
     "pfr": 28.6,
     "3bet": 33.3,
     "af": 2,
-    "archetype": "fish"
+    "archetype": "fish",
+    "advice": "bet any pair big, never bluff"
   },
   "festuket": {
     "hands": 8,
@@ -4405,7 +4955,8 @@
     "pfr": 12.5,
     "3bet": 0.0,
     "af": 1,
-    "archetype": "fish"
+    "archetype": "fish",
+    "advice": "bet any pair big, never bluff"
   },
   "n0rthw00d": {
     "hands": 9,
@@ -4413,7 +4964,8 @@
     "pfr": 11.1,
     "3bet": 0.0,
     "af": 0,
-    "archetype": "nit"
+    "archetype": "nit",
+    "advice": "raise any hand in position, fold to their 3bet"
   },
   "pokemon_006": {
     "hands": 17,
@@ -4421,7 +4973,8 @@
     "pfr": 0.0,
     "3bet": 0.0,
     "af": 0.0,
-    "archetype": "nit"
+    "archetype": "nit",
+    "advice": "raise any hand in position, fold to their 3bet"
   },
   "CCPT95": {
     "hands": 15,
@@ -4429,7 +4982,8 @@
     "pfr": 0.0,
     "3bet": 0.0,
     "af": 0.0,
-    "archetype": "nit"
+    "archetype": "nit",
+    "advice": "raise any hand in position, fold to their 3bet"
   },
   "Maxibigson": {
     "hands": 23,
@@ -4437,7 +4991,8 @@
     "pfr": 30.4,
     "3bet": 0.0,
     "af": 0,
-    "archetype": "lag"
+    "archetype": "lag",
+    "advice": "vs their raise: only 99+/AQ+, then call down"
   },
   "spartakular6": {
     "hands": 13,
@@ -4445,7 +5000,8 @@
     "pfr": 0.0,
     "3bet": 0.0,
     "af": 1.0,
-    "archetype": "nit"
+    "archetype": "rock",
+    "advice": "raise any hand in position, fold if they bet"
   },
   "alexivan7": {
     "hands": 22,
@@ -4453,7 +5009,8 @@
     "pfr": 18.2,
     "3bet": 0.0,
     "af": 0,
-    "archetype": "nit"
+    "archetype": "tag",
+    "advice": "vs their raise: only TT+/AK"
   },
   "manolito6003": {
     "hands": 7,
@@ -4461,7 +5018,8 @@
     "pfr": 14.3,
     "3bet": 0.0,
     "af": 0.0,
-    "archetype": "fish"
+    "archetype": "fish",
+    "advice": "bet any pair big, never bluff"
   },
   "guillepipper": {
     "hands": 16,
@@ -4469,7 +5027,8 @@
     "pfr": 0.0,
     "3bet": 0.0,
     "af": 0,
-    "archetype": "nit"
+    "archetype": "nit",
+    "advice": "raise any hand in position, fold to their 3bet"
   },
   "Have2LeaveSpace": {
     "hands": 5,
@@ -4477,7 +5036,8 @@
     "pfr": 40.0,
     "3bet": 0,
     "af": 1.0,
-    "archetype": "lag"
+    "archetype": "maniac",
+    "advice": "vs their raise: only QQ+/AK, then call down"
   },
   "DiegoPkLL": {
     "hands": 6,
@@ -4485,7 +5045,8 @@
     "pfr": 0.0,
     "3bet": 0.0,
     "af": 0,
-    "archetype": "nit"
+    "archetype": "nit",
+    "advice": "raise any hand in position, fold to their 3bet"
   },
   "Richi_payaso": {
     "hands": 10,
@@ -4493,7 +5054,8 @@
     "pfr": 10.0,
     "3bet": 0.0,
     "af": 0,
-    "archetype": "fish"
+    "archetype": "fish",
+    "advice": "bet any pair big, never bluff"
   },
   "oizoo86": {
     "hands": 15,
@@ -4501,7 +5063,8 @@
     "pfr": 20.0,
     "3bet": 0.0,
     "af": 1.5,
-    "archetype": "fish"
+    "archetype": "fish",
+    "advice": "bet any pair big, never bluff"
   },
   "mivipkr": {
     "hands": 6,
@@ -4509,7 +5072,8 @@
     "pfr": 0.0,
     "3bet": 0.0,
     "af": 0,
-    "archetype": "nit"
+    "archetype": "nit",
+    "advice": "raise any hand in position, fold to their 3bet"
   },
   "meragon64": {
     "hands": 5,
@@ -4517,6 +5081,7 @@
     "pfr": 0.0,
     "3bet": 0.0,
     "af": 0,
-    "archetype": "nit"
+    "archetype": "nit",
+    "advice": "raise any hand in position, fold to their 3bet"
   }
 }

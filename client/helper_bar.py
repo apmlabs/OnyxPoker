@@ -212,20 +212,20 @@ class HelperBar:
         return {}
 
     def _get_advice(self, archetype):
-        """Get advice text for archetype"""
-        advice = {
+        """Get advice text for archetype - just returns what's in the DB"""
+        # Fallback only if DB doesn't have advice
+        fallback = {
             'fish': "bet any pair big, never bluff",
             'nit': "raise any hand in position, fold to their 3bet",
-            'lag': "vs their raise: only 99+/AQ+, then call down",
-            'tag': "vs their raise: only TT+/AK",
-            'maniac': "vs their raise: only QQ+/AK, then call down",
             'rock': "raise any hand in position, fold if they bet",
-            'reg': "play normal",
+            'tag': "vs their raise: only TT+/AK",
+            'lag': "vs their raise: only 99+/AQ+, then call down",
+            'maniac': "vs their raise: only QQ+/AK, then call down",
         }
-        return advice.get(archetype, "no reads")
+        return fallback.get(archetype, "no reads")
 
     def _lookup_opponent_stats(self, players):
-        """Lookup stats for detected players - archetype comes from DB"""
+        """Lookup stats for detected players - advice comes from DB"""
         stats_db = self._load_player_stats()
         opponent_stats = []
         for p in players:
@@ -234,12 +234,11 @@ class HelperBar:
             name = p.get('name', '')
             if name in stats_db:
                 s = stats_db[name]
-                archetype = s.get('archetype', 'unknown')
                 opponent_stats.append({
                     'name': name,
                     'hands': s.get('hands', 0),
-                    'archetype': archetype,
-                    'advice': self._get_advice(archetype)
+                    'archetype': s.get('archetype', 'unknown'),
+                    'advice': s.get('advice', self._get_advice(s.get('archetype', 'unknown')))
                 })
             else:
                 opponent_stats.append({
