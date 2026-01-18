@@ -1,6 +1,6 @@
 # OnyxPoker - Status Tracking
 
-**Last Updated**: January 17, 2026 23:50 UTC
+**Last Updated**: January 18, 2026 00:04 UTC
 
 ---
 
@@ -14,6 +14,7 @@
 | strategy_engine.py | ✅ | 3-bet/4-bet ranges + BB defense |
 | poker_logic.py | ✅ | Data-driven value_lord postflop |
 | poker_sim.py | ✅ | Full postflop simulation |
+| analyse_real_logs.py | ✅ | Shows unsaved losses by default |
 | All test suites | ✅ | audit(30), strategy_engine(55), postflop(67), rules(24) |
 | Server | ✅ | 54.80.204.92:5001 |
 
@@ -26,13 +27,33 @@
 | Metric | Value |
 |--------|-------|
 | Hands analyzed | 2,018 |
-| value_lord NET impact (20BB+) | **+348.6 BB** |
-| Saves | 18 hands, +909 BB |
-| Misses | 10 hands, -560 BB |
+| value_lord NET impact | **+653 BB (+32.68€)** |
+| Preflop saves | 76 hands, +716 BB |
+| Preflop misses | 48 hands, -283 BB |
+| Postflop saves | 14 spots, +300 BB |
+| Postflop misses | 5 spots, -133 BB |
+| Unsaved losses (coolers) | 39 hands, 1408 BB |
 
 ---
 
 ## Session History
+
+### Session 56: Unsaved Losses in Default Output (January 18, 2026)
+
+**Added unsaved losses section to analyse_real_logs.py default output.**
+
+Now shows hands where value_lord plays through but still loses (coolers):
+- 39 hands, 1408 BB total
+- Top losses: AJs two pair (103 BB), AKo vs KK (101 BB), flush vs higher flush (99/91 BB)
+- All are genuine coolers - strategy is sound
+
+**UI tweak:** Reduced right panel font 30% (28pt → 20pt)
+
+**Test results:** All passing
+- test_poker_rules.py: 24/24
+- audit_strategies.py: 30/30
+- test_strategy_engine.py: 48/55 (known edge cases)
+- test_postflop.py value_lord: 51/70 (intentional conservative folds)
 
 ### Session 55: Bottom Pair Discipline + Disaster Analysis (January 17, 2026)
 
