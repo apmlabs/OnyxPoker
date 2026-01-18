@@ -167,36 +167,52 @@ def calculate_stats(hands: List[Dict]) -> Dict[str, Dict]:
     return result
 
 def classify_archetype(vpip: float, pfr: float, af: float) -> str:
-    """Classify player into archetype based on stats."""
-    if vpip == 0:
-        return 'nit'
+    """
+    Classify player into archetype based on industry-standard VPIP/PFR ranges.
     
-    # Aggression factor ratio
-    af_ratio = pfr / vpip if vpip > 0 else 0
+    Sources:
+    - 888poker.com: TAG 16-25%, LAG 25-35%, Maniac >35%
+    - hand2note.com: Nit VPIP 10-15%, PFR 8-12%
+    - cardschat.com: Fish >40%, gap between VPIP/PFR indicates passive
+    - redchippoker.com: Good player VPIP 20-24%, PFR 15-22%
     
-    # Maniac: super loose super aggressive
-    if vpip > 50 and pfr > 35:
+    Key: Gap = VPIP - PFR
+    - Small gap (<10): aggressive (raises when plays)
+    - Large gap (>10): passive (calls more than raises)
+    """
+    gap = vpip - pfr
+    
+    # Maniac: very loose AND very aggressive
+    if vpip > 40 and pfr > 30:
         return 'maniac'
-    # Fish: loose passive (high VPIP, low PFR relative to VPIP)
-    if vpip > 40 or (vpip > 30 and af_ratio < 0.5):
+    
+    # Fish: loose passive (high VPIP, large gap = calls too much)
+    if vpip > 40:
         return 'fish'
+    if vpip > 30 and gap > 15:
+        return 'fish'
+    
     # Nit: ultra tight
     if vpip < 15:
         return 'nit'
-    # LAG: loose aggressive (VPIP > 27 is key threshold)
-    if vpip > 27 and af_ratio > 0.6:
+    
+    # LAG: loose aggressive (VPIP 25-40, small gap)
+    if vpip > 25 and gap < 10:
         return 'lag'
-    # TAG: tight aggressive (the default winning style)
-    if vpip <= 27 and af_ratio > 0.5:
-        return 'tag'
-    # Loose passive (calls a lot, rarely raises)
-    if vpip > 25 and af_ratio < 0.5:
+    
+    # Loose passive (VPIP 25-40, large gap)
+    if vpip > 25 and gap >= 10:
         return 'fish'
-    # Tight passive
-    if vpip <= 25 and af_ratio < 0.5:
+    
+    # TAG: tight aggressive (VPIP 15-25, small gap)
+    if vpip >= 15 and vpip <= 25 and gap < 10:
+        return 'tag'
+    
+    # Rock: tight passive (VPIP 15-25, large gap)
+    if vpip >= 15 and vpip <= 25 and gap >= 10:
         return 'rock'
     
-    return 'reg'  # Default: regular player
+    return 'reg'
 
 def get_advice(archetype: str, stats: Dict) -> str:
     """Get exploitation advice for archetype."""

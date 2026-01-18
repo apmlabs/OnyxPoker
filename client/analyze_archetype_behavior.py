@@ -152,20 +152,21 @@ def main():
     print("REAL ARCHETYPE POSTFLOP BEHAVIOR ANALYSIS")
     print("=" * 70)
     
+    # Load archetypes from the database (single source of truth)
+    import json
+    with open('player_stats.json') as f:
+        player_db = json.load(f)
+    
     player_preflop, player_postflop = parse_all_hands()
     
-    # Classify players and aggregate postflop by archetype
+    # Aggregate postflop by archetype from DB
     archetype_postflop = defaultdict(lambda: {'check': 0, 'bet': 0, 'call': 0, 'fold': 0, 'raise': 0, 'players': 0})
     
     for player, pf in player_preflop.items():
-        if pf['hands'] < 20:
+        if player not in player_db:
             continue
-        vpip = pf['vpip'] / pf['hands'] * 100
-        pfr = pf['pfr'] / pf['hands'] * 100
-        arch = classify_archetype(vpip, pfr, pf['hands'])
         
-        if arch == 'unknown':
-            continue
+        arch = player_db[player]['archetype']
         
         archetype_postflop[arch]['players'] += 1
         for action in ['check', 'bet', 'call', 'fold', 'raise']:
