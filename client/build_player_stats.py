@@ -231,12 +231,12 @@ def classify_archetype(vpip: float, pfr: float, af: float) -> str:
 def get_advice(archetype: str, stats: Dict) -> str:
     """Get exploitation advice for archetype."""
     advice = {
-        'fish': "bet any pair big, never bluff",
-        'nit': "raise any hand in position, fold to their 3bet",
-        'rock': "raise any hand in position, fold if they bet",
-        'tag': "vs their raise: only TT+/AK",
-        'lag': "vs their raise: only 99+/AQ+, then call down",
-        'maniac': "vs their raise: only QQ+/AK, then call down",
+        'fish': "Isolate wide | Value bet | Calls too much | Never bluff",
+        'nit': "Steal blinds | Fold to bets | Too tight | Raise IP, fold to 3bet",
+        'rock': "Steal more | Bet = nuts | Raises monsters | Raise IP, fold vs bet",
+        'tag': "Respect raises | Play solid | Avoid | vs raise: TT+/AK",
+        'lag': "Tighten up | Call down | Over-aggro | vs raise: 99+/AQ+, call down",
+        'maniac': "Only premiums | Call everything | Can't fold | vs raise: QQ+/AK, call down",
     }
     return advice.get(archetype, "no reads")
 
