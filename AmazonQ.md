@@ -26,15 +26,15 @@
 - 50% pot standard sizing, c-bet max 4BB
 - Never call river high card (0% win rate)
 
-### Player Database (565 players)
+### Player Database (565 players, gap threshold = 5%)
 | Archetype | Count | % | Advice |
 |-----------|-------|---|--------|
-| fish | 170 | 30.1% | bet any pair big, never bluff |
+| fish | 195 | 34.5% | bet any pair big, never bluff |
 | nit | 132 | 23.4% | raise any hand in position, fold to their 3bet |
-| tag | 104 | 18.4% | vs their raise: only TT+/AK |
-| rock | 64 | 11.3% | raise any hand in position, fold if they bet |
-| lag | 57 | 10.1% | vs their raise: only 99+/AQ+, then call down |
+| rock | 101 | 17.9% | raise any hand in position, fold if they bet |
+| tag | 67 | 11.9% | vs their raise: only TT+/AK |
 | maniac | 38 | 6.7% | vs their raise: only QQ+/AK, then call down |
+| lag | 32 | 5.7% | vs their raise: only 99+/AQ+, then call down |
 
 ---
 
@@ -51,16 +51,29 @@
 - Archetype classification with industry-standard thresholds
 - Actionable advice per opponent in sidebar
 
-**Industry-Standard Classification (sources: 888poker, hand2note, cardschat):**
+**Industry-Standard Classification (source: 888poker.com):**
+
+Key insight: **Gap = VPIP - PFR**. 888poker says "rarely >5% gap for LAG, >5% = loose-passive"
+
 | Archetype | VPIP | Gap (VPIP-PFR) | Logic |
 |-----------|------|----------------|-------|
 | maniac | >40 | any | AND PFR>30 |
-| fish | >40 | any | OR >30 with gap>15 |
+| fish | >40 | any | very loose |
 | nit | <15 | any | ultra tight |
-| lag | >25 | <10 | loose aggressive |
-| fish | >25 | >=10 | loose passive |
-| tag | 15-25 | <10 | tight aggressive |
-| rock | 15-25 | >=10 | tight passive |
+| lag | >25 | ≤5 | loose aggressive |
+| fish | >25 | >5 | loose passive |
+| tag | 15-25 | ≤5 | tight aggressive |
+| rock | 15-25 | >5 | tight passive |
+
+**Player Database Distribution (565 players):**
+| Archetype | Count | % |
+|-----------|-------|---|
+| fish | 195 | 34.5% |
+| nit | 132 | 23.4% |
+| rock | 101 | 17.9% |
+| tag | 67 | 11.9% |
+| maniac | 38 | 6.7% |
+| lag | 32 | 5.7% |
 
 **Single Source of Truth:**
 - `build_player_stats.py` creates player_stats.json with archetypes

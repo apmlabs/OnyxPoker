@@ -77,15 +77,19 @@ python helper_bar.py --visionv2
 - All analysis scripts READ from DB (no duplicate classification logic)
 - helper_bar.py reads archetypes from DB, only stores advice text
 
-**Industry-Standard Classification (888poker, hand2note, cardschat):**
+**Industry-Standard Classification (888poker.com):**
+
+Key: Gap = VPIP - PFR. 888poker: "rarely >5% gap for LAG, >5% = loose-passive"
+
 | Archetype | VPIP | Gap (VPIP-PFR) |
 |-----------|------|----------------|
 | maniac | >40, PFR>30 | any |
-| fish | >40 OR (>30, gap>15) | passive |
-| nit | <15 | any |
-| lag | >25 | <10 (aggressive) |
-| tag | 15-25 | <10 (aggressive) |
-| rock | 15-25 | >=10 (passive) |
+| fish | >40 | any (very loose) |
+| nit | <15 | any (ultra tight) |
+| lag | >25 | ≤5 (aggressive) |
+| fish | >25 | >5 (passive) |
+| tag | 15-25 | ≤5 (aggressive) |
+| rock | 15-25 | >5 (passive) |
 
 ### Default Strategy: `value_lord` (switched Session 46)
 - +24.1 BB/100 in PokerKit simulation (20k hands)
