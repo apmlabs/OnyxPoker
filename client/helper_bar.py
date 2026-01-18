@@ -250,11 +250,11 @@ class HelperBar:
         elif archetype == 'nit':
             return f"raise any hand in position, fold to their 3bet"
         elif archetype == 'lag':
-            return f"only 99+/AQ+, call any pair postflop"
+            return f"vs their raise: only 99+/AQ+, then call down"
         elif archetype == 'tag':
-            return f"only TT+/AK vs their opens"
+            return f"vs their raise: only TT+/AK"
         elif archetype == 'maniac':
-            return f"only QQ+/AK, call down any pair"
+            return f"vs their raise: only QQ+/AK, then call down"
         elif archetype == 'rock':
             return f"raise any hand in position, fold if they bet"
         elif archetype == 'reg':
