@@ -632,7 +632,8 @@ class HelperBar:
         if VISION_V2_MODE and result.get('opponent_stats'):
             for opp in result['opponent_stats']:
                 if opp.get('hands', 0) > 0:
-                    line = f"{opp['name']} ({opp['hands']}h) - {opp['advice']}\n"
+                    arch = opp.get('archetype', '?').upper()
+                    line = f"{opp['name']} ({opp['hands']}h) {arch} - {opp['advice']}\n"
                     self.stats_text.insert('end', line, 'HAND')
             self.stats_text.insert('end', '---\n', 'DANGER')
         
