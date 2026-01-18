@@ -57,29 +57,30 @@ Look VERY carefully at card suits. Do NOT guess or assume:
 - DIAMONDS = red diamond symbol (d)
 - CLUBS = black clover symbol (c)
 
+COMMON MISTAKES TO AVOID:
+- Confusing hearts with diamonds (both red)
+- Confusing spades with clubs (both black)
+- Hallucinating cards that aren't visible
+- Mixing up card order
+
 READING RULES:
-- hero_cards: TWO face-up cards at BOTTOM CENTER. Format: As=Ace spades, Kh=King hearts. null if not visible.
-- community_cards: Cards in CENTER of table. Empty [] if preflop.
-- pot: Total pot amount shown in CENTER.
-- hero_stack: Hero's chip stack at BOTTOM.
-- to_call: Amount on CALL button. 0 if CHECK button. null if no buttons.
-- is_hero_turn: TRUE if LARGE RED action buttons visible.
-- big_blind: From WINDOW TITLE "$SB/$BB" format.
-- facing_raise: TRUE if someone raised before hero.
+- hero_cards: TWO face-up cards at BOTTOM CENTER. Format: As=Ace spades, Kh=King hearts, Td=Ten diamonds. null if no visible cards or cards face-down.
+- community_cards: Cards in CENTER of table. Empty [] if preflop (no board yet).
+- pot: Total pot amount shown in CENTER. Read exact decimal value.
+- hero_stack: Hero's chip stack at BOTTOM. Read exact decimal value.
+- to_call: Amount shown on CALL button. 0 if CHECK button visible. null if no action buttons.
+- is_hero_turn: TRUE if LARGE RED action buttons (FOLD/CHECK/CALL/RAISE) visible. FALSE if only small checkboxes.
+- big_blind: Read from WINDOW TITLE at top. Format is "Table - $SB/$BB". Extract BB value.
+- facing_raise: TRUE if someone raised before hero's turn. FALSE if just blinds or limps.
 
 PLAYER DETECTION:
 - players_in_hand: Count of players who still have cards (not folded). Look for face-down card backs.
-- players: Array of ALL 6 seat positions, clockwise from bottom-left:
-  - name: Player's username shown below their avatar
+- players: Array of occupied seats clockwise from bottom-left:
+  - name: Player's username shown below their avatar. MUST be actual username, NOT button text like "Fold", "Call", "Post BB"
   - stack: Their chip amount
-  - has_cards: TRUE if they have card backs visible (still in hand), FALSE if folded or empty seat
+  - has_cards: TRUE if they have card backs visible (still in hand), FALSE if folded
   - is_hero: TRUE only for the player at BOTTOM CENTER with face-up cards
-
-IMPORTANT FOR PLAYER NAMES:
-- Read the EXACT username text below each player avatar
-- Usernames are case-sensitive
-- Empty seats should be omitted from the array
-- Hero is always at bottom center position
+- Omit empty seats from the array
 
 Return ONLY the JSON object, nothing else."""
 

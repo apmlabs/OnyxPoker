@@ -23,16 +23,22 @@ sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 import argparse
 parser = argparse.ArgumentParser(description='OnyxPoker Helper Bar')
 parser.add_argument('--ai-only', action='store_true', help='Use AI for both vision and decisions (old mode)')
+parser.add_argument('--visionv2', action='store_true', help='Use V2 vision with player detection')
 parser.add_argument('--strategy', type=str, default='value_lord', help='Strategy to use (default: value_lord)')
 args = parser.parse_args()
 
 # Default: gpt-5.2 vision + strategy_engine (hardcoded strategy)
 # --ai-only: gpt-5.2 does both vision + decision (old behavior)
+# --visionv2: V2 vision with player names + opponent stats
 AI_ONLY_MODE = args.ai_only
+VISION_V2_MODE = args.visionv2
 STRATEGY = args.strategy
 
 if AI_ONLY_MODE:
     from vision_detector import VisionDetector, MODEL
+elif VISION_V2_MODE:
+    from vision_detector_v2 import VisionDetectorV2, DEFAULT_MODEL
+    from strategy_engine import StrategyEngine
 else:
     from vision_detector_lite import VisionDetectorLite, DEFAULT_MODEL
     from strategy_engine import StrategyEngine
@@ -151,17 +157,19 @@ class HelperBar:
         right.pack(side='right', fill='y', padx=2, pady=2)
         right.pack_propagate(False)
 
-        # Stats display (scrollable)
-        stats_scroll = scrolledtext.ScrolledText(right, font=('Courier', 20),
+        # Stats display (scrollable) - font reduced 40% (20pt -> 12pt)
+        stats_scroll = scrolledtext.ScrolledText(right, font=('Courier', 12),
                                                 bg='#1a1a1a', fg='#ccc',
                                                 wrap='word', height=8)
         stats_scroll.pack(fill='both', expand=True, padx=5, pady=2)
         self.stats_text = stats_scroll
 
-        # Color tags for stats
-        self.stats_text.tag_configure('HAND', foreground='#00ff00', font=('Courier', 20, 'bold'))
-        self.stats_text.tag_configure('DRAW', foreground='#00ffff', font=('Courier', 20))
-        self.stats_text.tag_configure('DANGER', foreground='#ff8800', font=('Courier', 17))
+        # Color tags for stats - font reduced 40%
+        self.stats_text.tag_configure('HAND', foreground='#00ff00', font=('Courier', 12, 'bold'))
+        self.stats_text.tag_configure('DRAW', foreground='#00ffff', font=('Courier', 12))
+        self.stats_text.tag_configure('DANGER', foreground='#ff8800', font=('Courier', 10))
+        self.stats_text.tag_configure('OPPONENT', foreground='#ff66ff', font=('Courier', 12, 'bold'))
+        self.stats_text.tag_configure('ADVICE', foreground='#ffcc00', font=('Courier', 11))
 
         # Time
         self.time_label = tk.Label(right, text="", font=('Arial', 9),
@@ -194,6 +202,92 @@ class HelperBar:
         self.root.clipboard_clear()
         self.root.clipboard_append(text)
         self.log("Logs copied", "INFO")
+
+    def _load_player_stats(self):
+        """Load player stats from JSON file"""
+        stats_path = os.path.join(os.path.dirname(__file__), 'player_stats.json')
+        if os.path.exists(stats_path):
+            with open(stats_path) as f:
+                return json.load(f)
+        return {}
+
+    def _classify_archetype(self, vpip, pfr, hands):
+        """Classify player archetype from stats"""
+        if hands < 10:
+            return 'unknown'
+        if vpip > 45:
+            return 'fish'
+        if vpip < 15 and pfr < 12:
+            return 'nit'
+        if vpip > 28 and pfr > 20:
+            return 'lag'
+        if 18 <= vpip <= 28 and 15 <= pfr <= 22:
+            return 'tag'
+        if vpip > 50 and pfr > 35:
+            return 'maniac'
+        return 'unknown'
+
+    def _get_archetype_advice(self, archetype, vpip, pfr):
+        """Get actionable advice for archetype"""
+        if archetype == 'fish':
+            return f"VALUE BET relentlessly - they call too much"
+        elif archetype == 'nit':
+            return f"STEAL blinds - fold to their raises"
+        elif archetype == 'lag':
+            return f"TRAP with strong hands - they bluff often"
+        elif archetype == 'tag':
+            return f"RESPECT raises - 3bet or fold"
+        elif archetype == 'maniac':
+            return f"CALL DOWN lighter - they overbluff"
+        return "Play solid - no reads"
+
+    def _lookup_opponent_stats(self, players):
+        """Lookup stats for detected players"""
+        stats_db = self._load_player_stats()
+        opponent_stats = []
+        for p in players:
+            if p.get('is_hero'):
+                continue
+            name = p.get('name', '')
+            if name in stats_db:
+                s = stats_db[name]
+                hands = s.get('hands', 0)
+                vpip = s.get('vpip', 0)
+                pfr = s.get('pfr', 0)
+                archetype = self._classify_archetype(vpip, pfr, hands)
+                advice = self._get_archetype_advice(archetype, vpip, pfr)
+                opponent_stats.append({
+                    'name': name,
+                    'hands': hands,
+                    'vpip': vpip,
+                    'pfr': pfr,
+                    'archetype': archetype,
+                    'advice': advice
+                })
+            else:
+                opponent_stats.append({
+                    'name': name,
+                    'hands': 0,
+                    'archetype': 'unknown',
+                    'advice': 'No data - play solid'
+                })
+        return opponent_stats
+
+    def _format_opponent_line(self, opponent_stats):
+        """Format compact opponent line for sidebar"""
+        parts = []
+        for o in opponent_stats:
+            if o['hands'] > 0:
+                parts.append(f"{o['name']}: {o['archetype'].upper()} ({o['hands']}h)")
+        return ' | '.join(parts) if parts else 'No known opponents'
+
+    def _format_advice_line(self, opponent_stats):
+        """Format advice for all known opponents"""
+        lines = []
+        for o in opponent_stats:
+            if o['hands'] > 0:
+                lines.append(f"{o['name']}: {o['advice']}")
+        return '\n'.join(lines) if lines else 'No opponent data'
 
     def register_hotkeys(self):
         """Register global hotkeys"""
@@ -272,6 +366,36 @@ class HelperBar:
                     
                     # For AI-only mode, just use the single result
                     all_position_results = None
+                elif VISION_V2_MODE:
+                    # V2 mode: vision with player detection + strategy engine
+                    self.root.after(0, lambda: self.log(f"V2 API call ({DEFAULT_MODEL})...", "DEBUG"))
+                    api_start = time.time()
+                    vision = VisionDetectorV2(logger=lambda m, l="DEBUG": self.root.after(0, lambda: self.log(m, l)))
+                    table_data = vision.detect_table(temp_path)
+                    api_time = time.time() - api_start
+                    
+                    # Lookup opponent stats
+                    opponent_stats = self._lookup_opponent_stats(table_data.get('players', []))
+                    table_data['opponent_stats'] = opponent_stats
+                    table_data['opponent_line'] = self._format_opponent_line(opponent_stats)
+                    table_data['advice_line'] = self._format_advice_line(opponent_stats)
+                    
+                    engine = StrategyEngine(STRATEGY)
+                    board = table_data.get('community_cards', [])
+                    
+                    if board:  # Postflop
+                        table_data['is_aggressor'] = self.last_preflop_action == 'open'
+                        decision = engine.get_action(table_data)
+                        result = {**table_data, **decision}
+                    else:  # Preflop - all positions
+                        all_position_results = {}
+                        for pos in ['UTG', 'MP', 'CO', 'BTN', 'SB', 'BB']:
+                            pos_data = {**table_data, 'position': pos, 'to_call': 0}
+                            decision = engine.get_action(pos_data)
+                            all_position_results[pos] = decision
+                        result = {**table_data, **all_position_results['BTN']}
+                        result['all_positions'] = all_position_results
+                    result['api_time'] = api_time
                 else:
                     # Default mode: gpt-5.2 for vision, strategy_engine for decision
                     self.root.after(0, lambda: self.log(f"API call ({DEFAULT_MODEL})...", "DEBUG"))
@@ -584,6 +708,16 @@ class HelperBar:
             dangers.append("Board paired")
         if dangers:
             self.stats_text.insert('end', '---\n' + '\n'.join(dangers) + '\n', 'DANGER')
+
+        # 4. OPPONENT INFO (V2 mode only)
+        if VISION_V2_MODE and result.get('opponent_stats'):
+            self.stats_text.insert('end', '---\n', 'DANGER')
+            self.stats_text.insert('end', 'OPPONENTS:\n', 'OPPONENT')
+            for opp in result['opponent_stats']:
+                if opp.get('hands', 0) > 0:
+                    line = f"{opp['name']}: {opp['archetype'].upper()} ({opp['hands']}h, {opp.get('vpip',0):.0f}/{opp.get('pfr',0):.0f})\n"
+                    self.stats_text.insert('end', line, 'OPPONENT')
+                    self.stats_text.insert('end', f"  {opp['advice']}\n", 'ADVICE')
 
     def on_f10(self):
         """Toggle bot mode"""
