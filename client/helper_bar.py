@@ -211,58 +211,21 @@ class HelperBar:
                 return json.load(f)
         return {}
 
-    def _classify_archetype(self, vpip, pfr, hands):
-        """Classify player archetype from stats"""
-        if hands < 10:
-            return 'unknown'
-        
-        # Calculate aggression factor
-        af = pfr / vpip if vpip > 0 else 0
-        
-        # Maniac: super loose super aggressive
-        if vpip > 50 and pfr > 35:
-            return 'maniac'
-        # Fish: loose passive (high VPIP, low PFR relative to VPIP)
-        if vpip > 40 or (vpip > 30 and af < 0.5):
-            return 'fish'
-        # Nit: ultra tight
-        if vpip < 15:
-            return 'nit'
-        # LAG: loose aggressive (VPIP > 27 is key threshold)
-        if vpip > 27 and af > 0.6:
-            return 'lag'
-        # TAG: tight aggressive (the default winning style)
-        if vpip <= 27 and af > 0.5:
-            return 'tag'
-        # Loose passive (calls a lot, rarely raises)
-        if vpip > 25 and af < 0.5:
-            return 'fish'
-        # Tight passive
-        if vpip <= 25 and af < 0.5:
-            return 'rock'
-        
-        return 'reg'  # Default: regular player
-
-    def _get_archetype_advice(self, archetype, vpip, pfr):
-        """Get actionable advice for archetype - when to deviate from value_lord"""
-        if archetype == 'fish':
-            return f"bet any pair big, never bluff"
-        elif archetype == 'nit':
-            return f"raise any hand in position, fold to their 3bet"
-        elif archetype == 'lag':
-            return f"vs their raise: only 99+/AQ+, then call down"
-        elif archetype == 'tag':
-            return f"vs their raise: only TT+/AK"
-        elif archetype == 'maniac':
-            return f"vs their raise: only QQ+/AK, then call down"
-        elif archetype == 'rock':
-            return f"raise any hand in position, fold if they bet"
-        elif archetype == 'reg':
-            return f"play normal"
-        return "no reads"
+    def _get_advice(self, archetype):
+        """Get advice text for archetype"""
+        advice = {
+            'fish': "bet any pair big, never bluff",
+            'nit': "raise any hand in position, fold to their 3bet",
+            'lag': "vs their raise: only 99+/AQ+, then call down",
+            'tag': "vs their raise: only TT+/AK",
+            'maniac': "vs their raise: only QQ+/AK, then call down",
+            'rock': "raise any hand in position, fold if they bet",
+            'reg': "play normal",
+        }
+        return advice.get(archetype, "no reads")
 
     def _lookup_opponent_stats(self, players):
-        """Lookup stats for detected players"""
+        """Lookup stats for detected players - archetype comes from DB"""
         stats_db = self._load_player_stats()
         opponent_stats = []
         for p in players:
@@ -271,25 +234,19 @@ class HelperBar:
             name = p.get('name', '')
             if name in stats_db:
                 s = stats_db[name]
-                hands = s.get('hands', 0)
-                vpip = s.get('vpip', 0)
-                pfr = s.get('pfr', 0)
-                archetype = self._classify_archetype(vpip, pfr, hands)
-                advice = self._get_archetype_advice(archetype, vpip, pfr)
+                archetype = s.get('archetype', 'unknown')
                 opponent_stats.append({
                     'name': name,
-                    'hands': hands,
-                    'vpip': vpip,
-                    'pfr': pfr,
+                    'hands': s.get('hands', 0),
                     'archetype': archetype,
-                    'advice': advice
+                    'advice': self._get_advice(archetype)
                 })
             else:
                 opponent_stats.append({
                     'name': name,
                     'hands': 0,
                     'archetype': 'unknown',
-                    'advice': 'No data - play solid'
+                    'advice': 'no reads'
                 })
         return opponent_stats
 

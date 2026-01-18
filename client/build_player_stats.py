@@ -168,28 +168,35 @@ def calculate_stats(hands: List[Dict]) -> Dict[str, Dict]:
 
 def classify_archetype(vpip: float, pfr: float, af: float) -> str:
     """Classify player into archetype based on stats."""
-    # Fish: high VPIP, low PFR, low AF (loose passive)
-    if vpip > 40 and pfr < 15:
-        return 'fish'
-    
-    # Maniac: very high VPIP, high PFR, high AF
-    if vpip > 45 and pfr > 30 and af > 3:
-        return 'maniac'
-    
-    # LAG: high VPIP, high PFR, high AF
-    if vpip > 28 and pfr > 22 and af > 2.5:
-        return 'lag'
-    
-    # TAG: moderate VPIP, good PFR, decent AF
-    if 18 <= vpip <= 28 and pfr >= 15 and af >= 2:
-        return 'tag'
-    
-    # Nit: very low VPIP
-    if vpip < 18:
+    if vpip == 0:
         return 'nit'
     
-    # Default to TAG-ish
-    return 'tag'
+    # Aggression factor ratio
+    af_ratio = pfr / vpip if vpip > 0 else 0
+    
+    # Maniac: super loose super aggressive
+    if vpip > 50 and pfr > 35:
+        return 'maniac'
+    # Fish: loose passive (high VPIP, low PFR relative to VPIP)
+    if vpip > 40 or (vpip > 30 and af_ratio < 0.5):
+        return 'fish'
+    # Nit: ultra tight
+    if vpip < 15:
+        return 'nit'
+    # LAG: loose aggressive (VPIP > 27 is key threshold)
+    if vpip > 27 and af_ratio > 0.6:
+        return 'lag'
+    # TAG: tight aggressive (the default winning style)
+    if vpip <= 27 and af_ratio > 0.5:
+        return 'tag'
+    # Loose passive (calls a lot, rarely raises)
+    if vpip > 25 and af_ratio < 0.5:
+        return 'fish'
+    # Tight passive
+    if vpip <= 25 and af_ratio < 0.5:
+        return 'rock'
+    
+    return 'reg'  # Default: regular player
 
 def get_advice(archetype: str, stats: Dict) -> str:
     """Get exploitation advice for archetype."""
