@@ -246,20 +246,20 @@ class HelperBar:
     def _get_archetype_advice(self, archetype, vpip, pfr):
         """Get actionable advice for archetype - when to deviate from value_lord"""
         if archetype == 'fish':
-            return f"WIDER value - bet any pair, never bluff"
+            return f"bet any pair big, never bluff"
         elif archetype == 'nit':
-            return f"WIDER steals - but FOLD to their raises"
+            return f"raise ATC in position, fold to their 3bet"
         elif archetype == 'lag':
-            return f"TIGHTER preflop - but call down lighter postflop"
+            return f"only play top 15%, call any pair postflop"
         elif archetype == 'tag':
-            return f"TIGHTER - fold marginal hands to their raises"
+            return f"only play top 10% vs their opens"
         elif archetype == 'maniac':
-            return f"TIGHTER preflop - call down any pair postflop"
+            return f"only play pairs+AK, call down any pair"
         elif archetype == 'rock':
-            return f"WIDER steals - FOLD everything if they bet"
+            return f"raise ATC in position, fold if they bet"
         elif archetype == 'reg':
-            return f"Play value_lord standard"
-        return "No reads yet"
+            return f"play normal"
+        return "no reads"
 
     def _lookup_opponent_stats(self, players):
         """Lookup stats for detected players"""
@@ -675,9 +675,9 @@ class HelperBar:
         if VISION_V2_MODE and result.get('opponent_stats'):
             for opp in result['opponent_stats']:
                 if opp.get('hands', 0) > 0:
-                    line = f"{opp['name']}: {opp['archetype'].upper()} ({opp['hands']}h, {opp.get('vpip',0):.0f}/{opp.get('pfr',0):.0f})\n"
+                    short_name = opp['name'][:5]
+                    line = f"{short_name} - {opp['advice']}\n"
                     self.stats_text.insert('end', line, 'HAND')
-                    self.stats_text.insert('end', f"  {opp['advice']}\n", 'DRAW')
             self.stats_text.insert('end', '---\n', 'DANGER')
         
         if not hand or not hand.get('valid'):
