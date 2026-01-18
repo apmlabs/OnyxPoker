@@ -1,6 +1,6 @@
 # OnyxPoker - Status Tracking
 
-**Last Updated**: January 18, 2026 00:04 UTC
+**Last Updated**: January 18, 2026 02:40 UTC
 
 ---
 
@@ -10,7 +10,9 @@
 | Component | Status | Notes |
 |-----------|--------|-------|
 | helper_bar.py | ✅ | Line 2 shows position-specific 3-bet advice |
+| helper_bar.py --visionv2 | ✅ | V2 vision with player detection + opponent stats |
 | vision_detector_lite.py | ✅ | GPT-5.2 for vision only |
+| vision_detector_v2.py | ✅ | GPT-5.2 + player name detection |
 | strategy_engine.py | ✅ | 3-bet/4-bet ranges + BB defense |
 | poker_logic.py | ✅ | Data-driven value_lord postflop |
 | poker_sim.py | ✅ | Full postflop simulation |
@@ -37,6 +39,45 @@
 ---
 
 ## Session History
+
+### Session 58: V2 Vision with Player Detection (January 18, 2026)
+
+**Implemented V2 vision system for opponent tracking.**
+
+**New Features:**
+- `--visionv2` flag for helper_bar.py
+- Player name detection from screenshots
+- Opponent stats lookup from player_stats.json
+- Archetype classification (fish/nit/lag/tag/maniac)
+- Actionable advice per opponent in sidebar
+
+**V2 Test Results (23 screenshots):**
+| Metric | Accuracy |
+|--------|----------|
+| Cards | 88.9% (16/18) |
+| Board | 95.5% (21/22) |
+| Pot | 100% (20/20) |
+| Player names | 87% (3 errors: "Fold", "Post BB", empty) |
+
+**Archetype Thresholds:**
+- fish: VPIP > 45%
+- nit: VPIP < 15%, PFR < 12%
+- lag: VPIP > 28%, PFR > 20%
+- tag: VPIP 18-28%, PFR 15-22%
+- maniac: VPIP > 50%, PFR > 35%
+
+**Sidebar Display (font reduced 40%):**
+```
+OPPONENTS:
+mikoandy69: TAG (67h, 22/15)
+  RESPECT raises - 3bet or fold
+felgas1968: FISH (9h, 56/33)
+  VALUE BET relentlessly - they call too much
+```
+
+**Files Changed:**
+- helper_bar.py: Added --visionv2 flag, opponent stats in sidebar
+- vision_detector_v2.py: Fixed card detection prompt, player name filtering
 
 ### Session 56: Unsaved Losses in Default Output (January 18, 2026)
 

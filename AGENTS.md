@@ -43,7 +43,7 @@ The system analyzes poker tables using GPT vision API and provides strategic adv
 ```
 PokerStars/Simulator Window
          ↓ F9 (screenshot active window)
-    GPT-5.2 Vision (vision_detector_lite.py)
+    GPT-5.2 Vision (vision_detector_lite.py or vision_detector_v2.py)
          ↓
    Strategy Engine (strategy_engine.py)
          ↓
@@ -59,8 +59,17 @@ PokerStars/Simulator Window
          ↓
    Decision + Reasoning
          ↓
-    Helper Bar UI (advice display)
+    Helper Bar UI (advice display + opponent stats in V2 mode)
 ```
+
+### V2 Vision Mode (Session 58)
+```bash
+python helper_bar.py --visionv2
+```
+- Detects player names from screenshots
+- Looks up stats from player_stats.json
+- Classifies archetypes (fish/nit/lag/tag/maniac)
+- Shows actionable advice per opponent in sidebar
 
 ### Default Strategy: `value_lord` (switched Session 46)
 - +24.1 BB/100 in PokerKit simulation (20k hands)
