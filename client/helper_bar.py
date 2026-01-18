@@ -246,17 +246,17 @@ class HelperBar:
     def _get_archetype_advice(self, archetype, vpip, pfr):
         """Get actionable advice for archetype"""
         if archetype == 'fish':
-            return f"VALUE BET big - never bluff"
+            return f"BET big for value - never bluff"
         elif archetype == 'nit':
-            return f"STEAL blinds - fold to 3bet"
+            return f"Raise their blinds - fold if they raise"
         elif archetype == 'lag':
-            return f"CALL DOWN - they barrel light"
+            return f"Let them bluff - call with pairs"
         elif archetype == 'tag':
-            return f"RESPECT - only play premium"
+            return f"Fold marginal hands vs raises"
         elif archetype == 'maniac':
-            return f"TRAP then call down"
+            return f"Check strong hands - let them bet"
         elif archetype == 'rock':
-            return f"STEAL - fold to any action"
+            return f"Raise their blinds - fold if they play back"
         elif archetype == 'reg':
             return f"Standard play"
         return "No reads yet"
