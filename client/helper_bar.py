@@ -153,7 +153,7 @@ class HelperBar:
         self.log_text.tag_configure('DECISION', foreground='#ffff00', font=('Courier', 11, 'bold'))
 
         # === RIGHT: Decision Stats (40% of screen width) ===
-        right_width = int(screen_w * 0.4)
+        right_width = int(self.root.winfo_screenwidth() * 0.4)
         right = tk.Frame(bottom, bg='#2d2d2d', width=right_width)
         right.pack(side='right', fill='y', padx=2, pady=2)
         right.pack_propagate(False)
