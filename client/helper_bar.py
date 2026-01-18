@@ -152,24 +152,25 @@ class HelperBar:
         self.log_text.tag_configure('ERROR', foreground='#ff4444', font=('Courier', 10, 'bold'))
         self.log_text.tag_configure('DECISION', foreground='#ffff00', font=('Courier', 11, 'bold'))
 
-        # === RIGHT: Decision Stats (800px) ===
-        right = tk.Frame(bottom, bg='#2d2d2d', width=800)
+        # === RIGHT: Decision Stats (40% of screen width) ===
+        right_width = int(screen_w * 0.4)
+        right = tk.Frame(bottom, bg='#2d2d2d', width=right_width)
         right.pack(side='right', fill='y', padx=2, pady=2)
         right.pack_propagate(False)
 
-        # Stats display (scrollable) - font reduced 40% (20pt -> 12pt)
-        stats_scroll = scrolledtext.ScrolledText(right, font=('Courier', 12),
+        # Stats display (scrollable) - same font as main log
+        stats_scroll = scrolledtext.ScrolledText(right, font=('Courier', 10),
                                                 bg='#1a1a1a', fg='#ccc',
                                                 wrap='word', height=8)
         stats_scroll.pack(fill='both', expand=True, padx=5, pady=2)
         self.stats_text = stats_scroll
 
-        # Color tags for stats - font reduced 40%
-        self.stats_text.tag_configure('HAND', foreground='#00ff00', font=('Courier', 12, 'bold'))
-        self.stats_text.tag_configure('DRAW', foreground='#00ffff', font=('Courier', 12))
+        # Color tags for stats - same font as main log
+        self.stats_text.tag_configure('HAND', foreground='#00ff00', font=('Courier', 10, 'bold'))
+        self.stats_text.tag_configure('DRAW', foreground='#00ffff', font=('Courier', 10))
         self.stats_text.tag_configure('DANGER', foreground='#ff8800', font=('Courier', 10))
-        self.stats_text.tag_configure('OPPONENT', foreground='#ff66ff', font=('Courier', 12, 'bold'))
-        self.stats_text.tag_configure('ADVICE', foreground='#ffcc00', font=('Courier', 11))
+        self.stats_text.tag_configure('OPPONENT', foreground='#ff66ff', font=('Courier', 10, 'bold'))
+        self.stats_text.tag_configure('ADVICE', foreground='#ffcc00', font=('Courier', 10))
 
         # Time
         self.time_label = tk.Label(right, text="", font=('Arial', 9),
@@ -631,8 +632,7 @@ class HelperBar:
         if VISION_V2_MODE and result.get('opponent_stats'):
             for opp in result['opponent_stats']:
                 if opp.get('hands', 0) > 0:
-                    short_name = opp['name'][:5]
-                    line = f"{short_name} - {opp['advice']}\n"
+                    line = f"{opp['name']} ({opp['hands']}h) - {opp['advice']}\n"
                     self.stats_text.insert('end', line, 'HAND')
             self.stats_text.insert('end', '---\n', 'DANGER')
         
