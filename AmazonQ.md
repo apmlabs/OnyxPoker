@@ -29,12 +29,12 @@
 ### Player Database (565 players, deep research classification)
 | Archetype | Count | % | Advice |
 |-----------|-------|---|--------|
-| fish | 190 | 33.6% | bet any pair big, never bluff |
-| nit | 144 | 25.5% | raise any hand in position, fold to their 3bet |
-| rock | 83 | 14.7% | raise any hand in position, fold if they bet |
-| maniac | 50 | 8.8% | vs their raise: only QQ+/AK, then call down |
-| lag | 49 | 8.7% | vs their raise: only 99+/AQ+, then call down |
-| tag | 49 | 8.7% | vs their raise: only TT+/AK |
+| fish | 190 | 33.6% | Isolate wide \| Value bet \| Calls too much \| Never bluff |
+| nit | 144 | 25.5% | Steal blinds \| Fold to bets \| Too tight \| Raise IP, fold to 3bet |
+| rock | 83 | 14.7% | Steal more \| Bet = nuts \| Raises monsters \| Raise IP, fold vs bet |
+| maniac | 50 | 8.8% | Only premiums \| Call everything \| Can't fold \| vs raise: QQ+/AK |
+| lag | 49 | 8.7% | Tighten up \| Call down \| Over-aggro \| vs raise: 99+/AQ+ |
+| tag | 49 | 8.7% | Respect raises \| Play solid \| Avoid \| vs raise: TT+/AK |
 
 ---
 
