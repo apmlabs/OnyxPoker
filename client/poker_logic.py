@@ -964,23 +964,23 @@ def postflop_action(hole_cards: List[Tuple[str, str]], board: List[Tuple[str, st
     # FISH: Target Check 41%, Bet 21%, Call 16%, Fold 20%
     # Fish play loosely - bet more, call more than old sim
     if archetype == 'fish':
-        # Real data: median 60%, avg 77% pot (Jan 17 2026)
+        # Real data: median 58%, range 40-70% (Jan 18 2026)
         pot_pct = to_call / pot if pot > 0 else 0
         if to_call == 0 or to_call is None:
             # First to act - bet based on hand strength (bet more often)
             if strength >= 4:  # Sets+
                 return ('bet', round(pot * 0.70, 2), f"{desc} - fish bets")
             if strength >= 3:  # Two pair
-                return ('bet', round(pot * 0.60, 2), f"{desc} - fish bets two pair")
+                return ('bet', round(pot * 0.65, 2), f"{desc} - fish bets two pair")
             if hand_info.get('has_top_pair'):
                 if hand_info.get('has_good_kicker'):
-                    return ('bet', round(pot * 0.55, 2), f"{desc} - fish bets TPGK")
+                    return ('bet', round(pot * 0.60, 2), f"{desc} - fish bets TPGK")
                 # TPWK - bet more often (was 40%, now 55%)
                 if random.random() < 0.55:
-                    return ('bet', round(pot * 0.50, 2), f"{desc} - fish bets top pair")
+                    return ('bet', round(pot * 0.55, 2), f"{desc} - fish bets top pair")
                 return ('check', 0, f"{desc} - fish checks top pair")
             if hand_info.get('is_overpair'):
-                return ('bet', round(pot * 0.55, 2), f"{desc} - fish bets overpair")
+                return ('bet', round(pot * 0.60, 2), f"{desc} - fish bets overpair")
             if strength >= 2:  # Weaker pairs - bet more (was 15%, now 25%)
                 if random.random() < 0.25:
                     return ('bet', round(pot * 0.45, 2), f"{desc} - fish bets weak pair")
@@ -1031,6 +1031,7 @@ def postflop_action(hole_cards: List[Tuple[str, str]], board: List[Tuple[str, st
     # NIT: Target Check 48%, Bet 18%, Call 15%, Fold 17%
     # Nits are tight but call more than old sim assumed
     if archetype == 'nit':
+        # Real data: median 62%, range 60-70% (Jan 18 2026)
         pot_pct = to_call / pot if pot > 0 else 0
         if to_call == 0 or to_call is None:
             # First to act - bet value hands more often
@@ -1041,7 +1042,7 @@ def postflop_action(hole_cards: List[Tuple[str, str]], board: List[Tuple[str, st
                     return ('check', 0, f"{desc} - nit checks weak two pair")
                 return ('bet', round(pot * 0.65, 2), f"{desc} - nit bets two pair")
             if hand_info.get('has_top_pair') and hand_info.get('has_good_kicker'):
-                return ('bet', round(pot * 0.60, 2), f"{desc} - nit bets TPGK")
+                return ('bet', round(pot * 0.65, 2), f"{desc} - nit bets TPGK")
             if hand_info.get('is_overpair'):
                 return ('bet', round(pot * 0.65, 2), f"{desc} - nit bets overpair")
             # TPWK - bet sometimes (was always check)
@@ -1091,35 +1092,36 @@ def postflop_action(hole_cards: List[Tuple[str, str]], board: List[Tuple[str, st
     # TAG: Target Check 39%, Bet 23%, Call 17%, Fold 19%
     # TAGs bet and call MORE than old sim - biggest gap to fix
     if archetype == 'tag':
+        # Real data: Check 38%, Bet 23%, Call 16% (Jan 18 2026)
         pot_pct = to_call / pot if pot > 0 else 0
         if to_call == 0 or to_call is None:
-            # First to act - bet wider (was checking too much)
+            # First to act - bet wider (real TAGs check only 38%)
             if strength >= 4:  # Sets+
                 return ('bet', round(pot * 0.72, 2), f"{desc} - tag value bets")
             if strength >= 3:  # Two pair
                 if hand_info.get('two_pair_type') == 'pocket_under_board':
-                    if random.random() < 0.40:  # was always check
-                        return ('bet', round(pot * 0.50, 2), f"{desc} - tag bets weak two pair")
+                    if random.random() < 0.50:  # was 0.40
+                        return ('bet', round(pot * 0.55, 2), f"{desc} - tag bets weak two pair")
                     return ('check', 0, f"{desc} - tag checks weak two pair")
                 return ('bet', round(pot * 0.65, 2), f"{desc} - tag bets two pair")
             if hand_info.get('has_top_pair'):
                 if hand_info.get('has_good_kicker'):
                     return ('bet', round(pot * 0.60, 2), f"{desc} - tag bets TPGK")
-                # TPWK - bet more often (was 30%, now 50%)
-                if random.random() < 0.50:
-                    return ('bet', round(pot * 0.50, 2), f"{desc} - tag bets top pair")
+                # TPWK - bet more often (was 50%, now 60%)
+                if random.random() < 0.60:
+                    return ('bet', round(pot * 0.55, 2), f"{desc} - tag bets top pair")
                 return ('check', 0, f"{desc} - tag checks TPWK")
             if hand_info.get('is_overpair'):
                 return ('bet', round(pot * 0.65, 2), f"{desc} - tag bets overpair")
-            # Middle/bottom pair - bet sometimes (was always check)
+            # Middle/bottom pair - bet more often (was 20%, now 30%)
             if strength >= 2:
-                if random.random() < 0.20:
-                    return ('bet', round(pot * 0.45, 2), f"{desc} - tag bets pair")
+                if random.random() < 0.30:
+                    return ('bet', round(pot * 0.50, 2), f"{desc} - tag bets pair")
                 return ('check', 0, f"{desc} - tag checks pair")
-            # Draws - semi-bluff more often
+            # Draws - semi-bluff more often (was 45%, now 55%)
             if has_any_draw:
                 if hand_info.get('is_nut_flush_draw') or hand_info.get('has_oesd'):
-                    if random.random() < 0.45:  # was 35%
+                    if random.random() < 0.55:
                         return ('bet', round(pot * 0.55, 2), f"{desc} - tag semi-bluffs")
                 return ('check', 0, f"{desc} - tag checks draw")
             return ('check', 0, f"{desc} - tag checks")

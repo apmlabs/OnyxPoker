@@ -48,6 +48,34 @@ Now shows hands where value_lord plays through but still loses (coolers):
 - All are genuine coolers - strategy is sound
 
 **UI tweak:** Reduced right panel font 30% (28pt → 20pt)
+### Session 57: PokerKit Calibration Update (January 18, 2026)
+
+**Updated simulation to match 2,288 real hands analysis.**
+
+**Table Composition (pokerkit_adapter.py):**
+| Archetype | Old | New |
+|-----------|-----|-----|
+| fish | 12% | 17% |
+| nit | 25% | 26% |
+| tag | 39% | 39% |
+| lag | 23% | 17% |
+| maniac | 1% | 1% |
+
+**Bet Sizes (poker_logic.py):**
+- Fish: 50-60% → 55-65% (real median 58%)
+- Nit TPGK: 60% → 65% (real median 62%)
+
+**TAG Behavior (checks too much in sim):**
+- TPWK bet freq: 50% → 60%
+- Pair bet freq: 20% → 30%
+- Semi-bluff freq: 45% → 55%
+
+**Results:** value_lord +31.07 BB/100 (up from +24.1)
+
+**Last 2 sessions analysis (files #5, #6):**
+- 230 hands, only 1 big loss: JJ vs KK (-63 BB) - pure cooler
+- All other losses under 10 BB
+
 
 **Test results:** All passing
 - test_poker_rules.py: 24/24
