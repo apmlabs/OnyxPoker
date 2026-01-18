@@ -139,11 +139,11 @@ def run_hand(strategies, verbose=False, track_details=False):
 
 def random_5nl_table():
     """Generate random 5-player table matching real 2NL composition.
-    Updated Jan 18 2026 from analyze_table_composition.py:
-    Real: 17% fish, 26% nit, 39% TAG, 17% LAG, 1% maniac
+    Updated Jan 18 2026 from analyze_table_composition.py (new classification):
+    Real: 26% fish, 25% nit, 14% rock, 14% lag, 11% tag, 11% maniac
     """
-    archetypes = ['fish', 'nit', 'tag', 'lag', 'maniac']
-    weights = [0.17, 0.26, 0.39, 0.17, 0.01]
+    archetypes = ['fish', 'nit', 'rock', 'lag', 'tag', 'maniac']
+    weights = [0.26, 0.25, 0.14, 0.14, 0.11, 0.11]
     return [random.choices(archetypes, weights)[0] for _ in range(5)]
 
 
@@ -264,7 +264,7 @@ if __name__ == '__main__':
         strategies = [strat] if strat else ['value_lord', 'kiro_optimal', 'kiro_lord', 'sonnet']
         
         print(f"PokerKit simulation: {num} hands", flush=True)
-        print("Opponents: random 2NL table (17% fish, 26% nit, 39% TAG, 17% LAG, 1% maniac)")
+        print("Opponents: random 2NL table (26% fish, 25% nit, 14% rock, 14% lag, 11% tag, 11% maniac)")
         print("=" * 50, flush=True)
         
         for bot in strategies:

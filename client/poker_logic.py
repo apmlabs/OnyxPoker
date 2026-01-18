@@ -1306,6 +1306,40 @@ def postflop_action(hole_cards: List[Tuple[str, str]], board: List[Tuple[str, st
                 return ('call', 0, "maniac floats")
             return ('fold', 0, f"{desc} - maniac folds")
     
+    # ROCK: Tight passive - checks a lot, rarely bets, folds to aggression
+    # Real data: median bet 55%, but rarely bets (only with strong hands)
+    if archetype == 'rock':
+        pot_pct = to_call / pot if pot > 0 else 0
+        if to_call == 0 or to_call is None:
+            # First to act - only bet with very strong hands
+            if strength >= 4:  # Sets+
+                return ('bet', round(pot * 0.55, 2), f"{desc} - rock value bets")
+            if strength >= 3 and hand_info.get('two_pair_type') != 'pocket_under_board':
+                return ('bet', round(pot * 0.50, 2), f"{desc} - rock bets two pair")
+            if hand_info.get('has_top_pair') and hand_info.get('has_good_kicker'):
+                if random.random() < 0.30:  # rarely bets TPGK
+                    return ('bet', round(pot * 0.50, 2), f"{desc} - rock bets TPGK")
+            # Everything else: check
+            return ('check', 0, f"{desc} - rock checks")
+        else:
+            # Facing bet - folds a lot, only continues with strong hands
+            if strength >= 4:
+                return ('call', 0, f"{desc} - rock calls strong")
+            if strength >= 3:
+                if pot_pct > 0.60:
+                    return ('fold', 0, f"{desc} - rock folds two pair to big bet")
+                return ('call', 0, f"{desc} - rock calls two pair")
+            if hand_info.get('has_top_pair'):
+                if pot_pct > 0.50:
+                    return ('fold', 0, f"{desc} - rock folds top pair")
+                return ('call', 0, f"{desc} - rock calls top pair")
+            if hand_info.get('is_overpair'):
+                if pot_pct > 0.60:
+                    return ('fold', 0, f"{desc} - rock folds overpair to big bet")
+                return ('call', 0, f"{desc} - rock calls overpair")
+            # Weak hands: fold
+            return ('fold', 0, f"{desc} - rock folds")
+    
     # BOT STRATEGIES - strategy-specific postflop logic
     # gpt3/gpt4: Board texture aware, smaller c-bets, 3-bet pot adjustments
     # sonnet/kiro_optimal: Bigger value bets, overpair logic
