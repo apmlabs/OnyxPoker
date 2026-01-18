@@ -68,8 +68,24 @@ python helper_bar.py --visionv2
 ```
 - Detects player names from screenshots
 - Looks up stats from player_stats.json
-- Classifies archetypes (fish/nit/lag/tag/maniac)
+- Classifies archetypes (fish/nit/lag/tag/maniac/rock)
 - Shows actionable advice per opponent in sidebar
+
+### Player Database Architecture
+**Single Source of Truth:**
+- `build_player_stats.py` - Creates player_stats.json with industry-standard classification
+- All analysis scripts READ from DB (no duplicate classification logic)
+- helper_bar.py reads archetypes from DB, only stores advice text
+
+**Industry-Standard Classification (888poker, hand2note, cardschat):**
+| Archetype | VPIP | Gap (VPIP-PFR) |
+|-----------|------|----------------|
+| maniac | >40, PFR>30 | any |
+| fish | >40 OR (>30, gap>15) | passive |
+| nit | <15 | any |
+| lag | >25 | <10 (aggressive) |
+| tag | 15-25 | <10 (aggressive) |
+| rock | 15-25 | >=10 (passive) |
 
 ### Default Strategy: `value_lord` (switched Session 46)
 - +24.1 BB/100 in PokerKit simulation (20k hands)

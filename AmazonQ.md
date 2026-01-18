@@ -1,6 +1,6 @@
 # OnyxPoker - Status Tracking
 
-**Last Updated**: January 18, 2026 02:40 UTC
+**Last Updated**: January 18, 2026 12:28 UTC
 
 ---
 
@@ -13,6 +13,7 @@
 | helper_bar.py --visionv2 | ✅ | V2 vision with player detection + opponent stats |
 | vision_detector_lite.py | ✅ | GPT-5.2 for vision only |
 | vision_detector_v2.py | ✅ | GPT-5.2 + player name detection |
+| build_player_stats.py | ✅ | Single source of truth for player archetypes |
 | strategy_engine.py | ✅ | 3-bet/4-bet ranges + BB defense |
 | poker_logic.py | ✅ | Data-driven value_lord postflop |
 | poker_sim.py | ✅ | Full postflop simulation |
@@ -25,16 +26,15 @@
 - 50% pot standard sizing, c-bet max 4BB
 - Never call river high card (0% win rate)
 
-### Real Data Results (2,018 hands)
-| Metric | Value |
-|--------|-------|
-| Hands analyzed | 2,018 |
-| value_lord NET impact | **+653 BB (+32.68€)** |
-| Preflop saves | 76 hands, +716 BB |
-| Preflop misses | 48 hands, -283 BB |
-| Postflop saves | 14 spots, +300 BB |
-| Postflop misses | 5 spots, -133 BB |
-| Unsaved losses (coolers) | 39 hands, 1408 BB |
+### Player Database (565 players)
+| Archetype | Count | % | Advice |
+|-----------|-------|---|--------|
+| fish | 170 | 30.1% | bet any pair big, never bluff |
+| nit | 132 | 23.4% | raise any hand in position, fold to their 3bet |
+| tag | 104 | 18.4% | vs their raise: only TT+/AK |
+| rock | 64 | 11.3% | raise any hand in position, fold if they bet |
+| lag | 57 | 10.1% | vs their raise: only 99+/AQ+, then call down |
+| maniac | 38 | 6.7% | vs their raise: only QQ+/AK, then call down |
 
 ---
 
@@ -48,36 +48,39 @@
 - `--visionv2` flag for helper_bar.py
 - Player name detection from screenshots
 - Opponent stats lookup from player_stats.json
-- Archetype classification (fish/nit/lag/tag/maniac)
+- Archetype classification with industry-standard thresholds
 - Actionable advice per opponent in sidebar
 
-**V2 Test Results (23 screenshots):**
-| Metric | Accuracy |
-|--------|----------|
-| Cards | 88.9% (16/18) |
-| Board | 95.5% (21/22) |
-| Pot | 100% (20/20) |
-| Player names | 87% (3 errors: "Fold", "Post BB", empty) |
+**Industry-Standard Classification (sources: 888poker, hand2note, cardschat):**
+| Archetype | VPIP | Gap (VPIP-PFR) | Logic |
+|-----------|------|----------------|-------|
+| maniac | >40 | any | AND PFR>30 |
+| fish | >40 | any | OR >30 with gap>15 |
+| nit | <15 | any | ultra tight |
+| lag | >25 | <10 | loose aggressive |
+| fish | >25 | >=10 | loose passive |
+| tag | 15-25 | <10 | tight aggressive |
+| rock | 15-25 | >=10 | tight passive |
 
-**Archetype Thresholds:**
-- fish: VPIP > 45%
-- nit: VPIP < 15%, PFR < 12%
-- lag: VPIP > 28%, PFR > 20%
-- tag: VPIP 18-28%, PFR 15-22%
-- maniac: VPIP > 50%, PFR > 35%
+**Single Source of Truth:**
+- `build_player_stats.py` creates player_stats.json with archetypes
+- All analysis scripts read FROM the DB (no duplicate classification)
+- helper_bar.py reads archetypes from DB, only stores advice text
 
-**Sidebar Display (font reduced 40%):**
+**Sidebar Display:**
 ```
-OPPONENTS:
-mikoandy69: TAG (67h, 22/15)
-  RESPECT raises - 3bet or fold
-felgas1968: FISH (9h, 56/33)
-  VALUE BET relentlessly - they call too much
+mikoa - vs their raise: only TT+/AK
+felga - bet any pair big, never bluff
+Cacho - raise any hand in position, fold to their 3bet
+---
+TOP PAIR (good kicker)
 ```
 
 **Files Changed:**
-- helper_bar.py: Added --visionv2 flag, opponent stats in sidebar
-- vision_detector_v2.py: Fixed card detection prompt, player name filtering
+- helper_bar.py: --visionv2 flag, simplified to use DB archetypes
+- build_player_stats.py: Industry-standard classification with sources
+- analyze_table_composition.py: Uses DB instead of recalculating
+- analyze_archetype_behavior.py: Uses DB instead of recalculating
 
 ### Session 56: Unsaved Losses in Default Output (January 18, 2026)
 
