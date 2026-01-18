@@ -171,45 +171,44 @@ def classify_archetype(vpip: float, pfr: float, af: float) -> str:
     Classify player into archetype based on industry-standard VPIP/PFR ranges.
     
     Sources:
-    - 888poker.com: TAG 16-25%, LAG 25-35%, Maniac >35%
-    - hand2note.com: Nit VPIP 10-15%, PFR 8-12%
-    - cardschat.com: Fish >40%, gap between VPIP/PFR indicates passive
-    - redchippoker.com: Good player VPIP 20-24%, PFR 15-22%
+    - 888poker.com: LAG gap <5%, loose-passive gap >5%
+    - 888poker.com: LAG VPIP 25-35%, Maniac >35%
+    - cardschat.com: Nit <20/15, TAG 20-25/15-20, LAG 25-30/20-25
+    - advancedpokertraining.com: Good player VPIP 15-27%, Rock <10%
     
-    Key: Gap = VPIP - PFR
-    - Small gap (<10): aggressive (raises when plays)
-    - Large gap (>10): passive (calls more than raises)
+    Key: Gap = VPIP - PFR (888poker says <5% = aggressive, >5% = passive)
     """
     gap = vpip - pfr
     
-    # Maniac: very loose AND very aggressive
+    # Maniac: very loose AND very aggressive (VPIP >40, PFR >30)
     if vpip > 40 and pfr > 30:
         return 'maniac'
     
-    # Fish: loose passive (high VPIP, large gap = calls too much)
+    # Fish: very loose (VPIP >40) regardless of gap
     if vpip > 40:
         return 'fish'
-    if vpip > 30 and gap > 15:
-        return 'fish'
     
-    # Nit: ultra tight
+    # Nit: ultra tight (VPIP <15)
     if vpip < 15:
         return 'nit'
     
-    # LAG: loose aggressive (VPIP 25-40, small gap)
-    if vpip > 25 and gap < 10:
+    # Now handle VPIP 15-40 range based on gap
+    # 888poker: gap <5% = aggressive, gap >5% = passive
+    
+    # LAG: loose aggressive (VPIP >25, gap <=5)
+    if vpip > 25 and gap <= 5:
         return 'lag'
     
-    # Loose passive (VPIP 25-40, large gap)
-    if vpip > 25 and gap >= 10:
+    # Loose passive / fish (VPIP >25, gap >5)
+    if vpip > 25 and gap > 5:
         return 'fish'
     
-    # TAG: tight aggressive (VPIP 15-25, small gap)
-    if vpip >= 15 and vpip <= 25 and gap < 10:
+    # TAG: tight aggressive (VPIP 15-25, gap <=5)
+    if vpip >= 15 and vpip <= 25 and gap <= 5:
         return 'tag'
     
-    # Rock: tight passive (VPIP 15-25, large gap)
-    if vpip >= 15 and vpip <= 25 and gap >= 10:
+    # Rock: tight passive (VPIP 15-25, gap >5)
+    if vpip >= 15 and vpip <= 25 and gap > 5:
         return 'rock'
     
     return 'reg'

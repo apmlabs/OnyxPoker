@@ -29,7 +29,7 @@
     "pfr": 23.7,
     "3bet": 0.0,
     "af": 2.0,
-    "archetype": "lag"
+    "archetype": "fish"
   },
   "PaateMolle": {
     "hands": 7,
@@ -189,7 +189,7 @@
     "pfr": 9.1,
     "3bet": 0.0,
     "af": 1.0,
-    "archetype": "tag"
+    "archetype": "rock"
   },
   "flaviopsc": {
     "hands": 55,
@@ -197,7 +197,7 @@
     "pfr": 14.5,
     "3bet": 16.7,
     "af": 1.0,
-    "archetype": "tag"
+    "archetype": "rock"
   },
   "rafale032": {
     "hands": 56,
@@ -221,7 +221,7 @@
     "pfr": 15.9,
     "3bet": 9.3,
     "af": 1.57,
-    "archetype": "lag"
+    "archetype": "fish"
   },
   "nonoficial": {
     "hands": 7,
@@ -237,7 +237,7 @@
     "pfr": 27.3,
     "3bet": 28.6,
     "af": 1.0,
-    "archetype": "lag"
+    "archetype": "fish"
   },
   "Hofmann22": {
     "hands": 15,
@@ -245,7 +245,7 @@
     "pfr": 20.0,
     "3bet": 16.7,
     "af": 1.5,
-    "archetype": "lag"
+    "archetype": "fish"
   },
   "adfm75": {
     "hands": 22,
@@ -253,7 +253,7 @@
     "pfr": 9.1,
     "3bet": 0.0,
     "af": 0.0,
-    "archetype": "tag"
+    "archetype": "rock"
   },
   "david6255": {
     "hands": 14,
@@ -277,7 +277,7 @@
     "pfr": 13.6,
     "3bet": 0.0,
     "af": 2.5,
-    "archetype": "tag"
+    "archetype": "rock"
   },
   "Cacartiflette01": {
     "hands": 10,
@@ -365,7 +365,7 @@
     "pfr": 18.3,
     "3bet": 4.2,
     "af": 0.67,
-    "archetype": "tag"
+    "archetype": "rock"
   },
   "Gregcalifornia": {
     "hands": 6,
@@ -557,7 +557,7 @@
     "pfr": 13.6,
     "3bet": 5.0,
     "af": 0.4,
-    "archetype": "tag"
+    "archetype": "rock"
   },
   "NOWAY3131": {
     "hands": 8,
@@ -573,7 +573,7 @@
     "pfr": 13.0,
     "3bet": 16.7,
     "af": 3.0,
-    "archetype": "tag"
+    "archetype": "rock"
   },
   "cirsa888": {
     "hands": 39,
@@ -589,7 +589,7 @@
     "pfr": 16.9,
     "3bet": 3.3,
     "af": 1.0,
-    "archetype": "tag"
+    "archetype": "rock"
   },
   "Janpaul112": {
     "hands": 20,
@@ -621,7 +621,7 @@
     "pfr": 30.4,
     "3bet": 0.0,
     "af": 1.0,
-    "archetype": "lag"
+    "archetype": "fish"
   },
   "fAAQQndo17": {
     "hands": 37,
@@ -629,7 +629,7 @@
     "pfr": 16.2,
     "3bet": 25.0,
     "af": 0.0,
-    "archetype": "tag"
+    "archetype": "rock"
   },
   "MakesMeRich": {
     "hands": 108,
@@ -677,7 +677,7 @@
     "pfr": 18.8,
     "3bet": 0.0,
     "af": 2,
-    "archetype": "tag"
+    "archetype": "rock"
   },
   "metamex": {
     "hands": 5,
@@ -749,7 +749,7 @@
     "pfr": 16.9,
     "3bet": 7.7,
     "af": 3.25,
-    "archetype": "tag"
+    "archetype": "rock"
   },
   "ATOJ5": {
     "hands": 121,
@@ -757,7 +757,7 @@
     "pfr": 17.4,
     "3bet": 11.4,
     "af": 1.31,
-    "archetype": "lag"
+    "archetype": "fish"
   },
   "SGB36": {
     "hands": 8,
@@ -773,7 +773,7 @@
     "pfr": 22.0,
     "3bet": 8.6,
     "af": 1.0,
-    "archetype": "lag"
+    "archetype": "fish"
   },
   "KarmaPoker24": {
     "hands": 9,
@@ -797,7 +797,7 @@
     "pfr": 29.5,
     "3bet": 41.2,
     "af": 2.67,
-    "archetype": "lag"
+    "archetype": "fish"
   },
   "ElThepo": {
     "hands": 40,
@@ -973,7 +973,7 @@
     "pfr": 15.2,
     "3bet": 0.0,
     "af": 1.0,
-    "archetype": "tag"
+    "archetype": "rock"
   },
   "Tonypi27": {
     "hands": 27,
@@ -989,7 +989,7 @@
     "pfr": 9.1,
     "3bet": 0.0,
     "af": 2,
-    "archetype": "tag"
+    "archetype": "rock"
   },
   "BurpeeBroadJump": {
     "hands": 9,
@@ -1125,7 +1125,7 @@
     "pfr": 10.2,
     "3bet": 2.0,
     "af": 1.17,
-    "archetype": "tag"
+    "archetype": "rock"
   },
   "mentalist1479": {
     "hands": 40,
@@ -1149,7 +1149,7 @@
     "pfr": 12.8,
     "3bet": 6.7,
     "af": 4.0,
-    "archetype": "tag"
+    "archetype": "rock"
   },
   "Munia14": {
     "hands": 36,
@@ -1165,7 +1165,7 @@
     "pfr": 15.8,
     "3bet": 0.0,
     "af": 2.5,
-    "archetype": "tag"
+    "archetype": "rock"
   },
   "tropa8": {
     "hands": 30,
@@ -1245,7 +1245,7 @@
     "pfr": 13.2,
     "3bet": 8.3,
     "af": 1.0,
-    "archetype": "tag"
+    "archetype": "rock"
   },
   "Tonchofitness": {
     "hands": 19,
@@ -1253,7 +1253,7 @@
     "pfr": 26.3,
     "3bet": 40.0,
     "af": 1.0,
-    "archetype": "lag"
+    "archetype": "fish"
   },
   "TommyPhil": {
     "hands": 57,
@@ -1261,7 +1261,7 @@
     "pfr": 12.3,
     "3bet": 11.1,
     "af": 2,
-    "archetype": "tag"
+    "archetype": "rock"
   },
   "big_vvhaIe": {
     "hands": 13,
@@ -1301,7 +1301,7 @@
     "pfr": 20.6,
     "3bet": 14.3,
     "af": 2.33,
-    "archetype": "lag"
+    "archetype": "fish"
   },
   "NEMOXYX": {
     "hands": 121,
@@ -1325,7 +1325,7 @@
     "pfr": 27.3,
     "3bet": 40.0,
     "af": 6,
-    "archetype": "lag"
+    "archetype": "fish"
   },
   "titus&mus": {
     "hands": 54,
@@ -1389,7 +1389,7 @@
     "pfr": 15.4,
     "3bet": 0.0,
     "af": 1.0,
-    "archetype": "tag"
+    "archetype": "rock"
   },
   "marry24": {
     "hands": 30,
@@ -1405,7 +1405,7 @@
     "pfr": 25.0,
     "3bet": 20.0,
     "af": 3.0,
-    "archetype": "lag"
+    "archetype": "fish"
   },
   "mattar212": {
     "hands": 22,
@@ -1437,7 +1437,7 @@
     "pfr": 16.7,
     "3bet": 0.0,
     "af": 2.0,
-    "archetype": "tag"
+    "archetype": "rock"
   },
   "Elrubik09": {
     "hands": 20,
@@ -1477,7 +1477,7 @@
     "pfr": 19.2,
     "3bet": 12.5,
     "af": 1.0,
-    "archetype": "lag"
+    "archetype": "fish"
   },
   "pirilampo68": {
     "hands": 5,
@@ -1693,7 +1693,7 @@
     "pfr": 9.1,
     "3bet": 0.0,
     "af": 0.0,
-    "archetype": "tag"
+    "archetype": "rock"
   },
   "ManuyPablo": {
     "hands": 20,
@@ -1749,7 +1749,7 @@
     "pfr": 10.5,
     "3bet": 11.1,
     "af": 2.0,
-    "archetype": "tag"
+    "archetype": "rock"
   },
   "Fiveen": {
     "hands": 7,
@@ -1845,7 +1845,7 @@
     "pfr": 19.0,
     "3bet": 13.0,
     "af": 6.0,
-    "archetype": "lag"
+    "archetype": "fish"
   },
   "zz3phyr": {
     "hands": 7,
@@ -1917,7 +1917,7 @@
     "pfr": 19.2,
     "3bet": 10.0,
     "af": 1.67,
-    "archetype": "lag"
+    "archetype": "fish"
   },
   "rusosky1000": {
     "hands": 60,
@@ -1941,7 +1941,7 @@
     "pfr": 20.8,
     "3bet": 0.0,
     "af": 0.86,
-    "archetype": "lag"
+    "archetype": "fish"
   },
   "HungerG@me": {
     "hands": 15,
@@ -1957,7 +1957,7 @@
     "pfr": 18.9,
     "3bet": 21.4,
     "af": 2.0,
-    "archetype": "tag"
+    "archetype": "rock"
   },
   "MelucheLeVieux": {
     "hands": 57,
@@ -1965,7 +1965,7 @@
     "pfr": 15.8,
     "3bet": 0.0,
     "af": 2.67,
-    "archetype": "tag"
+    "archetype": "rock"
   },
   "Macicled": {
     "hands": 31,
@@ -1973,7 +1973,7 @@
     "pfr": 16.1,
     "3bet": 0.0,
     "af": 1.5,
-    "archetype": "tag"
+    "archetype": "rock"
   },
   "EktorKing": {
     "hands": 22,
@@ -2133,7 +2133,7 @@
     "pfr": 20.9,
     "3bet": 6.2,
     "af": 3.5,
-    "archetype": "lag"
+    "archetype": "fish"
   },
   "migueli\u00f1o22": {
     "hands": 5,
@@ -2181,7 +2181,7 @@
     "pfr": 11.5,
     "3bet": 0.0,
     "af": 0.5,
-    "archetype": "tag"
+    "archetype": "rock"
   },
   "Martial333": {
     "hands": 13,
@@ -2253,7 +2253,7 @@
     "pfr": 16.7,
     "3bet": 0.0,
     "af": 3,
-    "archetype": "tag"
+    "archetype": "rock"
   },
   "gates1960": {
     "hands": 5,
@@ -2453,7 +2453,7 @@
     "pfr": 14.3,
     "3bet": 0.0,
     "af": 1,
-    "archetype": "tag"
+    "archetype": "rock"
   },
   "Evita.evit": {
     "hands": 6,
@@ -2541,7 +2541,7 @@
     "pfr": 27.0,
     "3bet": 0.0,
     "af": 5.0,
-    "archetype": "lag"
+    "archetype": "fish"
   },
   "miguelams27": {
     "hands": 19,
@@ -2549,7 +2549,7 @@
     "pfr": 15.8,
     "3bet": 0.0,
     "af": 0,
-    "archetype": "tag"
+    "archetype": "rock"
   },
   "JuanSoto22": {
     "hands": 5,
@@ -2685,7 +2685,7 @@
     "pfr": 21.4,
     "3bet": 0.0,
     "af": 3.0,
-    "archetype": "lag"
+    "archetype": "fish"
   },
   "joseagrao": {
     "hands": 13,
@@ -2789,7 +2789,7 @@
     "pfr": 31.2,
     "3bet": 0.0,
     "af": 1,
-    "archetype": "lag"
+    "archetype": "fish"
   },
   "Dsuarezv": {
     "hands": 7,
@@ -2933,7 +2933,7 @@
     "pfr": 16.7,
     "3bet": 11.1,
     "af": 4,
-    "archetype": "tag"
+    "archetype": "rock"
   },
   "PokiAA": {
     "hands": 11,
@@ -3021,7 +3021,7 @@
     "pfr": 18.2,
     "3bet": 20.0,
     "af": 0.0,
-    "archetype": "lag"
+    "archetype": "fish"
   },
   "Crossnar": {
     "hands": 6,
@@ -3245,7 +3245,7 @@
     "pfr": 17.6,
     "3bet": 0.0,
     "af": 1.5,
-    "archetype": "tag"
+    "archetype": "rock"
   },
   "defbal": {
     "hands": 13,
@@ -3365,7 +3365,7 @@
     "pfr": 14.3,
     "3bet": 50.0,
     "af": 3,
-    "archetype": "tag"
+    "archetype": "rock"
   },
   "LK5574": {
     "hands": 19,
@@ -3373,7 +3373,7 @@
     "pfr": 15.8,
     "3bet": 0.0,
     "af": 3,
-    "archetype": "tag"
+    "archetype": "rock"
   },
   "Darkat79": {
     "hands": 17,
@@ -3557,7 +3557,7 @@
     "pfr": 25.0,
     "3bet": 0.0,
     "af": 1.0,
-    "archetype": "lag"
+    "archetype": "fish"
   },
   "qazfdsa": {
     "hands": 6,
@@ -3589,7 +3589,7 @@
     "pfr": 12.1,
     "3bet": 8.3,
     "af": 3.0,
-    "archetype": "tag"
+    "archetype": "rock"
   },
   "goodluckcris": {
     "hands": 7,
@@ -3661,7 +3661,7 @@
     "pfr": 25.0,
     "3bet": 0.0,
     "af": 1,
-    "archetype": "lag"
+    "archetype": "fish"
   },
   "eljesus996": {
     "hands": 7,
@@ -3685,7 +3685,7 @@
     "pfr": 16.7,
     "3bet": 0.0,
     "af": 4,
-    "archetype": "tag"
+    "archetype": "rock"
   },
   "sintemblar": {
     "hands": 7,
@@ -3749,7 +3749,7 @@
     "pfr": 12.9,
     "3bet": 0.0,
     "af": 3,
-    "archetype": "tag"
+    "archetype": "rock"
   },
   "lucascucu99": {
     "hands": 8,
@@ -3821,7 +3821,7 @@
     "pfr": 30.8,
     "3bet": 0.0,
     "af": 1,
-    "archetype": "lag"
+    "archetype": "fish"
   },
   "Nekal3": {
     "hands": 5,
@@ -4189,7 +4189,7 @@
     "pfr": 15.8,
     "3bet": 0.0,
     "af": 1,
-    "archetype": "tag"
+    "archetype": "rock"
   },
   "XuanKold": {
     "hands": 9,
@@ -4325,7 +4325,7 @@
     "pfr": 30.8,
     "3bet": 66.7,
     "af": 3,
-    "archetype": "lag"
+    "archetype": "fish"
   },
   "saifoufou": {
     "hands": 8,

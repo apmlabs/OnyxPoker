@@ -3,26 +3,18 @@
 
 import os
 import re
+import json
 from collections import defaultdict
 
 HH_DIR = '/home/ubuntu/mcpprojects/onyxpoker/idealistslp_extracted'
+DB_PATH = '/home/ubuntu/mcpprojects/onyxpoker/client/player_stats.json'
 
-
-def classify_archetype(vpip, pfr, hands):
-    if hands < 20:
-        return 'unknown'
-    gap = vpip - pfr
-    if vpip >= 40 and pfr >= 25:
-        return 'maniac'
-    if vpip >= 25 and pfr >= 18 and gap <= 12:
-        return 'lag'
-    if vpip >= 25 and gap >= 10:
-        return 'fish'
-    if 15 <= vpip <= 28 and pfr >= 12 and gap <= 8:
-        return 'tag'
-    if vpip <= 15:
-        return 'nit'
-    return 'fish' if vpip >= 22 else 'tag'
+# Load player database (single source of truth for archetypes)
+def load_player_db():
+    if os.path.exists(DB_PATH):
+        with open(DB_PATH) as f:
+            return json.load(f)
+    return {}
 
 
 def parse_all_hands():
@@ -142,28 +134,31 @@ def main():
     print("=" * 70)
     
     player_preflop, player_bets = parse_all_hands()
+    player_db = load_player_db()
     
-    # Aggregate by archetype
+    # Aggregate by archetype (from DB)
     arch_bets = defaultdict(list)
     
     for player, pf in player_preflop.items():
         if pf['hands'] < 20:
             continue
-        vpip = pf['vpip'] / pf['hands'] * 100
-        pfr = pf['pfr'] / pf['hands'] * 100
-        arch = classify_archetype(vpip, pfr, pf['hands'])
         
-        if arch != 'unknown':
-            for bet, pot in player_bets[player]:
-                if pot > 0:
-                    pct = bet / pot * 100
-                    arch_bets[arch].append(pct)
+        # Use archetype from DB (single source of truth)
+        if player in player_db and 'archetype' in player_db[player]:
+            arch = player_db[player]['archetype']
+        else:
+            continue  # Skip players not in DB
+        
+        for bet, pot in player_bets[player]:
+            if pot > 0:
+                pct = bet / pot * 100
+                arch_bets[arch].append(pct)
     
     # Print results
     print(f"\n{'Archetype':<10} {'Bets':>6} {'Avg%':>8} {'Med%':>8} {'Min%':>8} {'Max%':>8}")
     print("-" * 55)
     
-    for arch in ['fish', 'nit', 'tag', 'lag', 'maniac']:
+    for arch in ['fish', 'nit', 'tag', 'lag', 'maniac', 'rock']:
         bets = arch_bets[arch]
         if not bets:
             continue
@@ -186,7 +181,7 @@ def main():
     print()
     print("-" * 70)
     
-    for arch in ['fish', 'nit', 'tag', 'lag', 'maniac']:
+    for arch in ['fish', 'nit', 'tag', 'lag', 'maniac', 'rock']:
         bets = arch_bets[arch]
         if not bets:
             continue
