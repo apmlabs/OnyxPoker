@@ -248,15 +248,15 @@ class HelperBar:
         if archetype == 'fish':
             return f"bet any pair big, never bluff"
         elif archetype == 'nit':
-            return f"raise ATC in position, fold to their 3bet"
+            return f"raise any hand in position, fold to their 3bet"
         elif archetype == 'lag':
-            return f"only play top 15%, call any pair postflop"
+            return f"only 99+/AQ+, call any pair postflop"
         elif archetype == 'tag':
-            return f"only play top 10% vs their opens"
+            return f"only TT+/AK vs their opens"
         elif archetype == 'maniac':
-            return f"only play pairs+AK, call down any pair"
+            return f"only QQ+/AK, call down any pair"
         elif archetype == 'rock':
-            return f"raise ATC in position, fold if they bet"
+            return f"raise any hand in position, fold if they bet"
         elif archetype == 'reg':
             return f"play normal"
         return "no reads"
