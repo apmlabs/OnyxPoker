@@ -650,8 +650,20 @@ class HelperBar:
         self.stats_text.delete('1.0', 'end')
         
         hand = result.get('hand_analysis', {})
+        
+        # Show opponent info first (V2 mode) - works on preflop too
+        if VISION_V2_MODE and result.get('opponent_stats'):
+            self.stats_text.insert('end', 'OPPONENTS:\n', 'OPPONENT')
+            for opp in result['opponent_stats']:
+                if opp.get('hands', 0) > 0:
+                    line = f"{opp['name']}: {opp['archetype'].upper()} ({opp['hands']}h, {opp.get('vpip',0):.0f}/{opp.get('pfr',0):.0f})\n"
+                    self.stats_text.insert('end', line, 'OPPONENT')
+                    self.stats_text.insert('end', f"  {opp['advice']}\n", 'ADVICE')
+            self.stats_text.insert('end', '---\n', 'DANGER')
+        
         if not hand or not hand.get('valid'):
-            self.stats_text.insert('end', "No hand\n", 'HAND')
+            if not VISION_V2_MODE or not result.get('opponent_stats'):
+                self.stats_text.insert('end', "No hand\n", 'HAND')
             return
         
         # 1. HAND STRENGTH (what you have)
@@ -708,16 +720,6 @@ class HelperBar:
             dangers.append("Board paired")
         if dangers:
             self.stats_text.insert('end', '---\n' + '\n'.join(dangers) + '\n', 'DANGER')
-
-        # 4. OPPONENT INFO (V2 mode only)
-        if VISION_V2_MODE and result.get('opponent_stats'):
-            self.stats_text.insert('end', '---\n', 'DANGER')
-            self.stats_text.insert('end', 'OPPONENTS:\n', 'OPPONENT')
-            for opp in result['opponent_stats']:
-                if opp.get('hands', 0) > 0:
-                    line = f"{opp['name']}: {opp['archetype'].upper()} ({opp['hands']}h, {opp.get('vpip',0):.0f}/{opp.get('pfr',0):.0f})\n"
-                    self.stats_text.insert('end', line, 'OPPONENT')
-                    self.stats_text.insert('end', f"  {opp['advice']}\n", 'ADVICE')
 
     def on_f10(self):
         """Toggle bot mode"""
