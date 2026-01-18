@@ -7,28 +7,9 @@ Compare to what our simulated archetypes do.
 import os
 import re
 from collections import defaultdict
+from build_player_stats import classify_archetype
 
 HH_DIR = '/home/ubuntu/mcpprojects/onyxpoker/idealistslp_extracted'
-
-
-def classify_archetype(vpip, pfr, hands):
-    """Classify player archetype based on VPIP/PFR."""
-    if hands < 20:
-        return 'unknown'
-    gap = vpip - pfr
-    if vpip >= 40 and pfr >= 25:
-        return 'maniac'
-    if vpip >= 25 and pfr >= 18 and gap <= 12:
-        return 'lag'
-    if vpip >= 25 and gap >= 10:
-        return 'fish'
-    if 15 <= vpip <= 28 and pfr >= 12 and gap <= 8:
-        return 'tag'
-    if vpip <= 15:
-        return 'nit'
-    if vpip >= 22:
-        return 'fish'
-    return 'tag'
 
 
 def parse_all_hands():
