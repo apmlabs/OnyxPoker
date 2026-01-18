@@ -1,0 +1,4522 @@
+{
+  "LAMERIC64": {
+    "hands": 14,
+    "vpip": 42.9,
+    "pfr": 7.1,
+    "3bet": 0.0,
+    "af": 0.29,
+    "archetype": "fish"
+  },
+  "olijmandrea": {
+    "hands": 50,
+    "vpip": 12.0,
+    "pfr": 4.0,
+    "3bet": 0.0,
+    "af": 1.5,
+    "archetype": "nit"
+  },
+  "gregoss054": {
+    "hands": 22,
+    "vpip": 18.2,
+    "pfr": 13.6,
+    "3bet": 12.5,
+    "af": 3,
+    "archetype": "tag"
+  },
+  "Moncerrate42": {
+    "hands": 59,
+    "vpip": 32.2,
+    "pfr": 23.7,
+    "3bet": 0.0,
+    "af": 2.0,
+    "archetype": "tag"
+  },
+  "PaateMolle": {
+    "hands": 7,
+    "vpip": 28.6,
+    "pfr": 0.0,
+    "3bet": 0.0,
+    "af": 0,
+    "archetype": "tag"
+  },
+  "STEAKssss": {
+    "hands": 8,
+    "vpip": 37.5,
+    "pfr": 25.0,
+    "3bet": 0.0,
+    "af": 1,
+    "archetype": "tag"
+  },
+  "Foulekparo94400": {
+    "hands": 61,
+    "vpip": 36.1,
+    "pfr": 19.7,
+    "3bet": 20.0,
+    "af": 3.0,
+    "archetype": "tag"
+  },
+  "Grifffe": {
+    "hands": 9,
+    "vpip": 22.2,
+    "pfr": 11.1,
+    "3bet": 0.0,
+    "af": 2,
+    "archetype": "tag"
+  },
+  "sarm1988": {
+    "hands": 33,
+    "vpip": 12.1,
+    "pfr": 6.1,
+    "3bet": 0.0,
+    "af": 3.0,
+    "archetype": "nit"
+  },
+  "DINO2418": {
+    "hands": 7,
+    "vpip": 28.6,
+    "pfr": 14.3,
+    "3bet": 0,
+    "af": 3,
+    "archetype": "tag"
+  },
+  "baggio422": {
+    "hands": 9,
+    "vpip": 44.4,
+    "pfr": 22.2,
+    "3bet": 0.0,
+    "af": 6.0,
+    "archetype": "lag"
+  },
+  "FELIPE439": {
+    "hands": 58,
+    "vpip": 24.1,
+    "pfr": 13.8,
+    "3bet": 0.0,
+    "af": 4.0,
+    "archetype": "tag"
+  },
+  "XWALLA77": {
+    "hands": 49,
+    "vpip": 26.5,
+    "pfr": 16.3,
+    "3bet": 6.2,
+    "af": 0.67,
+    "archetype": "tag"
+  },
+  "Bestiote": {
+    "hands": 44,
+    "vpip": 20.5,
+    "pfr": 18.2,
+    "3bet": 6.7,
+    "af": 3.0,
+    "archetype": "tag"
+  },
+  "Penumbrita": {
+    "hands": 22,
+    "vpip": 22.7,
+    "pfr": 9.1,
+    "3bet": 0.0,
+    "af": 0.0,
+    "archetype": "tag"
+  },
+  "lmiranda.pt": {
+    "hands": 5,
+    "vpip": 40.0,
+    "pfr": 40.0,
+    "3bet": 0,
+    "af": 1,
+    "archetype": "tag"
+  },
+  "Tiagofpsousa": {
+    "hands": 5,
+    "vpip": 40.0,
+    "pfr": 20.0,
+    "3bet": 0.0,
+    "af": 0.33,
+    "archetype": "tag"
+  },
+  "cumoni": {
+    "hands": 18,
+    "vpip": 38.9,
+    "pfr": 11.1,
+    "3bet": 0.0,
+    "af": 0.5,
+    "archetype": "tag"
+  },
+  "rockurhead1": {
+    "hands": 6,
+    "vpip": 33.3,
+    "pfr": 0.0,
+    "3bet": 0.0,
+    "af": 0,
+    "archetype": "tag"
+  },
+  "nunofasousa2021": {
+    "hands": 24,
+    "vpip": 41.7,
+    "pfr": 25.0,
+    "3bet": 10.0,
+    "af": 1.67,
+    "archetype": "tag"
+  },
+  "paul20025": {
+    "hands": 12,
+    "vpip": 25.0,
+    "pfr": 0.0,
+    "3bet": 0.0,
+    "af": 6.0,
+    "archetype": "tag"
+  },
+  "Elseparatio": {
+    "hands": 16,
+    "vpip": 62.5,
+    "pfr": 18.8,
+    "3bet": 0.0,
+    "af": 1.0,
+    "archetype": "tag"
+  },
+  "massked": {
+    "hands": 18,
+    "vpip": 16.7,
+    "pfr": 16.7,
+    "3bet": 0.0,
+    "af": 0,
+    "archetype": "nit"
+  },
+  "RuiBorgesTasca": {
+    "hands": 11,
+    "vpip": 18.2,
+    "pfr": 9.1,
+    "3bet": 0.0,
+    "af": 1.0,
+    "archetype": "tag"
+  },
+  "flaviopsc": {
+    "hands": 55,
+    "vpip": 21.8,
+    "pfr": 14.5,
+    "3bet": 16.7,
+    "af": 1.0,
+    "archetype": "tag"
+  },
+  "rafale032": {
+    "hands": 56,
+    "vpip": 10.7,
+    "pfr": 10.7,
+    "3bet": 0.0,
+    "af": 0.2,
+    "archetype": "nit"
+  },
+  "crmLL": {
+    "hands": 124,
+    "vpip": 25.0,
+    "pfr": 8.1,
+    "3bet": 0.0,
+    "af": 0.79,
+    "archetype": "tag"
+  },
+  "Jorgebcn76": {
+    "hands": 157,
+    "vpip": 25.5,
+    "pfr": 15.9,
+    "3bet": 9.3,
+    "af": 1.57,
+    "archetype": "tag"
+  },
+  "nonoficial": {
+    "hands": 7,
+    "vpip": 0.0,
+    "pfr": 0.0,
+    "3bet": 0.0,
+    "af": 0,
+    "archetype": "nit"
+  },
+  "zevsmoura": {
+    "hands": 11,
+    "vpip": 36.4,
+    "pfr": 27.3,
+    "3bet": 28.6,
+    "af": 1.0,
+    "archetype": "tag"
+  },
+  "Hofmann22": {
+    "hands": 15,
+    "vpip": 26.7,
+    "pfr": 20.0,
+    "3bet": 16.7,
+    "af": 1.5,
+    "archetype": "tag"
+  },
+  "adfm75": {
+    "hands": 22,
+    "vpip": 18.2,
+    "pfr": 9.1,
+    "3bet": 0.0,
+    "af": 0.0,
+    "archetype": "tag"
+  },
+  "david6255": {
+    "hands": 14,
+    "vpip": 42.9,
+    "pfr": 21.4,
+    "3bet": 33.3,
+    "af": 2,
+    "archetype": "tag"
+  },
+  "scaramouche84": {
+    "hands": 10,
+    "vpip": 20.0,
+    "pfr": 20.0,
+    "3bet": 0.0,
+    "af": 0,
+    "archetype": "tag"
+  },
+  "chelius869": {
+    "hands": 22,
+    "vpip": 22.7,
+    "pfr": 13.6,
+    "3bet": 0.0,
+    "af": 2.5,
+    "archetype": "tag"
+  },
+  "Cacartiflette01": {
+    "hands": 10,
+    "vpip": 20.0,
+    "pfr": 10.0,
+    "3bet": 0.0,
+    "af": 0.5,
+    "archetype": "tag"
+  },
+  "trinityandme": {
+    "hands": 26,
+    "vpip": 15.4,
+    "pfr": 0.0,
+    "3bet": 0.0,
+    "af": 0.0,
+    "archetype": "nit"
+  },
+  "Pipps33": {
+    "hands": 10,
+    "vpip": 40.0,
+    "pfr": 20.0,
+    "3bet": 0.0,
+    "af": 0.33,
+    "archetype": "tag"
+  },
+  "franelbombazo": {
+    "hands": 11,
+    "vpip": 27.3,
+    "pfr": 9.1,
+    "3bet": 0.0,
+    "af": 0.0,
+    "archetype": "tag"
+  },
+  "lobitillo": {
+    "hands": 7,
+    "vpip": 14.3,
+    "pfr": 14.3,
+    "3bet": 0.0,
+    "af": 0,
+    "archetype": "nit"
+  },
+  "leobcn9": {
+    "hands": 11,
+    "vpip": 36.4,
+    "pfr": 18.2,
+    "3bet": 0.0,
+    "af": 5,
+    "archetype": "tag"
+  },
+  "matheus15567": {
+    "hands": 6,
+    "vpip": 50.0,
+    "pfr": 16.7,
+    "3bet": 0.0,
+    "af": 0,
+    "archetype": "tag"
+  },
+  "geovannyhanna": {
+    "hands": 8,
+    "vpip": 25.0,
+    "pfr": 25.0,
+    "3bet": 0.0,
+    "af": 0,
+    "archetype": "tag"
+  },
+  "SlymJx": {
+    "hands": 5,
+    "vpip": 20.0,
+    "pfr": 20.0,
+    "3bet": 50.0,
+    "af": 0,
+    "archetype": "tag"
+  },
+  "jash1945": {
+    "hands": 9,
+    "vpip": 11.1,
+    "pfr": 0.0,
+    "3bet": 0.0,
+    "af": 0,
+    "archetype": "nit"
+  },
+  "00789": {
+    "hands": 71,
+    "vpip": 23.9,
+    "pfr": 18.3,
+    "3bet": 4.2,
+    "af": 0.67,
+    "archetype": "tag"
+  },
+  "Gregcalifornia": {
+    "hands": 6,
+    "vpip": 33.3,
+    "pfr": 0.0,
+    "3bet": 0.0,
+    "af": 0.0,
+    "archetype": "tag"
+  },
+  "zhouweiyi888": {
+    "hands": 33,
+    "vpip": 33.3,
+    "pfr": 21.2,
+    "3bet": 25.0,
+    "af": 0.33,
+    "archetype": "tag"
+  },
+  "ZharOdin": {
+    "hands": 8,
+    "vpip": 25.0,
+    "pfr": 25.0,
+    "3bet": 0.0,
+    "af": 0,
+    "archetype": "tag"
+  },
+  "kurekuro": {
+    "hands": 10,
+    "vpip": 40.0,
+    "pfr": 20.0,
+    "3bet": 0.0,
+    "af": 2,
+    "archetype": "tag"
+  },
+  "jgrodriguez061": {
+    "hands": 7,
+    "vpip": 57.1,
+    "pfr": 42.9,
+    "3bet": 0,
+    "af": 0,
+    "archetype": "tag"
+  },
+  "joan837": {
+    "hands": 15,
+    "vpip": 46.7,
+    "pfr": 0.0,
+    "3bet": 0.0,
+    "af": 1.0,
+    "archetype": "fish"
+  },
+  "more457": {
+    "hands": 54,
+    "vpip": 20.4,
+    "pfr": 9.3,
+    "3bet": 6.2,
+    "af": 0.67,
+    "archetype": "tag"
+  },
+  "AA00717": {
+    "hands": 7,
+    "vpip": 28.6,
+    "pfr": 14.3,
+    "3bet": 0.0,
+    "af": 1,
+    "archetype": "tag"
+  },
+  "Cidzor": {
+    "hands": 6,
+    "vpip": 33.3,
+    "pfr": 0.0,
+    "3bet": 0,
+    "af": 0,
+    "archetype": "tag"
+  },
+  "smrj1976": {
+    "hands": 59,
+    "vpip": 11.9,
+    "pfr": 8.5,
+    "3bet": 9.1,
+    "af": 1.0,
+    "archetype": "nit"
+  },
+  "adricrack970": {
+    "hands": 72,
+    "vpip": 30.6,
+    "pfr": 27.8,
+    "3bet": 26.3,
+    "af": 2.0,
+    "archetype": "tag"
+  },
+  "priam83": {
+    "hands": 5,
+    "vpip": 20.0,
+    "pfr": 20.0,
+    "3bet": 0.0,
+    "af": 0,
+    "archetype": "tag"
+  },
+  "felgas1968": {
+    "hands": 9,
+    "vpip": 55.6,
+    "pfr": 33.3,
+    "3bet": 0.0,
+    "af": 0.0,
+    "archetype": "tag"
+  },
+  "MassasMassas": {
+    "hands": 5,
+    "vpip": 0.0,
+    "pfr": 0.0,
+    "3bet": 0.0,
+    "af": 0,
+    "archetype": "nit"
+  },
+  "safelifetop": {
+    "hands": 16,
+    "vpip": 0.0,
+    "pfr": 0.0,
+    "3bet": 0,
+    "af": 0,
+    "archetype": "nit"
+  },
+  "alvarogda26": {
+    "hands": 8,
+    "vpip": 25.0,
+    "pfr": 0.0,
+    "3bet": 0.0,
+    "af": 1.0,
+    "archetype": "tag"
+  },
+  "jockosssssss": {
+    "hands": 11,
+    "vpip": 63.6,
+    "pfr": 0.0,
+    "3bet": 0.0,
+    "af": 0.33,
+    "archetype": "fish"
+  },
+  "vicen7010": {
+    "hands": 29,
+    "vpip": 17.2,
+    "pfr": 3.4,
+    "3bet": 0.0,
+    "af": 1.0,
+    "archetype": "nit"
+  },
+  "trumoan": {
+    "hands": 48,
+    "vpip": 31.2,
+    "pfr": 18.8,
+    "3bet": 4.8,
+    "af": 0.5,
+    "archetype": "tag"
+  },
+  "brra$1414": {
+    "hands": 8,
+    "vpip": 25.0,
+    "pfr": 12.5,
+    "3bet": 0.0,
+    "af": 3.0,
+    "archetype": "tag"
+  },
+  "lorocontento": {
+    "hands": 39,
+    "vpip": 10.3,
+    "pfr": 7.7,
+    "3bet": 15.4,
+    "af": 0,
+    "archetype": "nit"
+  },
+  "txone73": {
+    "hands": 11,
+    "vpip": 18.2,
+    "pfr": 18.2,
+    "3bet": 0.0,
+    "af": 1,
+    "archetype": "tag"
+  },
+  "seriomarkos": {
+    "hands": 30,
+    "vpip": 33.3,
+    "pfr": 20.0,
+    "3bet": 12.5,
+    "af": 0.5,
+    "archetype": "tag"
+  },
+  "dragonfly2467": {
+    "hands": 88,
+    "vpip": 22.7,
+    "pfr": 13.6,
+    "3bet": 5.0,
+    "af": 0.4,
+    "archetype": "tag"
+  },
+  "NOWAY3131": {
+    "hands": 8,
+    "vpip": 12.5,
+    "pfr": 12.5,
+    "3bet": 0.0,
+    "af": 0,
+    "archetype": "nit"
+  },
+  "DaniiRama": {
+    "hands": 23,
+    "vpip": 21.7,
+    "pfr": 13.0,
+    "3bet": 16.7,
+    "af": 3.0,
+    "archetype": "tag"
+  },
+  "cirsa888": {
+    "hands": 39,
+    "vpip": 33.3,
+    "pfr": 23.1,
+    "3bet": 16.7,
+    "af": 1.2,
+    "archetype": "tag"
+  },
+  "saharkesler": {
+    "hands": 83,
+    "vpip": 22.9,
+    "pfr": 16.9,
+    "3bet": 3.3,
+    "af": 1.0,
+    "archetype": "tag"
+  },
+  "Janpaul112": {
+    "hands": 20,
+    "vpip": 20.0,
+    "pfr": 20.0,
+    "3bet": 16.7,
+    "af": 0,
+    "archetype": "tag"
+  },
+  "DrTrinityy": {
+    "hands": 41,
+    "vpip": 29.3,
+    "pfr": 24.4,
+    "3bet": 37.5,
+    "af": 2.0,
+    "archetype": "tag"
+  },
+  "<KA$!N\u00d6>": {
+    "hands": 29,
+    "vpip": 6.9,
+    "pfr": 3.4,
+    "3bet": 0.0,
+    "af": 0,
+    "archetype": "nit"
+  },
+  "ibic22": {
+    "hands": 23,
+    "vpip": 39.1,
+    "pfr": 30.4,
+    "3bet": 0.0,
+    "af": 1.0,
+    "archetype": "tag"
+  },
+  "fAAQQndo17": {
+    "hands": 37,
+    "vpip": 24.3,
+    "pfr": 16.2,
+    "3bet": 25.0,
+    "af": 0.0,
+    "archetype": "tag"
+  },
+  "MakesMeRich": {
+    "hands": 108,
+    "vpip": 22.2,
+    "pfr": 20.4,
+    "3bet": 6.2,
+    "af": 1.0,
+    "archetype": "tag"
+  },
+  "Ischadia": {
+    "hands": 30,
+    "vpip": 30.0,
+    "pfr": 20.0,
+    "3bet": 14.3,
+    "af": 1.5,
+    "archetype": "tag"
+  },
+  "sukocash": {
+    "hands": 23,
+    "vpip": 21.7,
+    "pfr": 21.7,
+    "3bet": 0.0,
+    "af": 2,
+    "archetype": "tag"
+  },
+  "oierzula": {
+    "hands": 6,
+    "vpip": 33.3,
+    "pfr": 16.7,
+    "3bet": 0.0,
+    "af": 0.0,
+    "archetype": "tag"
+  },
+  "chiinche": {
+    "hands": 55,
+    "vpip": 9.1,
+    "pfr": 3.6,
+    "3bet": 0.0,
+    "af": 0.29,
+    "archetype": "nit"
+  },
+  "byturbin": {
+    "hands": 16,
+    "vpip": 25.0,
+    "pfr": 18.8,
+    "3bet": 0.0,
+    "af": 2,
+    "archetype": "tag"
+  },
+  "metamex": {
+    "hands": 5,
+    "vpip": 20.0,
+    "pfr": 20.0,
+    "3bet": 0.0,
+    "af": 0,
+    "archetype": "tag"
+  },
+  "SrWatanabe": {
+    "hands": 41,
+    "vpip": 26.8,
+    "pfr": 4.9,
+    "3bet": 14.3,
+    "af": 3.0,
+    "archetype": "tag"
+  },
+  "saintblair": {
+    "hands": 13,
+    "vpip": 23.1,
+    "pfr": 23.1,
+    "3bet": 0.0,
+    "af": 1,
+    "archetype": "tag"
+  },
+  "chaval231": {
+    "hands": 6,
+    "vpip": 50.0,
+    "pfr": 0.0,
+    "3bet": 0.0,
+    "af": 0,
+    "archetype": "fish"
+  },
+  "Portugalkin2025": {
+    "hands": 32,
+    "vpip": 18.8,
+    "pfr": 15.6,
+    "3bet": 7.1,
+    "af": 7,
+    "archetype": "tag"
+  },
+  "Ivangennaro": {
+    "hands": 30,
+    "vpip": 10.0,
+    "pfr": 10.0,
+    "3bet": 0.0,
+    "af": 1.0,
+    "archetype": "nit"
+  },
+  "ehouiJedebute": {
+    "hands": 24,
+    "vpip": 4.2,
+    "pfr": 4.2,
+    "3bet": 0.0,
+    "af": 2,
+    "archetype": "nit"
+  },
+  "llodio": {
+    "hands": 45,
+    "vpip": 22.2,
+    "pfr": 22.2,
+    "3bet": 12.5,
+    "af": 5.0,
+    "archetype": "tag"
+  },
+  "Markpartebragas": {
+    "hands": 83,
+    "vpip": 24.1,
+    "pfr": 16.9,
+    "3bet": 7.7,
+    "af": 3.25,
+    "archetype": "tag"
+  },
+  "ATOJ5": {
+    "hands": 121,
+    "vpip": 26.4,
+    "pfr": 17.4,
+    "3bet": 11.4,
+    "af": 1.31,
+    "archetype": "tag"
+  },
+  "SGB36": {
+    "hands": 8,
+    "vpip": 25.0,
+    "pfr": 12.5,
+    "3bet": 0.0,
+    "af": 2.0,
+    "archetype": "tag"
+  },
+  "Cathaysanauz": {
+    "hands": 123,
+    "vpip": 29.3,
+    "pfr": 22.0,
+    "3bet": 8.6,
+    "af": 1.0,
+    "archetype": "tag"
+  },
+  "KarmaPoker24": {
+    "hands": 9,
+    "vpip": 11.1,
+    "pfr": 0.0,
+    "3bet": 0.0,
+    "af": 1,
+    "archetype": "nit"
+  },
+  "PauloATDias": {
+    "hands": 17,
+    "vpip": 17.6,
+    "pfr": 5.9,
+    "3bet": 0.0,
+    "af": 1,
+    "archetype": "nit"
+  },
+  "calopoker_10": {
+    "hands": 44,
+    "vpip": 38.6,
+    "pfr": 29.5,
+    "3bet": 41.2,
+    "af": 2.67,
+    "archetype": "lag"
+  },
+  "ElThepo": {
+    "hands": 40,
+    "vpip": 20.0,
+    "pfr": 17.5,
+    "3bet": 8.3,
+    "af": 2,
+    "archetype": "tag"
+  },
+  "Pecadorll": {
+    "hands": 21,
+    "vpip": 19.0,
+    "pfr": 19.0,
+    "3bet": 0.0,
+    "af": 0,
+    "archetype": "tag"
+  },
+  "Sophist\u00eas": {
+    "hands": 9,
+    "vpip": 11.1,
+    "pfr": 0.0,
+    "3bet": 0.0,
+    "af": 1,
+    "archetype": "nit"
+  },
+  "nicotrollier": {
+    "hands": 9,
+    "vpip": 22.2,
+    "pfr": 11.1,
+    "3bet": 0.0,
+    "af": 0.0,
+    "archetype": "tag"
+  },
+  "afanasius": {
+    "hands": 10,
+    "vpip": 20.0,
+    "pfr": 20.0,
+    "3bet": 0.0,
+    "af": 3,
+    "archetype": "tag"
+  },
+  "pisuleto": {
+    "hands": 11,
+    "vpip": 0.0,
+    "pfr": 0.0,
+    "3bet": 0.0,
+    "af": 0,
+    "archetype": "nit"
+  },
+  "LAPeriferia": {
+    "hands": 22,
+    "vpip": 9.1,
+    "pfr": 4.5,
+    "3bet": 0.0,
+    "af": 1,
+    "archetype": "nit"
+  },
+  "Cat&Me": {
+    "hands": 5,
+    "vpip": 0.0,
+    "pfr": 0.0,
+    "3bet": 0.0,
+    "af": 0,
+    "archetype": "nit"
+  },
+  "SOYPACO11": {
+    "hands": 27,
+    "vpip": 14.8,
+    "pfr": 7.4,
+    "3bet": 0.0,
+    "af": 0.0,
+    "archetype": "nit"
+  },
+  "santamarier": {
+    "hands": 5,
+    "vpip": 20.0,
+    "pfr": 0.0,
+    "3bet": 0.0,
+    "af": 0,
+    "archetype": "tag"
+  },
+  "Megiusftv": {
+    "hands": 34,
+    "vpip": 35.3,
+    "pfr": 17.6,
+    "3bet": 0.0,
+    "af": 5.0,
+    "archetype": "tag"
+  },
+  "chancara": {
+    "hands": 10,
+    "vpip": 20.0,
+    "pfr": 10.0,
+    "3bet": 0.0,
+    "af": 2,
+    "archetype": "tag"
+  },
+  "Castillejo117": {
+    "hands": 14,
+    "vpip": 7.1,
+    "pfr": 7.1,
+    "3bet": 0.0,
+    "af": 0,
+    "archetype": "nit"
+  },
+  "P-BRUTUS": {
+    "hands": 55,
+    "vpip": 38.2,
+    "pfr": 0.0,
+    "3bet": 0.0,
+    "af": 2.5,
+    "archetype": "tag"
+  },
+  "kastlemoney": {
+    "hands": 82,
+    "vpip": 14.6,
+    "pfr": 13.4,
+    "3bet": 0.0,
+    "af": 6.0,
+    "archetype": "nit"
+  },
+  "oscarmol": {
+    "hands": 12,
+    "vpip": 33.3,
+    "pfr": 33.3,
+    "3bet": 0.0,
+    "af": 2,
+    "archetype": "tag"
+  },
+  "Raditz-Z84": {
+    "hands": 12,
+    "vpip": 33.3,
+    "pfr": 16.7,
+    "3bet": 0.0,
+    "af": 0.75,
+    "archetype": "tag"
+  },
+  "Galapian2": {
+    "hands": 6,
+    "vpip": 33.3,
+    "pfr": 16.7,
+    "3bet": 0.0,
+    "af": 0.0,
+    "archetype": "tag"
+  },
+  "TerBett": {
+    "hands": 26,
+    "vpip": 19.2,
+    "pfr": 7.7,
+    "3bet": 14.3,
+    "af": 2.0,
+    "archetype": "tag"
+  },
+  "monsieur881": {
+    "hands": 14,
+    "vpip": 28.6,
+    "pfr": 28.6,
+    "3bet": 0.0,
+    "af": 3,
+    "archetype": "lag"
+  },
+  "titi58250": {
+    "hands": 11,
+    "vpip": 27.3,
+    "pfr": 0.0,
+    "3bet": 0.0,
+    "af": 0.0,
+    "archetype": "tag"
+  },
+  "LEXTORMUR": {
+    "hands": 33,
+    "vpip": 24.2,
+    "pfr": 15.2,
+    "3bet": 0.0,
+    "af": 1.0,
+    "archetype": "tag"
+  },
+  "Tonypi27": {
+    "hands": 27,
+    "vpip": 14.8,
+    "pfr": 7.4,
+    "3bet": 0.0,
+    "af": 6.0,
+    "archetype": "nit"
+  },
+  "prouchte": {
+    "hands": 11,
+    "vpip": 18.2,
+    "pfr": 9.1,
+    "3bet": 0.0,
+    "af": 2,
+    "archetype": "tag"
+  },
+  "BurpeeBroadJump": {
+    "hands": 9,
+    "vpip": 22.2,
+    "pfr": 0.0,
+    "3bet": 0.0,
+    "af": 0.5,
+    "archetype": "tag"
+  },
+  "ManoelCR": {
+    "hands": 7,
+    "vpip": 42.9,
+    "pfr": 28.6,
+    "3bet": 0.0,
+    "af": 0.0,
+    "archetype": "tag"
+  },
+  "toni290178": {
+    "hands": 27,
+    "vpip": 33.3,
+    "pfr": 0.0,
+    "3bet": 0.0,
+    "af": 0,
+    "archetype": "tag"
+  },
+  "Bamm6": {
+    "hands": 21,
+    "vpip": 23.8,
+    "pfr": 19.0,
+    "3bet": 0.0,
+    "af": 2.0,
+    "archetype": "tag"
+  },
+  "bufu92": {
+    "hands": 5,
+    "vpip": 20.0,
+    "pfr": 20.0,
+    "3bet": 0,
+    "af": 0,
+    "archetype": "tag"
+  },
+  "jafonsso": {
+    "hands": 11,
+    "vpip": 27.3,
+    "pfr": 9.1,
+    "3bet": 0.0,
+    "af": 2,
+    "archetype": "tag"
+  },
+  "imnataa": {
+    "hands": 7,
+    "vpip": 28.6,
+    "pfr": 0.0,
+    "3bet": 0.0,
+    "af": 0.0,
+    "archetype": "tag"
+  },
+  "Sull91": {
+    "hands": 5,
+    "vpip": 80.0,
+    "pfr": 20.0,
+    "3bet": 0,
+    "af": 4,
+    "archetype": "tag"
+  },
+  "PetroniloPT": {
+    "hands": 12,
+    "vpip": 16.7,
+    "pfr": 16.7,
+    "3bet": 0.0,
+    "af": 1.5,
+    "archetype": "nit"
+  },
+  "kikooo823": {
+    "hands": 11,
+    "vpip": 9.1,
+    "pfr": 0.0,
+    "3bet": 0.0,
+    "af": 0,
+    "archetype": "nit"
+  },
+  "GGSCR29": {
+    "hands": 15,
+    "vpip": 13.3,
+    "pfr": 13.3,
+    "3bet": 0.0,
+    "af": 0,
+    "archetype": "nit"
+  },
+  "barripoker3": {
+    "hands": 16,
+    "vpip": 12.5,
+    "pfr": 12.5,
+    "3bet": 14.3,
+    "af": 0,
+    "archetype": "nit"
+  },
+  "FllanosB": {
+    "hands": 63,
+    "vpip": 30.2,
+    "pfr": 15.9,
+    "3bet": 5.0,
+    "af": 2.25,
+    "archetype": "tag"
+  },
+  "timaria74": {
+    "hands": 10,
+    "vpip": 30.0,
+    "pfr": 10.0,
+    "3bet": 0.0,
+    "af": 0.0,
+    "archetype": "tag"
+  },
+  "WalterW10000": {
+    "hands": 9,
+    "vpip": 55.6,
+    "pfr": 33.3,
+    "3bet": 0.0,
+    "af": 0.5,
+    "archetype": "tag"
+  },
+  "laetigreg05": {
+    "hands": 8,
+    "vpip": 37.5,
+    "pfr": 0.0,
+    "3bet": 0.0,
+    "af": 0.0,
+    "archetype": "tag"
+  },
+  "al3xitto25": {
+    "hands": 157,
+    "vpip": 17.2,
+    "pfr": 10.2,
+    "3bet": 2.0,
+    "af": 1.17,
+    "archetype": "nit"
+  },
+  "mentalist1479": {
+    "hands": 40,
+    "vpip": 27.5,
+    "pfr": 15.0,
+    "3bet": 0.0,
+    "af": 3.0,
+    "archetype": "tag"
+  },
+  "MaxisZeus": {
+    "hands": 60,
+    "vpip": 6.7,
+    "pfr": 5.0,
+    "3bet": 0.0,
+    "af": 0.0,
+    "archetype": "nit"
+  },
+  "Fuckhazar": {
+    "hands": 94,
+    "vpip": 21.3,
+    "pfr": 12.8,
+    "3bet": 6.7,
+    "af": 4.0,
+    "archetype": "tag"
+  },
+  "Munia14": {
+    "hands": 36,
+    "vpip": 19.4,
+    "pfr": 19.4,
+    "3bet": 15.4,
+    "af": 3.0,
+    "archetype": "tag"
+  },
+  "javoallin": {
+    "hands": 19,
+    "vpip": 21.1,
+    "pfr": 15.8,
+    "3bet": 0.0,
+    "af": 2.5,
+    "archetype": "tag"
+  },
+  "tropa8": {
+    "hands": 30,
+    "vpip": 40.0,
+    "pfr": 36.7,
+    "3bet": 55.6,
+    "af": 1.67,
+    "archetype": "tag"
+  },
+  "pablow0804": {
+    "hands": 10,
+    "vpip": 20.0,
+    "pfr": 20.0,
+    "3bet": 0.0,
+    "af": 1.0,
+    "archetype": "tag"
+  },
+  "neoswan": {
+    "hands": 5,
+    "vpip": 40.0,
+    "pfr": 40.0,
+    "3bet": 0.0,
+    "af": 0,
+    "archetype": "tag"
+  },
+  "Angelfs7": {
+    "hands": 6,
+    "vpip": 0.0,
+    "pfr": 0.0,
+    "3bet": 0.0,
+    "af": 0,
+    "archetype": "nit"
+  },
+  "Xinatown": {
+    "hands": 10,
+    "vpip": 20.0,
+    "pfr": 10.0,
+    "3bet": 0.0,
+    "af": 2,
+    "archetype": "tag"
+  },
+  "CondeVnCount": {
+    "hands": 32,
+    "vpip": 15.6,
+    "pfr": 12.5,
+    "3bet": 0.0,
+    "af": 0,
+    "archetype": "nit"
+  },
+  "IFern23": {
+    "hands": 14,
+    "vpip": 14.3,
+    "pfr": 0.0,
+    "3bet": 0.0,
+    "af": 2,
+    "archetype": "nit"
+  },
+  "israelmerlon": {
+    "hands": 9,
+    "vpip": 44.4,
+    "pfr": 33.3,
+    "3bet": 0.0,
+    "af": 3,
+    "archetype": "lag"
+  },
+  "yosii11": {
+    "hands": 5,
+    "vpip": 0.0,
+    "pfr": 0.0,
+    "3bet": 0.0,
+    "af": 0,
+    "archetype": "nit"
+  },
+  "Suave1984": {
+    "hands": 106,
+    "vpip": 22.6,
+    "pfr": 13.2,
+    "3bet": 8.3,
+    "af": 1.0,
+    "archetype": "tag"
+  },
+  "Tonchofitness": {
+    "hands": 19,
+    "vpip": 31.6,
+    "pfr": 26.3,
+    "3bet": 40.0,
+    "af": 1.0,
+    "archetype": "tag"
+  },
+  "TommyPhil": {
+    "hands": 57,
+    "vpip": 17.5,
+    "pfr": 12.3,
+    "3bet": 11.1,
+    "af": 2,
+    "archetype": "nit"
+  },
+  "big_vvhaIe": {
+    "hands": 13,
+    "vpip": 7.7,
+    "pfr": 0.0,
+    "3bet": 0.0,
+    "af": 1,
+    "archetype": "nit"
+  },
+  "RemRois51": {
+    "hands": 19,
+    "vpip": 15.8,
+    "pfr": 15.8,
+    "3bet": 11.1,
+    "af": 5,
+    "archetype": "nit"
+  },
+  "molinersky": {
+    "hands": 12,
+    "vpip": 41.7,
+    "pfr": 41.7,
+    "3bet": 0.0,
+    "af": 4.0,
+    "archetype": "lag"
+  },
+  "luiscosta82": {
+    "hands": 21,
+    "vpip": 9.5,
+    "pfr": 4.8,
+    "3bet": 0.0,
+    "af": 0,
+    "archetype": "nit"
+  },
+  "born2tiltyall": {
+    "hands": 63,
+    "vpip": 30.2,
+    "pfr": 20.6,
+    "3bet": 14.3,
+    "af": 2.33,
+    "archetype": "tag"
+  },
+  "NEMOXYX": {
+    "hands": 121,
+    "vpip": 17.4,
+    "pfr": 15.7,
+    "3bet": 11.4,
+    "af": 2.67,
+    "archetype": "nit"
+  },
+  "BetBenny": {
+    "hands": 9,
+    "vpip": 33.3,
+    "pfr": 0.0,
+    "3bet": 0.0,
+    "af": 1,
+    "archetype": "tag"
+  },
+  "b0x2b0x": {
+    "hands": 11,
+    "vpip": 36.4,
+    "pfr": 27.3,
+    "3bet": 40.0,
+    "af": 6,
+    "archetype": "lag"
+  },
+  "titus&mus": {
+    "hands": 54,
+    "vpip": 14.8,
+    "pfr": 9.3,
+    "3bet": 0.0,
+    "af": 3.0,
+    "archetype": "nit"
+  },
+  "juan@luis800": {
+    "hands": 25,
+    "vpip": 12.0,
+    "pfr": 8.0,
+    "3bet": 0.0,
+    "af": 0,
+    "archetype": "nit"
+  },
+  "Luiismofre": {
+    "hands": 23,
+    "vpip": 30.4,
+    "pfr": 30.4,
+    "3bet": 28.6,
+    "af": 3.0,
+    "archetype": "lag"
+  },
+  "palanquilla0": {
+    "hands": 11,
+    "vpip": 9.1,
+    "pfr": 9.1,
+    "3bet": 0.0,
+    "af": 0.0,
+    "archetype": "nit"
+  },
+  "el_heniek": {
+    "hands": 53,
+    "vpip": 28.3,
+    "pfr": 11.3,
+    "3bet": 6.2,
+    "af": 2.0,
+    "archetype": "tag"
+  },
+  "ArchiBolding": {
+    "hands": 7,
+    "vpip": 0.0,
+    "pfr": 0.0,
+    "3bet": 0.0,
+    "af": 0,
+    "archetype": "nit"
+  },
+  "caacmad": {
+    "hands": 14,
+    "vpip": 42.9,
+    "pfr": 14.3,
+    "3bet": 0.0,
+    "af": 2.0,
+    "archetype": "fish"
+  },
+  "HGrenha": {
+    "hands": 13,
+    "vpip": 23.1,
+    "pfr": 15.4,
+    "3bet": 0.0,
+    "af": 1.0,
+    "archetype": "tag"
+  },
+  "marry24": {
+    "hands": 30,
+    "vpip": 50.0,
+    "pfr": 46.7,
+    "3bet": 28.6,
+    "af": 6,
+    "archetype": "maniac"
+  },
+  "Diefa4466": {
+    "hands": 36,
+    "vpip": 30.6,
+    "pfr": 25.0,
+    "3bet": 20.0,
+    "af": 3.0,
+    "archetype": "lag"
+  },
+  "mattar212": {
+    "hands": 22,
+    "vpip": 27.3,
+    "pfr": 13.6,
+    "3bet": 0.0,
+    "af": 0.5,
+    "archetype": "tag"
+  },
+  "NELSONRIO75": {
+    "hands": 6,
+    "vpip": 16.7,
+    "pfr": 16.7,
+    "3bet": 0.0,
+    "af": 0,
+    "archetype": "nit"
+  },
+  "psgfan53": {
+    "hands": 11,
+    "vpip": 63.6,
+    "pfr": 36.4,
+    "3bet": 25.0,
+    "af": 1.33,
+    "archetype": "tag"
+  },
+  "Tir0Lir01904": {
+    "hands": 12,
+    "vpip": 25.0,
+    "pfr": 16.7,
+    "3bet": 0.0,
+    "af": 2.0,
+    "archetype": "tag"
+  },
+  "Elrubik09": {
+    "hands": 20,
+    "vpip": 25.0,
+    "pfr": 15.0,
+    "3bet": 16.7,
+    "af": 6,
+    "archetype": "tag"
+  },
+  "BuonaLettura": {
+    "hands": 8,
+    "vpip": 37.5,
+    "pfr": 25.0,
+    "3bet": 0.0,
+    "af": 0.0,
+    "archetype": "tag"
+  },
+  "GleQbenny": {
+    "hands": 21,
+    "vpip": 14.3,
+    "pfr": 9.5,
+    "3bet": 0.0,
+    "af": 0.0,
+    "archetype": "nit"
+  },
+  "biogaia": {
+    "hands": 9,
+    "vpip": 55.6,
+    "pfr": 22.2,
+    "3bet": 0.0,
+    "af": 0.33,
+    "archetype": "tag"
+  },
+  "iam_xCidx": {
+    "hands": 26,
+    "vpip": 26.9,
+    "pfr": 19.2,
+    "3bet": 12.5,
+    "af": 1.0,
+    "archetype": "tag"
+  },
+  "pirilampo68": {
+    "hands": 5,
+    "vpip": 40.0,
+    "pfr": 0.0,
+    "3bet": 0.0,
+    "af": 0,
+    "archetype": "tag"
+  },
+  "caroleli10": {
+    "hands": 15,
+    "vpip": 26.7,
+    "pfr": 13.3,
+    "3bet": 25.0,
+    "af": 0.0,
+    "archetype": "tag"
+  },
+  "Pulgosu.es": {
+    "hands": 88,
+    "vpip": 14.8,
+    "pfr": 11.4,
+    "3bet": 2.9,
+    "af": 1.0,
+    "archetype": "nit"
+  },
+  "AcesCrAAcker": {
+    "hands": 12,
+    "vpip": 41.7,
+    "pfr": 33.3,
+    "3bet": 0.0,
+    "af": 0.0,
+    "archetype": "tag"
+  },
+  "VEGAYAEM": {
+    "hands": 17,
+    "vpip": 52.9,
+    "pfr": 11.8,
+    "3bet": 25.0,
+    "af": 1.0,
+    "archetype": "fish"
+  },
+  "max97741": {
+    "hands": 12,
+    "vpip": 16.7,
+    "pfr": 16.7,
+    "3bet": 0.0,
+    "af": 2,
+    "archetype": "nit"
+  },
+  "5sebas": {
+    "hands": 42,
+    "vpip": 28.6,
+    "pfr": 23.8,
+    "3bet": 15.4,
+    "af": 2.5,
+    "archetype": "tag"
+  },
+  "punisher1106": {
+    "hands": 7,
+    "vpip": 14.3,
+    "pfr": 0.0,
+    "3bet": 0.0,
+    "af": 0,
+    "archetype": "nit"
+  },
+  "TiraFinos94": {
+    "hands": 41,
+    "vpip": 31.7,
+    "pfr": 29.3,
+    "3bet": 0.0,
+    "af": 1.5,
+    "archetype": "tag"
+  },
+  "pingu_771": {
+    "hands": 59,
+    "vpip": 16.9,
+    "pfr": 13.6,
+    "3bet": 15.8,
+    "af": 2.0,
+    "archetype": "nit"
+  },
+  "JENOFONTE73": {
+    "hands": 26,
+    "vpip": 15.4,
+    "pfr": 11.5,
+    "3bet": 0.0,
+    "af": 4,
+    "archetype": "nit"
+  },
+  "Zz8crackS": {
+    "hands": 16,
+    "vpip": 18.8,
+    "pfr": 6.2,
+    "3bet": 0.0,
+    "af": 2,
+    "archetype": "tag"
+  },
+  "kikomi30": {
+    "hands": 9,
+    "vpip": 55.6,
+    "pfr": 11.1,
+    "3bet": 0.0,
+    "af": 1.0,
+    "archetype": "fish"
+  },
+  "Jlopes77": {
+    "hands": 6,
+    "vpip": 0.0,
+    "pfr": 0.0,
+    "3bet": 0.0,
+    "af": 0,
+    "archetype": "nit"
+  },
+  "ecuinas": {
+    "hands": 7,
+    "vpip": 42.9,
+    "pfr": 14.3,
+    "3bet": 0.0,
+    "af": 0.0,
+    "archetype": "fish"
+  },
+  "Jorc@n": {
+    "hands": 15,
+    "vpip": 0.0,
+    "pfr": 0.0,
+    "3bet": 0.0,
+    "af": 0,
+    "archetype": "nit"
+  },
+  "toxinho35": {
+    "hands": 5,
+    "vpip": 0.0,
+    "pfr": 0.0,
+    "3bet": 0.0,
+    "af": 0,
+    "archetype": "nit"
+  },
+  "77samuel33": {
+    "hands": 10,
+    "vpip": 40.0,
+    "pfr": 30.0,
+    "3bet": 0.0,
+    "af": 1.0,
+    "archetype": "tag"
+  },
+  "Km500s": {
+    "hands": 12,
+    "vpip": 25.0,
+    "pfr": 8.3,
+    "3bet": 0.0,
+    "af": 2.0,
+    "archetype": "tag"
+  },
+  "minisusy": {
+    "hands": 14,
+    "vpip": 14.3,
+    "pfr": 14.3,
+    "3bet": 0.0,
+    "af": 2,
+    "archetype": "nit"
+  },
+  "ZixZ596": {
+    "hands": 15,
+    "vpip": 20.0,
+    "pfr": 0.0,
+    "3bet": 0.0,
+    "af": 0.67,
+    "archetype": "tag"
+  },
+  "jpachelbel": {
+    "hands": 5,
+    "vpip": 60.0,
+    "pfr": 20.0,
+    "3bet": 0,
+    "af": 1,
+    "archetype": "tag"
+  },
+  "Cachola777": {
+    "hands": 11,
+    "vpip": 45.5,
+    "pfr": 18.2,
+    "3bet": 0,
+    "af": 0.0,
+    "archetype": "tag"
+  },
+  "Probirss": {
+    "hands": 5,
+    "vpip": 40.0,
+    "pfr": 20.0,
+    "3bet": 0.0,
+    "af": 0.5,
+    "archetype": "tag"
+  },
+  "terrydandres": {
+    "hands": 26,
+    "vpip": 50.0,
+    "pfr": 34.6,
+    "3bet": 0.0,
+    "af": 0.8,
+    "archetype": "tag"
+  },
+  "Xoseanro510": {
+    "hands": 8,
+    "vpip": 25.0,
+    "pfr": 12.5,
+    "3bet": 50.0,
+    "af": 1,
+    "archetype": "tag"
+  },
+  "jc_barriuso": {
+    "hands": 33,
+    "vpip": 15.2,
+    "pfr": 9.1,
+    "3bet": 0.0,
+    "af": 0.0,
+    "archetype": "nit"
+  },
+  "ManuyPablo": {
+    "hands": 20,
+    "vpip": 35.0,
+    "pfr": 15.0,
+    "3bet": 0.0,
+    "af": 0.0,
+    "archetype": "tag"
+  },
+  "OdontoWhite": {
+    "hands": 6,
+    "vpip": 16.7,
+    "pfr": 16.7,
+    "3bet": 0.0,
+    "af": 1,
+    "archetype": "nit"
+  },
+  "MORENODCADI": {
+    "hands": 7,
+    "vpip": 14.3,
+    "pfr": 14.3,
+    "3bet": 0.0,
+    "af": 0,
+    "archetype": "nit"
+  },
+  "2tortosa": {
+    "hands": 10,
+    "vpip": 50.0,
+    "pfr": 30.0,
+    "3bet": 0.0,
+    "af": 2.5,
+    "archetype": "tag"
+  },
+  "TJDasNeves": {
+    "hands": 7,
+    "vpip": 0.0,
+    "pfr": 0.0,
+    "3bet": 0.0,
+    "af": 0,
+    "archetype": "nit"
+  },
+  "jeffbref": {
+    "hands": 9,
+    "vpip": 44.4,
+    "pfr": 22.2,
+    "3bet": 50.0,
+    "af": 0,
+    "archetype": "tag"
+  },
+  "saint-imier": {
+    "hands": 38,
+    "vpip": 15.8,
+    "pfr": 10.5,
+    "3bet": 11.1,
+    "af": 2.0,
+    "archetype": "nit"
+  },
+  "Fiveen": {
+    "hands": 7,
+    "vpip": 28.6,
+    "pfr": 28.6,
+    "3bet": 0,
+    "af": 0.5,
+    "archetype": "tag"
+  },
+  "Barrasrz": {
+    "hands": 9,
+    "vpip": 33.3,
+    "pfr": 0.0,
+    "3bet": 0.0,
+    "af": 0,
+    "archetype": "tag"
+  },
+  "DegoSan": {
+    "hands": 12,
+    "vpip": 41.7,
+    "pfr": 33.3,
+    "3bet": 0.0,
+    "af": 0.25,
+    "archetype": "tag"
+  },
+  "momonozo": {
+    "hands": 13,
+    "vpip": 23.1,
+    "pfr": 7.7,
+    "3bet": 0.0,
+    "af": 0.0,
+    "archetype": "tag"
+  },
+  "duartediogo": {
+    "hands": 15,
+    "vpip": 46.7,
+    "pfr": 20.0,
+    "3bet": 0.0,
+    "af": 0,
+    "archetype": "tag"
+  },
+  "wouziwouza": {
+    "hands": 51,
+    "vpip": 11.8,
+    "pfr": 11.8,
+    "3bet": 8.3,
+    "af": 3,
+    "archetype": "nit"
+  },
+  "Pollonidas94": {
+    "hands": 5,
+    "vpip": 20.0,
+    "pfr": 0.0,
+    "3bet": 0.0,
+    "af": 0,
+    "archetype": "tag"
+  },
+  "altercados87": {
+    "hands": 5,
+    "vpip": 60.0,
+    "pfr": 40.0,
+    "3bet": 0.0,
+    "af": 3.0,
+    "archetype": "lag"
+  },
+  "loicman66": {
+    "hands": 12,
+    "vpip": 33.3,
+    "pfr": 8.3,
+    "3bet": 0.0,
+    "af": 1,
+    "archetype": "tag"
+  },
+  "andresrodr8": {
+    "hands": 14,
+    "vpip": 21.4,
+    "pfr": 7.1,
+    "3bet": 0.0,
+    "af": 0.0,
+    "archetype": "tag"
+  },
+  "SirButterman": {
+    "hands": 65,
+    "vpip": 24.6,
+    "pfr": 13.8,
+    "3bet": 26.3,
+    "af": 1.43,
+    "archetype": "tag"
+  },
+  "KerenR": {
+    "hands": 58,
+    "vpip": 25.9,
+    "pfr": 19.0,
+    "3bet": 13.0,
+    "af": 6.0,
+    "archetype": "tag"
+  },
+  "zz3phyr": {
+    "hands": 7,
+    "vpip": 28.6,
+    "pfr": 28.6,
+    "3bet": 0,
+    "af": 0,
+    "archetype": "tag"
+  },
+  "Ferchyman77": {
+    "hands": 24,
+    "vpip": 12.5,
+    "pfr": 8.3,
+    "3bet": 0.0,
+    "af": 0,
+    "archetype": "nit"
+  },
+  "\u00f1lkjh33": {
+    "hands": 18,
+    "vpip": 50.0,
+    "pfr": 38.9,
+    "3bet": 16.7,
+    "af": 2.33,
+    "archetype": "tag"
+  },
+  "Indutory": {
+    "hands": 11,
+    "vpip": 45.5,
+    "pfr": 45.5,
+    "3bet": 20.0,
+    "af": 2,
+    "archetype": "tag"
+  },
+  "mikoandy69": {
+    "hands": 67,
+    "vpip": 32.8,
+    "pfr": 1.5,
+    "3bet": 0.0,
+    "af": 1.62,
+    "archetype": "tag"
+  },
+  "vayewis": {
+    "hands": 36,
+    "vpip": 36.1,
+    "pfr": 25.0,
+    "3bet": 10.0,
+    "af": 1.6,
+    "archetype": "tag"
+  },
+  "Mr.Skills29": {
+    "hands": 14,
+    "vpip": 21.4,
+    "pfr": 21.4,
+    "3bet": 25.0,
+    "af": 2,
+    "archetype": "tag"
+  },
+  "feerry61": {
+    "hands": 13,
+    "vpip": 46.2,
+    "pfr": 46.2,
+    "3bet": 20.0,
+    "af": 0,
+    "archetype": "tag"
+  },
+  "juanki37": {
+    "hands": 26,
+    "vpip": 26.9,
+    "pfr": 19.2,
+    "3bet": 10.0,
+    "af": 1.67,
+    "archetype": "tag"
+  },
+  "rusosky1000": {
+    "hands": 60,
+    "vpip": 10.0,
+    "pfr": 8.3,
+    "3bet": 0.0,
+    "af": 1.0,
+    "archetype": "nit"
+  },
+  "nofunfuma": {
+    "hands": 39,
+    "vpip": 12.8,
+    "pfr": 12.8,
+    "3bet": 9.1,
+    "af": 3.0,
+    "archetype": "nit"
+  },
+  "N3xtTIm35": {
+    "hands": 53,
+    "vpip": 30.2,
+    "pfr": 20.8,
+    "3bet": 0.0,
+    "af": 0.86,
+    "archetype": "tag"
+  },
+  "HungerG@me": {
+    "hands": 15,
+    "vpip": 40.0,
+    "pfr": 6.7,
+    "3bet": 12.5,
+    "af": 1.0,
+    "archetype": "tag"
+  },
+  "technoboy72": {
+    "hands": 37,
+    "vpip": 24.3,
+    "pfr": 18.9,
+    "3bet": 21.4,
+    "af": 2.0,
+    "archetype": "tag"
+  },
+  "MelucheLeVieux": {
+    "hands": 57,
+    "vpip": 21.1,
+    "pfr": 15.8,
+    "3bet": 0.0,
+    "af": 2.67,
+    "archetype": "tag"
+  },
+  "Macicled": {
+    "hands": 31,
+    "vpip": 22.6,
+    "pfr": 16.1,
+    "3bet": 0.0,
+    "af": 1.5,
+    "archetype": "tag"
+  },
+  "EktorKing": {
+    "hands": 22,
+    "vpip": 4.5,
+    "pfr": 4.5,
+    "3bet": 0.0,
+    "af": 0.0,
+    "archetype": "nit"
+  },
+  "chumy8": {
+    "hands": 20,
+    "vpip": 15.0,
+    "pfr": 15.0,
+    "3bet": 14.3,
+    "af": 0,
+    "archetype": "nit"
+  },
+  "MaxiMick": {
+    "hands": 9,
+    "vpip": 33.3,
+    "pfr": 22.2,
+    "3bet": 0.0,
+    "af": 4,
+    "archetype": "lag"
+  },
+  "Sapsiase": {
+    "hands": 29,
+    "vpip": 27.6,
+    "pfr": 27.6,
+    "3bet": 30.0,
+    "af": 2,
+    "archetype": "tag"
+  },
+  "danielalmi": {
+    "hands": 36,
+    "vpip": 38.9,
+    "pfr": 22.2,
+    "3bet": 0.0,
+    "af": 1.75,
+    "archetype": "tag"
+  },
+  "MiguelViana17": {
+    "hands": 7,
+    "vpip": 57.1,
+    "pfr": 28.6,
+    "3bet": 33.3,
+    "af": 0,
+    "archetype": "tag"
+  },
+  "papuchi957": {
+    "hands": 9,
+    "vpip": 44.4,
+    "pfr": 33.3,
+    "3bet": 20.0,
+    "af": 1,
+    "archetype": "tag"
+  },
+  "byrex2233": {
+    "hands": 7,
+    "vpip": 0.0,
+    "pfr": 0.0,
+    "3bet": 0.0,
+    "af": 0,
+    "archetype": "nit"
+  },
+  "Andrewv69": {
+    "hands": 13,
+    "vpip": 23.1,
+    "pfr": 0.0,
+    "3bet": 0.0,
+    "af": 1.0,
+    "archetype": "tag"
+  },
+  "boscos1966": {
+    "hands": 8,
+    "vpip": 12.5,
+    "pfr": 0.0,
+    "3bet": 0.0,
+    "af": 0,
+    "archetype": "nit"
+  },
+  "manolo1953": {
+    "hands": 9,
+    "vpip": 0.0,
+    "pfr": 0.0,
+    "3bet": 0.0,
+    "af": 0,
+    "archetype": "nit"
+  },
+  "hope201319": {
+    "hands": 16,
+    "vpip": 25.0,
+    "pfr": 12.5,
+    "3bet": 0.0,
+    "af": 1,
+    "archetype": "tag"
+  },
+  "Hisense99": {
+    "hands": 18,
+    "vpip": 27.8,
+    "pfr": 16.7,
+    "3bet": 16.7,
+    "af": 2,
+    "archetype": "tag"
+  },
+  "anonimo337": {
+    "hands": 20,
+    "vpip": 25.0,
+    "pfr": 10.0,
+    "3bet": 0.0,
+    "af": 1,
+    "archetype": "tag"
+  },
+  "glandeur66": {
+    "hands": 20,
+    "vpip": 55.0,
+    "pfr": 30.0,
+    "3bet": 25.0,
+    "af": 10,
+    "archetype": "lag"
+  },
+  "Coronel_Bdoc": {
+    "hands": 15,
+    "vpip": 40.0,
+    "pfr": 40.0,
+    "3bet": 50.0,
+    "af": 5.0,
+    "archetype": "lag"
+  },
+  "Agonista": {
+    "hands": 21,
+    "vpip": 19.0,
+    "pfr": 4.8,
+    "3bet": 0.0,
+    "af": 2,
+    "archetype": "tag"
+  },
+  "Rourou1734": {
+    "hands": 17,
+    "vpip": 58.8,
+    "pfr": 23.5,
+    "3bet": 100.0,
+    "af": 5.0,
+    "archetype": "lag"
+  },
+  "HOLLIFOUTERE": {
+    "hands": 10,
+    "vpip": 40.0,
+    "pfr": 10.0,
+    "3bet": 0.0,
+    "af": 1,
+    "archetype": "tag"
+  },
+  "eooooo": {
+    "hands": 43,
+    "vpip": 30.2,
+    "pfr": 20.9,
+    "3bet": 6.2,
+    "af": 3.5,
+    "archetype": "tag"
+  },
+  "migueli\u00f1o22": {
+    "hands": 5,
+    "vpip": 0.0,
+    "pfr": 0.0,
+    "3bet": 0.0,
+    "af": 0,
+    "archetype": "nit"
+  },
+  "xavi906": {
+    "hands": 19,
+    "vpip": 31.6,
+    "pfr": 15.8,
+    "3bet": 0.0,
+    "af": 2.0,
+    "archetype": "tag"
+  },
+  "gusarapo": {
+    "hands": 8,
+    "vpip": 37.5,
+    "pfr": 37.5,
+    "3bet": 33.3,
+    "af": 0,
+    "archetype": "tag"
+  },
+  "franzafra123": {
+    "hands": 13,
+    "vpip": 23.1,
+    "pfr": 7.7,
+    "3bet": 0.0,
+    "af": 0.0,
+    "archetype": "tag"
+  },
+  "damianmg10": {
+    "hands": 22,
+    "vpip": 31.8,
+    "pfr": 27.3,
+    "3bet": 0.0,
+    "af": 5,
+    "archetype": "lag"
+  },
+  "filology5": {
+    "hands": 52,
+    "vpip": 19.2,
+    "pfr": 11.5,
+    "3bet": 0.0,
+    "af": 0.5,
+    "archetype": "tag"
+  },
+  "Martial333": {
+    "hands": 13,
+    "vpip": 23.1,
+    "pfr": 7.7,
+    "3bet": 0.0,
+    "af": 4,
+    "archetype": "tag"
+  },
+  "Jac-58": {
+    "hands": 20,
+    "vpip": 35.0,
+    "pfr": 15.0,
+    "3bet": 0.0,
+    "af": 5.0,
+    "archetype": "tag"
+  },
+  "Desdjepu": {
+    "hands": 8,
+    "vpip": 12.5,
+    "pfr": 12.5,
+    "3bet": 0.0,
+    "af": 0.0,
+    "archetype": "nit"
+  },
+  "IgancioGB": {
+    "hands": 15,
+    "vpip": 13.3,
+    "pfr": 13.3,
+    "3bet": 0.0,
+    "af": 0,
+    "archetype": "nit"
+  },
+  "babybouchettes": {
+    "hands": 5,
+    "vpip": 0.0,
+    "pfr": 0.0,
+    "3bet": 0,
+    "af": 0,
+    "archetype": "nit"
+  },
+  "ivansalgueiro": {
+    "hands": 5,
+    "vpip": 20.0,
+    "pfr": 20.0,
+    "3bet": 0,
+    "af": 0,
+    "archetype": "tag"
+  },
+  "jpvacas": {
+    "hands": 17,
+    "vpip": 23.5,
+    "pfr": 23.5,
+    "3bet": 25.0,
+    "af": 4,
+    "archetype": "tag"
+  },
+  "ludstickk1": {
+    "hands": 7,
+    "vpip": 0.0,
+    "pfr": 0.0,
+    "3bet": 0.0,
+    "af": 0,
+    "archetype": "nit"
+  },
+  "Marya1956": {
+    "hands": 18,
+    "vpip": 22.2,
+    "pfr": 16.7,
+    "3bet": 0.0,
+    "af": 3,
+    "archetype": "tag"
+  },
+  "gates1960": {
+    "hands": 5,
+    "vpip": 40.0,
+    "pfr": 0.0,
+    "3bet": 0.0,
+    "af": 0.0,
+    "archetype": "tag"
+  },
+  "ganadores13": {
+    "hands": 6,
+    "vpip": 16.7,
+    "pfr": 16.7,
+    "3bet": 0.0,
+    "af": 1,
+    "archetype": "nit"
+  },
+  "2501990": {
+    "hands": 24,
+    "vpip": 16.7,
+    "pfr": 12.5,
+    "3bet": 0.0,
+    "af": 3,
+    "archetype": "nit"
+  },
+  "galzu369": {
+    "hands": 17,
+    "vpip": 29.4,
+    "pfr": 11.8,
+    "3bet": 14.3,
+    "af": 1.0,
+    "archetype": "tag"
+  },
+  "oneminuteone": {
+    "hands": 10,
+    "vpip": 20.0,
+    "pfr": 10.0,
+    "3bet": 0.0,
+    "af": 0.0,
+    "archetype": "tag"
+  },
+  "mariano62": {
+    "hands": 7,
+    "vpip": 14.3,
+    "pfr": 0.0,
+    "3bet": 0.0,
+    "af": 0.0,
+    "archetype": "nit"
+  },
+  "Ikeeraldaii": {
+    "hands": 7,
+    "vpip": 14.3,
+    "pfr": 14.3,
+    "3bet": 0.0,
+    "af": 0,
+    "archetype": "nit"
+  },
+  "culosone": {
+    "hands": 22,
+    "vpip": 36.4,
+    "pfr": 18.2,
+    "3bet": 0.0,
+    "af": 4,
+    "archetype": "tag"
+  },
+  "ansbgarde": {
+    "hands": 6,
+    "vpip": 33.3,
+    "pfr": 16.7,
+    "3bet": 0.0,
+    "af": 0,
+    "archetype": "tag"
+  },
+  "Rogelio2": {
+    "hands": 15,
+    "vpip": 26.7,
+    "pfr": 6.7,
+    "3bet": 0.0,
+    "af": 0.0,
+    "archetype": "tag"
+  },
+  "LLinusLLovefan": {
+    "hands": 12,
+    "vpip": 25.0,
+    "pfr": 8.3,
+    "3bet": 0.0,
+    "af": 1.0,
+    "archetype": "tag"
+  },
+  "tiago61220": {
+    "hands": 6,
+    "vpip": 83.3,
+    "pfr": 0.0,
+    "3bet": 0.0,
+    "af": 1,
+    "archetype": "fish"
+  },
+  "Uyquetardeee": {
+    "hands": 11,
+    "vpip": 36.4,
+    "pfr": 18.2,
+    "3bet": 0.0,
+    "af": 4,
+    "archetype": "tag"
+  },
+  "EcoS41": {
+    "hands": 15,
+    "vpip": 80.0,
+    "pfr": 0.0,
+    "3bet": 0.0,
+    "af": 0.5,
+    "archetype": "fish"
+  },
+  "Baumito": {
+    "hands": 22,
+    "vpip": 31.8,
+    "pfr": 9.1,
+    "3bet": 0.0,
+    "af": 2.0,
+    "archetype": "tag"
+  },
+  "Hot4grinD": {
+    "hands": 5,
+    "vpip": 60.0,
+    "pfr": 40.0,
+    "3bet": 0.0,
+    "af": 1,
+    "archetype": "tag"
+  },
+  "F4N\u00e17ic0": {
+    "hands": 7,
+    "vpip": 71.4,
+    "pfr": 42.9,
+    "3bet": 0.0,
+    "af": 2.0,
+    "archetype": "tag"
+  },
+  "j.cerqueira": {
+    "hands": 31,
+    "vpip": 16.1,
+    "pfr": 3.2,
+    "3bet": 12.5,
+    "af": 2,
+    "archetype": "nit"
+  },
+  "losi10": {
+    "hands": 29,
+    "vpip": 37.9,
+    "pfr": 3.4,
+    "3bet": 0.0,
+    "af": 0.83,
+    "archetype": "tag"
+  },
+  "MENDACANELO": {
+    "hands": 30,
+    "vpip": 13.3,
+    "pfr": 13.3,
+    "3bet": 9.1,
+    "af": 3,
+    "archetype": "nit"
+  },
+  "elpinkysharky": {
+    "hands": 9,
+    "vpip": 66.7,
+    "pfr": 44.4,
+    "3bet": 50.0,
+    "af": 1,
+    "archetype": "tag"
+  },
+  "PetitMaki404": {
+    "hands": 33,
+    "vpip": 18.2,
+    "pfr": 18.2,
+    "3bet": 7.7,
+    "af": 4.0,
+    "archetype": "tag"
+  },
+  "LazyZboubi": {
+    "hands": 10,
+    "vpip": 20.0,
+    "pfr": 10.0,
+    "3bet": 0.0,
+    "af": 0,
+    "archetype": "tag"
+  },
+  "elcrack87": {
+    "hands": 12,
+    "vpip": 16.7,
+    "pfr": 0.0,
+    "3bet": 0.0,
+    "af": 1.0,
+    "archetype": "nit"
+  },
+  "CHOIN8581": {
+    "hands": 14,
+    "vpip": 21.4,
+    "pfr": 14.3,
+    "3bet": 0.0,
+    "af": 1,
+    "archetype": "tag"
+  },
+  "Evita.evit": {
+    "hands": 6,
+    "vpip": 100.0,
+    "pfr": 16.7,
+    "3bet": 0.0,
+    "af": 0.25,
+    "archetype": "tag"
+  },
+  "steph68manon": {
+    "hands": 11,
+    "vpip": 0.0,
+    "pfr": 0.0,
+    "3bet": 0.0,
+    "af": 0,
+    "archetype": "nit"
+  },
+  "guiyermo1980": {
+    "hands": 14,
+    "vpip": 28.6,
+    "pfr": 0.0,
+    "3bet": 0.0,
+    "af": 1.0,
+    "archetype": "tag"
+  },
+  "ringostuf": {
+    "hands": 5,
+    "vpip": 60.0,
+    "pfr": 20.0,
+    "3bet": 0.0,
+    "af": 0,
+    "archetype": "tag"
+  },
+  "hernandS&G": {
+    "hands": 15,
+    "vpip": 20.0,
+    "pfr": 20.0,
+    "3bet": 20.0,
+    "af": 1,
+    "archetype": "tag"
+  },
+  "emiliojjv": {
+    "hands": 7,
+    "vpip": 14.3,
+    "pfr": 14.3,
+    "3bet": 50.0,
+    "af": 1,
+    "archetype": "nit"
+  },
+  "Beni97844": {
+    "hands": 18,
+    "vpip": 44.4,
+    "pfr": 22.2,
+    "3bet": 16.7,
+    "af": 0.8,
+    "archetype": "tag"
+  },
+  "SOSCHI007": {
+    "hands": 12,
+    "vpip": 33.3,
+    "pfr": 8.3,
+    "3bet": 16.7,
+    "af": 2.0,
+    "archetype": "tag"
+  },
+  "fiku1": {
+    "hands": 13,
+    "vpip": 15.4,
+    "pfr": 0.0,
+    "3bet": 0.0,
+    "af": 0,
+    "archetype": "nit"
+  },
+  "sikikis": {
+    "hands": 15,
+    "vpip": 40.0,
+    "pfr": 26.7,
+    "3bet": 0.0,
+    "af": 2.0,
+    "archetype": "tag"
+  },
+  "rare12345": {
+    "hands": 37,
+    "vpip": 32.4,
+    "pfr": 27.0,
+    "3bet": 0.0,
+    "af": 5.0,
+    "archetype": "lag"
+  },
+  "miguelams27": {
+    "hands": 19,
+    "vpip": 21.1,
+    "pfr": 15.8,
+    "3bet": 0.0,
+    "af": 0,
+    "archetype": "tag"
+  },
+  "JuanSoto22": {
+    "hands": 5,
+    "vpip": 60.0,
+    "pfr": 40.0,
+    "3bet": 0,
+    "af": 0,
+    "archetype": "tag"
+  },
+  "geraard90": {
+    "hands": 9,
+    "vpip": 33.3,
+    "pfr": 22.2,
+    "3bet": 25.0,
+    "af": 0.5,
+    "archetype": "tag"
+  },
+  "Jmmz87": {
+    "hands": 6,
+    "vpip": 33.3,
+    "pfr": 33.3,
+    "3bet": 0.0,
+    "af": 3.0,
+    "archetype": "lag"
+  },
+  "boogychat": {
+    "hands": 6,
+    "vpip": 50.0,
+    "pfr": 16.7,
+    "3bet": 0,
+    "af": 3,
+    "archetype": "tag"
+  },
+  "LittleVerole": {
+    "hands": 15,
+    "vpip": 20.0,
+    "pfr": 6.7,
+    "3bet": 0.0,
+    "af": 0.5,
+    "archetype": "tag"
+  },
+  "juancathree": {
+    "hands": 18,
+    "vpip": 33.3,
+    "pfr": 22.2,
+    "3bet": 0.0,
+    "af": 0.67,
+    "archetype": "tag"
+  },
+  "pepkoyote": {
+    "hands": 11,
+    "vpip": 45.5,
+    "pfr": 18.2,
+    "3bet": 25.0,
+    "af": 1.33,
+    "archetype": "tag"
+  },
+  "SexybabySexymum": {
+    "hands": 13,
+    "vpip": 23.1,
+    "pfr": 23.1,
+    "3bet": 0.0,
+    "af": 1,
+    "archetype": "tag"
+  },
+  "MATADOR473": {
+    "hands": 6,
+    "vpip": 0.0,
+    "pfr": 0.0,
+    "3bet": 0.0,
+    "af": 0,
+    "archetype": "nit"
+  },
+  "lulula24": {
+    "hands": 7,
+    "vpip": 28.6,
+    "pfr": 28.6,
+    "3bet": 0.0,
+    "af": 0,
+    "archetype": "tag"
+  },
+  "ra14sg": {
+    "hands": 13,
+    "vpip": 38.5,
+    "pfr": 23.1,
+    "3bet": 16.7,
+    "af": 4.0,
+    "archetype": "lag"
+  },
+  "nunodias1221": {
+    "hands": 6,
+    "vpip": 50.0,
+    "pfr": 0.0,
+    "3bet": 0,
+    "af": 2,
+    "archetype": "fish"
+  },
+  "MAVERICK298": {
+    "hands": 6,
+    "vpip": 33.3,
+    "pfr": 16.7,
+    "3bet": 0.0,
+    "af": 1,
+    "archetype": "tag"
+  },
+  "sanpistakio": {
+    "hands": 6,
+    "vpip": 0.0,
+    "pfr": 0.0,
+    "3bet": 0.0,
+    "af": 0,
+    "archetype": "nit"
+  },
+  "grangui64": {
+    "hands": 8,
+    "vpip": 25.0,
+    "pfr": 12.5,
+    "3bet": 0.0,
+    "af": 1,
+    "archetype": "tag"
+  },
+  "aleexv07": {
+    "hands": 6,
+    "vpip": 66.7,
+    "pfr": 33.3,
+    "3bet": 0,
+    "af": 1,
+    "archetype": "tag"
+  },
+  "Cachel_66": {
+    "hands": 14,
+    "vpip": 28.6,
+    "pfr": 21.4,
+    "3bet": 0.0,
+    "af": 3.0,
+    "archetype": "tag"
+  },
+  "joseagrao": {
+    "hands": 13,
+    "vpip": 38.5,
+    "pfr": 23.1,
+    "3bet": 0.0,
+    "af": 0.4,
+    "archetype": "tag"
+  },
+  "darkzazel": {
+    "hands": 7,
+    "vpip": 28.6,
+    "pfr": 14.3,
+    "3bet": 0.0,
+    "af": 0.0,
+    "archetype": "tag"
+  },
+  "Nofcknidea888": {
+    "hands": 16,
+    "vpip": 37.5,
+    "pfr": 25.0,
+    "3bet": 0.0,
+    "af": 0.4,
+    "archetype": "tag"
+  },
+  "Pstoleroloco": {
+    "hands": 5,
+    "vpip": 40.0,
+    "pfr": 20.0,
+    "3bet": 0.0,
+    "af": 1.0,
+    "archetype": "tag"
+  },
+  "xaval01": {
+    "hands": 46,
+    "vpip": 26.1,
+    "pfr": 26.1,
+    "3bet": 10.0,
+    "af": 3.0,
+    "archetype": "tag"
+  },
+  "SmOuL123": {
+    "hands": 5,
+    "vpip": 40.0,
+    "pfr": 20.0,
+    "3bet": 50.0,
+    "af": 0.0,
+    "archetype": "tag"
+  },
+  "VirginLola": {
+    "hands": 9,
+    "vpip": 33.3,
+    "pfr": 33.3,
+    "3bet": 0.0,
+    "af": 0,
+    "archetype": "tag"
+  },
+  "rnb333": {
+    "hands": 23,
+    "vpip": 21.7,
+    "pfr": 8.7,
+    "3bet": 11.1,
+    "af": 1.0,
+    "archetype": "tag"
+  },
+  "pompavana": {
+    "hands": 16,
+    "vpip": 12.5,
+    "pfr": 6.2,
+    "3bet": 0.0,
+    "af": 0,
+    "archetype": "nit"
+  },
+  "NCabral_SCP": {
+    "hands": 18,
+    "vpip": 0.0,
+    "pfr": 0.0,
+    "3bet": 0.0,
+    "af": 0,
+    "archetype": "nit"
+  },
+  "tonid00kie": {
+    "hands": 13,
+    "vpip": 30.8,
+    "pfr": 15.4,
+    "3bet": 0.0,
+    "af": 2,
+    "archetype": "tag"
+  },
+  "gago537": {
+    "hands": 8,
+    "vpip": 50.0,
+    "pfr": 25.0,
+    "3bet": 0.0,
+    "af": 1.0,
+    "archetype": "tag"
+  },
+  "CaputMuck": {
+    "hands": 16,
+    "vpip": 37.5,
+    "pfr": 31.2,
+    "3bet": 0.0,
+    "af": 1,
+    "archetype": "tag"
+  },
+  "Dsuarezv": {
+    "hands": 7,
+    "vpip": 28.6,
+    "pfr": 28.6,
+    "3bet": 0.0,
+    "af": 0,
+    "archetype": "tag"
+  },
+  "fenoltaleina": {
+    "hands": 8,
+    "vpip": 25.0,
+    "pfr": 0.0,
+    "3bet": 0.0,
+    "af": 0.0,
+    "archetype": "tag"
+  },
+  "liu0508": {
+    "hands": 8,
+    "vpip": 87.5,
+    "pfr": 12.5,
+    "3bet": 50.0,
+    "af": 2.5,
+    "archetype": "fish"
+  },
+  "josepoker195": {
+    "hands": 9,
+    "vpip": 33.3,
+    "pfr": 22.2,
+    "3bet": 0.0,
+    "af": 0,
+    "archetype": "tag"
+  },
+  "toriko94": {
+    "hands": 6,
+    "vpip": 33.3,
+    "pfr": 16.7,
+    "3bet": 0.0,
+    "af": 1,
+    "archetype": "tag"
+  },
+  "zmpoker75": {
+    "hands": 5,
+    "vpip": 60.0,
+    "pfr": 0.0,
+    "3bet": 0.0,
+    "af": 2.0,
+    "archetype": "fish"
+  },
+  "wjordi98": {
+    "hands": 5,
+    "vpip": 80.0,
+    "pfr": 40.0,
+    "3bet": 0.0,
+    "af": 1,
+    "archetype": "tag"
+  },
+  "ICrakYrHoles": {
+    "hands": 28,
+    "vpip": 21.4,
+    "pfr": 17.9,
+    "3bet": 66.7,
+    "af": 0,
+    "archetype": "tag"
+  },
+  "richh74": {
+    "hands": 5,
+    "vpip": 60.0,
+    "pfr": 60.0,
+    "3bet": 0.0,
+    "af": 1.0,
+    "archetype": "tag"
+  },
+  "Pffft71": {
+    "hands": 7,
+    "vpip": 14.3,
+    "pfr": 14.3,
+    "3bet": 0.0,
+    "af": 3,
+    "archetype": "nit"
+  },
+  "1Tr3c3": {
+    "hands": 10,
+    "vpip": 20.0,
+    "pfr": 10.0,
+    "3bet": 0.0,
+    "af": 1,
+    "archetype": "tag"
+  },
+  "terevila.pt": {
+    "hands": 5,
+    "vpip": 0.0,
+    "pfr": 0.0,
+    "3bet": 0.0,
+    "af": 0,
+    "archetype": "nit"
+  },
+  "m0r3n0_bcn_7": {
+    "hands": 7,
+    "vpip": 0.0,
+    "pfr": 0.0,
+    "3bet": 0.0,
+    "af": 0,
+    "archetype": "nit"
+  },
+  "vincelard44": {
+    "hands": 12,
+    "vpip": 25.0,
+    "pfr": 25.0,
+    "3bet": 0.0,
+    "af": 1,
+    "archetype": "tag"
+  },
+  "neirdanaej": {
+    "hands": 8,
+    "vpip": 50.0,
+    "pfr": 25.0,
+    "3bet": 0.0,
+    "af": 2,
+    "archetype": "tag"
+  },
+  "anar1312": {
+    "hands": 33,
+    "vpip": 21.2,
+    "pfr": 3.0,
+    "3bet": 0.0,
+    "af": 1.0,
+    "archetype": "tag"
+  },
+  "MDFARHA72": {
+    "hands": 6,
+    "vpip": 0.0,
+    "pfr": 0.0,
+    "3bet": 0.0,
+    "af": 0,
+    "archetype": "nit"
+  },
+  "eGarriga": {
+    "hands": 36,
+    "vpip": 22.2,
+    "pfr": 16.7,
+    "3bet": 11.1,
+    "af": 4,
+    "archetype": "tag"
+  },
+  "PokiAA": {
+    "hands": 11,
+    "vpip": 36.4,
+    "pfr": 18.2,
+    "3bet": 0.0,
+    "af": 0.5,
+    "archetype": "tag"
+  },
+  "xXAAmONXx": {
+    "hands": 18,
+    "vpip": 11.1,
+    "pfr": 5.6,
+    "3bet": 0.0,
+    "af": 0,
+    "archetype": "nit"
+  },
+  "PokerIzGood": {
+    "hands": 8,
+    "vpip": 50.0,
+    "pfr": 37.5,
+    "3bet": 0.0,
+    "af": 3.0,
+    "archetype": "lag"
+  },
+  "juantiogot": {
+    "hands": 13,
+    "vpip": 38.5,
+    "pfr": 23.1,
+    "3bet": 0.0,
+    "af": 3.0,
+    "archetype": "lag"
+  },
+  "brujAAveriia": {
+    "hands": 9,
+    "vpip": 22.2,
+    "pfr": 11.1,
+    "3bet": 0.0,
+    "af": 0.5,
+    "archetype": "tag"
+  },
+  "bfg0007": {
+    "hands": 8,
+    "vpip": 12.5,
+    "pfr": 0.0,
+    "3bet": 0.0,
+    "af": 0,
+    "archetype": "nit"
+  },
+  "sim19ks": {
+    "hands": 19,
+    "vpip": 47.4,
+    "pfr": 31.6,
+    "3bet": 0.0,
+    "af": 4.0,
+    "archetype": "maniac"
+  },
+  "Josskijano": {
+    "hands": 5,
+    "vpip": 0.0,
+    "pfr": 0.0,
+    "3bet": 0.0,
+    "af": 0,
+    "archetype": "nit"
+  },
+  "washorage52": {
+    "hands": 9,
+    "vpip": 22.2,
+    "pfr": 0.0,
+    "3bet": 0.0,
+    "af": 0,
+    "archetype": "tag"
+  },
+  "3Du-nOOb": {
+    "hands": 5,
+    "vpip": 0.0,
+    "pfr": 0.0,
+    "3bet": 0.0,
+    "af": 0,
+    "archetype": "nit"
+  },
+  "Rucostaa": {
+    "hands": 11,
+    "vpip": 27.3,
+    "pfr": 18.2,
+    "3bet": 20.0,
+    "af": 0.0,
+    "archetype": "tag"
+  },
+  "Crossnar": {
+    "hands": 6,
+    "vpip": 33.3,
+    "pfr": 16.7,
+    "3bet": 0.0,
+    "af": 1.0,
+    "archetype": "tag"
+  },
+  "sycolll": {
+    "hands": 11,
+    "vpip": 9.1,
+    "pfr": 0.0,
+    "3bet": 0.0,
+    "af": 0,
+    "archetype": "nit"
+  },
+  "pimpflo4545": {
+    "hands": 7,
+    "vpip": 0.0,
+    "pfr": 0.0,
+    "3bet": 0.0,
+    "af": 0,
+    "archetype": "nit"
+  },
+  "troski2010": {
+    "hands": 6,
+    "vpip": 16.7,
+    "pfr": 0.0,
+    "3bet": 0,
+    "af": 1.0,
+    "archetype": "nit"
+  },
+  "lemur119": {
+    "hands": 8,
+    "vpip": 50.0,
+    "pfr": 12.5,
+    "3bet": 0.0,
+    "af": 1.0,
+    "archetype": "fish"
+  },
+  "pzjohn": {
+    "hands": 17,
+    "vpip": 29.4,
+    "pfr": 0.0,
+    "3bet": 0.0,
+    "af": 0.0,
+    "archetype": "tag"
+  },
+  "MendesOnfire": {
+    "hands": 10,
+    "vpip": 0.0,
+    "pfr": 0.0,
+    "3bet": 0.0,
+    "af": 0,
+    "archetype": "nit"
+  },
+  "vexochas": {
+    "hands": 15,
+    "vpip": 0.0,
+    "pfr": 0.0,
+    "3bet": 0.0,
+    "af": 0.0,
+    "archetype": "nit"
+  },
+  "datkeire01": {
+    "hands": 21,
+    "vpip": 14.3,
+    "pfr": 4.8,
+    "3bet": 16.7,
+    "af": 0.5,
+    "archetype": "nit"
+  },
+  "escur\u00e7or": {
+    "hands": 7,
+    "vpip": 42.9,
+    "pfr": 42.9,
+    "3bet": 50.0,
+    "af": 0,
+    "archetype": "tag"
+  },
+  "xminix23": {
+    "hands": 8,
+    "vpip": 37.5,
+    "pfr": 37.5,
+    "3bet": 33.3,
+    "af": 1.5,
+    "archetype": "tag"
+  },
+  "alielg95": {
+    "hands": 10,
+    "vpip": 60.0,
+    "pfr": 40.0,
+    "3bet": 33.3,
+    "af": 1.0,
+    "archetype": "tag"
+  },
+  "Mantonio007": {
+    "hands": 11,
+    "vpip": 54.5,
+    "pfr": 18.2,
+    "3bet": 0.0,
+    "af": 0.67,
+    "archetype": "tag"
+  },
+  "mest1708": {
+    "hands": 46,
+    "vpip": 19.6,
+    "pfr": 17.4,
+    "3bet": 13.3,
+    "af": 1.0,
+    "archetype": "tag"
+  },
+  "QuinteFul377": {
+    "hands": 8,
+    "vpip": 0.0,
+    "pfr": 0.0,
+    "3bet": 0.0,
+    "af": 0,
+    "archetype": "nit"
+  },
+  "Penha17213": {
+    "hands": 19,
+    "vpip": 21.1,
+    "pfr": 21.1,
+    "3bet": 0.0,
+    "af": 0,
+    "archetype": "tag"
+  },
+  "guerreirokis": {
+    "hands": 8,
+    "vpip": 25.0,
+    "pfr": 12.5,
+    "3bet": 0.0,
+    "af": 0,
+    "archetype": "tag"
+  },
+  "lorena2720": {
+    "hands": 8,
+    "vpip": 25.0,
+    "pfr": 12.5,
+    "3bet": 16.7,
+    "af": 0.0,
+    "archetype": "tag"
+  },
+  "chechu8888": {
+    "hands": 7,
+    "vpip": 42.9,
+    "pfr": 28.6,
+    "3bet": 0,
+    "af": 1,
+    "archetype": "tag"
+  },
+  "rockola14": {
+    "hands": 8,
+    "vpip": 12.5,
+    "pfr": 0.0,
+    "3bet": 0.0,
+    "af": 0,
+    "archetype": "nit"
+  },
+  "diarouga": {
+    "hands": 11,
+    "vpip": 36.4,
+    "pfr": 36.4,
+    "3bet": 16.7,
+    "af": 2,
+    "archetype": "tag"
+  },
+  "kokks2": {
+    "hands": 40,
+    "vpip": 25.0,
+    "pfr": 22.5,
+    "3bet": 10.0,
+    "af": 1.0,
+    "archetype": "tag"
+  },
+  "jaumecher": {
+    "hands": 5,
+    "vpip": 80.0,
+    "pfr": 40.0,
+    "3bet": 0,
+    "af": 0.0,
+    "archetype": "tag"
+  },
+  "Laura_Lluna": {
+    "hands": 11,
+    "vpip": 18.2,
+    "pfr": 0.0,
+    "3bet": 0.0,
+    "af": 0,
+    "archetype": "tag"
+  },
+  "Clonetrik": {
+    "hands": 6,
+    "vpip": 50.0,
+    "pfr": 33.3,
+    "3bet": 0.0,
+    "af": 1,
+    "archetype": "tag"
+  },
+  "Dovene11": {
+    "hands": 6,
+    "vpip": 0.0,
+    "pfr": 0.0,
+    "3bet": 0.0,
+    "af": 0,
+    "archetype": "nit"
+  },
+  "BEN7379": {
+    "hands": 14,
+    "vpip": 0.0,
+    "pfr": 0.0,
+    "3bet": 0.0,
+    "af": 0,
+    "archetype": "nit"
+  },
+  "educastellon": {
+    "hands": 17,
+    "vpip": 23.5,
+    "pfr": 17.6,
+    "3bet": 0.0,
+    "af": 1.5,
+    "archetype": "tag"
+  },
+  "defbal": {
+    "hands": 13,
+    "vpip": 38.5,
+    "pfr": 23.1,
+    "3bet": 0.0,
+    "af": 4,
+    "archetype": "lag"
+  },
+  "javlex3": {
+    "hands": 7,
+    "vpip": 14.3,
+    "pfr": 14.3,
+    "3bet": 0.0,
+    "af": 3.0,
+    "archetype": "nit"
+  },
+  "ManiRami": {
+    "hands": 5,
+    "vpip": 0.0,
+    "pfr": 0.0,
+    "3bet": 0,
+    "af": 0,
+    "archetype": "nit"
+  },
+  "itimao": {
+    "hands": 5,
+    "vpip": 20.0,
+    "pfr": 20.0,
+    "3bet": 0.0,
+    "af": 0,
+    "archetype": "tag"
+  },
+  "JYBastille": {
+    "hands": 8,
+    "vpip": 25.0,
+    "pfr": 25.0,
+    "3bet": 100.0,
+    "af": 3,
+    "archetype": "tag"
+  },
+  "SergiMarti99": {
+    "hands": 6,
+    "vpip": 66.7,
+    "pfr": 33.3,
+    "3bet": 0.0,
+    "af": 0,
+    "archetype": "tag"
+  },
+  "madmanMortigan": {
+    "hands": 5,
+    "vpip": 60.0,
+    "pfr": 40.0,
+    "3bet": 0.0,
+    "af": 1,
+    "archetype": "tag"
+  },
+  "colman30": {
+    "hands": 12,
+    "vpip": 8.3,
+    "pfr": 0.0,
+    "3bet": 0.0,
+    "af": 0,
+    "archetype": "nit"
+  },
+  "carlosbrugal": {
+    "hands": 9,
+    "vpip": 11.1,
+    "pfr": 11.1,
+    "3bet": 0.0,
+    "af": 0,
+    "archetype": "nit"
+  },
+  "NJGR1": {
+    "hands": 7,
+    "vpip": 14.3,
+    "pfr": 14.3,
+    "3bet": 0.0,
+    "af": 0.0,
+    "archetype": "nit"
+  },
+  "CHIN_AS_87": {
+    "hands": 7,
+    "vpip": 14.3,
+    "pfr": 14.3,
+    "3bet": 0.0,
+    "af": 0,
+    "archetype": "nit"
+  },
+  "iveyruizao": {
+    "hands": 7,
+    "vpip": 14.3,
+    "pfr": 14.3,
+    "3bet": 0.0,
+    "af": 0,
+    "archetype": "nit"
+  },
+  "dewolt123": {
+    "hands": 15,
+    "vpip": 26.7,
+    "pfr": 13.3,
+    "3bet": 0.0,
+    "af": 0.5,
+    "archetype": "tag"
+  },
+  "vasili1111": {
+    "hands": 8,
+    "vpip": 37.5,
+    "pfr": 25.0,
+    "3bet": 0.0,
+    "af": 0.0,
+    "archetype": "tag"
+  },
+  "MDKristian": {
+    "hands": 14,
+    "vpip": 21.4,
+    "pfr": 14.3,
+    "3bet": 50.0,
+    "af": 3,
+    "archetype": "tag"
+  },
+  "LK5574": {
+    "hands": 19,
+    "vpip": 21.1,
+    "pfr": 15.8,
+    "3bet": 0.0,
+    "af": 3,
+    "archetype": "tag"
+  },
+  "Darkat79": {
+    "hands": 17,
+    "vpip": 41.2,
+    "pfr": 35.3,
+    "3bet": 33.3,
+    "af": 1.25,
+    "archetype": "tag"
+  },
+  "sebzinzin": {
+    "hands": 5,
+    "vpip": 40.0,
+    "pfr": 20.0,
+    "3bet": 0.0,
+    "af": 0.0,
+    "archetype": "tag"
+  },
+  "EtSaKaZu": {
+    "hands": 5,
+    "vpip": 40.0,
+    "pfr": 20.0,
+    "3bet": 0,
+    "af": 0,
+    "archetype": "tag"
+  },
+  "luckyjanito": {
+    "hands": 7,
+    "vpip": 28.6,
+    "pfr": 0.0,
+    "3bet": 0.0,
+    "af": 0.0,
+    "archetype": "tag"
+  },
+  "monchito1233": {
+    "hands": 5,
+    "vpip": 20.0,
+    "pfr": 0.0,
+    "3bet": 0.0,
+    "af": 0.0,
+    "archetype": "tag"
+  },
+  "evmiso": {
+    "hands": 10,
+    "vpip": 20.0,
+    "pfr": 20.0,
+    "3bet": 0.0,
+    "af": 1,
+    "archetype": "tag"
+  },
+  "1filibustero": {
+    "hands": 10,
+    "vpip": 30.0,
+    "pfr": 10.0,
+    "3bet": 0.0,
+    "af": 1,
+    "archetype": "tag"
+  },
+  "350ZJHN": {
+    "hands": 6,
+    "vpip": 0.0,
+    "pfr": 0.0,
+    "3bet": 0.0,
+    "af": 0,
+    "archetype": "nit"
+  },
+  "eyeeel": {
+    "hands": 9,
+    "vpip": 22.2,
+    "pfr": 22.2,
+    "3bet": 0.0,
+    "af": 0,
+    "archetype": "tag"
+  },
+  "panddore": {
+    "hands": 7,
+    "vpip": 0.0,
+    "pfr": 0.0,
+    "3bet": 0.0,
+    "af": 0,
+    "archetype": "nit"
+  },
+  "riomagico": {
+    "hands": 10,
+    "vpip": 40.0,
+    "pfr": 30.0,
+    "3bet": 0.0,
+    "af": 0,
+    "archetype": "tag"
+  },
+  "aixosi": {
+    "hands": 14,
+    "vpip": 35.7,
+    "pfr": 21.4,
+    "3bet": 0.0,
+    "af": 2.5,
+    "archetype": "tag"
+  },
+  "jkmni": {
+    "hands": 9,
+    "vpip": 44.4,
+    "pfr": 33.3,
+    "3bet": 50.0,
+    "af": 0,
+    "archetype": "tag"
+  },
+  "pobrekenny": {
+    "hands": 8,
+    "vpip": 25.0,
+    "pfr": 12.5,
+    "3bet": 0.0,
+    "af": 2,
+    "archetype": "tag"
+  },
+  "Sigiilo": {
+    "hands": 5,
+    "vpip": 20.0,
+    "pfr": 20.0,
+    "3bet": 0.0,
+    "af": 0.0,
+    "archetype": "tag"
+  },
+  "Wyern": {
+    "hands": 7,
+    "vpip": 0.0,
+    "pfr": 0.0,
+    "3bet": 0.0,
+    "af": 0,
+    "archetype": "nit"
+  },
+  "Espl\u00f3tago": {
+    "hands": 11,
+    "vpip": 45.5,
+    "pfr": 27.3,
+    "3bet": 0.0,
+    "af": 1,
+    "archetype": "tag"
+  },
+  "ciceron0077": {
+    "hands": 14,
+    "vpip": 14.3,
+    "pfr": 14.3,
+    "3bet": 0.0,
+    "af": 1,
+    "archetype": "nit"
+  },
+  "MRodM": {
+    "hands": 5,
+    "vpip": 40.0,
+    "pfr": 40.0,
+    "3bet": 0,
+    "af": 1,
+    "archetype": "tag"
+  },
+  "jbf12345678": {
+    "hands": 8,
+    "vpip": 25.0,
+    "pfr": 25.0,
+    "3bet": 0.0,
+    "af": 0,
+    "archetype": "tag"
+  },
+  "Tiburzi0": {
+    "hands": 6,
+    "vpip": 66.7,
+    "pfr": 16.7,
+    "3bet": 0.0,
+    "af": 1.0,
+    "archetype": "tag"
+  },
+  "ShAArkAAtack": {
+    "hands": 8,
+    "vpip": 37.5,
+    "pfr": 25.0,
+    "3bet": 0.0,
+    "af": 1.0,
+    "archetype": "tag"
+  },
+  "affranchi38": {
+    "hands": 16,
+    "vpip": 31.2,
+    "pfr": 25.0,
+    "3bet": 0.0,
+    "af": 1.0,
+    "archetype": "tag"
+  },
+  "qazfdsa": {
+    "hands": 6,
+    "vpip": 50.0,
+    "pfr": 16.7,
+    "3bet": 0.0,
+    "af": 1.0,
+    "archetype": "tag"
+  },
+  "metod66": {
+    "hands": 6,
+    "vpip": 33.3,
+    "pfr": 16.7,
+    "3bet": 50.0,
+    "af": 0,
+    "archetype": "tag"
+  },
+  "FERMINANDRES": {
+    "hands": 13,
+    "vpip": 15.4,
+    "pfr": 15.4,
+    "3bet": 0.0,
+    "af": 1,
+    "archetype": "nit"
+  },
+  "Pabley27": {
+    "hands": 33,
+    "vpip": 21.2,
+    "pfr": 12.1,
+    "3bet": 8.3,
+    "af": 3.0,
+    "archetype": "tag"
+  },
+  "goodluckcris": {
+    "hands": 7,
+    "vpip": 14.3,
+    "pfr": 14.3,
+    "3bet": 50.0,
+    "af": 2,
+    "archetype": "nit"
+  },
+  "PokerPowerMPF": {
+    "hands": 30,
+    "vpip": 3.3,
+    "pfr": 3.3,
+    "3bet": 0.0,
+    "af": 0.5,
+    "archetype": "nit"
+  },
+  "Estrabao": {
+    "hands": 6,
+    "vpip": 0.0,
+    "pfr": 0.0,
+    "3bet": 0.0,
+    "af": 0,
+    "archetype": "nit"
+  },
+  "averel38": {
+    "hands": 8,
+    "vpip": 37.5,
+    "pfr": 25.0,
+    "3bet": 20.0,
+    "af": 0.5,
+    "archetype": "tag"
+  },
+  "AntonioMCCL": {
+    "hands": 11,
+    "vpip": 36.4,
+    "pfr": 0.0,
+    "3bet": 0.0,
+    "af": 5,
+    "archetype": "tag"
+  },
+  "albertos18": {
+    "hands": 6,
+    "vpip": 16.7,
+    "pfr": 16.7,
+    "3bet": 33.3,
+    "af": 1,
+    "archetype": "nit"
+  },
+  "PeveH": {
+    "hands": 7,
+    "vpip": 57.1,
+    "pfr": 28.6,
+    "3bet": 50.0,
+    "af": 0.0,
+    "archetype": "tag"
+  },
+  "okpaulo": {
+    "hands": 5,
+    "vpip": 40.0,
+    "pfr": 20.0,
+    "3bet": 0.0,
+    "af": 0,
+    "archetype": "tag"
+  },
+  "SUPERHARMONY": {
+    "hands": 12,
+    "vpip": 33.3,
+    "pfr": 25.0,
+    "3bet": 0.0,
+    "af": 1,
+    "archetype": "tag"
+  },
+  "eljesus996": {
+    "hands": 7,
+    "vpip": 42.9,
+    "pfr": 14.3,
+    "3bet": 0.0,
+    "af": 2,
+    "archetype": "fish"
+  },
+  "ElReplicante": {
+    "hands": 7,
+    "vpip": 14.3,
+    "pfr": 14.3,
+    "3bet": 0.0,
+    "af": 0,
+    "archetype": "nit"
+  },
+  "MiaPrincesa": {
+    "hands": 12,
+    "vpip": 25.0,
+    "pfr": 16.7,
+    "3bet": 0.0,
+    "af": 4,
+    "archetype": "tag"
+  },
+  "sintemblar": {
+    "hands": 7,
+    "vpip": 0.0,
+    "pfr": 0.0,
+    "3bet": 0,
+    "af": 0,
+    "archetype": "nit"
+  },
+  "hyperion570": {
+    "hands": 6,
+    "vpip": 0.0,
+    "pfr": 0.0,
+    "3bet": 0,
+    "af": 0,
+    "archetype": "nit"
+  },
+  "LaChouette_9": {
+    "hands": 5,
+    "vpip": 100.0,
+    "pfr": 40.0,
+    "3bet": 100.0,
+    "af": 0.5,
+    "archetype": "tag"
+  },
+  "BARROS.jm": {
+    "hands": 5,
+    "vpip": 40.0,
+    "pfr": 0.0,
+    "3bet": 0.0,
+    "af": 1,
+    "archetype": "tag"
+  },
+  "DavizSJ": {
+    "hands": 9,
+    "vpip": 22.2,
+    "pfr": 22.2,
+    "3bet": 0.0,
+    "af": 2.0,
+    "archetype": "tag"
+  },
+  "zobryst": {
+    "hands": 10,
+    "vpip": 20.0,
+    "pfr": 10.0,
+    "3bet": 0.0,
+    "af": 0,
+    "archetype": "tag"
+  },
+  "manolitin": {
+    "hands": 8,
+    "vpip": 12.5,
+    "pfr": 12.5,
+    "3bet": 0.0,
+    "af": 1,
+    "archetype": "nit"
+  },
+  "LuisGR90": {
+    "hands": 31,
+    "vpip": 22.6,
+    "pfr": 12.9,
+    "3bet": 0.0,
+    "af": 3,
+    "archetype": "tag"
+  },
+  "lucascucu99": {
+    "hands": 8,
+    "vpip": 37.5,
+    "pfr": 25.0,
+    "3bet": 0.0,
+    "af": 2.0,
+    "archetype": "tag"
+  },
+  "wsx25": {
+    "hands": 8,
+    "vpip": 37.5,
+    "pfr": 37.5,
+    "3bet": 0.0,
+    "af": 1.0,
+    "archetype": "tag"
+  },
+  "truxote22": {
+    "hands": 8,
+    "vpip": 12.5,
+    "pfr": 0.0,
+    "3bet": 0.0,
+    "af": 0,
+    "archetype": "nit"
+  },
+  "Xexugol": {
+    "hands": 5,
+    "vpip": 40.0,
+    "pfr": 40.0,
+    "3bet": 0.0,
+    "af": 0.0,
+    "archetype": "tag"
+  },
+  "anonio9": {
+    "hands": 13,
+    "vpip": 30.8,
+    "pfr": 15.4,
+    "3bet": 0.0,
+    "af": 3.0,
+    "archetype": "tag"
+  },
+  "Elemdi": {
+    "hands": 12,
+    "vpip": 16.7,
+    "pfr": 16.7,
+    "3bet": 0.0,
+    "af": 0,
+    "archetype": "nit"
+  },
+  "NAlexandru22": {
+    "hands": 9,
+    "vpip": 55.6,
+    "pfr": 44.4,
+    "3bet": 33.3,
+    "af": 1,
+    "archetype": "tag"
+  },
+  "tatch62": {
+    "hands": 5,
+    "vpip": 40.0,
+    "pfr": 20.0,
+    "3bet": 0.0,
+    "af": 1.0,
+    "archetype": "tag"
+  },
+  "rosko99100": {
+    "hands": 13,
+    "vpip": 38.5,
+    "pfr": 30.8,
+    "3bet": 0.0,
+    "af": 1,
+    "archetype": "tag"
+  },
+  "Nekal3": {
+    "hands": 5,
+    "vpip": 40.0,
+    "pfr": 20.0,
+    "3bet": 0,
+    "af": 0,
+    "archetype": "tag"
+  },
+  "fran198769": {
+    "hands": 12,
+    "vpip": 25.0,
+    "pfr": 25.0,
+    "3bet": 14.3,
+    "af": 0,
+    "archetype": "tag"
+  },
+  "DeividBox980": {
+    "hands": 10,
+    "vpip": 10.0,
+    "pfr": 10.0,
+    "3bet": 0.0,
+    "af": 3,
+    "archetype": "nit"
+  },
+  "LMRPokerstar": {
+    "hands": 10,
+    "vpip": 10.0,
+    "pfr": 10.0,
+    "3bet": 0,
+    "af": 2,
+    "archetype": "nit"
+  },
+  "c0sta9": {
+    "hands": 14,
+    "vpip": 7.1,
+    "pfr": 0.0,
+    "3bet": 0.0,
+    "af": 0.0,
+    "archetype": "nit"
+  },
+  "Jorlogar": {
+    "hands": 7,
+    "vpip": 28.6,
+    "pfr": 28.6,
+    "3bet": 0.0,
+    "af": 1,
+    "archetype": "tag"
+  },
+  "gaereset": {
+    "hands": 5,
+    "vpip": 20.0,
+    "pfr": 20.0,
+    "3bet": 0.0,
+    "af": 0,
+    "archetype": "tag"
+  },
+  "JCA311": {
+    "hands": 26,
+    "vpip": 34.6,
+    "pfr": 3.8,
+    "3bet": 0.0,
+    "af": 2.5,
+    "archetype": "tag"
+  },
+  "VaneITEe": {
+    "hands": 9,
+    "vpip": 11.1,
+    "pfr": 0.0,
+    "3bet": 0.0,
+    "af": 1,
+    "archetype": "nit"
+  },
+  "pkbestone": {
+    "hands": 10,
+    "vpip": 10.0,
+    "pfr": 0.0,
+    "3bet": 0.0,
+    "af": 0,
+    "archetype": "nit"
+  },
+  "Showman1111": {
+    "hands": 5,
+    "vpip": 40.0,
+    "pfr": 0.0,
+    "3bet": 0.0,
+    "af": 0.0,
+    "archetype": "tag"
+  },
+  "rolua8086": {
+    "hands": 7,
+    "vpip": 28.6,
+    "pfr": 0.0,
+    "3bet": 0.0,
+    "af": 0,
+    "archetype": "tag"
+  },
+  "guilhemoh2": {
+    "hands": 5,
+    "vpip": 40.0,
+    "pfr": 20.0,
+    "3bet": 0.0,
+    "af": 1,
+    "archetype": "tag"
+  },
+  "Jumby34": {
+    "hands": 8,
+    "vpip": 0.0,
+    "pfr": 0.0,
+    "3bet": 0.0,
+    "af": 0,
+    "archetype": "nit"
+  },
+  "carloslova": {
+    "hands": 13,
+    "vpip": 30.8,
+    "pfr": 15.4,
+    "3bet": 0.0,
+    "af": 3.0,
+    "archetype": "tag"
+  },
+  "SETA244": {
+    "hands": 24,
+    "vpip": 12.5,
+    "pfr": 12.5,
+    "3bet": 0.0,
+    "af": 1,
+    "archetype": "nit"
+  },
+  "fernando3768": {
+    "hands": 19,
+    "vpip": 21.1,
+    "pfr": 10.5,
+    "3bet": 0.0,
+    "af": 3.0,
+    "archetype": "tag"
+  },
+  "cachondeo126": {
+    "hands": 6,
+    "vpip": 0.0,
+    "pfr": 0.0,
+    "3bet": 0.0,
+    "af": 0,
+    "archetype": "nit"
+  },
+  "Tete1020": {
+    "hands": 6,
+    "vpip": 33.3,
+    "pfr": 0.0,
+    "3bet": 0.0,
+    "af": 1.0,
+    "archetype": "tag"
+  },
+  "jcravo": {
+    "hands": 11,
+    "vpip": 9.1,
+    "pfr": 9.1,
+    "3bet": 0.0,
+    "af": 0,
+    "archetype": "nit"
+  },
+  "iburgue": {
+    "hands": 11,
+    "vpip": 0.0,
+    "pfr": 0.0,
+    "3bet": 0.0,
+    "af": 0,
+    "archetype": "nit"
+  },
+  "plural21": {
+    "hands": 7,
+    "vpip": 28.6,
+    "pfr": 28.6,
+    "3bet": 0.0,
+    "af": 0.0,
+    "archetype": "tag"
+  },
+  "elie2398": {
+    "hands": 5,
+    "vpip": 20.0,
+    "pfr": 0.0,
+    "3bet": 0.0,
+    "af": 0.0,
+    "archetype": "tag"
+  },
+  "ExcaliTur": {
+    "hands": 5,
+    "vpip": 0.0,
+    "pfr": 0.0,
+    "3bet": 0,
+    "af": 0,
+    "archetype": "nit"
+  },
+  "mumtazz81": {
+    "hands": 5,
+    "vpip": 20.0,
+    "pfr": 0.0,
+    "3bet": 0.0,
+    "af": 0.0,
+    "archetype": "tag"
+  },
+  "ferm71f": {
+    "hands": 10,
+    "vpip": 20.0,
+    "pfr": 20.0,
+    "3bet": 0.0,
+    "af": 1,
+    "archetype": "tag"
+  },
+  "Mental1989": {
+    "hands": 5,
+    "vpip": 40.0,
+    "pfr": 20.0,
+    "3bet": 0.0,
+    "af": 0,
+    "archetype": "tag"
+  },
+  "cobra131165": {
+    "hands": 11,
+    "vpip": 18.2,
+    "pfr": 0.0,
+    "3bet": 0.0,
+    "af": 0,
+    "archetype": "tag"
+  },
+  "estrellabea": {
+    "hands": 6,
+    "vpip": 16.7,
+    "pfr": 0.0,
+    "3bet": 0.0,
+    "af": 0.0,
+    "archetype": "nit"
+  },
+  "pixussss": {
+    "hands": 26,
+    "vpip": 34.6,
+    "pfr": 23.1,
+    "3bet": 12.5,
+    "af": 2,
+    "archetype": "tag"
+  },
+  "Cruasan17": {
+    "hands": 14,
+    "vpip": 21.4,
+    "pfr": 7.1,
+    "3bet": 0.0,
+    "af": 0,
+    "archetype": "tag"
+  },
+  "fouthkings": {
+    "hands": 10,
+    "vpip": 60.0,
+    "pfr": 30.0,
+    "3bet": 0.0,
+    "af": 4,
+    "archetype": "lag"
+  },
+  "indiiiopraiiia": {
+    "hands": 7,
+    "vpip": 28.6,
+    "pfr": 14.3,
+    "3bet": 0,
+    "af": 0,
+    "archetype": "tag"
+  },
+  "manuelmadruga": {
+    "hands": 5,
+    "vpip": 40.0,
+    "pfr": 20.0,
+    "3bet": 0.0,
+    "af": 0,
+    "archetype": "tag"
+  },
+  "Gabriel2002c": {
+    "hands": 9,
+    "vpip": 22.2,
+    "pfr": 22.2,
+    "3bet": 0.0,
+    "af": 3.0,
+    "archetype": "tag"
+  },
+  "DANIFRR": {
+    "hands": 8,
+    "vpip": 25.0,
+    "pfr": 25.0,
+    "3bet": 50.0,
+    "af": 2.0,
+    "archetype": "tag"
+  },
+  "guybrushD": {
+    "hands": 6,
+    "vpip": 50.0,
+    "pfr": 33.3,
+    "3bet": 0.0,
+    "af": 3,
+    "archetype": "lag"
+  },
+  "AlexTheSavag": {
+    "hands": 9,
+    "vpip": 11.1,
+    "pfr": 11.1,
+    "3bet": 0.0,
+    "af": 0,
+    "archetype": "nit"
+  },
+  "troncoespacial": {
+    "hands": 8,
+    "vpip": 100.0,
+    "pfr": 0.0,
+    "3bet": 0.0,
+    "af": 0.67,
+    "archetype": "fish"
+  },
+  "equipiere": {
+    "hands": 9,
+    "vpip": 33.3,
+    "pfr": 0.0,
+    "3bet": 0.0,
+    "af": 2.0,
+    "archetype": "tag"
+  },
+  "zythor": {
+    "hands": 5,
+    "vpip": 0.0,
+    "pfr": 0.0,
+    "3bet": 0.0,
+    "af": 0,
+    "archetype": "nit"
+  },
+  "MisterBinss": {
+    "hands": 6,
+    "vpip": 50.0,
+    "pfr": 50.0,
+    "3bet": 0.0,
+    "af": 2,
+    "archetype": "tag"
+  },
+  "Dude23323": {
+    "hands": 8,
+    "vpip": 12.5,
+    "pfr": 12.5,
+    "3bet": 0.0,
+    "af": 1.0,
+    "archetype": "nit"
+  },
+  "Juanclapa": {
+    "hands": 5,
+    "vpip": 40.0,
+    "pfr": 0.0,
+    "3bet": 0,
+    "af": 0.5,
+    "archetype": "tag"
+  },
+  "Albeprez": {
+    "hands": 5,
+    "vpip": 60.0,
+    "pfr": 0.0,
+    "3bet": 0.0,
+    "af": 1,
+    "archetype": "fish"
+  },
+  "DonCorleoPT": {
+    "hands": 19,
+    "vpip": 21.1,
+    "pfr": 15.8,
+    "3bet": 0.0,
+    "af": 1,
+    "archetype": "tag"
+  },
+  "XuanKold": {
+    "hands": 9,
+    "vpip": 33.3,
+    "pfr": 22.2,
+    "3bet": 0.0,
+    "af": 1.0,
+    "archetype": "tag"
+  },
+  "bmnd14": {
+    "hands": 5,
+    "vpip": 80.0,
+    "pfr": 40.0,
+    "3bet": 0.0,
+    "af": 2.0,
+    "archetype": "tag"
+  },
+  "Louxo": {
+    "hands": 6,
+    "vpip": 66.7,
+    "pfr": 50.0,
+    "3bet": 0.0,
+    "af": 0,
+    "archetype": "tag"
+  },
+  "Muix": {
+    "hands": 5,
+    "vpip": 40.0,
+    "pfr": 20.0,
+    "3bet": 0.0,
+    "af": 1,
+    "archetype": "tag"
+  },
+  "Gwiande": {
+    "hands": 5,
+    "vpip": 0.0,
+    "pfr": 0.0,
+    "3bet": 0.0,
+    "af": 0,
+    "archetype": "nit"
+  },
+  "transecola": {
+    "hands": 6,
+    "vpip": 16.7,
+    "pfr": 0.0,
+    "3bet": 0.0,
+    "af": 0.0,
+    "archetype": "nit"
+  },
+  "elcabo360": {
+    "hands": 9,
+    "vpip": 22.2,
+    "pfr": 22.2,
+    "3bet": 0.0,
+    "af": 0,
+    "archetype": "tag"
+  },
+  "xapi666": {
+    "hands": 9,
+    "vpip": 33.3,
+    "pfr": 33.3,
+    "3bet": 0.0,
+    "af": 6,
+    "archetype": "lag"
+  },
+  "peterpunkkkk": {
+    "hands": 7,
+    "vpip": 14.3,
+    "pfr": 0.0,
+    "3bet": 0.0,
+    "af": 0.0,
+    "archetype": "nit"
+  },
+  "adridelaf": {
+    "hands": 5,
+    "vpip": 20.0,
+    "pfr": 0.0,
+    "3bet": 0.0,
+    "af": 0,
+    "archetype": "tag"
+  },
+  "lkbIbgz": {
+    "hands": 5,
+    "vpip": 0.0,
+    "pfr": 0.0,
+    "3bet": 0.0,
+    "af": 0,
+    "archetype": "nit"
+  },
+  "QQpkrQQ": {
+    "hands": 6,
+    "vpip": 0.0,
+    "pfr": 0.0,
+    "3bet": 0.0,
+    "af": 0,
+    "archetype": "nit"
+  },
+  "NIHHIL0": {
+    "hands": 6,
+    "vpip": 50.0,
+    "pfr": 16.7,
+    "3bet": 0.0,
+    "af": 0.0,
+    "archetype": "tag"
+  },
+  "daenerys28": {
+    "hands": 7,
+    "vpip": 14.3,
+    "pfr": 14.3,
+    "3bet": 25.0,
+    "af": 0,
+    "archetype": "nit"
+  },
+  "stian19": {
+    "hands": 6,
+    "vpip": 33.3,
+    "pfr": 0.0,
+    "3bet": 0.0,
+    "af": 2,
+    "archetype": "tag"
+  },
+  "osseni": {
+    "hands": 6,
+    "vpip": 16.7,
+    "pfr": 16.7,
+    "3bet": 0.0,
+    "af": 0,
+    "archetype": "nit"
+  },
+  "Pinchoglobo": {
+    "hands": 13,
+    "vpip": 38.5,
+    "pfr": 30.8,
+    "3bet": 66.7,
+    "af": 3,
+    "archetype": "lag"
+  },
+  "saifoufou": {
+    "hands": 8,
+    "vpip": 12.5,
+    "pfr": 0.0,
+    "3bet": 0.0,
+    "af": 1,
+    "archetype": "nit"
+  },
+  "dthprde": {
+    "hands": 6,
+    "vpip": 50.0,
+    "pfr": 16.7,
+    "3bet": 0.0,
+    "af": 1.0,
+    "archetype": "tag"
+  },
+  "kevyncito": {
+    "hands": 15,
+    "vpip": 26.7,
+    "pfr": 26.7,
+    "3bet": 0.0,
+    "af": 3,
+    "archetype": "tag"
+  },
+  "46peter46": {
+    "hands": 15,
+    "vpip": 13.3,
+    "pfr": 6.7,
+    "3bet": 0.0,
+    "af": 1,
+    "archetype": "nit"
+  },
+  "ninetsoua999": {
+    "hands": 5,
+    "vpip": 20.0,
+    "pfr": 20.0,
+    "3bet": 0,
+    "af": 0,
+    "archetype": "tag"
+  },
+  "Rppopy": {
+    "hands": 11,
+    "vpip": 18.2,
+    "pfr": 18.2,
+    "3bet": 0.0,
+    "af": 0,
+    "archetype": "tag"
+  },
+  "loilon_10": {
+    "hands": 5,
+    "vpip": 40.0,
+    "pfr": 0.0,
+    "3bet": 0.0,
+    "af": 2,
+    "archetype": "tag"
+  },
+  "SrTTSC": {
+    "hands": 11,
+    "vpip": 18.2,
+    "pfr": 18.2,
+    "3bet": 25.0,
+    "af": 2,
+    "archetype": "tag"
+  },
+  "Trycatchthis": {
+    "hands": 7,
+    "vpip": 42.9,
+    "pfr": 28.6,
+    "3bet": 33.3,
+    "af": 2,
+    "archetype": "tag"
+  },
+  "festuket": {
+    "hands": 8,
+    "vpip": 50.0,
+    "pfr": 12.5,
+    "3bet": 0.0,
+    "af": 1,
+    "archetype": "fish"
+  },
+  "n0rthw00d": {
+    "hands": 9,
+    "vpip": 11.1,
+    "pfr": 11.1,
+    "3bet": 0.0,
+    "af": 0,
+    "archetype": "nit"
+  },
+  "pokemon_006": {
+    "hands": 17,
+    "vpip": 11.8,
+    "pfr": 0.0,
+    "3bet": 0.0,
+    "af": 0.0,
+    "archetype": "nit"
+  },
+  "CCPT95": {
+    "hands": 15,
+    "vpip": 6.7,
+    "pfr": 0.0,
+    "3bet": 0.0,
+    "af": 0.0,
+    "archetype": "nit"
+  },
+  "Maxibigson": {
+    "hands": 23,
+    "vpip": 30.4,
+    "pfr": 30.4,
+    "3bet": 0.0,
+    "af": 0,
+    "archetype": "tag"
+  },
+  "spartakular6": {
+    "hands": 13,
+    "vpip": 15.4,
+    "pfr": 0.0,
+    "3bet": 0.0,
+    "af": 1.0,
+    "archetype": "nit"
+  },
+  "alexivan7": {
+    "hands": 22,
+    "vpip": 18.2,
+    "pfr": 18.2,
+    "3bet": 0.0,
+    "af": 0,
+    "archetype": "tag"
+  },
+  "manolito6003": {
+    "hands": 7,
+    "vpip": 28.6,
+    "pfr": 14.3,
+    "3bet": 0.0,
+    "af": 0.0,
+    "archetype": "tag"
+  },
+  "guillepipper": {
+    "hands": 16,
+    "vpip": 0.0,
+    "pfr": 0.0,
+    "3bet": 0.0,
+    "af": 0,
+    "archetype": "nit"
+  },
+  "Have2LeaveSpace": {
+    "hands": 5,
+    "vpip": 40.0,
+    "pfr": 40.0,
+    "3bet": 0,
+    "af": 1.0,
+    "archetype": "tag"
+  },
+  "DiegoPkLL": {
+    "hands": 6,
+    "vpip": 0.0,
+    "pfr": 0.0,
+    "3bet": 0.0,
+    "af": 0,
+    "archetype": "nit"
+  },
+  "Richi_payaso": {
+    "hands": 10,
+    "vpip": 30.0,
+    "pfr": 10.0,
+    "3bet": 0.0,
+    "af": 0,
+    "archetype": "tag"
+  },
+  "oizoo86": {
+    "hands": 15,
+    "vpip": 33.3,
+    "pfr": 20.0,
+    "3bet": 0.0,
+    "af": 1.5,
+    "archetype": "tag"
+  },
+  "mivipkr": {
+    "hands": 6,
+    "vpip": 0.0,
+    "pfr": 0.0,
+    "3bet": 0.0,
+    "af": 0,
+    "archetype": "nit"
+  },
+  "meragon64": {
+    "hands": 5,
+    "vpip": 0.0,
+    "pfr": 0.0,
+    "3bet": 0.0,
+    "af": 0,
+    "archetype": "nit"
+  }
+}

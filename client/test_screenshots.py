@@ -6,6 +6,7 @@ Usage:
   python test_screenshots.py --lite --strategy=gpt4      # Lite mode with specific strategy
   python test_screenshots.py --lite --model=gpt-4o       # Lite mode with specific vision model
   python test_screenshots.py --lite --test-all-models    # Test all vision models
+  python test_screenshots.py --v2 [screenshot_path]      # V2 mode: detect player names + lookup stats
   
 Available vision models for --lite mode:
   gpt-4o          - Best vision specialist (94% accuracy)
@@ -26,6 +27,7 @@ from datetime import datetime
 
 # Parse args
 LITE_MODE = '--lite' in sys.argv
+V2_MODE = '--v2' in sys.argv
 STRATEGY = 'gpt3'
 VISION_MODEL = None  # None = use default for mode
 TEST_ALL_MODELS = '--test-all-models' in sys.argv
@@ -48,6 +50,9 @@ args = [a for a in sys.argv[1:] if not a.startswith('--')]
 if LITE_MODE:
     from vision_detector_lite import VisionDetectorLite
     from strategy_engine import StrategyEngine, get_available_strategies
+elif V2_MODE:
+    from vision_detector_v2 import VisionDetectorV2
+    from opponent_lookup import lookup_opponents, format_opponent_line, format_advice_line
 else:
     from vision_detector import VisionDetector
 
@@ -152,7 +157,33 @@ def test_screenshot(path, index=None, total=None, model_override=None):
     print(f"{prefix}{fname}{model_suffix}", end=" ", flush=True)
     
     try:
-        if LITE_MODE:
+        if V2_MODE:
+            # V2 mode: detect player names + lookup stats
+            detector = VisionDetectorV2(model=model_override or VISION_MODEL)
+            result = detector.detect_table(path)
+            
+            # Extract player names and lookup stats
+            players = result.get('players', [])
+            player_names = [p['name'] for p in players if p.get('name') and not p.get('is_hero')]
+            
+            if player_names:
+                opponents = lookup_opponents(player_names)
+                result['opponent_stats'] = opponents
+                result['opponent_line'] = format_opponent_line(opponents)
+                result['advice_line'] = format_advice_line(opponents)
+            
+            cards = result.get('hero_cards') or []
+            players_in = result.get('players_in_hand', '?')
+            api_time = result.get('api_time', 0)
+            opp_line = result.get('opponent_line', 'No players detected')
+            
+            out = f"| {' '.join(cards) if cards else '--':8} | {players_in} in hand | {api_time:.1f}s"
+            print(out)
+            print(f"    Players: {opp_line}")
+            if result.get('advice_line'):
+                print(f"    Advice: {result['advice_line']}")
+            
+        elif LITE_MODE:
             # Use kiro-server for vision if specified
             if model_override == 'kiro-server':
                 # Send screenshot to Kiro server for analysis
@@ -207,7 +238,11 @@ def test_screenshot(path, index=None, total=None, model_override=None):
 def main():
     global LOG_FILE
     
-    if LITE_MODE:
+    if V2_MODE:
+        model_info = VISION_MODEL or 'gpt-5.2 (default)'
+        print(f"V2 MODE: {model_info} + player name detection + opponent lookup")
+        print(f"Player stats loaded from player_stats.json\n")
+    elif LITE_MODE:
         model_info = VISION_MODEL or 'gpt-4o-mini (default)'
         if TEST_ALL_MODELS:
             model_info = f"ALL MODELS: {', '.join(ALL_VISION_MODELS)}"
