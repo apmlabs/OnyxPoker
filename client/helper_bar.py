@@ -215,31 +215,51 @@ class HelperBar:
         """Classify player archetype from stats"""
         if hands < 10:
             return 'unknown'
-        if vpip > 45:
-            return 'fish'
-        if vpip < 15 and pfr < 12:
-            return 'nit'
-        if vpip > 28 and pfr > 20:
-            return 'lag'
-        if 18 <= vpip <= 28 and 15 <= pfr <= 22:
-            return 'tag'
+        
+        # Calculate aggression factor
+        af = pfr / vpip if vpip > 0 else 0
+        
+        # Maniac: super loose super aggressive
         if vpip > 50 and pfr > 35:
             return 'maniac'
-        return 'unknown'
+        # Fish: loose passive (high VPIP, low PFR relative to VPIP)
+        if vpip > 40 or (vpip > 30 and af < 0.5):
+            return 'fish'
+        # Nit: ultra tight
+        if vpip < 15:
+            return 'nit'
+        # LAG: loose aggressive (VPIP > 27 is key threshold)
+        if vpip > 27 and af > 0.6:
+            return 'lag'
+        # TAG: tight aggressive (the default winning style)
+        if vpip <= 27 and af > 0.5:
+            return 'tag'
+        # Loose passive (calls a lot, rarely raises)
+        if vpip > 25 and af < 0.5:
+            return 'fish'
+        # Tight passive
+        if vpip <= 25 and af < 0.5:
+            return 'rock'
+        
+        return 'reg'  # Default: regular player
 
     def _get_archetype_advice(self, archetype, vpip, pfr):
         """Get actionable advice for archetype"""
         if archetype == 'fish':
-            return f"VALUE BET relentlessly - they call too much"
+            return f"VALUE BET big - never bluff"
         elif archetype == 'nit':
-            return f"STEAL blinds - fold to their raises"
+            return f"STEAL blinds - fold to 3bet"
         elif archetype == 'lag':
-            return f"TRAP with strong hands - they bluff often"
+            return f"CALL DOWN - they barrel light"
         elif archetype == 'tag':
-            return f"RESPECT raises - 3bet or fold"
+            return f"RESPECT - only play premium"
         elif archetype == 'maniac':
-            return f"CALL DOWN lighter - they overbluff"
-        return "Play solid - no reads"
+            return f"TRAP then call down"
+        elif archetype == 'rock':
+            return f"STEAL - fold to any action"
+        elif archetype == 'reg':
+            return f"Standard play"
+        return "No reads yet"
 
     def _lookup_opponent_stats(self, players):
         """Lookup stats for detected players"""
