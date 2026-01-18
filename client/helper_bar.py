@@ -244,21 +244,21 @@ class HelperBar:
         return 'reg'  # Default: regular player
 
     def _get_archetype_advice(self, archetype, vpip, pfr):
-        """Get actionable advice for archetype"""
+        """Get actionable advice for archetype - when to deviate from value_lord"""
         if archetype == 'fish':
-            return f"BET big for value - never bluff"
+            return f"WIDER value - bet any pair, never bluff"
         elif archetype == 'nit':
-            return f"Raise their blinds - fold if they raise"
+            return f"WIDER steals - but FOLD to their raises"
         elif archetype == 'lag':
-            return f"Let them bluff - call with pairs"
+            return f"TIGHTER preflop - but call down lighter postflop"
         elif archetype == 'tag':
-            return f"Fold marginal hands vs raises"
+            return f"TIGHTER - fold marginal hands to their raises"
         elif archetype == 'maniac':
-            return f"Check strong hands - let them bet"
+            return f"TIGHTER preflop - call down any pair postflop"
         elif archetype == 'rock':
-            return f"Raise their blinds - fold if they play back"
+            return f"WIDER steals - FOLD everything if they bet"
         elif archetype == 'reg':
-            return f"Standard play"
+            return f"Play value_lord standard"
         return "No reads yet"
 
     def _lookup_opponent_stats(self, players):
