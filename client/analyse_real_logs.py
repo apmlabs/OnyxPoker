@@ -472,6 +472,7 @@ def main(min_bb=None, focus_strategy=None):
             'pf_would_fold': [],  # Hands where strategy would fold but hero played
             'pf_would_play': [],  # Hands where strategy would play but hero folded
             'post_would_fold': [],  # Postflop spots where strategy would fold
+            'unsaved_losses': [],  # Losing hands where strategy still plays
         }
     
     for hand in all_hands:
@@ -499,6 +500,7 @@ def main(min_bb=None, focus_strategy=None):
                     continue
                 
                 # Only count FIRST postflop fold (if fold flop, won't see turn)
+                found_fold = False
                 for sit in situations:
                     strat_action, reason = evaluate_postflop(hand, sit, strategy)
                     if strat_action == 'fold' and sit['hero_action'] != 'fold':
@@ -507,7 +509,12 @@ def main(min_bb=None, focus_strategy=None):
                             'situation': sit,
                             'reason': reason
                         })
+                        found_fold = True
                         break  # Only count first fold per hand
+                
+                # Track unsaved losses: strategy plays through but loses
+                if not found_fold and hand['profit_bb'] < -10:  # Only significant losses
+                    results[strategy]['unsaved_losses'].append(hand)
     
     # Calculate impact
     print("=" * 100)
@@ -608,6 +615,20 @@ def main(min_bb=None, focus_strategy=None):
         reason = p.get('reason', '')
         print(f"    {h['hand_str']:<6} on {board:<18} {s['street']:<5} {pot_pct:>3.0%} pot -> missed {h['profit_bb']:.1f} BB")
         print(f"           Reason: {reason}")
+    
+    # Unsaved losses section
+    unsaved = results[strategies[0]]['unsaved_losses']
+    if unsaved:
+        unsaved_bb = sum(abs(h['profit_bb']) for h in unsaved)
+        print()
+        print("=" * 130)
+        print(f"UNSAVED LOSSES (strategy plays through, still loses): {len(unsaved)} hands, {unsaved_bb:.1f} BB")
+        print("=" * 130)
+        unsaved.sort(key=lambda x: x['profit_bb'])
+        for h in unsaved[:10]:
+            board_str = ' '.join(h['board']) if h['board'] else '-'
+            hand_info = analyze_hand(h['hero_cards'], h['board']) if h['board'] else {'desc': 'preflop'}
+            print(f"    {h['hand_str']:<6} {h['hero_position']:<4} {abs(h['profit_bb']):>6.1f} BB - {hand_info['desc']:<30} {board_str}")
     
     # Strategy comparison on key hands
     print()
