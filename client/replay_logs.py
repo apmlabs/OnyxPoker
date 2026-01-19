@@ -100,7 +100,7 @@ def main():
                 for line in f:
                     try:
                         d = json.loads(line)
-                        if d.get('hero_cards') and d.get('is_hero_turn'):
+                        if d.get('hero_cards'):
                             all_hands.append(d)
                     except:
                         pass

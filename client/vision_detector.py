@@ -41,7 +41,6 @@ Return JSON:
   "pot": 0.15,
   "hero_stack": 5.00,
   "to_call": 0.02,
-  "is_hero_turn": true,
   "action": "raise",
   "bet_size": 0.10,
   "reasoning": "explanation",
@@ -54,7 +53,6 @@ READING THE TABLE:
 - pot: Read EXACT amount with decimals from "Pot: €X.XX" text.
 - hero_stack: Hero's stack amount at bottom.
 - to_call: Amount on CALL button, 0 if CHECK available, null if no buttons.
-- is_hero_turn: TRUE if LARGE RED action buttons visible (Fold/Call/Raise), FALSE if only checkboxes or waiting.
 
 SUIT IDENTIFICATION (CRITICAL - VERIFY TWICE):
 Step 1: Check COLOR first
@@ -144,13 +142,12 @@ Return ONLY JSON"""
                     "pot": {"type": ["number", "null"]},
                     "hero_stack": {"type": ["number", "null"]},
                     "to_call": {"type": ["number", "null"]},
-                    "is_hero_turn": {"type": "boolean"},
                     "action": {"type": "string", "enum": ["fold", "check", "call", "bet", "raise"]},
                     "bet_size": {"type": ["number", "null"]},
                     "reasoning": {"type": "string"},
                     "confidence": {"type": "number"}
                 },
-                "required": ["hero_cards", "community_cards", "pot", "hero_stack", "to_call", "is_hero_turn", "action", "bet_size", "reasoning", "confidence"],
+                "required": ["hero_cards", "community_cards", "pot", "hero_stack", "to_call", "action", "bet_size", "reasoning", "confidence"],
                 "additionalProperties": False
             }
         }
@@ -201,9 +198,6 @@ Return ONLY JSON"""
         except json.JSONDecodeError as e:
             self.log(f"JSON error: {result_text[:100]}", "ERROR")
             raise ValueError(f"Invalid JSON: {e}")
-        
-        # Debug max_call
-        self.log(f"max_call from GPT: {result.get('max_call')}, is_hero_turn: {result.get('is_hero_turn')}", "DEBUG")
         
         result['api_time'] = api_time
         result['model'] = self.model

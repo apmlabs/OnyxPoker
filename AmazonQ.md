@@ -1,6 +1,6 @@
 # OnyxPoker - Status Tracking
 
-**Last Updated**: January 19, 2026 01:30 UTC
+**Last Updated**: January 19, 2026 02:00 UTC
 
 ---
 
@@ -9,12 +9,12 @@
 ### What Works
 | Component | Status | Notes |
 |-----------|--------|-------|
-| helper_bar.py | ✅ | V2 vision default (player detection + opponent stats) |
-| helper_bar.py --v1 | ✅ | V1 vision (no player detection) |
+| helper_bar.py | ✅ | V2 vision default (opponent detection) |
+| helper_bar.py --v1 | ✅ | V1 vision (no opponent detection) |
 | helper_bar.py --ai-only | ✅ | AI does both vision + decision |
 | test_screenshots.py | ✅ | V1 vs V2 comparison (default) |
 | vision_detector_lite.py | ✅ | GPT-5.2 for vision only (V1) |
-| vision_detector_v2.py | ✅ | GPT-5.2 + player name detection (V2) |
+| vision_detector_v2.py | ✅ | GPT-5.2 + opponent detection (V2) |
 | build_player_stats.py | ✅ | Single source of truth for player archetypes |
 | strategy_engine.py | ✅ | 3-bet/4-bet ranges + BB defense |
 | poker_logic.py | ✅ | Data-driven value_lord postflop |
@@ -41,6 +41,29 @@
 ---
 
 ## Session History
+
+### Session 61: Vision Prompt Cleanup (January 19, 2026)
+
+**Removed dead code from vision prompts and helper_bar.**
+
+**Removed fields:**
+- `is_hero_turn` - was detected but bypassed in code (always showed advice)
+- `is_hero` in players array - hero is always at bottom center
+- `players_in_hand` count - replaced by counting `opponents` with `has_cards=true`
+
+**V2 vision changes:**
+- Renamed `players` → `opponents` (excludes hero)
+- Clarified `has_cards` detection: "TRUE ONLY if 2 face-down card backs visible"
+- Added emphasis: "Most opponents will have has_cards=FALSE (folded)"
+
+**Files cleaned:**
+- vision_detector_lite.py - removed is_hero_turn
+- vision_detector_v2.py - removed is_hero_turn, is_hero, renamed to opponents
+- vision_detector.py (AI-only) - removed is_hero_turn
+- helper_bar.py - removed is_hero_turn variable and dead if True
+- test_screenshots.py - updated to use opponents array
+- eval_strategies.py, replay_logs.py - removed is_hero_turn filter
+- Deleted vision_detector_test.py (unused)
 
 ### Session 60: V2 Vision Default + Test Comparison (January 19, 2026)
 

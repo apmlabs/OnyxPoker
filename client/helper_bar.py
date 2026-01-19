@@ -225,13 +225,11 @@ class HelperBar:
         }
         return fallback.get(archetype, "no reads")
 
-    def _lookup_opponent_stats(self, players):
-        """Lookup stats for detected players - advice comes from DB"""
+    def _lookup_opponent_stats(self, opponents):
+        """Lookup stats for detected opponents - advice comes from DB"""
         stats_db = self._load_player_stats()
         opponent_stats = []
-        for p in players:
-            if p.get('is_hero'):
-                continue
+        for p in opponents:
             name = p.get('name', '')
             if name in stats_db:
                 s = stats_db[name]
@@ -397,7 +395,7 @@ class HelperBar:
                     api_time = time.time() - api_start
                     
                     # Lookup opponent stats
-                    opponent_stats = self._lookup_opponent_stats(table_data.get('players', []))
+                    opponent_stats = self._lookup_opponent_stats(table_data.get('opponents', []))
                     table_data['opponent_stats'] = opponent_stats
                     table_data['opponent_line'] = self._format_opponent_line(opponent_stats)
                     table_data['advice_line'] = self._format_advice_line(opponent_stats)
@@ -482,7 +480,6 @@ class HelperBar:
             'hero_cards': cards,
             'board': board,
             'pot': pot,
-            'is_hero_turn': result.get('is_hero_turn', True),
             'action': action,
             'amount': bet_size,
             'to_call': to_call,
@@ -494,7 +491,6 @@ class HelperBar:
             'confidence': confidence,
             'elapsed': round(elapsed, 2)
         }
-        # Add postflop info if available
         if board:
             log_entry['equity'] = result.get('equity', 0)
             log_entry['hand_desc'] = result.get('hand_desc', '')
@@ -593,7 +589,6 @@ class HelperBar:
             self.log(decision_str, "ERROR")
 
         # Update right panel
-        is_hero_turn = result.get('is_hero_turn', True)
         
         # Build equity/info string for postflop
         equity_str = ""
@@ -617,8 +612,7 @@ class HelperBar:
             
             equity_str = " | ".join(parts) if parts else hand_desc
         
-        if True:  # Always show advice - removed unreliable is_hero_turn detection
-            self._update_stats_display(result)
+        self._update_stats_display(result)
         
         self.time_label.config(text=f"{elapsed:.1f}s")
 

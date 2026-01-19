@@ -47,7 +47,7 @@ SCREENSHOTS_DIR = os.path.join(os.path.dirname(__file__), 'screenshots')
 def compare_v1_v2(v1_result, v2_result):
     """Compare V1 and V2 results, return list of differences."""
     diffs = []
-    fields = ['hero_cards', 'community_cards', 'pot', 'to_call', 'is_hero_turn', 'big_blind']
+    fields = ['hero_cards', 'community_cards', 'pot', 'to_call', 'big_blind']
     
     for field in fields:
         val1 = v1_result.get(field)
@@ -80,7 +80,7 @@ def test_compare(path, index=None, total=None):
         
         # Print all key fields for both
         fields = ['hero_cards', 'community_cards', 'pot', 'to_call', 'hero_stack', 
-                  'is_hero_turn', 'big_blind', 'hero_position', 'facing']
+                  'big_blind', 'hero_position', 'facing']
         
         print(f"  {'Field':<18} {'V1':<25} {'V2':<25} {'Match'}", flush=True)
         print(f"  {'-'*18} {'-'*25} {'-'*25} {'-'*5}", flush=True)
@@ -90,11 +90,11 @@ def test_compare(path, index=None, total=None):
             match = "OK" if val1 == val2 else "DIFF"
             print(f"  {field:<18} {str(val1):<25} {str(val2):<25} {match}", flush=True)
         
-        # V2 extra: players
-        players = v2_result.get('players', [])
-        if players:
-            names = [p['name'] for p in players if not p.get('is_hero')]
-            print(f"  V2 players: {names}", flush=True)
+        # V2 extra: opponents with cards (still in hand)
+        opponents = v2_result.get('opponents', [])
+        if opponents:
+            in_hand = [p['name'] for p in opponents if p.get('has_cards')]
+            print(f"  V2 opponents in hand: {in_hand} (players_in_hand={v2_result.get('players_in_hand')})", flush=True)
         
         status = "MATCH" if len(diffs) == 0 else f"MISMATCH ({len(diffs)} diffs)"
         print(f"  Result: {status}", flush=True)
@@ -130,11 +130,11 @@ def test_single(path, mode='v2'):
         print(f"| {' '.join(cards) if cards else '--':8} | board={board} | pot={pot} | to_call={to_call} | {api_time:.1f}s")
         
         if mode == 'v2':
-            players = result.get('players', [])
-            if players:
-                names = [p['name'] for p in players if not p.get('is_hero')]
+            opponents = result.get('opponents', [])
+            if opponents:
+                names = [p['name'] for p in opponents]
                 if names:
-                    print(f"  Players: {names}")
+                    print(f"  Opponents: {names}")
         
         return result
         

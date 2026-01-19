@@ -39,7 +39,6 @@ class VisionDetectorLite:
   "pot": 0.15,
   "hero_stack": 5.00,
   "to_call": 0.02,
-  "is_hero_turn": true,
   "num_players": 3,
   "big_blind": 0.02
 }
@@ -63,7 +62,6 @@ READING RULES:
 - pot: Total pot amount shown in CENTER. Read exact decimal value.
 - hero_stack: Hero's chip stack at BOTTOM. Read exact decimal value.
 - to_call: Amount shown on CALL button. 0 if CHECK button visible. null if no action buttons.
-- is_hero_turn: TRUE if LARGE RED action buttons (FOLD/CHECK/CALL/RAISE) visible. FALSE if only small checkboxes.
 - big_blind: Read from WINDOW TITLE at top. Format is "Table - $SB/$BB". Extract BB value (e.g., "$0.01/$0.02" → 0.02, "$0.05/$0.10" → 0.10).
 
 OTHER FIELDS:

@@ -39,13 +39,11 @@ class VisionDetectorV2:
   "pot": 0.15,
   "hero_stack": 5.00,
   "to_call": 0.02,
-  "is_hero_turn": true,
   "big_blind": 0.02,
-  "players_in_hand": 3,
-  "players": [
+  "players_in_hand": 2,
+  "opponents": [
     {"name": "Player1", "stack": 5.00, "has_cards": true},
-    {"name": "Player2", "stack": 3.50, "has_cards": false},
-    {"name": "HeroName", "stack": 5.00, "has_cards": true, "is_hero": true}
+    {"name": "Player2", "stack": 3.50, "has_cards": false}
   ]
 }
 
@@ -68,17 +66,15 @@ READING RULES:
 - pot: Total pot amount shown in CENTER. Read exact decimal value.
 - hero_stack: Hero's chip stack at BOTTOM. Read exact decimal value.
 - to_call: Amount shown on CALL button. 0 if CHECK button visible. null if no action buttons.
-- is_hero_turn: TRUE if LARGE RED action buttons (FOLD/CHECK/CALL/RAISE) visible. FALSE if only small checkboxes.
 - big_blind: Read from WINDOW TITLE at top. Format is "Table - $SB/$BB". Extract BB value.
 
 PLAYER DETECTION:
-- players_in_hand: Count of players who still have cards (not folded). Look for face-down card backs.
-- players: Array of occupied seats clockwise from bottom-left:
-  - name: Player's username shown below their avatar. MUST be actual username, NOT button text like "Fold", "Call", "Post BB"
-  - stack: Their chip amount
-  - has_cards: TRUE if they have card backs visible (still in hand), FALSE if folded
-  - is_hero: TRUE only for the player at BOTTOM CENTER with face-up cards
-- Omit empty seats from the array
+- players_in_hand: Count ONLY players with visible card backs (2 face-down cards). Folded players have NO cards. Include hero.
+- opponents: Array of OTHER players (not hero at bottom center):
+  - name: Username shown below avatar (NOT button text like "Fold", "Post BB")
+  - stack: Chip amount
+  - has_cards: TRUE ONLY if 2 face-down card backs visible at their seat. FALSE if no cards shown (folded).
+- CRITICAL: Most opponents will have has_cards=FALSE (folded). Only 1-2 opponents typically remain in hand.
 
 Return ONLY the JSON object, nothing else."""
 

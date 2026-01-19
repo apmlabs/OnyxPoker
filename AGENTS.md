@@ -134,8 +134,9 @@ onyxpoker/                    # Main repo (GitHub: apmlabs/OnyxPoker)
 │   └── HH*.txt               # Raw hand history files from live play
 ├── client/
 │   ├── helper_bar.py         # Main UI (F9=advice, F10=bot, F11=stop, F12=hide)
-│   ├── vision_detector.py    # Full mode: gpt-5.2 for vision + decisions
-│   ├── vision_detector_lite.py # Lite mode: gpt-5.2 for vision only
+│   ├── vision_detector.py    # AI-only mode: gpt-5.2 for vision + decisions
+│   ├── vision_detector_lite.py # V1 vision: gpt-5.2 for vision only
+│   ├── vision_detector_v2.py # V2 vision: + opponent detection (default)
 │   ├── strategy_engine.py    # Applies strategy (default: value_lord)
 │   ├── poker_logic.py        # Hand eval, preflop/postflop logic, strategies + archetypes
 │   ├── poker_sim.py          # Monte Carlo simulator (200k+ hands)
@@ -146,21 +147,38 @@ onyxpoker/                    # Main repo (GitHub: apmlabs/OnyxPoker)
 │   ├── analyze_table_composition.py  # Classifies players into archetypes
 │   ├── analyze_archetype_behavior.py # Real vs simulated postflop behavior
 │   ├── analyze_bet_sizes.py          # Real bet sizes by archetype
+│   ├── analyze_betting_strategy.py   # Bet/call win rates by hand strength
+│   ├── analyze_hole_cards.py         # Hole card analysis
 │   │
 │   │ # === EVALUATION (on session logs: server/uploads/*.jsonl) ===
 │   ├── eval_strategies.py    # Evaluates on session logs (good/bad folds)
 │   ├── eval_deep.py          # Deep stats (VPIP/PFR/AF)
+│   ├── compare_strategies_on_session.py # Compare strategies on same hands
+│   ├── replay_logs.py        # Replay session logs
+│   │
+│   │ # === PLAYER DATABASE ===
+│   ├── build_player_stats.py # Creates player_stats.json with archetypes
+│   ├── opponent_lookup.py    # Lookup opponent stats
 │   │
 │   │ # === TESTS ===
 │   ├── audit_strategies.py   # Strategy file vs code (30 tests)
 │   ├── test_strategy_engine.py # Live code path (55 tests)
 │   ├── test_postflop.py      # Edge cases (67 tests)
 │   ├── test_poker_rules.py   # Poker rules (24 tests)
+│   ├── test_screenshots.py   # V1 vs V2 vision comparison
+│   │
+│   │ # === UTILITIES ===
+│   ├── send_logs.py          # Upload logs to server
+│   ├── send_to_kiro.py       # Send to Kiro server
 │   │
 │   └── pokerstrategy_*       # Strategy definition files (16 files)
 ├── server/
 │   ├── kiro_analyze.py       # Flask server on port 5001
+│   ├── app.py                # Alternative Flask app
+│   ├── analyze_session.py    # Server-side session analysis
+│   ├── poker_strategy.py     # Server-side strategy
 │   └── uploads/              # Session logs + screenshots
+│       └── compare_with_ground_truth.py # Vision accuracy testing
 └── docs/
     └── DEPLOYMENT.md         # Setup guide
 ```
