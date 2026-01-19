@@ -1,6 +1,6 @@
 # OnyxPoker - Status Tracking
 
-**Last Updated**: January 19, 2026 02:00 UTC
+**Last Updated**: January 19, 2026 21:00 UTC
 
 ---
 
@@ -9,12 +9,12 @@
 ### What Works
 | Component | Status | Notes |
 |-----------|--------|-------|
-| helper_bar.py | ✅ | V2 vision default (opponent detection) |
+| helper_bar.py | ✅ | V2 vision default (opponent tracking) |
 | helper_bar.py --v1 | ✅ | V1 vision (no opponent detection) |
 | helper_bar.py --ai-only | ✅ | AI does both vision + decision |
-| test_screenshots.py | ✅ | V1 vs V2 comparison (default) |
-| vision_detector_lite.py | ✅ | GPT-5.2 for vision only (V1) |
-| vision_detector_v2.py | ✅ | GPT-5.2 + opponent detection (V2) |
+| test_screenshots.py | ✅ | V1 vs V2 comparison + --track mode |
+| vision_detector_lite.py | ✅ | GPT-5.2 for vision only (V1) ~3.9s |
+| vision_detector_v2.py | ✅ | GPT-5.2 + opponent detection (V2) ~5.5s |
 | build_player_stats.py | ✅ | Single source of truth for player archetypes |
 | strategy_engine.py | ✅ | 3-bet/4-bet ranges + BB defense |
 | poker_logic.py | ✅ | Data-driven value_lord postflop |
@@ -42,27 +42,51 @@
 
 ## Session History
 
-### Session 61: Vision Prompt Cleanup (January 19, 2026)
+### Session 61: Vision Prompt Optimization + Opponent Tracking (January 19, 2026)
 
-**Removed dead code from vision prompts and helper_bar.**
+**Simplified V2 vision prompt and added opponent tracking across screenshots.**
 
-**Removed fields:**
+**V2 Prompt Changes:**
+- Removed `stack` from opponents (never used)
+- Removed `players_in_hand` (calculated from has_cards)
+- Added suit emojis ♠♥♦♣
+- Changed $ to € for European tables
+- Added BB examples ("€0.01/€0.02" → 0.02)
+- Performance: 10s → 5.5s avg
+
+**Opponent Tracking:**
+- When player acts, PokerStars shows action ("Fold", "Call €0.10") instead of name
+- Added `_is_action_word()` to detect action text
+- Added `_merge_opponents()` to keep real names from previous screenshots
+- `num_players` calculated from opponents with `has_cards=True`
+
+**New test mode:**
+```bash
+python test_screenshots.py --track 10  # Test opponent tracking
+```
+
+**Session logs now include:**
+- `opponents` array (was: dead `facing` field)
+
+**Files changed:**
+- vision_detector_v2.py - Simplified prompt
+- helper_bar.py - Opponent tracking + num_players calculation
+- test_screenshots.py - Added --track mode
+
+**Removed dead code:**
 - `is_hero_turn` - was detected but bypassed in code (always showed advice)
 - `is_hero` in players array - hero is always at bottom center
 - `players_in_hand` count - calculated from `opponents` with `has_cards=true`
+- `is_hero` in players array - hero always at bottom center
+- `players_in_hand` - calculated from `opponents` with `has_cards=true`
 - `stack` from opponents - never used in decisions
 
-**V2 vision changes:**
-- Renamed `players` → `opponents` (excludes hero)
-- Simplified opponents to just `name` + `has_cards`
-- Added `num_players` calculation in helper_bar.py from opponents array
-
-**Files cleaned:**
+**Files changed:**
 - vision_detector_lite.py - removed is_hero_turn
-- vision_detector_v2.py - removed is_hero_turn, is_hero, stack, players_in_hand
+- vision_detector_v2.py - simplified prompt, added emojis/euro/examples
 - vision_detector.py (AI-only) - removed is_hero_turn
-- helper_bar.py - removed is_hero_turn, calculates num_players from opponents
-- test_screenshots.py - updated comparison fields
+- helper_bar.py - opponent tracking, num_players calculation, logs opponents
+- test_screenshots.py - added --track mode, updated comparison fields
 - eval_strategies.py, replay_logs.py - removed is_hero_turn filter
 - Deleted vision_detector_test.py (unused)
 

@@ -64,18 +64,30 @@ PokerStars/Simulator Window
 
 ### V2 Vision Mode (Default since Session 60)
 ```bash
-python helper_bar.py          # V2 default
-python helper_bar.py --v1     # V1 mode (no player detection)
+python helper_bar.py          # V2 default (~5.5s)
+python helper_bar.py --v1     # V1 mode (~3.9s, no player detection)
 ```
 - Detects player names from screenshots
+- Tracks opponents across screenshots (handles action words like "Fold", "Call €0.10")
 - Looks up stats from player_stats.json
 - Classifies archetypes (fish/nit/lag/tag/maniac/rock)
 - Shows actionable advice per opponent in sidebar
+
+### Opponent Tracking (Session 61)
+When a player acts, PokerStars shows their action instead of name. V2 handles this:
+```python
+# Action words filtered out, real names kept from previous screenshots
+ACTION_WORDS = ['fold', 'check', 'call', 'raise', 'bet', 'all-in', 'post', ...]
+
+# _merge_opponents() keeps real names across F9 presses
+# num_players calculated from opponents with has_cards=True
+```
 
 ### Test Screenshots
 ```bash
 python test_screenshots.py              # V1 vs V2 comparison (default)
 python test_screenshots.py --compare 20 # Compare 20 screenshots
+python test_screenshots.py --track 10   # Test opponent tracking
 python test_screenshots.py --v1         # V1 only
 python test_screenshots.py --v2         # V2 only
 ```
