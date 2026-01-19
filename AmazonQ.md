@@ -1,6 +1,6 @@
 # OnyxPoker - Status Tracking
 
-**Last Updated**: January 18, 2026 12:28 UTC
+**Last Updated**: January 19, 2026 01:00 UTC
 
 ---
 
@@ -9,10 +9,12 @@
 ### What Works
 | Component | Status | Notes |
 |-----------|--------|-------|
-| helper_bar.py | ✅ | Line 2 shows position-specific 3-bet advice |
-| helper_bar.py --visionv2 | ✅ | V2 vision with player detection + opponent stats |
-| vision_detector_lite.py | ✅ | GPT-5.2 for vision only |
-| vision_detector_v2.py | ✅ | GPT-5.2 + player name detection |
+| helper_bar.py | ✅ | V2 vision default (player detection + opponent stats) |
+| helper_bar.py --v1 | ✅ | V1 vision (no player detection) |
+| helper_bar.py --ai-only | ✅ | AI does both vision + decision |
+| test_screenshots.py | ✅ | V1 vs V2 comparison (default) |
+| vision_detector_lite.py | ✅ | GPT-5.2 for vision only (V1) |
+| vision_detector_v2.py | ✅ | GPT-5.2 + player name detection (V2) |
 | build_player_stats.py | ✅ | Single source of truth for player archetypes |
 | strategy_engine.py | ✅ | 3-bet/4-bet ranges + BB defense |
 | poker_logic.py | ✅ | Data-driven value_lord postflop |
@@ -39,6 +41,29 @@
 ---
 
 ## Session History
+
+### Session 60: V2 Vision Default + Test Comparison (January 19, 2026)
+
+**Made V2 vision the default for helper_bar.py.**
+
+**Changes:**
+- `helper_bar.py` now uses V2 vision by default (player detection + opponent stats)
+- `--v1` flag for old V1 vision (no player detection)
+- `--visionv2` flag removed (now default)
+
+**test_screenshots.py updated:**
+- Default mode: V1 vs V2 comparison on same screenshots
+- `--compare N` to test N screenshots
+- `--v1` or `--v2` for single mode testing
+- Real-time output with progress
+
+**Usage:**
+```bash
+python helper_bar.py          # V2 default
+python helper_bar.py --v1     # V1 mode
+python test_screenshots.py    # Compare V1 vs V2
+python test_screenshots.py --compare 20
+```
 
 ### Session 59: Deep Research Classification (January 18, 2026)
 

@@ -62,14 +62,23 @@ PokerStars/Simulator Window
     Helper Bar UI (advice display + opponent stats in V2 mode)
 ```
 
-### V2 Vision Mode (Session 58)
+### V2 Vision Mode (Default since Session 60)
 ```bash
-python helper_bar.py --visionv2
+python helper_bar.py          # V2 default
+python helper_bar.py --v1     # V1 mode (no player detection)
 ```
 - Detects player names from screenshots
 - Looks up stats from player_stats.json
 - Classifies archetypes (fish/nit/lag/tag/maniac/rock)
 - Shows actionable advice per opponent in sidebar
+
+### Test Screenshots
+```bash
+python test_screenshots.py              # V1 vs V2 comparison (default)
+python test_screenshots.py --compare 20 # Compare 20 screenshots
+python test_screenshots.py --v1         # V1 only
+python test_screenshots.py --v2         # V2 only
+```
 
 ### Player Database Architecture
 **Single Source of Truth:**
