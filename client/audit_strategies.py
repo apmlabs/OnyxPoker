@@ -41,16 +41,16 @@ def main():
     
     # ========== VALUE_LORD TESTS ==========
     print("\n--- VALUE_LORD STRATEGY ---")
-    print("value_maniac + Session 41 fixes (c-bet discipline, overpair aggression, weak pair caution)")
+    print("Data-driven betting from 2,018 real hands (c-bet discipline, overpair aggression, weak pair caution)")
     
-    # Preflop - same wide ranges as value_maniac
+    # Preflop - wide ranges
     results.append(test_preflop('value_lord', 'A5s', 'BTN', 'none', 'raise', 'Wide open BTN'))
     results.append(test_preflop('value_lord', 'K8s', 'BTN', 'none', 'raise', 'K8s open BTN'))
     
     # Postflop - overpairs always bet (Session 41 fix)
     results.append(test_postflop('value_lord', [('Q','s'),('Q','d')], [('J','h'),('7','d'),('2','c')], 1.0, 0, 'flop', 'bet', 'QQ overpair - always bet'))
     
-    # Paired board protection (same as value_maniac)
+    # Paired board protection
     results.append(test_postflop('value_lord', [('K','s'),('K','d')], [('J','h'),('J','d'),('2','c')], 1.0, 0, 'flop', 'bet', 'KK on JJ - value bet'))
     results.append(test_postflop('value_lord', [('6','s'),('6','d')], [('J','h'),('J','d'),('8','c')], 1.0, 0.5, 'flop', 'call', '66 on JJ8 facing 50% - call (aggressive)'))
     

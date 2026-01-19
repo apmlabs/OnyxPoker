@@ -326,7 +326,7 @@ def main():
         print(f"{i:<6} {strat:<14} {score:>+8.1f}   {bb_100_est:>+8.1f}")
     
     # Show bad decisions for strategies with issues
-    for strat_name in ['value_maniac', 'value_max', 'sonnet_max', 'kiro_v2']:
+    for strat_name in ['value_max', 'sonnet_max', 'kiro_v2']:
         bd = bad_decisions.get(strat_name, {'bad_folds': [], 'bad_calls': []})
         if bd['bad_folds'] or bd['bad_calls']:
             print(f"\n{'=' * 90}")

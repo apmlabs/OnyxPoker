@@ -1,7 +1,7 @@
-# VALUE_LORD Strategy - Refined value extraction
-# Based on value_maniac with Session 41 improvements
+# VALUE_LORD Strategy - Data-driven value extraction
+# Based on 2,018 real hands analysis (Session 51)
 
-## PREFLOP (same as value_maniac - wide ranges)
+## PREFLOP (wide ranges)
 
 ### Open Raise (2.5-3BB)
 UTG: 55+, A7s+, A5s-A2s, KTs+, QTs+, JTs, T9s, ATo+, KJo+
@@ -66,14 +66,8 @@ QQ+, AKs, AKo
 - Air on flop: Float 40%
 - Otherwise: FOLD
 
-### Key Improvements from value_maniac
-1. C-bet discipline: Only with high card when we opened
-2. Overpair aggression: Always bet (no checking)
-3. Bottom pair caution: Check on straight boards
-4. Paired board protection: Still checks HIGH paired boards
-
 ### Key Traits
-- Wide preflop ranges (same as value_maniac)
+- Wide preflop ranges
 - Overbets for value
 - Smarter c-betting (position-aware)
 - Overpair aggression
