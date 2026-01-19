@@ -22,25 +22,25 @@ sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 # Parse command line arguments
 import argparse
 parser = argparse.ArgumentParser(description='OnyxPoker Helper Bar')
-parser.add_argument('--ai-only', action='store_true', help='Use AI for both vision and decisions (old mode)')
-parser.add_argument('--visionv2', action='store_true', help='Use V2 vision with player detection')
+parser.add_argument('--ai-only', action='store_true', help='Use AI for both vision and decisions')
+parser.add_argument('--v1', action='store_true', help='Use V1 vision (no player detection)')
 parser.add_argument('--strategy', type=str, default='value_lord', help='Strategy to use (default: value_lord)')
 args = parser.parse_args()
 
-# Default: gpt-5.2 vision + strategy_engine (hardcoded strategy)
-# --ai-only: gpt-5.2 does both vision + decision (old behavior)
-# --visionv2: V2 vision with player names + opponent stats
+# Default: V2 vision with player names + opponent stats
+# --v1: V1 vision (no player detection)
+# --ai-only: gpt-5.2 does both vision + decision
 AI_ONLY_MODE = args.ai_only
-VISION_V2_MODE = args.visionv2
+V1_MODE = args.v1
 STRATEGY = args.strategy
 
 if AI_ONLY_MODE:
     from vision_detector import VisionDetector, MODEL
-elif VISION_V2_MODE:
-    from vision_detector_v2 import VisionDetectorV2, DEFAULT_MODEL
+elif V1_MODE:
+    from vision_detector_lite import VisionDetectorLite, DEFAULT_MODEL
     from strategy_engine import StrategyEngine
 else:
-    from vision_detector_lite import VisionDetectorLite, DEFAULT_MODEL
+    from vision_detector_v2 import VisionDetectorV2, DEFAULT_MODEL
     from strategy_engine import StrategyEngine
 
 # Session log file
@@ -343,38 +343,8 @@ class HelperBar:
                     
                     # For AI-only mode, just use the single result
                     all_position_results = None
-                elif VISION_V2_MODE:
-                    # V2 mode: vision with player detection + strategy engine
-                    self.root.after(0, lambda: self.log(f"V2 API call ({DEFAULT_MODEL})...", "DEBUG"))
-                    api_start = time.time()
-                    vision = VisionDetectorV2(logger=lambda m, l="DEBUG": self.root.after(0, lambda: self.log(m, l)))
-                    table_data = vision.detect_table(temp_path)
-                    api_time = time.time() - api_start
-                    
-                    # Lookup opponent stats
-                    opponent_stats = self._lookup_opponent_stats(table_data.get('players', []))
-                    table_data['opponent_stats'] = opponent_stats
-                    table_data['opponent_line'] = self._format_opponent_line(opponent_stats)
-                    table_data['advice_line'] = self._format_advice_line(opponent_stats)
-                    
-                    engine = StrategyEngine(STRATEGY)
-                    board = table_data.get('community_cards', [])
-                    
-                    if board:  # Postflop
-                        table_data['is_aggressor'] = self.last_preflop_action == 'open'
-                        decision = engine.get_action(table_data)
-                        result = {**table_data, **decision}
-                    else:  # Preflop - all positions
-                        all_position_results = {}
-                        for pos in ['UTG', 'MP', 'CO', 'BTN', 'SB', 'BB']:
-                            pos_data = {**table_data, 'position': pos, 'to_call': 0}
-                            decision = engine.get_action(pos_data)
-                            all_position_results[pos] = decision
-                        result = {**table_data, **all_position_results['BTN']}
-                        result['all_positions'] = all_position_results
-                    result['api_time'] = api_time
-                else:
-                    # Default mode: gpt-5.2 for vision, strategy_engine for decision
+                elif V1_MODE:
+                    # V1 mode: gpt-5.2 for vision, strategy_engine for decision (no player detection)
                     self.root.after(0, lambda: self.log(f"API call ({DEFAULT_MODEL})...", "DEBUG"))
                     api_start = time.time()
                     vision = VisionDetectorLite(logger=lambda m, l="DEBUG": self.root.after(0, lambda: self.log(m, l)))
@@ -418,6 +388,36 @@ class HelperBar:
                         result = {**table_data, **all_position_results['BTN']}
                         result['api_time'] = api_time
                         result['all_positions'] = all_position_results
+                else:
+                    # Default: V2 mode - vision with player detection + strategy engine
+                    self.root.after(0, lambda: self.log(f"V2 API call ({DEFAULT_MODEL})...", "DEBUG"))
+                    api_start = time.time()
+                    vision = VisionDetectorV2(logger=lambda m, l="DEBUG": self.root.after(0, lambda: self.log(m, l)))
+                    table_data = vision.detect_table(temp_path)
+                    api_time = time.time() - api_start
+                    
+                    # Lookup opponent stats
+                    opponent_stats = self._lookup_opponent_stats(table_data.get('players', []))
+                    table_data['opponent_stats'] = opponent_stats
+                    table_data['opponent_line'] = self._format_opponent_line(opponent_stats)
+                    table_data['advice_line'] = self._format_advice_line(opponent_stats)
+                    
+                    engine = StrategyEngine(STRATEGY)
+                    board = table_data.get('community_cards', [])
+                    
+                    if board:  # Postflop
+                        table_data['is_aggressor'] = self.last_preflop_action == 'open'
+                        decision = engine.get_action(table_data)
+                        result = {**table_data, **decision}
+                    else:  # Preflop - all positions
+                        all_position_results = {}
+                        for pos in ['UTG', 'MP', 'CO', 'BTN', 'SB', 'BB']:
+                            pos_data = {**table_data, 'position': pos, 'to_call': 0}
+                            decision = engine.get_action(pos_data)
+                            all_position_results[pos] = decision
+                        result = {**table_data, **all_position_results['BTN']}
+                        result['all_positions'] = all_position_results
+                    result['api_time'] = api_time
 
                 elapsed = time.time() - start
                 self.root.after(0, lambda t=api_time: self.log(f"API done: {t:.1f}s", "DEBUG"))
