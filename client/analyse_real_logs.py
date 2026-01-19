@@ -549,6 +549,7 @@ def main(min_bb=None, focus_strategy=None):
             'pf_would_fold': [],  # Hands where strategy would fold but hero played
             'pf_would_play': [],  # Hands where strategy would play but hero folded
             'post_would_fold': [],  # Postflop spots where strategy would fold
+            'post_would_check': [],  # Postflop spots where strategy would check but hero bet
             'unsaved_losses': [],  # Losing hands where strategy still plays
         }
     
@@ -570,6 +571,8 @@ def main(min_bb=None, focus_strategy=None):
         # (if strategy folds preflop, it never sees postflop)
         if hand['hero_preflop_action'] and hand['hero_preflop_action'] != 'fold':
             situations = get_postflop_situations(hand)
+            is_aggressor = hand['hero_preflop_action'] == 'raise'
+            
             for strategy in strategies:
                 # Skip if strategy would fold preflop (already counted above)
                 strat_pf_action, _ = evaluate_preflop(hand, strategy)
@@ -588,6 +591,44 @@ def main(min_bb=None, focus_strategy=None):
                         })
                         found_fold = True
                         break  # Only count first fold per hand
+                
+                # Check for betting leaks: hero bet but strategy would check
+                if not found_fold:
+                    for street in ['flop', 'turn', 'river']:
+                        board_len = {'flop': 3, 'turn': 4, 'river': 5}[street]
+                        if len(hand['board']) < board_len:
+                            continue
+                        
+                        # Did hero bet on this street?
+                        hero_bet = None
+                        for a in hand['postflop_actions']:
+                            if a['street'] == street and a['action'] in ['bet', 'raise']:
+                                hero_bet = a['amount']
+                                break
+                        
+                        if hero_bet is None:
+                            continue
+                        
+                        # What would strategy do?
+                        board = hand['board'][:board_len]
+                        action, size, reason = postflop_action(
+                            hand['hero_cards'], board,
+                            pot=1.0, to_call=0,
+                            street=street,
+                            is_ip=True,
+                            is_aggressor=is_aggressor,
+                            strategy=strategy
+                        )
+                        
+                        if action == 'check':
+                            results[strategy]['post_would_check'].append({
+                                'hand': hand,
+                                'street': street,
+                                'hero_bet': hero_bet,
+                                'reason': reason
+                            })
+                            found_fold = True  # Count as handled
+                            break
                 
                 # Track unsaved losses: strategy plays through but loses
                 if not found_fold and hand['profit_bb'] < -10:  # Only significant losses
@@ -716,6 +757,24 @@ def main(min_bb=None, focus_strategy=None):
         print(f"           Reason: {reason}")
     
     # Unsaved losses section
+    # Betting leaks - hero bet but strategy would check
+    bet_leaks = results[top]['post_would_check']
+    if bet_leaks:
+        leak_losers = [p for p in bet_leaks if p['hand']['hero_profit'] < 0]
+        leak_winners = [p for p in bet_leaks if p['hand']['hero_profit'] > 0]
+        print(f"\nBETTING LEAKS: Would check {len(bet_leaks)} spots where hero bet")
+        print(f"  On losing hands: {len(leak_losers)} spots")
+        print(f"  On winning hands: {len(leak_winners)} spots")
+        
+        leak_losers.sort(key=lambda x: x['hand']['profit_bb'])
+        print(f"\n  BIGGEST BETTING LEAKS (hero bet, strategy checks, hand lost):")
+        for p in leak_losers[:10]:
+            h = p['hand']
+            info = analyze_hand(h['hero_cards'], h['board'])
+            print(f"    {h['hand_str']:<6} {p['street']:<5} bet €{p['hero_bet']:.2f} | lost {abs(h['profit_bb']):>5.1f} BB | {info['desc']}")
+            print(f"           -> {p['reason']}")
+    
+    # Unsaved losses
     unsaved = results[strategies[0]]['unsaved_losses']
     if unsaved:
         unsaved_bb = sum(abs(h['profit_bb']) for h in unsaved)
