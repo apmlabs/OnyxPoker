@@ -48,14 +48,14 @@ class VisionDetectorV2:
 
 CRITICAL - CARD SUIT DETECTION:
 Look VERY carefully at card suits. Do NOT guess or assume:
-- SPADES = black pointy symbol (s)
-- HEARTS = red heart symbol (h)  
-- DIAMONDS = red diamond symbol (d)
-- CLUBS = black clover symbol (c)
+- ♠ SPADES = black pointy symbol (s)
+- ♥ HEARTS = red heart symbol (h)  
+- ♦ DIAMONDS = red diamond symbol (d)
+- ♣ CLUBS = black clover symbol (c)
 
 COMMON MISTAKES TO AVOID:
-- Confusing hearts with diamonds (both red)
-- Confusing spades with clubs (both black)
+- Confusing ♥ hearts with ♦ diamonds (both red)
+- Confusing ♠ spades with ♣ clubs (both black)
 - Hallucinating cards that aren't visible
 - Mixing up card order
 
@@ -65,7 +65,7 @@ READING RULES:
 - pot: Total pot amount shown in CENTER. Read exact decimal value.
 - hero_stack: Hero's chip stack at BOTTOM. Read exact decimal value.
 - to_call: Amount shown on CALL button. 0 if CHECK button visible. null if no action buttons.
-- big_blind: Read from WINDOW TITLE at top. Format is "Table - $SB/$BB". Extract BB value.
+- big_blind: Read from WINDOW TITLE at top. Format is "Table - €SB/€BB". Extract BB value (e.g., "€0.01/€0.02" → 0.02, "€0.05/€0.10" → 0.10).
 
 OPPONENTS:
 - opponents: Array of OTHER players (not hero at bottom center):
