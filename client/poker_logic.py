@@ -1755,9 +1755,10 @@ def _postflop_the_lord(hole_cards, board, pot, to_call, street, strength, desc, 
                 # Fish raise = nuts, fold weak hands but keep strong ones
                 if strength < 3:  # Less than two pair
                     return ('fold', 0, f"{desc} - fold to fish raise (rare = nuts)")
-            # Fish bet = usually value, but call with pairs
-            if base_action == 'fold' and strength >= 2 and pot_pct <= 0.5:
-                return ('call', 0, f"{desc} - call vs fish (they value bet weak)")
+            # Fish bet = value, only call with TOP PAIR+ (not weak pairs)
+            # Data shows calling weak pairs vs fish loses money
+            if base_action == 'fold' and hand_info['has_top_pair'] and pot_pct <= 0.5:
+                return ('call', 0, f"{desc} - call top pair vs fish")
         
         return (base_action, base_amount, base_reason + " vs fish")
     
@@ -1775,9 +1776,10 @@ def _postflop_the_lord(hole_cards, board, pot, to_call, street, strength, desc, 
             if strength >= 5:
                 return (base_action, base_amount, base_reason + f" vs {villain_archetype}")
             
-            # NEVER fold draws vs nit - draws have equity even vs strong range
-            if has_flush_draw or has_oesd:
-                return ('call', 0, f"{desc} - call draw vs {villain_archetype} (draw has equity)")
+            # Nit betting = strong hand, only call draws with good pot odds
+            # NFD ~35% equity, OESD ~32% - need pot_pct < 40% to have odds
+            if (has_flush_draw or has_oesd) and pot_pct <= 0.35:
+                return ('call', 0, f"{desc} - call draw vs {villain_archetype} (good odds)")
             
             # Their bet = strong, but don't fold overpairs or top pair
             # Fold weak pairs (middle/bottom/underpair), keep top pair+
