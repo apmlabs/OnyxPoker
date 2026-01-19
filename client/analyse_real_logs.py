@@ -1171,17 +1171,182 @@ def detailed_analysis(min_bb=10, strategy_name='value_lord'):
     
     return strategy_saves, strategy_misses
 
+def postflop_only_analysis(min_bb=None):
+    """Compare strategies on postflop decisions only, ignoring preflop ranges.
+    
+    This assumes ALL strategies reached postflop with the same hands,
+    so we can compare pure postflop skill without preflop bias.
+    """
+    hh_dir = '/home/ubuntu/mcpprojects/onyxpoker/idealistslp_extracted'
+    all_hands = parse_all_hands(hh_dir)
+    
+    # Only hands that reached postflop (hero didn't fold preflop)
+    postflop_hands = [h for h in all_hands 
+                      if h['hero_preflop_action'] and h['hero_preflop_action'] != 'fold'
+                      and h['board']]
+    
+    if min_bb:
+        postflop_hands = [h for h in postflop_hands if abs(h['profit_bb']) >= min_bb]
+    
+    print("=" * 100)
+    print("POSTFLOP-ONLY STRATEGY COMPARISON")
+    print("=" * 100)
+    print()
+    print("Comparing postflop decisions ONLY - all strategies assumed to reach postflop.")
+    print("This removes preflop bias (tight strategies avoiding bad spots).")
+    print()
+    print(f"Hands that reached postflop: {len(postflop_hands)}")
+    
+    # Evaluate each strategy's postflop decisions
+    results = {}
+    for strategy in ALL_STRATEGIES:
+        results[strategy] = {
+            'would_fold': [],   # Spots where strategy folds but hero called
+            'would_check': [],  # Spots where strategy checks but hero bet
+        }
+    
+    for hand in postflop_hands:
+        situations = get_postflop_situations(hand)
+        is_aggressor = hand['hero_preflop_action'] == 'raise'
+        
+        for strategy in ALL_STRATEGIES:
+            # Check calling leaks: strategy folds, hero called
+            for sit in situations:
+                strat_action, reason = evaluate_postflop(hand, sit, strategy)
+                if strat_action == 'fold' and sit['hero_action'] != 'fold':
+                    remaining = sit.get('remaining_investment', 0)
+                    hero_won = hand['hero_won']
+                    impact = remaining - hero_won  # positive = save, negative = miss
+                    results[strategy]['would_fold'].append({
+                        'hand': hand,
+                        'situation': sit,
+                        'reason': reason,
+                        'impact': impact
+                    })
+                    break  # Only first fold per hand
+            
+            # Check betting leaks: strategy checks, hero bet
+            for street in ['flop', 'turn', 'river']:
+                board_len = {'flop': 3, 'turn': 4, 'river': 5}[street]
+                if len(hand['board']) < board_len:
+                    continue
+                
+                # Did hero bet on this street?
+                hero_bet = None
+                for a in hand['postflop_actions']:
+                    if a['street'] == street and a['action'] in ['bet', 'raise']:
+                        hero_bet = a['amount']
+                        break
+                
+                if hero_bet is None:
+                    continue
+                
+                board = hand['board'][:board_len]
+                try:
+                    action, size, reason = postflop_action(
+                        hand['hero_cards'], board,
+                        pot=1.0, to_call=0,
+                        street=street,
+                        is_ip=True,
+                        is_aggressor=is_aggressor,
+                        strategy=strategy
+                    )
+                    
+                    if action == 'check':
+                        results[strategy]['would_check'].append({
+                            'hand': hand,
+                            'street': street,
+                            'hero_bet': hero_bet,
+                            'reason': reason
+                        })
+                        break
+                except:
+                    pass
+    
+    # Calculate impact for each strategy
+    print()
+    print(f"{'Strategy':<15} {'Folds':>8} {'Save€':>10} {'Miss€':>10} {'Checks':>8} {'Bet Leak€':>10} {'NET €':>10}")
+    print("-" * 80)
+    
+    ranked = []
+    for strategy in ALL_STRATEGIES:
+        r = results[strategy]
+        
+        # Calling leaks: folds that save/miss money
+        save_total = sum(p['impact'] for p in r['would_fold'] if p['impact'] > 0)
+        miss_total = sum(abs(p['impact']) for p in r['would_fold'] if p['impact'] < 0)
+        
+        # Betting leaks: checks on losing hands save money
+        bet_leak_total = 0
+        for p in r['would_check']:
+            if p['hand']['hero_profit'] < 0:
+                bet_leak_total += p['hero_bet']
+        
+        net = save_total - miss_total + bet_leak_total
+        
+        ranked.append({
+            'strategy': strategy,
+            'folds': len(r['would_fold']),
+            'save': save_total,
+            'miss': miss_total,
+            'checks': len(r['would_check']),
+            'bet_leak': bet_leak_total,
+            'net': net
+        })
+    
+    ranked.sort(key=lambda x: x['net'], reverse=True)
+    
+    for r in ranked:
+        print(f"{r['strategy']:<15} {r['folds']:>8} {r['save']:>10.2f} {r['miss']:>10.2f} "
+              f"{r['checks']:>8} {r['bet_leak']:>10.2f} {r['net']:>+10.2f}")
+    
+    # Show top strategy details
+    print()
+    print("=" * 100)
+    print(f"TOP POSTFLOP STRATEGY: {ranked[0]['strategy']}")
+    print("=" * 100)
+    
+    top = ranked[0]['strategy']
+    top_folds = results[top]['would_fold']
+    
+    saves = sorted([p for p in top_folds if p['impact'] > 0], key=lambda x: -x['impact'])
+    misses = sorted([p for p in top_folds if p['impact'] < 0], key=lambda x: x['impact'])
+    
+    print(f"\nBIGGEST POSTFLOP SAVES ({len(saves)} spots):")
+    for p in saves[:10]:
+        h = p['hand']
+        s = p['situation']
+        board = ' '.join(s['board'])
+        pot_pct = s['to_call'] / s['pot'] if s['pot'] > 0 else 0
+        impact_bb = p['impact'] / h['bb']
+        print(f"  {h['hand_str']:<6} {s['street']:<5} {board:<18} {pot_pct:>3.0%} pot -> save {impact_bb:.1f} BB")
+        print(f"         {p['reason']}")
+    
+    print(f"\nBIGGEST POSTFLOP MISSES ({len(misses)} spots):")
+    for p in misses[:10]:
+        h = p['hand']
+        s = p['situation']
+        board = ' '.join(s['board'])
+        pot_pct = s['to_call'] / s['pot'] if s['pot'] > 0 else 0
+        impact_bb = abs(p['impact']) / h['bb']
+        print(f"  {h['hand_str']:<6} {s['street']:<5} {board:<18} {pot_pct:>3.0%} pot -> miss {impact_bb:.1f} BB")
+        print(f"         {p['reason']}")
+
+
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='Analyze hand histories with strategies')
     parser.add_argument('--big', type=float, help='Only analyze hands >= N BB')
     parser.add_argument('--strategy', type=str, help='Focus on single strategy')
     parser.add_argument('--detailed', action='store_true', help='Hand-by-hand detailed analysis')
     parser.add_argument('--test-ranges', action='store_true', help='Test proposed range changes')
+    parser.add_argument('--postflop-only', action='store_true', help='Compare postflop decisions only (ignores preflop)')
     args = parser.parse_args()
     
     if args.test_ranges:
         test_range_changes(min_bb=args.big or 10)
     elif args.detailed:
         detailed_analysis(min_bb=args.big or 10, strategy_name=args.strategy or 'value_lord')
+    elif args.postflop_only:
+        postflop_only_analysis(min_bb=args.big)
     else:
         main(min_bb=args.big, focus_strategy=args.strategy)
