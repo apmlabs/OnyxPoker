@@ -61,7 +61,8 @@ def test_compare(path, index=None, total=None):
     """Compare V1 vs V2 on same screenshot."""
     prefix = f"[{index}/{total}] " if index else ""
     fname = os.path.basename(path)
-    print(f"{prefix}{fname}", flush=True)
+    print(f"\n{prefix}{fname}", flush=True)
+    print("-" * 50, flush=True)
     
     try:
         v1 = VisionDetectorLite(model=VISION_MODEL)
@@ -69,31 +70,34 @@ def test_compare(path, index=None, total=None):
         
         print(f"  V1...", end=" ", flush=True)
         v1_result = v1.detect_table(path)
-        print(f"done. V2...", end=" ", flush=True)
+        v1_time = v1_result.get('api_time', 0)
+        print(f"done ({v1_time:.1f}s). V2...", end=" ", flush=True)
         v2_result = v2.detect_table(path)
-        print(f"done.", flush=True)
-        v2_result = v2.detect_table(path)
+        v2_time = v2_result.get('api_time', 0)
+        print(f"done ({v2_time:.1f}s).", flush=True)
         
         diffs = compare_v1_v2(v1_result, v2_result)
         
-        cards = v1_result.get('hero_cards') or []
-        board = v1_result.get('community_cards') or []
-        v1_time = v1_result.get('api_time', 0)
-        v2_time = v2_result.get('api_time', 0)
+        # Print all key fields for both
+        fields = ['hero_cards', 'community_cards', 'pot', 'to_call', 'hero_stack', 
+                  'is_hero_turn', 'big_blind', 'hero_position', 'facing']
         
-        if diffs:
-            print(f"  MISMATCH ({v1_time:.1f}s + {v2_time:.1f}s):", flush=True)
-            for d in diffs:
-                print(f"    {d}", flush=True)
-        else:
-            print(f"  MATCH: {cards} | {board} ({v1_time:.1f}s + {v2_time:.1f}s)", flush=True)
+        print(f"  {'Field':<18} {'V1':<25} {'V2':<25} {'Match'}", flush=True)
+        print(f"  {'-'*18} {'-'*25} {'-'*25} {'-'*5}", flush=True)
+        for field in fields:
+            val1 = v1_result.get(field)
+            val2 = v2_result.get(field)
+            match = "OK" if val1 == val2 else "DIFF"
+            print(f"  {field:<18} {str(val1):<25} {str(val2):<25} {match}", flush=True)
         
-        # Show V2 extra: player names
+        # V2 extra: players
         players = v2_result.get('players', [])
         if players:
             names = [p['name'] for p in players if not p.get('is_hero')]
-            if names:
-                print(f"  V2 players: {names}", flush=True)
+            print(f"  V2 players: {names}", flush=True)
+        
+        status = "MATCH" if len(diffs) == 0 else f"MISMATCH ({len(diffs)} diffs)"
+        print(f"  Result: {status}", flush=True)
         
         return {'match': len(diffs) == 0, 'diffs': diffs, 'v1': v1_result, 'v2': v2_result}
         
@@ -162,15 +166,24 @@ def main():
         matches = 0
         mismatches = 0
         errors = 0
+        all_results = []
         
         for i, path in enumerate(screenshots, 1):
             result = test_compare(path, i, len(screenshots))
+            result['file'] = os.path.basename(path)
+            all_results.append(result)
             if result.get('error'):
                 errors += 1
             elif result.get('match'):
                 matches += 1
             else:
                 mismatches += 1
+        
+        # Save detailed results
+        out_file = os.path.join(os.path.dirname(__file__), 'vision_compare_results.json')
+        with open(out_file, 'w') as f:
+            json.dump(all_results, f, indent=2)
+        print(f"\nDetailed results saved to: {out_file}")
         
         print("\n" + "=" * 60)
         print(f"Results: {matches} matches, {mismatches} mismatches, {errors} errors")
