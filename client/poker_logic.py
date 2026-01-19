@@ -1764,19 +1764,24 @@ def _postflop_the_lord(hole_cards, board, pot, to_call, street, strength, desc, 
     elif villain_archetype in ['nit', 'rock']:
         # Nit/Rock: "Fold to bets | Bet = nuts | Bluff more"
         # Their bet = strong, fold marginal hands. Bluff them more.
+        # BUT: Don't fold draws - they have equity even vs nit's strong range
         
         if to_call == 0:  # Betting
             # Bluff more - they fold too much
             if base_action == 'check' and street == 'flop' and is_aggressor:
                 return ('bet', round(pot * 0.5, 2), f"{desc} - bluff vs {villain_archetype} (folds too much)")
         else:  # Facing bet
+            # NEVER fold draws vs nit - draws have equity even vs strong range
+            if has_flush_draw or has_oesd:
+                return ('call', 0, f"{desc} - call draw vs {villain_archetype} (draw has equity)")
+            
             # Their bet = strong, but don't fold overpairs or top pair
             # Fold weak pairs (middle/bottom/underpair), keep top pair+
             is_weak_pair = (strength == 2 and not hand_info['is_overpair'] and 
                            not hand_info['has_top_pair'])
             if is_weak_pair and pot_pct > 0.3:
                 return ('fold', 0, f"{desc} - fold to {villain_archetype} bet (bet = nuts)")
-            # Also fold high card vs their bet
+            # Also fold high card vs their bet (but not draws - handled above)
             if strength < 2 and pot_pct > 0.3:
                 return ('fold', 0, f"{desc} - fold to {villain_archetype} bet (bet = nuts)")
         
@@ -1784,36 +1789,53 @@ def _postflop_the_lord(hole_cards, board, pot, to_call, street, strength, desc, 
     
     elif villain_archetype == 'maniac':
         # Maniac: "Call everything | Can't fold | Call down"
-        # Call down with medium hands, never bluff (they don't fold)
+        # Call down with medium hands vs BETS, but respect RAISES (even maniacs have hands sometimes)
         
         if to_call == 0:  # Betting
             if base_action == 'bet' and strength < 2:
                 # Never bluff maniac
                 return ('check', 0, f"{desc} - no bluff vs maniac (can't fold)")
         else:  # Facing bet
-            # Call down much lighter - they bluff too much
-            if base_action == 'fold' and strength >= 2:
-                # Call with any pair
-                return ('call', 0, f"{desc} - call down vs maniac (bluffs too much)")
-            if base_action == 'fold' and hand_info['is_overpair']:
-                return ('call', 0, f"{desc} - call overpair vs maniac")
-            if base_action == 'fold' and hand_info['has_top_pair']:
-                return ('call', 0, f"{desc} - call top pair vs maniac")
+            # KEY: Respect RAISES even from maniacs - raising is stronger than betting
+            if is_facing_raise and pot_pct > 0.5:
+                # Maniac RAISE >50% = they have something, use value_lord logic
+                return (base_action, base_amount, base_reason + " (maniac raise = has hand)")
+            
+            # vs maniac BET (not raise): call down much lighter
+            if not is_facing_raise:
+                if base_action == 'fold' and strength >= 2:
+                    return ('call', 0, f"{desc} - call down vs maniac bet (bluffs too much)")
+                if base_action == 'fold' and hand_info['is_overpair']:
+                    return ('call', 0, f"{desc} - call overpair vs maniac bet")
+                if base_action == 'fold' and hand_info['has_top_pair']:
+                    return ('call', 0, f"{desc} - call top pair vs maniac bet")
         
         return (base_action, base_amount, base_reason + " vs maniac")
     
     elif villain_archetype == 'lag':
         # LAG: "Call down | Over-aggro"
-        # Call down more but not as extreme as maniac
+        # Call down more vs BETS, but respect RAISES (LAGs raise with hands)
+        # Exception: Don't call underpairs - they're too weak even vs LAG
         
         if to_call == 0:  # Betting
             pass  # Same as value_lord
         else:  # Facing bet
-            # Call down more - they overbluff
-            if base_action == 'fold' and strength >= 2 and pot_pct <= 0.75:
-                return ('call', 0, f"{desc} - call vs lag (over-aggro)")
-            if base_action == 'fold' and hand_info['has_top_pair']:
-                return ('call', 0, f"{desc} - call top pair vs lag")
+            # KEY: Respect RAISES from LAGs - they raise with real hands
+            if is_facing_raise and pot_pct > 0.5:
+                # LAG RAISE >50% = they have something, use value_lord logic
+                return (base_action, base_amount, base_reason + " (lag raise = has hand)")
+            
+            # Don't override underpair folds - underpairs are too weak (11% win rate)
+            if hand_info.get('is_underpair'):
+                return (base_action, base_amount, base_reason + " vs lag")
+            
+            # vs LAG BET (not raise): call down more with top pair+
+            if not is_facing_raise:
+                if base_action == 'fold' and hand_info['has_top_pair']:
+                    return ('call', 0, f"{desc} - call top pair vs lag bet")
+                # Call with overpairs
+                if base_action == 'fold' and hand_info['is_overpair']:
+                    return ('call', 0, f"{desc} - call overpair vs lag bet")
         
         return (base_action, base_amount, base_reason + " vs lag")
     
