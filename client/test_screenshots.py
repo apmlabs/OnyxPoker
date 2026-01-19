@@ -167,7 +167,7 @@ def main():
         mismatches = 0
         errors = 0
         all_results = []
-        out_file = os.path.join(os.path.dirname(__file__), 'vision_compare_results.json')
+        out_file = os.path.join(os.path.dirname(__file__), 'logs', 'vision_compare_results.json')
         
         for i, path in enumerate(screenshots, 1):
             result = test_compare(path, i, len(screenshots))

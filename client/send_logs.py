@@ -23,7 +23,7 @@ if __name__ == '__main__':
         # Send latest log by modification time
         log_dir = os.path.join(os.path.dirname(__file__), 'logs')
         if os.path.isdir(log_dir):
-            logs = [f for f in os.listdir(log_dir) if f.endswith('.jsonl')]
+            logs = [f for f in os.listdir(log_dir) if f.endswith('.jsonl') or f.endswith('.json')]
             if logs:
                 latest = max(logs, key=lambda f: os.path.getmtime(os.path.join(log_dir, f)))
                 print(f"Sending latest: {latest}")
