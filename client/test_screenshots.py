@@ -42,7 +42,7 @@ if AI_ONLY_MODE:
     from vision_detector import VisionDetector
 
 LOG_FILE = None
-UPLOADS_DIR = os.path.join(os.path.dirname(__file__), '..', 'server', 'uploads')
+SCREENSHOTS_DIR = os.path.join(os.path.dirname(__file__), 'screenshots')
 
 def compare_v1_v2(v1_result, v2_result):
     """Compare V1 and V2 results, return list of differences."""
@@ -143,14 +143,14 @@ def main():
         # Get screenshots
         if args and args[0].isdigit():
             limit = int(args[0])
-            screenshots = sorted(glob.glob(os.path.join(UPLOADS_DIR, '*.png')))[:limit]
+            screenshots = sorted(glob.glob(os.path.join(SCREENSHOTS_DIR, '*.png')))[:limit]
         elif args:
             screenshots = [args[0]]
         else:
-            screenshots = sorted(glob.glob(os.path.join(UPLOADS_DIR, '*.png')))[:5]
+            screenshots = sorted(glob.glob(os.path.join(SCREENSHOTS_DIR, '*.png')))[:5]
         
         if not screenshots:
-            print(f"No screenshots found in {UPLOADS_DIR}")
+            print(f"No screenshots found in {SCREENSHOTS_DIR}")
             return
         
         print(f"Testing {len(screenshots)} screenshots...\n")
@@ -178,7 +178,7 @@ def main():
         if args:
             test_single(args[0], 'v1')
         else:
-            screenshots = sorted(glob.glob(os.path.join(UPLOADS_DIR, '*.png')))[:5]
+            screenshots = sorted(glob.glob(os.path.join(SCREENSHOTS_DIR, '*.png')))[:5]
             for i, path in enumerate(screenshots, 1):
                 print(f"[{i}/{len(screenshots)}] ", end="")
                 test_single(path, 'v1')
@@ -188,7 +188,7 @@ def main():
         if args:
             test_single(args[0], 'v2')
         else:
-            screenshots = sorted(glob.glob(os.path.join(UPLOADS_DIR, '*.png')))[:5]
+            screenshots = sorted(glob.glob(os.path.join(SCREENSHOTS_DIR, '*.png')))[:5]
             for i, path in enumerate(screenshots, 1):
                 print(f"[{i}/{len(screenshots)}] ", end="")
                 test_single(path, 'v2')
@@ -198,7 +198,7 @@ def main():
         if args:
             test_single(args[0], 'ai-only')
         else:
-            screenshots = sorted(glob.glob(os.path.join(UPLOADS_DIR, '*.png')))[:5]
+            screenshots = sorted(glob.glob(os.path.join(SCREENSHOTS_DIR, '*.png')))[:5]
             for i, path in enumerate(screenshots, 1):
                 print(f"[{i}/{len(screenshots)}] ", end="")
                 test_single(path, 'ai-only')
