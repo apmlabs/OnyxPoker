@@ -1771,6 +1771,10 @@ def _postflop_the_lord(hole_cards, board, pot, to_call, street, strength, desc, 
             if base_action == 'check' and street == 'flop' and is_aggressor:
                 return ('bet', round(pot * 0.5, 2), f"{desc} - bluff vs {villain_archetype} (folds too much)")
         else:  # Facing bet
+            # If we have a made hand (straight+), use value_lord logic - don't treat as draw
+            if strength >= 5:
+                return (base_action, base_amount, base_reason + f" vs {villain_archetype}")
+            
             # NEVER fold draws vs nit - draws have equity even vs strong range
             if has_flush_draw or has_oesd:
                 return ('call', 0, f"{desc} - call draw vs {villain_archetype} (draw has equity)")
