@@ -167,6 +167,7 @@ def main():
         mismatches = 0
         errors = 0
         all_results = []
+        out_file = os.path.join(os.path.dirname(__file__), 'vision_compare_results.json')
         
         for i, path in enumerate(screenshots, 1):
             result = test_compare(path, i, len(screenshots))
@@ -178,12 +179,9 @@ def main():
                 matches += 1
             else:
                 mismatches += 1
-        
-        # Save detailed results
-        out_file = os.path.join(os.path.dirname(__file__), 'vision_compare_results.json')
-        with open(out_file, 'w') as f:
-            json.dump(all_results, f, indent=2)
-        print(f"\nDetailed results saved to: {out_file}")
+            # Save after each screenshot
+            with open(out_file, 'w') as f:
+                json.dump(all_results, f, indent=2)
         
         print("\n" + "=" * 60)
         print(f"Results: {matches} matches, {mismatches} mismatches, {errors} errors")
