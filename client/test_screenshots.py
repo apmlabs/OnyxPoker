@@ -61,13 +61,17 @@ def test_compare(path, index=None, total=None):
     """Compare V1 vs V2 on same screenshot."""
     prefix = f"[{index}/{total}] " if index else ""
     fname = os.path.basename(path)
-    print(f"{prefix}{fname}")
+    print(f"{prefix}{fname}", flush=True)
     
     try:
         v1 = VisionDetectorLite(model=VISION_MODEL)
         v2 = VisionDetectorV2(model=VISION_MODEL)
         
+        print(f"  V1...", end=" ", flush=True)
         v1_result = v1.detect_table(path)
+        print(f"done. V2...", end=" ", flush=True)
+        v2_result = v2.detect_table(path)
+        print(f"done.", flush=True)
         v2_result = v2.detect_table(path)
         
         diffs = compare_v1_v2(v1_result, v2_result)
@@ -78,18 +82,18 @@ def test_compare(path, index=None, total=None):
         v2_time = v2_result.get('api_time', 0)
         
         if diffs:
-            print(f"  MISMATCH ({v1_time:.1f}s + {v2_time:.1f}s):")
+            print(f"  MISMATCH ({v1_time:.1f}s + {v2_time:.1f}s):", flush=True)
             for d in diffs:
-                print(f"    {d}")
+                print(f"    {d}", flush=True)
         else:
-            print(f"  MATCH: {cards} | {board} ({v1_time:.1f}s + {v2_time:.1f}s)")
+            print(f"  MATCH: {cards} | {board} ({v1_time:.1f}s + {v2_time:.1f}s)", flush=True)
         
         # Show V2 extra: player names
         players = v2_result.get('players', [])
         if players:
             names = [p['name'] for p in players if not p.get('is_hero')]
             if names:
-                print(f"  V2 players: {names}")
+                print(f"  V2 players: {names}", flush=True)
         
         return {'match': len(diffs) == 0, 'diffs': diffs, 'v1': v1_result, 'v2': v2_result}
         
