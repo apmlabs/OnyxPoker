@@ -269,8 +269,8 @@ def main():
                 test_single(path, 'ai-only')
     
     elif TRACK_MODE:
-        print("TRACK MODE: Test opponent tracking across screenshots")
-        print("=" * 70)
+        print("TRACK MODE: Test opponent tracking across screenshots", flush=True)
+        print("=" * 70, flush=True)
         
         # Get screenshots
         if args and args[0].isdigit():
@@ -280,19 +280,23 @@ def main():
         screenshots = sorted(glob.glob(os.path.join(SCREENSHOTS_DIR, '*.png')))[:limit]
         
         if not screenshots:
-            print(f"No screenshots found in {SCREENSHOTS_DIR}")
+            print(f"No screenshots found in {SCREENSHOTS_DIR}", flush=True)
             return
         
-        print(f"Testing {len(screenshots)} screenshots with opponent tracking...\n")
+        print(f"Testing {len(screenshots)} screenshots with opponent tracking...\n", flush=True)
         
         v2 = VisionDetectorV2(model=VISION_MODEL)
         tracker = OpponentTracker()
         
         for i, path in enumerate(screenshots, 1):
             fname = os.path.basename(path)
-            print(f"[{i}/{len(screenshots)}] {fname}")
+            print(f"[{i}/{len(screenshots)}] {fname}", flush=True)
+            print(f"  V2 detecting...", end=" ", flush=True)
             
             result = v2.detect_table(path)
+            api_time = result.get('api_time', 0)
+            print(f"done ({api_time:.1f}s)", flush=True)
+            
             hero_cards = result.get('hero_cards')
             raw_opponents = result.get('opponents', [])
             
@@ -300,18 +304,18 @@ def main():
             raw_names = [o.get('name', '?') for o in raw_opponents]
             action_detected = [n for n in raw_names if is_action_word(n)]
             
-            print(f"  Hero: {hero_cards}")
-            print(f"  Raw opponents: {raw_names}")
+            print(f"  Hero cards: {hero_cards}", flush=True)
+            print(f"  Raw opponents: {raw_names}", flush=True)
             if action_detected:
-                print(f"  Action words detected: {action_detected}")
+                print(f"  >>> Action words: {action_detected}", flush=True)
             
             # Apply tracking
             merged = tracker.merge(raw_opponents, hero_cards)
             merged_names = [o.get('name', '?') for o in merged]
             
-            print(f"  After tracking: {merged_names}")
-            print(f"  Stored for next: {[o.get('name') for o in tracker.last_opponents]}")
-            print()
+            print(f"  After tracking: {merged_names}", flush=True)
+            print(f"  Stored: {[o.get('name') for o in tracker.last_opponents]}", flush=True)
+            print("", flush=True)
 
 if __name__ == '__main__':
     main()
