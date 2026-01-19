@@ -400,6 +400,11 @@ class HelperBar:
                     table_data['opponent_line'] = self._format_opponent_line(opponent_stats)
                     table_data['advice_line'] = self._format_advice_line(opponent_stats)
                     
+                    # Calculate num_players from opponents array (V2 doesn't return num_players)
+                    opponents = table_data.get('opponents', [])
+                    active_opponents = sum(1 for o in opponents if o.get('has_cards', False))
+                    table_data['num_players'] = active_opponents + 1  # +1 for hero
+                    
                     engine = StrategyEngine(STRATEGY)
                     board = table_data.get('community_cards', [])
                     

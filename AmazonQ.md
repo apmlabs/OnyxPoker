@@ -49,19 +49,20 @@
 **Removed fields:**
 - `is_hero_turn` - was detected but bypassed in code (always showed advice)
 - `is_hero` in players array - hero is always at bottom center
-- `players_in_hand` count - replaced by counting `opponents` with `has_cards=true`
+- `players_in_hand` count - calculated from `opponents` with `has_cards=true`
+- `stack` from opponents - never used in decisions
 
 **V2 vision changes:**
 - Renamed `players` → `opponents` (excludes hero)
-- Clarified `has_cards` detection: "TRUE ONLY if 2 face-down card backs visible"
-- Added emphasis: "Most opponents will have has_cards=FALSE (folded)"
+- Simplified opponents to just `name` + `has_cards`
+- Added `num_players` calculation in helper_bar.py from opponents array
 
 **Files cleaned:**
 - vision_detector_lite.py - removed is_hero_turn
-- vision_detector_v2.py - removed is_hero_turn, is_hero, renamed to opponents
+- vision_detector_v2.py - removed is_hero_turn, is_hero, stack, players_in_hand
 - vision_detector.py (AI-only) - removed is_hero_turn
-- helper_bar.py - removed is_hero_turn variable and dead if True
-- test_screenshots.py - updated to use opponents array
+- helper_bar.py - removed is_hero_turn, calculates num_players from opponents
+- test_screenshots.py - updated comparison fields
 - eval_strategies.py, replay_logs.py - removed is_hero_turn filter
 - Deleted vision_detector_test.py (unused)
 

@@ -40,10 +40,9 @@ class VisionDetectorV2:
   "hero_stack": 5.00,
   "to_call": 0.02,
   "big_blind": 0.02,
-  "players_in_hand": 2,
   "opponents": [
-    {"name": "Player1", "stack": 5.00, "has_cards": true},
-    {"name": "Player2", "stack": 3.50, "has_cards": false}
+    {"name": "Player1", "has_cards": true},
+    {"name": "Player2", "has_cards": false}
   ]
 }
 
@@ -68,11 +67,9 @@ READING RULES:
 - to_call: Amount shown on CALL button. 0 if CHECK button visible. null if no action buttons.
 - big_blind: Read from WINDOW TITLE at top. Format is "Table - $SB/$BB". Extract BB value.
 
-PLAYER DETECTION:
-- players_in_hand: Count ONLY players with visible card backs (2 face-down cards). Folded players have NO cards. Include hero.
+OPPONENTS:
 - opponents: Array of OTHER players (not hero at bottom center):
   - name: Username shown below avatar (NOT button text like "Fold", "Post BB")
-  - stack: Chip amount
   - has_cards: TRUE ONLY if 2 face-down card backs visible at their seat. FALSE if no cards shown (folded).
 - CRITICAL: Most opponents will have has_cards=FALSE (folded). Only 1-2 opponents typically remain in hand.
 

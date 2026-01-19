@@ -80,7 +80,7 @@ def test_compare(path, index=None, total=None):
         
         # Print all key fields for both
         fields = ['hero_cards', 'community_cards', 'pot', 'to_call', 'hero_stack', 
-                  'big_blind', 'hero_position', 'facing']
+                  'big_blind']
         
         print(f"  {'Field':<18} {'V1':<25} {'V2':<25} {'Match'}", flush=True)
         print(f"  {'-'*18} {'-'*25} {'-'*25} {'-'*5}", flush=True)
