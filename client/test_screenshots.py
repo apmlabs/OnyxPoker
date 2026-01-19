@@ -1,42 +1,28 @@
 """
 Test vision detector on saved screenshots
 Usage: 
-  python test_screenshots.py [screenshot_path]           # Full mode (gpt-5.2)
-  python test_screenshots.py --lite [screenshot_path]    # Lite mode (gpt-4o-mini + strategy)
-  python test_screenshots.py --lite --strategy=gpt4      # Lite mode with specific strategy
-  python test_screenshots.py --lite --model=gpt-4o       # Lite mode with specific vision model
-  python test_screenshots.py --lite --test-all-models    # Test all vision models
-  python test_screenshots.py --v2 [screenshot_path]      # V2 mode: detect player names + lookup stats
-  
-Available vision models for --lite mode:
-  gpt-4o          - Best vision specialist (94% accuracy)
-  gpt-4o-mini     - Budget vision (89% accuracy, current default)
-  gpt-5-mini      - GPT-5 with reasoning control
-  gpt-5-nano      - Cheapest GPT-5
-  gpt-5.2         - Best accuracy (full mode default)
-  kiro-server     - Kiro CLI via server subprocess (validation)
-  
-Note: GPT-5 models automatically use reasoning="none" for vision tasks (faster, cheaper)
+  python test_screenshots.py [screenshot_path]           # Default: V1 vs V2 comparison
+  python test_screenshots.py --compare [N]               # Compare V1 vs V2 on N screenshots from uploads
+  python test_screenshots.py --v1 [screenshot_path]      # V1 only (no player detection)
+  python test_screenshots.py --v2 [screenshot_path]      # V2 only (with player detection)
+  python test_screenshots.py --ai-only [screenshot_path] # AI-only mode (gpt-5.2 does everything)
+  python test_screenshots.py --strategy=value_lord       # Use specific strategy
 """
 
 import os
 import sys
 import json
+import glob
 import requests
 from datetime import datetime
 
 # Parse args
-LITE_MODE = '--lite' in sys.argv
+V1_MODE = '--v1' in sys.argv
 V2_MODE = '--v2' in sys.argv
-STRATEGY = 'gpt3'
-VISION_MODEL = None  # None = use default for mode
-TEST_ALL_MODELS = '--test-all-models' in sys.argv
-
-# All available vision models to test
-ALL_VISION_MODELS = [
-    'kiro-server',      # Kiro CLI via server (100% cards, 100% board, 50% pos) ⭐
-    'gpt-5.2',          # Best OpenAI model (100% cards, 100% board, 50% pos) ⭐
-]
+AI_ONLY_MODE = '--ai-only' in sys.argv
+COMPARE_MODE = '--compare' in sys.argv or (not V1_MODE and not V2_MODE and not AI_ONLY_MODE)
+STRATEGY = 'value_lord'
+VISION_MODEL = None
 
 for arg in sys.argv:
     if arg.startswith('--strategy='):
@@ -47,268 +33,175 @@ for arg in sys.argv:
 # Remove flags from argv for path parsing
 args = [a for a in sys.argv[1:] if not a.startswith('--')]
 
-if LITE_MODE:
-    from vision_detector_lite import VisionDetectorLite
-    from strategy_engine import StrategyEngine, get_available_strategies
-elif V2_MODE:
-    from vision_detector_v2 import VisionDetectorV2
-    from opponent_lookup import lookup_opponents, format_opponent_line, format_advice_line
-else:
+# Imports based on mode
+from vision_detector_lite import VisionDetectorLite
+from vision_detector_v2 import VisionDetectorV2
+from strategy_engine import StrategyEngine
+
+if AI_ONLY_MODE:
     from vision_detector import VisionDetector
 
 LOG_FILE = None
-KIRO_SERVER_URL = os.getenv('KIRO_SERVER_URL', 'http://54.80.204.92:5001')
+UPLOADS_DIR = os.path.join(os.path.dirname(__file__), '..', 'server', 'uploads')
 
-def analyze_with_kiro_server(screenshot_path):
-    """Analyze screenshot using Kiro CLI via server (sends image)"""
-    print(f"\n{'='*80}")
-    print(f"KIRO-SERVER SCREENSHOT ANALYSIS START")
-    print(f"{'='*80}")
-    print(f"Sending screenshot to: {KIRO_SERVER_URL}/analyze-screenshot")
-    print(f"Screenshot: {screenshot_path}")
+def compare_v1_v2(v1_result, v2_result):
+    """Compare V1 and V2 results, return list of differences."""
+    diffs = []
+    fields = ['hero_cards', 'community_cards', 'pot', 'to_call', 'is_hero_turn', 'big_blind']
     
-    try:
-        import time
-        import base64
-        
-        # Read and encode screenshot
-        with open(screenshot_path, 'rb') as f:
-            img_data = base64.b64encode(f.read()).decode('utf-8')
-        
-        print(f"Image size: {len(img_data)} bytes (base64)")
-        
-        start = time.time()
-        
-        response = requests.post(
-            f'{KIRO_SERVER_URL}/analyze-screenshot',
-            json={'image': img_data},
-            timeout=180
-        )
-        
-        elapsed = time.time() - start
-        print(f"Response received in {elapsed:.2f}s")
-        print(f"Status code: {response.status_code}")
-        
-        result = response.json()
-        
-        if 'error' in result:
-            print(f"ERROR: {result['error']}")
-            print(f"{'='*80}\n")
-            return None
-        
-        print(f"Cards: {result.get('hero_cards')}")
-        print(f"Board: {result.get('community_cards')}")
-        print(f"Pot: {result.get('pot')}")
-        print(f"Position: {result.get('position')}")
-        print(f"Hero turn: {result.get('is_hero_turn')}")
-        print(f"{'='*80}\n")
-        
-        return result
-    except Exception as e:
-        print(f"ERROR: {str(e)}")
-        print(f"{'='*80}\n")
-        return None
-
-def validate_with_kiro_server(table_data):
-    """Validate poker state using Kiro CLI via server"""
-    print(f"\n{'='*80}")
-    print(f"KIRO-SERVER VALIDATION START")
-    print(f"{'='*80}")
-    print(f"Sending to server: {KIRO_SERVER_URL}/validate-state")
-    print(f"State: cards={table_data.get('hero_cards')}, board={table_data.get('community_cards')}, pot={table_data.get('pot')}, pos={table_data.get('position')}")
+    for field in fields:
+        val1 = v1_result.get(field)
+        val2 = v2_result.get(field)
+        if val1 != val2:
+            diffs.append(f"{field}: V1={val1} vs V2={val2}")
     
-    try:
-        import time
-        start = time.time()
-        
-        response = requests.post(
-            f'{KIRO_SERVER_URL}/validate-state',
-            json={'state': table_data},
-            timeout=180
-        )
-        
-        elapsed = time.time() - start
-        print(f"Response received in {elapsed:.2f}s")
-        print(f"Status code: {response.status_code}")
-        
-        result = response.json()
-        print(f"Understood: {result.get('understood')}")
-        print(f"Confidence: {result.get('confidence')}")
-        print(f"Interpretation preview: {result.get('interpretation', '')[:100]}...")
-        print(f"Concerns: {result.get('concerns')}")
-        print(f"{'='*80}\n")
-        
-        return result
-    except Exception as e:
-        print(f"ERROR: {str(e)}")
-        print(f"{'='*80}\n")
-        return {
-            'understood': False,
-            'confidence': 0.0,
-            'interpretation': f'Error: {str(e)}',
-            'concerns': [str(e)]
-        }
+    return diffs
 
-def test_screenshot(path, index=None, total=None, model_override=None):
-    global LOG_FILE
+def test_compare(path, index=None, total=None):
+    """Compare V1 vs V2 on same screenshot."""
     prefix = f"[{index}/{total}] " if index else ""
     fname = os.path.basename(path)
-    model_suffix = f" ({model_override})" if model_override else ""
-    print(f"{prefix}{fname}{model_suffix}", end=" ", flush=True)
+    print(f"{prefix}{fname}")
     
     try:
-        if V2_MODE:
-            # V2 mode: detect player names + lookup stats
-            detector = VisionDetectorV2(model=model_override or VISION_MODEL)
-            result = detector.detect_table(path)
-            
-            # Extract player names and lookup stats
-            players = result.get('players', [])
-            player_names = [p['name'] for p in players if p.get('name') and not p.get('is_hero')]
-            
-            if player_names:
-                opponents = lookup_opponents(player_names)
-                result['opponent_stats'] = opponents
-                result['opponent_line'] = format_opponent_line(opponents)
-                result['advice_line'] = format_advice_line(opponents)
-            
-            cards = result.get('hero_cards') or []
-            players_in = result.get('players_in_hand', '?')
-            api_time = result.get('api_time', 0)
-            opp_line = result.get('opponent_line', 'No players detected')
-            
-            out = f"| {' '.join(cards) if cards else '--':8} | {players_in} in hand | {api_time:.1f}s"
-            print(out)
-            print(f"    Players: {opp_line}")
-            if result.get('advice_line'):
-                print(f"    Advice: {result['advice_line']}")
-            
-        elif LITE_MODE:
-            # Use kiro-server for vision if specified
-            if model_override == 'kiro-server':
-                # Send screenshot to Kiro server for analysis
-                result = analyze_with_kiro_server(path)
-                
-                if result is None:
-                    print("| ERROR: Kiro server analysis failed")
-                    return None
-                
-                # Add metadata
-                result['model'] = 'kiro-server'
-                result['strategy'] = 'kiro-vision'
-            else:
-                # Normal vision + strategy flow
-                detector = VisionDetectorLite(model=model_override or VISION_MODEL)
-                table_data = detector.detect_table(path)
-                
-                engine = StrategyEngine(STRATEGY)
-                decision = engine.get_action(table_data)
-                
-                result = {**table_data, **decision}
+        v1 = VisionDetectorLite(model=VISION_MODEL)
+        v2 = VisionDetectorV2(model=VISION_MODEL)
+        
+        v1_result = v1.detect_table(path)
+        v2_result = v2.detect_table(path)
+        
+        diffs = compare_v1_v2(v1_result, v2_result)
+        
+        cards = v1_result.get('hero_cards') or []
+        board = v1_result.get('community_cards') or []
+        v1_time = v1_result.get('api_time', 0)
+        v2_time = v2_result.get('api_time', 0)
+        
+        if diffs:
+            print(f"  MISMATCH ({v1_time:.1f}s + {v2_time:.1f}s):")
+            for d in diffs:
+                print(f"    {d}")
         else:
+            print(f"  MATCH: {cards} | {board} ({v1_time:.1f}s + {v2_time:.1f}s)")
+        
+        # Show V2 extra: player names
+        players = v2_result.get('players', [])
+        if players:
+            names = [p['name'] for p in players if not p.get('is_hero')]
+            if names:
+                print(f"  V2 players: {names}")
+        
+        return {'match': len(diffs) == 0, 'diffs': diffs, 'v1': v1_result, 'v2': v2_result}
+        
+    except Exception as e:
+        print(f"  ERROR: {e}")
+        return {'match': False, 'error': str(e)}
+
+def test_single(path, mode='v2'):
+    """Test single screenshot with specified mode."""
+    fname = os.path.basename(path)
+    print(f"{fname}", end=" ", flush=True)
+    
+    try:
+        if mode == 'v1':
+            detector = VisionDetectorLite(model=VISION_MODEL)
+            result = detector.detect_table(path)
+        elif mode == 'v2':
+            detector = VisionDetectorV2(model=VISION_MODEL)
+            result = detector.detect_table(path)
+        else:  # ai-only
             detector = VisionDetector()
             result = detector.detect_poker_elements(path, include_decision=True)
         
         cards = result.get('hero_cards') or []
-        pos = result.get('position') or '?'
-        turn = result.get('is_hero_turn', False)
-        action = result.get('action') or 'none'
+        board = result.get('community_cards') or []
+        pot = result.get('pot', 0)
+        to_call = result.get('to_call', 0)
         api_time = result.get('api_time', 0)
-        strategy = result.get('strategy', 'gpt-5.2')
-        model_used = result.get('model', 'unknown')
         
-        out = f"| {' '.join(cards) if cards else '--':8} | {pos:3} | turn={str(turn):5} | {action:6} | {api_time:.1f}s | {model_used}"
-        print(out)
+        print(f"| {' '.join(cards) if cards else '--':8} | board={board} | pot={pot} | to_call={to_call} | {api_time:.1f}s")
         
-        # Save to log
-        if LOG_FILE:
-            result['screenshot'] = fname
-            result['timestamp'] = datetime.now().isoformat()
-            if model_override:
-                result['test_model'] = model_override
-            LOG_FILE.write(json.dumps(result) + '\n')
-            LOG_FILE.flush()
+        if mode == 'v2':
+            players = result.get('players', [])
+            if players:
+                names = [p['name'] for p in players if not p.get('is_hero')]
+                if names:
+                    print(f"  Players: {names}")
         
         return result
+        
     except Exception as e:
-        err = str(e).encode('ascii', 'replace').decode('ascii')
-        print(f"| ERROR: {err}")
+        print(f"| ERROR: {e}")
         return None
 
 def main():
-    global LOG_FILE
-    
-    if V2_MODE:
-        model_info = VISION_MODEL or 'gpt-5.2 (default)'
-        print(f"V2 MODE: {model_info} + player name detection + opponent lookup")
-        print(f"Player stats loaded from player_stats.json\n")
-    elif LITE_MODE:
-        model_info = VISION_MODEL or 'gpt-4o-mini (default)'
-        if TEST_ALL_MODELS:
-            model_info = f"ALL MODELS: {', '.join(ALL_VISION_MODELS)}"
-        print(f"LITE MODE: {model_info} + {STRATEGY} strategy")
-        print(f"Available strategies: {', '.join(get_available_strategies())}\n")
-    else:
-        print("FULL MODE: gpt-5.2\n")
-    
-    if args:
-        # Single screenshot
-        if TEST_ALL_MODELS and LITE_MODE:
-            print(f"Testing {len(ALL_VISION_MODELS)} models on single screenshot:\n")
-            for model in ALL_VISION_MODELS:
-                test_screenshot(args[0], model_override=model)
+    if COMPARE_MODE:
+        # Default: compare V1 vs V2
+        print("COMPARE MODE: V1 vs V2 vision comparison")
+        print("=" * 60)
+        
+        # Get screenshots
+        if args and args[0].isdigit():
+            limit = int(args[0])
+            screenshots = sorted(glob.glob(os.path.join(UPLOADS_DIR, '*.png')))[:limit]
+        elif args:
+            screenshots = [args[0]]
         else:
-            test_screenshot(args[0])
-    else:
-        # All screenshots in folder
-        screenshots_dir = os.path.join(os.path.dirname(__file__), 'screenshots')
-        if not os.path.exists(screenshots_dir):
-            print(f"No screenshots folder found")
+            screenshots = sorted(glob.glob(os.path.join(UPLOADS_DIR, '*.png')))[:5]
+        
+        if not screenshots:
+            print(f"No screenshots found in {UPLOADS_DIR}")
             return
         
-        files = sorted([f for f in os.listdir(screenshots_dir) if f.endswith('.png')])
-        if not files:
-            print(f"No screenshots found")
-            return
+        print(f"Testing {len(screenshots)} screenshots...\n")
         
-        # Create log file
-        logs_dir = os.path.join(os.path.dirname(__file__), 'logs')
-        os.makedirs(logs_dir, exist_ok=True)
+        matches = 0
+        mismatches = 0
+        errors = 0
         
-        if TEST_ALL_MODELS and LITE_MODE:
-            # Test all models on each screenshot (side-by-side comparison)
-            mode_suffix = f"lite_{STRATEGY}_all_models"
-            log_path = os.path.join(logs_dir, f"test_{mode_suffix}_{datetime.now().strftime('%Y%m%d_%H%M%S')}.jsonl")
-            LOG_FILE = open(log_path, 'w')
-            
-            print(f"Testing {len(files)} screenshots with {len(ALL_VISION_MODELS)} models each")
-            print(f"Logging to: {log_path}\n")
-            
-            for i, f in enumerate(files, 1):
-                print(f"\n[{i}/{len(files)}] {f}")
-                for model in ALL_VISION_MODELS:
-                    test_screenshot(os.path.join(screenshots_dir, f), model_override=model)
-            
-            LOG_FILE.close()
-            print(f"\n{'='*80}")
-            print(f"Done! Results saved to: {log_path}")
-            print(f"Upload with: python send_logs.py")
-            print(f"{'='*80}")
+        for i, path in enumerate(screenshots, 1):
+            result = test_compare(path, i, len(screenshots))
+            if result.get('error'):
+                errors += 1
+            elif result.get('match'):
+                matches += 1
+            else:
+                mismatches += 1
+        
+        print("\n" + "=" * 60)
+        print(f"Results: {matches} matches, {mismatches} mismatches, {errors} errors")
+        if matches + mismatches > 0:
+            print(f"Match rate: {matches/(matches+mismatches)*100:.1f}%")
+    
+    elif V1_MODE:
+        print("V1 MODE: vision_detector_lite (no player detection)\n")
+        if args:
+            test_single(args[0], 'v1')
         else:
-            # Single model test
-            mode_suffix = f"lite_{STRATEGY}" if LITE_MODE else "full"
-            if VISION_MODEL:
-                mode_suffix += f"_{VISION_MODEL.replace('.', '_').replace('-', '_')}"
-            log_path = os.path.join(logs_dir, f"test_{mode_suffix}_{datetime.now().strftime('%Y%m%d_%H%M%S')}.jsonl")
-            LOG_FILE = open(log_path, 'w')
-            
-            print(f"Testing {len(files)} screenshots, logging to {log_path}\n")
-            for i, f in enumerate(files, 1):
-                test_screenshot(os.path.join(screenshots_dir, f), i, len(files))
-            
-            LOG_FILE.close()
-            print(f"\nDone! Results saved to: {log_path}")
-            print(f"Upload with: python send_logs.py")
+            screenshots = sorted(glob.glob(os.path.join(UPLOADS_DIR, '*.png')))[:5]
+            for i, path in enumerate(screenshots, 1):
+                print(f"[{i}/{len(screenshots)}] ", end="")
+                test_single(path, 'v1')
+    
+    elif V2_MODE:
+        print("V2 MODE: vision_detector_v2 (with player detection)\n")
+        if args:
+            test_single(args[0], 'v2')
+        else:
+            screenshots = sorted(glob.glob(os.path.join(UPLOADS_DIR, '*.png')))[:5]
+            for i, path in enumerate(screenshots, 1):
+                print(f"[{i}/{len(screenshots)}] ", end="")
+                test_single(path, 'v2')
+    
+    elif AI_ONLY_MODE:
+        print("AI-ONLY MODE: gpt-5.2 does everything\n")
+        if args:
+            test_single(args[0], 'ai-only')
+        else:
+            screenshots = sorted(glob.glob(os.path.join(UPLOADS_DIR, '*.png')))[:5]
+            for i, path in enumerate(screenshots, 1):
+                print(f"[{i}/{len(screenshots)}] ", end="")
+                test_single(path, 'ai-only')
 
 if __name__ == '__main__':
     main()
