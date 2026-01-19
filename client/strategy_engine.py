@@ -53,7 +53,6 @@ class StrategyEngine:
         pot = table_data.get('pot') or 0
         to_call = table_data.get('to_call') or 0
         position = (table_data.get('position') or 'BTN').upper()
-        facing_raise = table_data.get('facing_raise', False)
         big_blind = table_data.get('big_blind') or 0.05  # Default to 5NL
         
         hand = get_hand_notation(cards)
@@ -67,12 +66,12 @@ class StrategyEngine:
         
         # Preflop
         if not board:
-            return self._preflop(hand, position, to_call, facing_raise, big_blind)
+            return self._preflop(hand, position, to_call, big_blind)
         
         # Postflop
         return self._postflop(cards, board, pot, to_call, position, table_data)
     
-    def _preflop(self, hand: str, position: str, to_call: float, facing_raise: bool, big_blind: float = 0.02) -> Dict[str, Any]:
+    def _preflop(self, hand: str, position: str, to_call: float, big_blind: float = 0.02) -> Dict[str, Any]:
         """Preflop decision with call thresholds."""
         
         # Determine what we're facing based on to_call relative to big_blind

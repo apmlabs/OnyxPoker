@@ -41,7 +41,6 @@ class VisionDetectorLite:
   "to_call": 0.02,
   "is_hero_turn": true,
   "num_players": 3,
-  "facing_raise": false,
   "big_blind": 0.02
 }
 
@@ -69,7 +68,6 @@ READING RULES:
 
 OTHER FIELDS:
 - num_players: Count active players still in the hand (not folded).
-- facing_raise: TRUE if someone raised before hero's turn. FALSE if just blinds or limps.
 
 Return ONLY the JSON object, nothing else."""
 

@@ -40,7 +40,6 @@ class VisionDetectorV2:
   "hero_stack": 5.00,
   "to_call": 0.02,
   "is_hero_turn": true,
-  "facing_raise": false,
   "big_blind": 0.02,
   "players_in_hand": 3,
   "players": [
@@ -71,7 +70,6 @@ READING RULES:
 - to_call: Amount shown on CALL button. 0 if CHECK button visible. null if no action buttons.
 - is_hero_turn: TRUE if LARGE RED action buttons (FOLD/CHECK/CALL/RAISE) visible. FALSE if only small checkboxes.
 - big_blind: Read from WINDOW TITLE at top. Format is "Table - $SB/$BB". Extract BB value.
-- facing_raise: TRUE if someone raised before hero's turn. FALSE if just blinds or limps.
 
 PLAYER DETECTION:
 - players_in_hand: Count of players who still have cards (not folded). Look for face-down card backs.
