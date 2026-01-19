@@ -300,21 +300,23 @@ def main():
             hero_cards = result.get('hero_cards')
             raw_opponents = result.get('opponents', [])
             
-            # Show raw detection
-            raw_names = [o.get('name', '?') for o in raw_opponents]
-            action_detected = [n for n in raw_names if is_action_word(n)]
+            # Show raw detection with has_cards
+            raw_info = [(o.get('name', '?'), o.get('has_cards', '?')) for o in raw_opponents]
+            action_detected = [o.get('name') for o in raw_opponents if is_action_word(o.get('name'))]
             
             print(f"  Hero cards: {hero_cards}", flush=True)
-            print(f"  Raw opponents: {raw_names}", flush=True)
+            print(f"  Raw opponents: {raw_info}", flush=True)
             if action_detected:
                 print(f"  >>> Action words: {action_detected}", flush=True)
             
             # Apply tracking
             merged = tracker.merge(raw_opponents, hero_cards)
-            merged_names = [o.get('name', '?') for o in merged]
+            merged_info = [(o.get('name', '?'), o.get('has_cards', '?')) for o in merged]
+            in_hand = [o.get('name') for o in merged if o.get('has_cards')]
             
-            print(f"  After tracking: {merged_names}", flush=True)
-            print(f"  Stored: {[o.get('name') for o in tracker.last_opponents]}", flush=True)
+            print(f"  After tracking: {merged_info}", flush=True)
+            print(f"  In hand (has_cards=True): {in_hand}", flush=True)
+            print(f"  num_players would be: {len(in_hand) + 1}", flush=True)
             print("", flush=True)
 
 if __name__ == '__main__':
