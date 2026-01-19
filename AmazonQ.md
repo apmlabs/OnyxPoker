@@ -1,6 +1,6 @@
 # OnyxPoker - Status Tracking
 
-**Last Updated**: January 19, 2026 01:00 UTC
+**Last Updated**: January 19, 2026 01:30 UTC
 
 ---
 
@@ -48,6 +48,35 @@
 
 **Changes:**
 - `helper_bar.py` now uses V2 vision by default (player detection + opponent stats)
+- `--v1` flag for old V1 vision (no player detection)
+- `--visionv2` flag removed (now default)
+- Removed `facing_raise` from vision prompts (dead code - we use `to_call` instead)
+- Removed `facing_raise` from strategy_engine.py (was read but never used)
+
+**test_screenshots.py updated:**
+- Default mode: V1 vs V2 comparison on same screenshots
+- `--compare N` to test N screenshots
+- Saves results to `client/logs/vision_compare_results.json` after each screenshot
+- Detailed field-by-field comparison output
+
+**Vision comparison results (8 screenshots):**
+- Match rate: 100% on core fields
+- V1 avg: 5.2s, V2 avg: 10.0s (+4.8s for player detection)
+- V2 player detection issue: picks up UI text ("Post SB", "Fold") as player names
+
+**Code cleanup - facing_raise removal:**
+```
+to_call is read from CALL button → used to calculate facing
+facing_raise was asked in vision → read in strategy_engine → never used
+```
+
+**Usage:**
+```bash
+python helper_bar.py          # V2 default
+python helper_bar.py --v1     # V1 mode
+python test_screenshots.py    # Compare V1 vs V2
+python test_screenshots.py --compare 20
+```
 - `--v1` flag for old V1 vision (no player detection)
 - `--visionv2` flag removed (now default)
 

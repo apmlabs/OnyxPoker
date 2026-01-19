@@ -199,7 +199,7 @@ cd client && python3 test_strategy_engine.py
 
 **Tests 55 scenarios:**
 - Preflop facing detection (none/open/3bet/4bet)
-- Buggy vision handling (facing_raise=True but to_call=0)
+- Buggy vision handling (to_call=0 edge cases)
 - Position-specific ranges
 - Postflop action selection
 - Edge cases (None values, invalid positions)
@@ -430,15 +430,17 @@ else:
     # Call directly with real to_call
 ```
 
-**facing_raise from vision unreliable (Session 34):**
+**facing_raise removed from vision (Session 60):**
 ```python
-# BUG: Vision sometimes returns facing_raise=True when to_call=0
-if facing_raise:  # Unreliable!
-    facing = 'open'
+# OLD: Vision returned facing_raise but it was unreliable and never used
+# facing_raise was read in strategy_engine but _preflop() calculated facing from to_call
 
-# FIX: Use to_call as sole indicator
-if to_call <= 0.02:
-    facing = 'none'  # No raise, use OPEN ranges
+# NEW: Removed facing_raise entirely from vision prompts
+# to_call is the sole indicator - read from CALL button on screen
+if to_call <= big_blind:
+    facing = 'none'  # No raise
+elif to_call <= big_blind * 12:
+    facing = 'open'  # Open raise
 ```
 
 **Board trips ≠ hero trips (Session 43.7):**
