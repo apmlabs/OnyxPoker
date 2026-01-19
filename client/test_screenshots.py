@@ -3,6 +3,7 @@ Test vision detector on saved screenshots
 Usage: 
   python test_screenshots.py [screenshot_path]           # Default: V1 vs V2 comparison
   python test_screenshots.py --compare [N]               # Compare V1 vs V2 on N screenshots from uploads
+  python test_screenshots.py --track [N]                 # Test opponent tracking across N screenshots
   python test_screenshots.py --v1 [screenshot_path]      # V1 only (no player detection)
   python test_screenshots.py --v2 [screenshot_path]      # V2 only (with player detection)
   python test_screenshots.py --ai-only [screenshot_path] # AI-only mode (gpt-5.2 does everything)
@@ -20,7 +21,8 @@ from datetime import datetime
 V1_MODE = '--v1' in sys.argv
 V2_MODE = '--v2' in sys.argv
 AI_ONLY_MODE = '--ai-only' in sys.argv
-COMPARE_MODE = '--compare' in sys.argv or (not V1_MODE and not V2_MODE and not AI_ONLY_MODE)
+TRACK_MODE = '--track' in sys.argv
+COMPARE_MODE = '--compare' in sys.argv or (not V1_MODE and not V2_MODE and not AI_ONLY_MODE and not TRACK_MODE)
 STRATEGY = 'value_lord'
 VISION_MODEL = None
 
@@ -43,6 +45,54 @@ if AI_ONLY_MODE:
 
 LOG_FILE = None
 SCREENSHOTS_DIR = os.path.join(os.path.dirname(__file__), 'screenshots')
+
+# Opponent tracking logic (same as helper_bar.py)
+ACTION_WORDS = ['fold', 'check', 'call', 'raise', 'bet', 'all-in', 'allin', 
+                'post', 'muck', 'show', 'sit out', 'sitting out']
+
+def is_action_word(name):
+    """Check if name is actually an action word"""
+    if not name:
+        return True
+    name_lower = name.lower()
+    for word in ACTION_WORDS:
+        if name_lower.startswith(word):
+            return True
+    return False
+
+class OpponentTracker:
+    """Track opponents across screenshots, handling action words as names"""
+    def __init__(self):
+        self.last_opponents = []
+        self.last_hero_cards = None
+    
+    def merge(self, new_opponents, hero_cards):
+        """Merge new detection with previous, filtering action words"""
+        hero_cards_changed = (hero_cards != self.last_hero_cards)
+        
+        if hero_cards_changed:
+            # New hand - reset
+            self.last_hero_cards = hero_cards
+            self.last_opponents = [o for o in new_opponents if not is_action_word(o.get('name'))]
+            return new_opponents
+        
+        # Same hand - merge
+        merged = []
+        new_real_names = {o['name']: o for o in new_opponents if not is_action_word(o.get('name'))}
+        
+        for prev in self.last_opponents:
+            name = prev.get('name')
+            if name in new_real_names:
+                merged.append(new_real_names[name])
+            else:
+                merged.append(prev)
+        
+        for name, opp in new_real_names.items():
+            if not any(m.get('name') == name for m in merged):
+                merged.append(opp)
+        
+        self.last_opponents = merged
+        return merged
 
 def compare_v1_v2(v1_result, v2_result):
     """Compare V1 and V2 results, return list of differences."""
@@ -217,6 +267,51 @@ def main():
             for i, path in enumerate(screenshots, 1):
                 print(f"[{i}/{len(screenshots)}] ", end="")
                 test_single(path, 'ai-only')
+    
+    elif TRACK_MODE:
+        print("TRACK MODE: Test opponent tracking across screenshots")
+        print("=" * 70)
+        
+        # Get screenshots
+        if args and args[0].isdigit():
+            limit = int(args[0])
+        else:
+            limit = 10
+        screenshots = sorted(glob.glob(os.path.join(SCREENSHOTS_DIR, '*.png')))[:limit]
+        
+        if not screenshots:
+            print(f"No screenshots found in {SCREENSHOTS_DIR}")
+            return
+        
+        print(f"Testing {len(screenshots)} screenshots with opponent tracking...\n")
+        
+        v2 = VisionDetectorV2(model=VISION_MODEL)
+        tracker = OpponentTracker()
+        
+        for i, path in enumerate(screenshots, 1):
+            fname = os.path.basename(path)
+            print(f"[{i}/{len(screenshots)}] {fname}")
+            
+            result = v2.detect_table(path)
+            hero_cards = result.get('hero_cards')
+            raw_opponents = result.get('opponents', [])
+            
+            # Show raw detection
+            raw_names = [o.get('name', '?') for o in raw_opponents]
+            action_detected = [n for n in raw_names if is_action_word(n)]
+            
+            print(f"  Hero: {hero_cards}")
+            print(f"  Raw opponents: {raw_names}")
+            if action_detected:
+                print(f"  Action words detected: {action_detected}")
+            
+            # Apply tracking
+            merged = tracker.merge(raw_opponents, hero_cards)
+            merged_names = [o.get('name', '?') for o in merged]
+            
+            print(f"  After tracking: {merged_names}")
+            print(f"  Stored for next: {[o.get('name') for o in tracker.last_opponents]}")
+            print()
 
 if __name__ == '__main__':
     main()
