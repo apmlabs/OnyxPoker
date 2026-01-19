@@ -1644,8 +1644,10 @@ def _postflop_value_lord(hole_cards, board, pot, to_call, street, strength, desc
                     return ('fold', 0, f"{desc} - fold overpair vs check-raise")
                 return ('call', 0, f"{desc} - call overpair turn")
             
-            # TOP PAIR: 50% win rate, call reasonable
+            # TOP PAIR: 50% win rate, but 0% vs raise >60%
             if hand_info['has_top_pair']:
+                if is_facing_raise and pot_pct > 0.6:
+                    return ('fold', 0, f"{desc} - fold top pair vs raise >{pot_pct:.0%}")
                 if pot_pct <= 0.75:
                     return ('call', 0, f"{desc} - call top pair turn")
                 return ('fold', 0, f"{desc} - fold top pair vs {pot_pct:.0%}")
@@ -1685,8 +1687,10 @@ def _postflop_value_lord(hole_cards, board, pot, to_call, street, strength, desc
         if hand_info['is_overpair']:
             return ('call', 0, f"{desc} - call overpair flop")
         
-        # TOP PAIR: call (71% win rate)
+        # TOP PAIR: call (71% win rate overall, but 0% vs raise >50%)
         if hand_info['has_top_pair']:
+            if is_facing_raise and pot_pct > 0.5:
+                return ('fold', 0, f"{desc} - fold top pair vs raise >{pot_pct:.0%}")
             if pot_pct <= 1.0:
                 return ('call', 0, f"{desc} - call top pair flop")
             return ('fold', 0, f"{desc} - fold top pair vs overbet")
