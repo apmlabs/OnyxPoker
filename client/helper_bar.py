@@ -80,6 +80,8 @@ class HelperBar:
         self.last_pot = 0  # Track pot to detect new hands
         self.last_street = None  # Track street for raise detection
         self.last_hero_action = None  # Track hero's last action this street
+        self.last_hero_cards = None  # Track hero cards to detect new hand
+        self.last_opponents = []  # Track opponents across screenshots
         
         # Drag state
         self._drag_start_x = 0
@@ -224,6 +226,51 @@ class HelperBar:
             'maniac': "Only premiums | Call everything | Can't fold | vs raise: QQ+/AK, call down",
         }
         return fallback.get(archetype, "no reads")
+
+    def _is_action_word(self, name):
+        """Check if name is actually an action word (shown when player acts)"""
+        if not name:
+            return True
+        action_words = ['fold', 'check', 'call', 'raise', 'bet', 'all-in', 'allin', 
+                        'post', 'muck', 'show', 'sit out', 'sitting out']
+        name_lower = name.lower()
+        # Check if starts with action word (e.g., "Call €0.10", "Raise €0.50")
+        for word in action_words:
+            if name_lower.startswith(word):
+                return True
+        return False
+
+    def _merge_opponents(self, new_opponents, hero_cards):
+        """Merge new opponent detection with previous, handling action word names"""
+        hero_cards_changed = (hero_cards != self.last_hero_cards)
+        
+        if hero_cards_changed:
+            # New hand - reset, but filter out action words
+            self.last_hero_cards = hero_cards
+            self.last_opponents = [o for o in new_opponents if not self._is_action_word(o.get('name'))]
+            return new_opponents
+        
+        # Same hand - merge with previous opponents
+        # Keep all previous names, update has_cards from new detection
+        merged = []
+        new_real_names = {o['name']: o for o in new_opponents if not self._is_action_word(o.get('name'))}
+        
+        for prev in self.last_opponents:
+            name = prev.get('name')
+            if name in new_real_names:
+                # Found in new detection - use new has_cards
+                merged.append(new_real_names[name])
+            else:
+                # Not in new detection - keep previous (might have folded or showing action)
+                merged.append(prev)
+        
+        # Add any new real names not in previous
+        for name, opp in new_real_names.items():
+            if not any(m.get('name') == name for m in merged):
+                merged.append(opp)
+        
+        self.last_opponents = merged
+        return merged
 
     def _lookup_opponent_stats(self, opponents):
         """Lookup stats for detected opponents - advice comes from DB"""
@@ -394,8 +441,14 @@ class HelperBar:
                     table_data = vision.detect_table(temp_path)
                     api_time = time.time() - api_start
                     
+                    # Merge opponents with previous detection (handles action words as names)
+                    hero_cards = table_data.get('hero_cards')
+                    raw_opponents = table_data.get('opponents', [])
+                    merged_opponents = self._merge_opponents(raw_opponents, hero_cards)
+                    table_data['opponents'] = merged_opponents
+                    
                     # Lookup opponent stats
-                    opponent_stats = self._lookup_opponent_stats(table_data.get('opponents', []))
+                    opponent_stats = self._lookup_opponent_stats(merged_opponents)
                     table_data['opponent_stats'] = opponent_stats
                     table_data['opponent_line'] = self._format_opponent_line(opponent_stats)
                     table_data['advice_line'] = self._format_advice_line(opponent_stats)
