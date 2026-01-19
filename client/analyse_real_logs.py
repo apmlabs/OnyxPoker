@@ -17,7 +17,7 @@ sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 
 from poker_logic import preflop_action, postflop_action, STRATEGIES, analyze_hand
 
-ALL_STRATEGIES = ['value_lord', 'kiro_lord', 'kiro_optimal', 'sonnet', 'nit', 'tag', 'lag', 'fish', 'maniac']
+ALL_STRATEGIES = ['the_lord', 'value_lord', 'kiro_lord', 'kiro_optimal', 'sonnet', 'nit', 'tag', 'lag', 'fish', 'maniac']
 
 def hand_to_str(cards):
     """Convert ['Ah', 'Kd'] to 'AKo'"""

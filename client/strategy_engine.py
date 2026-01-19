@@ -3,7 +3,7 @@ Strategy Engine - Uses shared poker_logic for decisions.
 Takes table data from vision API and returns action + reasoning.
 """
 
-from typing import Dict, Any, List
+from typing import Dict, Any, List, Tuple
 from poker_logic import (
     STRATEGIES, RANK_VAL, parse_card, hand_to_str,
     check_draws, postflop_action, preflop_action,
@@ -66,12 +66,12 @@ class StrategyEngine:
         
         # Preflop
         if not board:
-            return self._preflop(hand, position, to_call, big_blind)
+            return self._preflop(hand, position, to_call, big_blind, table_data)
         
         # Postflop
         return self._postflop(cards, board, pot, to_call, position, table_data)
     
-    def _preflop(self, hand: str, position: str, to_call: float, big_blind: float = 0.02) -> Dict[str, Any]:
+    def _preflop(self, hand: str, position: str, to_call: float, big_blind: float = 0.02, table_data: Dict[str, Any] = None) -> Dict[str, Any]:
         """Preflop decision with call thresholds."""
         
         # Determine what we're facing based on to_call relative to big_blind
@@ -101,6 +101,12 @@ class StrategyEngine:
             opener_pos = None
         
         action, reasoning = preflop_action(hand, position, self.strategy, facing, opener_pos)
+        
+        # THE_LORD: Adjust preflop action based on villain archetype
+        if self.strategy_name == 'the_lord' and facing in ['open', '3bet'] and table_data:
+            villain_archetype = self._get_villain_archetype(table_data)
+            if villain_archetype:
+                action, reasoning = self._the_lord_preflop_adjust(hand, action, reasoning, facing, villain_archetype)
         
         bet_size = None
         if action == 'raise':
@@ -190,6 +196,79 @@ class StrategyEngine:
             return "CALL 3bb"
         return "FOLD"
     
+    def _the_lord_preflop_adjust(self, hand: str, base_action: str, base_reasoning: str, 
+                                  facing: str, villain_archetype: str) -> Tuple[str, str]:
+        """Adjust preflop action based on villain archetype for the_lord strategy.
+        
+        Based on advice:
+        - vs Fish: Call wider (they raise weak)
+        - vs Nit/Rock: Much tighter (they only raise premiums)
+        - vs Maniac: QQ+/AK only (they raise everything)
+        - vs LAG: 99+/AQ+ (they raise wide but have hands)
+        - vs TAG: TT+/AK (baseline)
+        """
+        from poker_logic import THE_LORD_VS_RAISE
+        
+        # Only adjust when facing a raise
+        if facing not in ['open', '3bet']:
+            return (base_action, base_reasoning)
+        
+        vs_range = THE_LORD_VS_RAISE.get(villain_archetype, THE_LORD_VS_RAISE['tag'])
+        
+        # If hand is in the archetype-specific range, call/raise
+        if hand in vs_range:
+            if base_action == 'fold':
+                return ('call', f'{hand} call vs {villain_archetype} raise')
+            return (base_action, base_reasoning + f' vs {villain_archetype}')
+        else:
+            # Hand not in range - fold unless we were raising
+            if base_action in ['call', 'check']:
+                return ('fold', f'{hand} fold vs {villain_archetype} (not in range)')
+            # If we were raising (3bet/4bet), check if it's still good
+            if base_action == 'raise':
+                # Only continue raising with premium hands vs tight players
+                if villain_archetype in ['nit', 'rock']:
+                    from poker_logic import expand_range
+                    if hand not in expand_range('QQ+,AKs'):
+                        return ('fold', f'{hand} fold vs {villain_archetype} (too tight to 3bet)')
+            return (base_action, base_reasoning + f' vs {villain_archetype}')
+    
+    def _get_villain_archetype(self, table_data: Dict[str, Any]) -> str:
+        """Get villain archetype from opponent_stats.
+        
+        For heads-up: use the single opponent with cards.
+        For multiway: use the tightest archetype (most conservative).
+        """
+        opponent_stats = table_data.get('opponent_stats', [])
+        if not opponent_stats:
+            return None
+        
+        # Find opponents still in hand (have cards)
+        opponents = table_data.get('opponents', [])
+        active_names = {o['name'] for o in opponents if o.get('has_cards', False)}
+        
+        # Get archetypes of active opponents
+        active_archetypes = []
+        for opp in opponent_stats:
+            if opp.get('name') in active_names and opp.get('archetype'):
+                active_archetypes.append(opp['archetype'])
+        
+        if not active_archetypes:
+            return None
+        
+        # If single opponent, use their archetype
+        if len(active_archetypes) == 1:
+            return active_archetypes[0]
+        
+        # Multiway: use tightest archetype (most conservative play)
+        # Order from tightest to loosest: rock, nit, tag, lag, fish, maniac
+        tightness_order = ['rock', 'nit', 'tag', 'lag', 'fish', 'maniac', 'unknown']
+        for arch in tightness_order:
+            if arch in active_archetypes:
+                return arch
+        
+        return active_archetypes[0]
+    
     def _postflop(self, cards: List[str], board: List[str], pot: float, to_call: float, position: str, table_data: Dict[str, Any] = None) -> Dict[str, Any]:
         """Postflop decision."""
         
@@ -227,14 +306,17 @@ class StrategyEngine:
             # Get actual number of opponents from vision (num_players - 1 = opponents)
             num_opponents = max(1, (table_data.get('num_players', 2) - 1))
             is_facing_raise = table_data.get('is_facing_raise', False)
+            # Get villain archetype for the_lord strategy
+            villain_archetype = self._get_villain_archetype(table_data)
         else:
             is_aggressor = True  # Default for backward compatibility
             num_opponents = 1  # Default to heads-up
             is_facing_raise = False
+            villain_archetype = None
         
         action, bet_size, reasoning = postflop_action(
             hole_cards, board_cards, pot, to_call, street, is_ip, is_aggressor,
-            strategy=self.strategy_name, num_opponents=num_opponents,
+            archetype=villain_archetype, strategy=self.strategy_name, num_opponents=num_opponents,
             is_facing_raise=is_facing_raise
         )
         

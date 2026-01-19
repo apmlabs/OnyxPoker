@@ -1,6 +1,6 @@
 # OnyxPoker - Status Tracking
 
-**Last Updated**: January 19, 2026 21:00 UTC
+**Last Updated**: January 19, 2026 21:45 UTC
 
 ---
 
@@ -16,17 +16,22 @@
 | vision_detector_lite.py | ✅ | GPT-5.2 for vision only (V1) ~3.9s |
 | vision_detector_v2.py | ✅ | GPT-5.2 + opponent detection (V2) ~5.5s |
 | build_player_stats.py | ✅ | Single source of truth for player archetypes |
-| strategy_engine.py | ✅ | 3-bet/4-bet ranges + BB defense |
-| poker_logic.py | ✅ | Data-driven value_lord postflop |
+| strategy_engine.py | ✅ | 3-bet/4-bet ranges + BB defense + villain archetype |
+| poker_logic.py | ✅ | Data-driven value_lord + opponent-aware the_lord |
 | poker_sim.py | ✅ | Full postflop simulation |
 | analyse_real_logs.py | ✅ | Shows unsaved losses by default |
-| All test suites | ✅ | audit(30), strategy_engine(55), postflop(67), rules(24) |
+| All test suites | ✅ | audit(30), strategy_engine(47/55), postflop(67), rules(24) |
 | Server | ✅ | 54.80.204.92:5001 |
 
 ### Default Strategy: `value_lord`
 - Data-driven betting/calling from 2,018 real hands
 - 50% pot standard sizing, c-bet max 4BB
 - Never call river high card (0% win rate)
+
+### NEW: `the_lord` Strategy (Opponent-Aware)
+- Based on value_lord with villain-specific adjustments
+- Uses V2 vision opponent detection + player database
+- Adjusts preflop ranges and postflop decisions by archetype
 
 ### Player Database (565 players, deep research classification)
 | Archetype | Count | % | Advice |
@@ -41,6 +46,59 @@
 ---
 
 ## Session History
+
+### Session 62: the_lord Strategy - Opponent-Aware Decisions (January 19, 2026)
+
+**Created `the_lord` strategy that adjusts decisions based on villain archetypes.**
+
+**Concept:**
+- value_lord makes decisions based purely on cards, position, bet sizing
+- the_lord adds villain-specific adjustments using V2 vision opponent detection
+
+**Preflop Adjustments (vs their raise):**
+| Archetype | Range | Reasoning |
+|-----------|-------|-----------|
+| fish | 77+, A9s+, KTs+, AJo+ | They raise weak - call wider |
+| nit | QQ+, AKs | They only raise premiums - much tighter |
+| rock | QQ+, AKs | Same as nit |
+| maniac | QQ+, AK | They raise everything - only premiums |
+| lag | 99+, AQ+ | They raise wide but have hands |
+| tag | TT+, AK | Baseline - respect their raises |
+
+**Postflop Adjustments:**
+| Archetype | Betting | Calling | Bluffing |
+|-----------|---------|---------|----------|
+| fish | 70% pot (value) | Call down (they bluff less) | Never |
+| nit | Normal | Fold (bet = nuts) | More (they fold) |
+| rock | Normal | Fold (bet = nuts) | More (they fold) |
+| maniac | Normal | Call down (they bluff too much) | Never |
+| lag | Normal | Call down more | Normal |
+| tag | Normal | Normal | Normal |
+
+**Implementation:**
+- `THE_LORD_VS_RAISE` dict in poker_logic.py with archetype-specific preflop ranges
+- `_postflop_the_lord()` function adjusts value_lord decisions by archetype
+- `_get_villain_archetype()` in strategy_engine.py extracts archetype from opponent_stats
+- `_the_lord_preflop_adjust()` modifies preflop action based on villain
+
+**Villain Detection:**
+- Heads-up: Use single opponent's archetype
+- Multiway: Use tightest archetype (most conservative)
+- Unknown: Default to TAG behavior (value_lord baseline)
+
+**Files Changed:**
+- poker_logic.py: Added the_lord strategy, THE_LORD_VS_RAISE, _postflop_the_lord()
+- strategy_engine.py: Added _get_villain_archetype(), _the_lord_preflop_adjust()
+- analyse_real_logs.py: Added the_lord to ALL_STRATEGIES
+
+**Test Results:**
+- audit_strategies.py: 30/30 PASS
+- test_strategy_engine.py: 47/55 PASS (same as before)
+
+**Usage:**
+```bash
+python helper_bar.py --strategy the_lord  # Use opponent-aware strategy
+```
 
 ### Session 61: Vision Prompt Optimization + Opponent Tracking (January 19, 2026)
 

@@ -730,6 +730,22 @@ STRATEGIES['maniac'] = {
 STRATEGIES['value_lord'] = STRATEGIES['maniac'].copy()
 STRATEGIES['value_lord']['name'] = 'Value Lord'
 
+# the_lord: opponent-aware strategy based on villain archetypes
+STRATEGIES['the_lord'] = STRATEGIES['value_lord'].copy()
+STRATEGIES['the_lord']['name'] = 'The Lord'
+
+# Archetype-specific preflop ranges for calling vs their raise
+# Based on advice: fish=wider, nit/rock=tighter, maniac=QQ+/AK, lag=99+/AQ+, tag=TT+/AK
+THE_LORD_VS_RAISE = {
+    'fish': expand_range('77+,A9s+,KTs+,QTs+,AJo+,KQo'),  # Wider - they raise weak
+    'nit': expand_range('QQ+,AKs'),  # Much tighter - they only raise premiums
+    'rock': expand_range('QQ+,AKs'),  # Same as nit
+    'maniac': expand_range('QQ+,AKs,AKo'),  # Only premiums - they raise everything
+    'lag': expand_range('99+,AQs+,AQo+'),  # Tighter - they raise wide but have hands
+    'tag': expand_range('TT+,AKs,AKo'),  # Baseline - respect their raises
+    'unknown': expand_range('TT+,AKs,AKo'),  # Default to TAG
+}
+
 
 # Hand evaluation
 def hand_to_str(cards: List[Tuple[str, str]]) -> str:
@@ -945,6 +961,11 @@ def postflop_action(hole_cards: List[Tuple[str, str]], board: List[Tuple[str, st
         is_overpair = False
         board_has_ace = False
         is_underpair_to_ace = False
+    
+    # THE_LORD: Check strategy first - it uses archetype for adjustments, not simulation
+    if strategy == 'the_lord':
+        return _postflop_the_lord(hole_cards, board, pot, to_call, street,
+                                  strength, desc, has_any_draw, has_flush_draw, has_oesd, bb_size, is_aggressor, is_facing_raise, archetype)
     
     # ARCHETYPES TUNED TO REAL 2NL DATA (1036 hands, 122 opponents):
     # Real data Jan 17 2026 (2018 hands):
@@ -1343,6 +1364,8 @@ def postflop_action(hole_cards: List[Tuple[str, str]], board: List[Tuple[str, st
     # value_maniac: Exact maniac postflop (overbets, calls wide)
     # BUT with paired board protection (learned from KK on JJ disaster)
     
+    # NOTE: the_lord is checked earlier (before archetype handlers) since it uses archetype for adjustments
+    
     if strategy == 'value_lord':
         return _postflop_value_lord(hole_cards, board, pot, to_call, street,
                                     strength, desc, has_any_draw, has_flush_draw, has_oesd, bb_size, is_aggressor, is_facing_raise)
@@ -1681,6 +1704,112 @@ def _postflop_value_lord(hole_cards, board, pot, to_call, street, strength, desc
             return ('fold', 0, f"{desc} - fold bottom pair flop")
         
         return ('fold', 0, f"{desc} - fold")
+
+
+def _postflop_the_lord(hole_cards, board, pot, to_call, street, strength, desc, has_any_draw,
+                       has_flush_draw=False, has_oesd=False, bb_size=0.05, is_aggressor=False, 
+                       is_facing_raise=False, villain_archetype=None):
+    """
+    THE_LORD postflop - Opponent-aware adjustments on top of value_lord.
+    
+    Based on real player database advice:
+    - vs Fish: Value bet big (70%), never bluff, call down (they bluff less)
+    - vs Nit: Fold to their bets (bet=nuts), bluff more (they fold too much)
+    - vs Rock: Same as nit but even more extreme
+    - vs Maniac: Call down with medium hands (they bluff too much), never bluff
+    - vs LAG: Call down more (they overbluff)
+    - vs TAG: Baseline (value_lord default)
+    """
+    # Default to TAG behavior if unknown
+    if not villain_archetype or villain_archetype == 'unknown':
+        villain_archetype = 'tag'
+    
+    hand_info = analyze_hand(hole_cards, board)
+    pot_pct = to_call / pot if pot > 0 and to_call else 0
+    
+    # Get value_lord's decision as baseline
+    base_action, base_amount, base_reason = _postflop_value_lord(
+        hole_cards, board, pot, to_call, street, strength, desc, has_any_draw,
+        has_flush_draw, has_oesd, bb_size, is_aggressor, is_facing_raise
+    )
+    
+    # === VILLAIN-SPECIFIC ADJUSTMENTS ===
+    
+    if villain_archetype == 'fish':
+        # Fish: "Value bet | Calls too much | Never bluff"
+        # Bet bigger for value, never bluff, but fold to their raises (rare = nuts)
+        
+        if to_call == 0:  # Betting
+            if base_action == 'bet' and strength >= 2:
+                # Bet 70% pot instead of 50% - they call too much
+                return ('bet', round(pot * 0.70, 2), f"{desc} - 70% pot vs fish (calls too much)")
+            if base_action == 'bet' and strength < 2:
+                # Never bluff fish
+                return ('check', 0, f"{desc} - no bluff vs fish")
+        else:  # Facing bet
+            if is_facing_raise:
+                # Fish raise = nuts, fold everything but monsters
+                if strength < 4:
+                    return ('fold', 0, f"{desc} - fold to fish raise (rare = nuts)")
+            # Fish bet less often, when they do it's usually value
+            # But they also call too much so we can call lighter
+            if base_action == 'fold' and strength >= 2 and pot_pct <= 0.5:
+                return ('call', 0, f"{desc} - call vs fish (they value bet weak)")
+        
+        return (base_action, base_amount, base_reason + " vs fish")
+    
+    elif villain_archetype in ['nit', 'rock']:
+        # Nit/Rock: "Fold to bets | Bet = nuts | Bluff more"
+        # Their bet = nuts, fold everything. Bluff them more (they fold too much)
+        
+        if to_call == 0:  # Betting
+            # Bluff more - they fold too much
+            if base_action == 'check' and street == 'flop' and is_aggressor:
+                return ('bet', round(pot * 0.5, 2), f"{desc} - bluff vs {villain_archetype} (folds too much)")
+        else:  # Facing bet
+            # Their bet = nuts, fold almost everything
+            if strength < 5:  # Less than flush
+                return ('fold', 0, f"{desc} - fold to {villain_archetype} bet (bet = nuts)")
+        
+        return (base_action, base_amount, base_reason + f" vs {villain_archetype}")
+    
+    elif villain_archetype == 'maniac':
+        # Maniac: "Call everything | Can't fold | Call down"
+        # Call down with medium hands, never bluff (they don't fold)
+        
+        if to_call == 0:  # Betting
+            if base_action == 'bet' and strength < 2:
+                # Never bluff maniac
+                return ('check', 0, f"{desc} - no bluff vs maniac (can't fold)")
+        else:  # Facing bet
+            # Call down much lighter - they bluff too much
+            if base_action == 'fold' and strength >= 2:
+                # Call with any pair
+                return ('call', 0, f"{desc} - call down vs maniac (bluffs too much)")
+            if base_action == 'fold' and hand_info['is_overpair']:
+                return ('call', 0, f"{desc} - call overpair vs maniac")
+            if base_action == 'fold' and hand_info['has_top_pair']:
+                return ('call', 0, f"{desc} - call top pair vs maniac")
+        
+        return (base_action, base_amount, base_reason + " vs maniac")
+    
+    elif villain_archetype == 'lag':
+        # LAG: "Call down | Over-aggro"
+        # Call down more but not as extreme as maniac
+        
+        if to_call == 0:  # Betting
+            pass  # Same as value_lord
+        else:  # Facing bet
+            # Call down more - they overbluff
+            if base_action == 'fold' and strength >= 2 and pot_pct <= 0.75:
+                return ('call', 0, f"{desc} - call vs lag (over-aggro)")
+            if base_action == 'fold' and hand_info['has_top_pair']:
+                return ('call', 0, f"{desc} - call top pair vs lag")
+        
+        return (base_action, base_amount, base_reason + " vs lag")
+    
+    # TAG or unknown: use value_lord baseline
+    return (base_action, base_amount, base_reason)
 
 
 def _postflop_optimal_stats(hole_cards, board, pot, to_call, street, is_ip, is_aggressor,
