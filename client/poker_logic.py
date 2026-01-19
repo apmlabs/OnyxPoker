@@ -1737,7 +1737,7 @@ def _postflop_the_lord(hole_cards, board, pot, to_call, street, strength, desc, 
     
     if villain_archetype == 'fish':
         # Fish: "Value bet | Calls too much | Never bluff"
-        # Bet bigger for value, never bluff, but fold to their raises (rare = nuts)
+        # Bet bigger for value, never bluff, fold to their RAISES (rare = nuts)
         
         if to_call == 0:  # Betting
             if base_action == 'bet' and strength >= 2:
@@ -1748,11 +1748,10 @@ def _postflop_the_lord(hole_cards, board, pot, to_call, street, strength, desc, 
                 return ('check', 0, f"{desc} - no bluff vs fish")
         else:  # Facing bet
             if is_facing_raise:
-                # Fish raise = nuts, fold everything but monsters
-                if strength < 4:
+                # Fish raise = nuts, fold weak hands but keep strong ones
+                if strength < 3:  # Less than two pair
                     return ('fold', 0, f"{desc} - fold to fish raise (rare = nuts)")
-            # Fish bet less often, when they do it's usually value
-            # But they also call too much so we can call lighter
+            # Fish bet = usually value, but call with pairs
             if base_action == 'fold' and strength >= 2 and pot_pct <= 0.5:
                 return ('call', 0, f"{desc} - call vs fish (they value bet weak)")
         
@@ -1760,15 +1759,21 @@ def _postflop_the_lord(hole_cards, board, pot, to_call, street, strength, desc, 
     
     elif villain_archetype in ['nit', 'rock']:
         # Nit/Rock: "Fold to bets | Bet = nuts | Bluff more"
-        # Their bet = nuts, fold everything. Bluff them more (they fold too much)
+        # Their bet = strong, fold marginal hands. Bluff them more.
         
         if to_call == 0:  # Betting
             # Bluff more - they fold too much
             if base_action == 'check' and street == 'flop' and is_aggressor:
                 return ('bet', round(pot * 0.5, 2), f"{desc} - bluff vs {villain_archetype} (folds too much)")
         else:  # Facing bet
-            # Their bet = nuts, fold almost everything
-            if strength < 5:  # Less than flush
+            # Their bet = strong, but don't fold overpairs or top pair
+            # Fold weak pairs (middle/bottom/underpair), keep top pair+
+            is_weak_pair = (strength == 2 and not hand_info['is_overpair'] and 
+                           not hand_info['has_top_pair'])
+            if is_weak_pair and pot_pct > 0.3:
+                return ('fold', 0, f"{desc} - fold to {villain_archetype} bet (bet = nuts)")
+            # Also fold high card vs their bet
+            if strength < 2 and pot_pct > 0.3:
                 return ('fold', 0, f"{desc} - fold to {villain_archetype} bet (bet = nuts)")
         
         return (base_action, base_amount, base_reason + f" vs {villain_archetype}")

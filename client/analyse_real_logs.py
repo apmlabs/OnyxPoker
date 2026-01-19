@@ -10,14 +10,31 @@ Usage:
 """
 
 import argparse
+import json
 import os
 import re
 import sys
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 
-from poker_logic import preflop_action, postflop_action, STRATEGIES, analyze_hand
+from poker_logic import preflop_action, postflop_action, STRATEGIES, analyze_hand, THE_LORD_VS_RAISE
 
 ALL_STRATEGIES = ['the_lord', 'value_lord', 'kiro_lord', 'kiro_optimal', 'sonnet', 'nit', 'tag', 'lag', 'fish', 'maniac']
+
+# Load player database for the_lord strategy
+PLAYER_STATS = {}
+_stats_path = os.path.join(os.path.dirname(__file__), 'player_stats.json')
+if os.path.exists(_stats_path):
+    with open(_stats_path) as f:
+        PLAYER_STATS = json.load(f)
+
+def get_player_archetype(player_name):
+    """Look up player archetype from database."""
+    if not player_name:
+        return None
+    stats = PLAYER_STATS.get(player_name)
+    if stats:
+        return stats.get('archetype')
+    return None
 
 def hand_to_str(cards):
     """Convert ['Ah', 'Kd'] to 'AKo'"""
@@ -83,6 +100,10 @@ def parse_hand(text, bb):
         'hero_won': 0,
         'hero_preflop_action': None,
         'preflop_pot': 0,  # Track pot going to flop
+        'preflop_raiser': None,  # Who raised preflop (for the_lord)
+        'postflop_bettor': {},  # Who bet on each street (for the_lord)
+        'villain_raises_before_hero': 0,  # Count of raises before hero acted
+        'last_raise_amount': 0,  # Amount of last raise hero faced
     }
     
     current_street = 'preflop'
@@ -90,6 +111,10 @@ def parse_hand(text, bb):
     button_seat = None
     seats = {}
     preflop_pot = 0  # Track all preflop contributions
+    last_raiser = None  # Track who raised preflop
+    hero_has_acted = False  # Track if hero has acted yet
+    raises_before_hero = 0  # Count raises before hero acts
+    last_raise_amt = 0  # Track last raise amount
     
     # Track hero's investment per street
     # Key insight: "raises to €X" means hero's TOTAL on this street is X
@@ -134,13 +159,37 @@ def parse_hand(text, bb):
                 # "raises €X to €Y" - Y is total put in by this player
                 m = re.search(r'to €([\d.]+)', line)
                 if m:
-                    preflop_pot += float(m.group(1))
+                    raise_amt = float(m.group(1))
+                    preflop_pot += raise_amt
+                    last_raise_amt = raise_amt
+                # Track who raised (for the_lord)
+                raiser_match = re.match(r'^([^:]+):', line)
+                if raiser_match:
+                    raiser_name = raiser_match.group(1)
+                    if raiser_name != 'idealistslp':
+                        last_raiser = raiser_name
+                        if not hero_has_acted:
+                            raises_before_hero += 1
+            
+            # Check if hero acted
+            if line.startswith('idealistslp:') and ': posts' not in line:
+                hero_has_acted = True
+                hand['villain_raises_before_hero'] = raises_before_hero
+                hand['last_raise_amount'] = last_raise_amt
+        
+        # Track postflop bets/raises (for the_lord)
+        if current_street in ['flop', 'turn', 'river']:
+            if ': bets' in line or ': raises' in line:
+                bettor_match = re.match(r'^([^:]+):', line)
+                if bettor_match and bettor_match.group(1) != 'idealistslp':
+                    hand['postflop_bettor'][current_street] = bettor_match.group(1)
         
         # Streets
         if '*** FLOP ***' in line:
             current_street = 'flop'
-            # Save preflop pot before moving to flop
+            # Save preflop pot and raiser before moving to flop
             hand['preflop_pot'] = preflop_pot
+            hand['preflop_raiser'] = last_raiser
             m = re.search(r'\[(\w\w) (\w\w) (\w\w)\]', line)
             if m:
                 hand['board'] = [m.group(1), m.group(2), m.group(3)]
@@ -265,55 +314,33 @@ def parse_hand(text, bb):
     return None
 
 def get_preflop_facing(hand):
-    """Determine what hero faces preflop."""
+    """Determine what hero faces preflop based on actual actions parsed from hand history."""
     facing = 'none'
     to_call = hand['bb']
     
-    # If hero's first action was raise and it's the only/first raise, hero opened
+    # Use actual raise count from parsed hand history
+    raises_before_hero = hand.get('villain_raises_before_hero', 0)
+    last_raise_amt = hand.get('last_raise_amount', 0)
     hero_action = hand.get('hero_preflop_action')
-    preflop_actions = hand.get('preflop_actions', [])
     
-    # Count raises before hero's action
-    # preflop_actions only contains hero's actions, so if hero raised, they opened
-    # We need to check if there were villain raises BEFORE hero acted
-    # Since we only track hero actions, if hero raised it means they opened or 3bet
+    if raises_before_hero == 0:
+        # No one raised before hero - hero is first to act or limped pot
+        facing = 'none'
+        to_call = hand['bb'] if hand['hero_position'] not in ['SB', 'BB'] else 0
+    elif raises_before_hero == 1:
+        # One raise before hero - facing open
+        facing = 'open'
+        to_call = last_raise_amt
+    elif raises_before_hero == 2:
+        # Two raises before hero - facing 3bet
+        facing = '3bet'
+        to_call = last_raise_amt
+    else:
+        # Three+ raises - facing 4bet+
+        facing = '4bet'
+        to_call = last_raise_amt
     
-    # Simple heuristic: if hero raised and amount is small (2-4bb), they opened
-    # If hero raised and amount is larger (6bb+), they likely 3bet
-    if hero_action == 'raise' and preflop_actions:
-        raise_amount = preflop_actions[0].get('amount', 0)
-        bb = hand['bb']
-        raise_bb = raise_amount / bb if bb > 0 else 0
-        
-        # Standard open is 2-7bb, 3bet is typically 3x the open (8-15bb)
-        if raise_bb <= 7:
-            # Hero opened, facing = none
-            return 'none', 0
-        elif raise_bb <= 18:
-            # Hero 3bet, was facing open
-            facing = 'open'
-            to_call = 0  # Hero already acted
-        else:
-            # Hero 4bet, was facing 3bet
-            facing = '3bet'
-            to_call = 0
-    elif hero_action == 'call':
-        # Hero called, so was facing something
-        # Use the LAST raise amount (what hero actually called)
-        if preflop_actions:
-            call_amount = preflop_actions[-1].get('amount', 0)
-            bb = hand['bb']
-            call_bb = call_amount / bb if bb > 0 else 0
-            
-            if call_bb <= 4:
-                facing = 'open'
-            elif call_bb <= 15:
-                facing = '3bet'
-            else:
-                facing = '4bet'
-            to_call = call_amount
-    
-    # Adjust for blinds
+    # Adjust for blinds already posted
     if hand['hero_position'] == 'SB':
         to_call = max(0, to_call - hand['bb']/2)
     elif hand['hero_position'] == 'BB':
@@ -332,6 +359,20 @@ def evaluate_preflop(hand, strategy_name):
     
     facing, to_call = get_preflop_facing(hand)
     
+    # For the_lord: adjust based on villain archetype ONLY for 3bets
+    # The advice "vs raise: TT+/AK" is for facing 3bets, not opens
+    # For opens, use normal value_lord ranges (call_open_ip, bb_defend)
+    if strategy_name == 'the_lord' and facing == '3bet':
+        villain = hand.get('preflop_raiser')
+        villain_arch = get_player_archetype(villain)
+        if villain_arch:
+            # Use archetype-specific range for 3bets
+            vs_range = THE_LORD_VS_RAISE.get(villain_arch, THE_LORD_VS_RAISE['tag'])
+            if hand['hand_str'] in vs_range:
+                return 'call', f"{hand['hand_str']} call 3bet vs {villain_arch} ({villain})"
+            else:
+                return 'fold', f"{hand['hand_str']} fold 3bet vs {villain_arch} ({villain})"
+    
     try:
         action, reason = preflop_action(
             hand['hand_str'],
@@ -345,34 +386,37 @@ def evaluate_preflop(hand, strategy_name):
         return None, None
 
 def get_postflop_situations(hand):
-    """Get postflop decision points where hero faced a bet."""
+    """Get postflop decision points where hero faced a bet.
+    
+    Also calculates remaining_investment: how much hero invested AFTER this decision point.
+    This is needed to correctly calculate the impact of folding vs calling.
+    """
     situations = []
     
     is_aggressor = hand['hero_preflop_action'] == 'raise'
+    street_order = ['flop', 'turn', 'river']
     
-    for street in ['flop', 'turn', 'river']:
+    for street in street_order:
         board_len = {'flop': 3, 'turn': 4, 'river': 5}[street]
         if len(hand['board']) < board_len:
             continue
         
         board = hand['board'][:board_len]
-        # Start with preflop pot
         pot = hand.get('preflop_pot', 0)
         to_call = 0
         hero_action_on_street = None
-        hero_already_acted = False  # Track if hero bet/raised/checked before villain's action
+        hero_already_acted = False
         is_facing_raise = False
+        decision_point_reached = False
         
         # Calculate pot and find hero's decision
         for action in hand['postflop_actions']:
             if action['street'] != street:
-                if action['street'] in ['flop', 'turn', 'river']:
-                    # Previous street - add all actions to pot
+                if action['street'] in street_order:
                     if action['action'] in ['call', 'bet', 'raise', 'villain_bet', 'villain_raise']:
                         pot += action.get('amount', 0)
                 continue
             
-            # Current street - add hero's bet to pot before villain's action
             if action['action'] in ['bet', 'raise']:
                 pot += action.get('amount', 0)
                 hero_already_acted = True
@@ -382,15 +426,38 @@ def get_postflop_situations(hand):
             if action['action'] in ['villain_bet', 'villain_raise']:
                 to_call = action['amount']
                 pot += action['amount']
-                # If hero already acted and now faces a bet, it's a check-raise
                 if hero_already_acted:
                     is_facing_raise = True
             elif action['action'] in ['fold', 'call']:
-                # Hero's response to villain's bet
                 hero_action_on_street = action['action']
+                decision_point_reached = True
                 break
         
         if to_call > 0 and hero_action_on_street:
+            # Calculate remaining_investment: hero's investment AFTER this decision point
+            # This includes the current call/raise and all future street investments
+            remaining = 0
+            found_decision = False
+            street_idx = street_order.index(street)
+            
+            for action in hand['postflop_actions']:
+                action_street_idx = street_order.index(action['street']) if action['street'] in street_order else -1
+                
+                # Skip actions before current street
+                if action_street_idx < street_idx:
+                    continue
+                
+                # On current street, only count hero actions AFTER the decision point
+                if action['street'] == street:
+                    if action['action'] in ['villain_bet', 'villain_raise']:
+                        found_decision = True
+                    elif found_decision and action['action'] in ['call', 'bet', 'raise']:
+                        remaining += action.get('amount', 0)
+                # On future streets, count all hero actions
+                elif action_street_idx > street_idx:
+                    if action['action'] in ['call', 'bet', 'raise']:
+                        remaining += action.get('amount', 0)
+            
             situations.append({
                 'street': street,
                 'board': board,
@@ -398,7 +465,8 @@ def get_postflop_situations(hand):
                 'to_call': to_call,
                 'is_aggressor': is_aggressor,
                 'hero_action': hero_action_on_street,
-                'is_facing_raise': is_facing_raise
+                'is_facing_raise': is_facing_raise,
+                'remaining_investment': remaining
             })
     
     return situations
@@ -406,6 +474,14 @@ def get_postflop_situations(hand):
 def evaluate_postflop(hand, situation, strategy_name):
     """Get strategy's postflop decision."""
     try:
+        # For the_lord: get villain archetype from who bet on this street
+        villain_arch = None
+        if strategy_name == 'the_lord':
+            street = situation['street']
+            bettor = hand.get('postflop_bettor', {}).get(street)
+            if bettor:
+                villain_arch = get_player_archetype(bettor)
+        
         action, size, reason = postflop_action(
             hand['hero_cards'],
             situation['board'],
@@ -414,6 +490,7 @@ def evaluate_postflop(hand, situation, strategy_name):
             street=situation['street'],
             is_ip=True,
             is_aggressor=situation['is_aggressor'],
+            archetype=villain_arch,
             strategy=strategy_name,
             is_facing_raise=situation.get('is_facing_raise', False)
         )
@@ -535,10 +612,19 @@ def main(min_bb=None, focus_strategy=None):
         pf_missed = sum(h['hero_profit'] for h in r['pf_would_fold'] if h['hero_profit'] > 0)
         
         # Postflop: spots strategy would fold
-        # For saves: use hand profit (what we actually lost)
-        # For misses: use hand profit (what we actually won)
-        post_saved = sum(abs(h['hand']['hero_profit']) for h in r['post_would_fold'] if h['hand']['hero_profit'] < 0)
-        post_missed = sum(h['hand']['hero_profit'] for h in r['post_would_fold'] if h['hand']['hero_profit'] > 0)
+        # Impact of folding = remaining_investment - hero_won
+        # - If hero lost: we save remaining_investment (what we'd avoid losing)
+        # - If hero won: we miss (hero_won - remaining_investment)
+        post_saved = 0
+        post_missed = 0
+        for p in r['post_would_fold']:
+            remaining = p['situation'].get('remaining_investment', 0)
+            hero_won = p['hand']['hero_won']
+            impact = remaining - hero_won
+            if impact > 0:
+                post_saved += impact
+            else:
+                post_missed += abs(impact)
         
         net = (pf_saved - pf_missed) + (post_saved - post_missed)
         
@@ -585,16 +671,27 @@ def main(min_bb=None, focus_strategy=None):
         facing, _ = get_preflop_facing(h)
         print(f"    {h['hand_str']:<6} {h['hero_position']:<3} facing {facing:<5} -> missed {h['profit_bb']:.1f} BB")
     
-    # Postflop folds
+    # Postflop folds - calculate correct impact
     post_folds = results[top]['post_would_fold']
-    post_saves = [p for p in post_folds if p['hand']['profit_bb'] < 0]
-    post_misses = [p for p in post_folds if p['hand']['profit_bb'] > 0]
+    
+    # Calculate impact for each fold: remaining_investment - hero_won
+    post_with_impact = []
+    for p in post_folds:
+        remaining = p['situation'].get('remaining_investment', 0)
+        hero_won = p['hand']['hero_won']
+        impact = remaining - hero_won  # positive = save, negative = miss
+        post_with_impact.append({**p, 'impact': impact})
+    
+    post_saves = [p for p in post_with_impact if p['impact'] > 0]
+    post_misses = [p for p in post_with_impact if p['impact'] < 0]
     
     print(f"\nPOSTFLOP: Would fold {len(post_folds)} spots where hero called/raised")
-    print(f"  Saves: {len(post_saves)} spots, {sum(abs(p['hand']['profit_bb']) for p in post_saves):.1f} BB")
-    print(f"  Misses: {len(post_misses)} spots, {sum(p['hand']['profit_bb'] for p in post_misses):.1f} BB")
+    saves_bb = sum(p['impact'] / p['hand']['bb'] for p in post_saves) if post_saves else 0
+    misses_bb = sum(abs(p['impact']) / p['hand']['bb'] for p in post_misses) if post_misses else 0
+    print(f"  Saves: {len(post_saves)} spots, {saves_bb:.1f} BB")
+    print(f"  Misses: {len(post_misses)} spots, {misses_bb:.1f} BB")
     
-    post_saves.sort(key=lambda x: x['hand']['profit_bb'])
+    post_saves.sort(key=lambda x: -x['impact'])  # Biggest saves first
     print(f"\n  BIGGEST POSTFLOP SAVES:")
     for p in post_saves[:10]:
         h = p['hand']
@@ -602,10 +699,11 @@ def main(min_bb=None, focus_strategy=None):
         board = ' '.join(s['board'])
         pot_pct = s['to_call'] / s['pot'] if s['pot'] > 0 else 0
         reason = p.get('reason', '')
-        print(f"    {h['hand_str']:<6} on {board:<18} {s['street']:<5} {pot_pct:>3.0%} pot -> saved {abs(h['profit_bb']):.1f} BB")
+        impact_bb = p['impact'] / h['bb']
+        print(f"    {h['hand_str']:<6} on {board:<18} {s['street']:<5} {pot_pct:>3.0%} pot -> saved {impact_bb:.1f} BB")
         print(f"           Reason: {reason}")
     
-    post_misses.sort(key=lambda x: -x['hand']['profit_bb'])
+    post_misses.sort(key=lambda x: x['impact'])  # Biggest misses first (most negative)
     print(f"\n  BIGGEST POSTFLOP MISSES:")
     for p in post_misses[:10]:
         h = p['hand']
@@ -613,7 +711,8 @@ def main(min_bb=None, focus_strategy=None):
         board = ' '.join(s['board'])
         pot_pct = s['to_call'] / s['pot'] if s['pot'] > 0 else 0
         reason = p.get('reason', '')
-        print(f"    {h['hand_str']:<6} on {board:<18} {s['street']:<5} {pot_pct:>3.0%} pot -> missed {h['profit_bb']:.1f} BB")
+        impact_bb = abs(p['impact']) / h['bb']
+        print(f"    {h['hand_str']:<6} on {board:<18} {s['street']:<5} {pot_pct:>3.0%} pot -> missed {impact_bb:.1f} BB")
         print(f"           Reason: {reason}")
     
     # Unsaved losses section
