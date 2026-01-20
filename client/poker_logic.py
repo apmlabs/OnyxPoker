@@ -17,6 +17,53 @@ RANK_VAL = {r: i for i, r in enumerate(RANKS)}
 # HAND ANALYSIS HELPERS - Compute properties directly from cards, not strings
 # =============================================================================
 
+def check_draws(hole_cards: List[Tuple[str, str]], board: List[Tuple[str, str]]) -> List[str]:
+    """Check for flush and straight draws. No draws on river.
+    
+    Returns list of draw types: ["flush_draw"], ["oesd"], ["gutshot"], or combinations.
+    Single source of truth for draw detection - used by analyze_hand() and postflop_action().
+    """
+    draws = []
+    if len(board) < 3 or len(board) >= 5:  # No draws preflop or on river
+        return draws
+    
+    all_cards = hole_cards + board
+    suits = [c[1] for c in all_cards]
+    hero_suits = [c[1] for c in hole_cards]
+    
+    suit_counts = {}
+    hero_suit_counts = {}
+    for s in suits:
+        suit_counts[s] = suit_counts.get(s, 0) + 1
+    for s in hero_suits:
+        hero_suit_counts[s] = hero_suit_counts.get(s, 0) + 1
+    
+    # Flush draw: 4 of a suit AND hero has 2 of that suit
+    for s, count in suit_counts.items():
+        if count == 4 and hero_suit_counts.get(s, 0) >= 2:
+            draws.append("flush_draw")
+            break
+    
+    ranks = set(RANK_VAL[c[0]] for c in all_cards)
+    if 12 in ranks:
+        ranks.add(-1)
+    
+    for i in range(-1, 10):
+        window = set(range(i, i+5))
+        in_window = len(window & ranks)
+        if in_window == 4:
+            missing = window - ranks
+            if missing:
+                m = list(missing)[0]
+                if m == i or m == i+4:
+                    draws.append("oesd")
+                else:
+                    draws.append("gutshot")
+            break
+    
+    return draws
+
+
 def analyze_hand(hole_cards: List[Tuple[str, str]], board: List[Tuple[str, str]]) -> dict:
     """
     Analyze hand properties directly from cards.
@@ -127,20 +174,19 @@ def analyze_hand(hole_cards: List[Tuple[str, str]], board: List[Tuple[str, str]]
                 else:
                     has_middle_pair = True
     
-    # Flush draw detection - hero needs 2 cards of same suit, and not on river
+    # Draw detection - use check_draws() as single source of truth
+    draws = check_draws(hole_cards, board)
+    has_flush_draw = "flush_draw" in draws
+    has_oesd = "oesd" in draws
+    has_gutshot = "gutshot" in draws
+    has_straight_draw = has_oesd or has_gutshot
+    
+    # Flush detection (made flush)
     hero_suits = [c[1] for c in hole_cards]
     board_suits = [c[1] for c in board] if board else []
     all_suits = hero_suits + board_suits
     suit_counts = Counter(all_suits)
     hero_suit_counts = Counter(hero_suits)
-    is_river = len(board) == 5
-    # Flush draw: 4 of a suit total AND hero has at least 2 of that suit AND not river
-    has_flush_draw = False
-    if not is_river:
-        for suit, count in suit_counts.items():
-            if count == 4 and hero_suit_counts.get(suit, 0) >= 2:
-                has_flush_draw = True
-                break
     has_flush = any(c >= 5 for c in suit_counts.values())
     
     # Nut flush draw detection - do we have the Ace or King of the flush suit?
@@ -149,38 +195,23 @@ def analyze_hand(hole_cards: List[Tuple[str, str]], board: List[Tuple[str, str]]
         flush_suit = [s for s, c in suit_counts.items() if c >= 4][0]
         hero_flush_cards = [c for c in hole_cards if c[1] == flush_suit]
         hero_flush_vals = [RANK_VAL[c[0]] for c in hero_flush_cards]
-        # Check if we have Ace or King of flush suit (nut or 2nd nut)
         board_flush_vals = [RANK_VAL[c[0]] for c in board if c[1] == flush_suit]
-        # Nut if we have Ace, or King when Ace not on board
         if 12 in hero_flush_vals:  # Ace
             is_nut_flush_draw = True
         elif 11 in hero_flush_vals and 12 not in board_flush_vals:  # King, no Ace on board
             is_nut_flush_draw = True
     
-    # Straight draw detection (simplified - OESD or gutshot) - not on river
+    # Made straight detection
     all_vals_unique = sorted(set(hero_vals + board_vals))
-    has_straight_draw = False
     has_straight = False
-    if len(all_vals_unique) >= 4:
-        # Check for 4 in a row (OESD) or 4 out of 5 (gutshot)
-        if not is_river:
-            for i in range(len(all_vals_unique) - 3):
-                window = all_vals_unique[i:i+4]
-                if window[-1] - window[0] <= 4:  # 4 cards within 5 ranks = draw
-                    has_straight_draw = True
-        # Check for made straight (5 in a row)
-        if len(all_vals_unique) >= 5:
-            for i in range(len(all_vals_unique) - 4):
-                window = all_vals_unique[i:i+5]
-                if window[-1] - window[0] == 4:
-                    has_straight = True
-                    has_straight_draw = False
+    if len(all_vals_unique) >= 5:
+        for i in range(len(all_vals_unique) - 4):
+            window = all_vals_unique[i:i+5]
+            if window[-1] - window[0] == 4:
+                has_straight = True
     # Wheel straight check (A2345)
     if {12, 0, 1, 2, 3}.issubset(set(hero_vals + board_vals)):
         has_straight = True
-        has_straight_draw = False
-    elif not is_river and len({12, 0, 1, 2, 3} & set(hero_vals + board_vals)) >= 4:
-        has_straight_draw = True
     
     # Board texture analysis - straight possibilities
     board_straight_combos = []
@@ -319,6 +350,8 @@ def analyze_hand(hole_cards: List[Tuple[str, str]], board: List[Tuple[str, str]]
         'is_nut_flush_draw': is_nut_flush_draw,
         'has_flush': has_flush,
         'has_straight_draw': has_straight_draw,
+        'has_oesd': has_oesd,
+        'has_gutshot': has_gutshot,
         'has_straight': has_straight,
         'board_straight_combos': board_straight_combos,
         'board_flush_suit': board_flush_suit,
@@ -780,49 +813,6 @@ def parse_card(card: str) -> Tuple[str, str]:
         rank = 'T'
     return (rank, suit)
 
-
-
-def check_draws(hole_cards: List[Tuple[str, str]], board: List[Tuple[str, str]]) -> List[str]:
-    """Check for flush and straight draws. No draws on river."""
-    draws = []
-    if len(board) < 3 or len(board) >= 5:  # No draws preflop or on river
-        return draws
-    
-    all_cards = hole_cards + board
-    suits = [c[1] for c in all_cards]
-    hero_suits = [c[1] for c in hole_cards]
-    
-    suit_counts = {}
-    hero_suit_counts = {}
-    for s in suits:
-        suit_counts[s] = suit_counts.get(s, 0) + 1
-    for s in hero_suits:
-        hero_suit_counts[s] = hero_suit_counts.get(s, 0) + 1
-    
-    # Flush draw: 4 of a suit AND hero has 2 of that suit
-    for s, count in suit_counts.items():
-        if count == 4 and hero_suit_counts.get(s, 0) >= 2:
-            draws.append("flush_draw")
-            break
-    
-    ranks = set(RANK_VAL[c[0]] for c in all_cards)
-    if 12 in ranks:
-        ranks.add(-1)
-    
-    for i in range(-1, 10):
-        window = set(range(i, i+5))
-        in_window = len(window & ranks)
-        if in_window == 4:
-            missing = window - ranks
-            if missing:
-                m = list(missing)[0]
-                if m == i or m == i+4:
-                    draws.append("oesd")
-                else:
-                    draws.append("gutshot")
-            break
-    
-    return draws
 
 
 def calculate_equity(hole_cards: List[Tuple[str, str]], board: List[Tuple[str, str]], 

@@ -1,6 +1,6 @@
 # OnyxPoker - Status Tracking
 
-**Last Updated**: January 20, 2026 02:45 UTC
+**Last Updated**: January 20, 2026 11:35 UTC
 
 ---
 
@@ -44,6 +44,29 @@
 ---
 
 ## Session History
+
+### Session 68: Draw Detection Consolidation + UI Tweaks (January 20, 2026)
+
+**Consolidated draw detection to single source of truth.**
+
+**Code Changes:**
+1. Moved `check_draws()` to line 20 (before `analyze_hand()`)
+2. `analyze_hand()` now calls `check_draws()` internally
+3. Added `has_oesd` and `has_gutshot` to `analyze_hand()` return dict
+4. Removed duplicate `check_draws()` definition at line 818
+5. Archetype functions checking `hand_info.get('has_oesd')` now get proper values (was `None`)
+
+**UI Changes:**
+- Right sidebar: 40% → 50% screen width
+- Right sidebar font: 10pt → 9pt
+
+**Test Results:** All 30 audit tests pass, the_lord +€60.20 unchanged
+
+**Session Log Analysis (37 hands):**
+- 15 preflop, 22 postflop decisions
+- Actions: 15 raise, 7 bet, 9 check, 5 fold, 1 call
+- Avg response: 9.3s
+- Strategy working correctly (value betting fish, folding to nit aggression)
 
 ### Session 67: Multiway Pot Support (January 20, 2026)
 

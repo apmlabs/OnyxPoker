@@ -147,25 +147,25 @@ class HelperBar:
                  command=self.copy_log).pack(side='right', padx=1)
 
         # Log text
-        self.log_text = scrolledtext.ScrolledText(center, font=('Courier', 10),
+        self.log_text = scrolledtext.ScrolledText(center, font=('Courier', 9),
                                                   bg='#0d0d0d', fg='#ccc',
                                                   wrap='word', height=10)
         self.log_text.pack(fill='both', expand=True, pady=2)
 
         # Color tags
-        self.log_text.tag_configure('INFO', foreground='#00ff00', font=('Courier', 10))
-        self.log_text.tag_configure('DEBUG', foreground='#00ffff', font=('Courier', 10))
+        self.log_text.tag_configure('INFO', foreground='#00ff00', font=('Courier', 9))
+        self.log_text.tag_configure('DEBUG', foreground='#00ffff', font=('Courier', 9))
         self.log_text.tag_configure('ERROR', foreground='#ff4444', font=('Courier', 10, 'bold'))
         self.log_text.tag_configure('DECISION', foreground='#ffff00', font=('Courier', 11, 'bold'))
 
-        # === RIGHT: Decision Stats (40% of screen width) ===
-        right_width = int(self.root.winfo_screenwidth() * 0.4)
+        # === RIGHT: Decision Stats (50% of screen width) ===
+        right_width = int(self.root.winfo_screenwidth() * 0.5)
         right = tk.Frame(bottom, bg='#2d2d2d', width=right_width)
         right.pack(side='right', fill='y', padx=2, pady=2)
         right.pack_propagate(False)
 
         # Stats display (scrollable) - same font as main log
-        stats_scroll = scrolledtext.ScrolledText(right, font=('Courier', 10),
+        stats_scroll = scrolledtext.ScrolledText(right, font=('Courier', 9),
                                                 bg='#1a1a1a', fg='#ccc',
                                                 wrap='word', height=8)
         stats_scroll.pack(fill='both', expand=True, padx=5, pady=2)
@@ -173,10 +173,10 @@ class HelperBar:
 
         # Color tags for stats - same font as main log
         self.stats_text.tag_configure('HAND', foreground='#00ff00', font=('Courier', 10, 'bold'))
-        self.stats_text.tag_configure('DRAW', foreground='#00ffff', font=('Courier', 10))
-        self.stats_text.tag_configure('DANGER', foreground='#ff8800', font=('Courier', 10))
+        self.stats_text.tag_configure('DRAW', foreground='#00ffff', font=('Courier', 9))
+        self.stats_text.tag_configure('DANGER', foreground='#ff8800', font=('Courier', 9))
         self.stats_text.tag_configure('OPPONENT', foreground='#ff66ff', font=('Courier', 10, 'bold'))
-        self.stats_text.tag_configure('ADVICE', foreground='#ffcc00', font=('Courier', 10))
+        self.stats_text.tag_configure('ADVICE', foreground='#ffcc00', font=('Courier', 9))
 
         # Time
         self.time_label = tk.Label(right, text="", font=('Arial', 9),
