@@ -3,7 +3,7 @@ Test vision detector on saved screenshots
 Usage: 
   python test_screenshots.py [screenshot_path]           # Default: V1 vs V2 comparison
   python test_screenshots.py --compare [N]               # Compare V1 vs V2 on N screenshots from uploads
-  python test_screenshots.py --compress [N]              # V1 (full) vs V2 (1280px compressed) comparison
+  python test_screenshots.py --compress [N]              # V2: full vs 1280px vs 1280px+grayscale
   python test_screenshots.py --track [N]                 # Test opponent tracking across N screenshots
   python test_screenshots.py --v1 [screenshot_path]      # V1 only (no player detection)
   python test_screenshots.py --v2 [screenshot_path]      # V2 only (with player detection)
@@ -97,17 +97,25 @@ class OpponentTracker:
         self.last_opponents = merged
         return merged
 
-def compress_image(path, target_width=1280):
-    """Compress image to target width, maintaining aspect ratio. Returns temp file path."""
+def compress_image(path, target_width=1280, grayscale=False):
+    """Compress image to target width, optionally grayscale. Returns temp file path."""
     img = Image.open(path)
     w, h = img.size
-    if w <= target_width:
-        return path  # Already small enough
-    ratio = target_width / w
-    new_h = int(h * ratio)
-    img_resized = img.resize((target_width, new_h), Image.LANCZOS)
+    
+    needs_resize = w > target_width
+    if needs_resize:
+        ratio = target_width / w
+        new_h = int(h * ratio)
+        img = img.resize((target_width, new_h), Image.LANCZOS)
+    
+    if grayscale:
+        img = img.convert('L').convert('RGB')  # Grayscale but keep RGB for API
+    
+    if not needs_resize and not grayscale:
+        return path  # No changes needed
+    
     tmp = tempfile.NamedTemporaryFile(suffix='.png', delete=False)
-    img_resized.save(tmp.name, 'PNG')
+    img.save(tmp.name, 'PNG')
     return tmp.name
 
 def compare_v1_v2(v1_result, v2_result):
@@ -124,70 +132,84 @@ def compare_v1_v2(v1_result, v2_result):
     return diffs
 
 def test_compress(path, index=None, total=None):
-    """Compare V1 (full) vs V2 (compressed to 1280px)."""
+    """Compare V2 on: full, compressed (1280px), compressed+grayscale."""
     prefix = f"[{index}/{total}] " if index else ""
     fname = os.path.basename(path)
     print(f"\n{prefix}{fname}", flush=True)
     print("-" * 50, flush=True)
     
     compressed_path = None
+    gray_path = None
     try:
-        v1 = VisionDetectorLite(model=VISION_MODEL)
         v2 = VisionDetectorV2(model=VISION_MODEL)
         
         # Get original size
         img = Image.open(path)
         orig_w, orig_h = img.size
         
-        # Compress for V2
-        compressed_path = compress_image(path, 1280)
-        if compressed_path != path:
-            comp_img = Image.open(compressed_path)
-            comp_w, comp_h = comp_img.size
-            print(f"  Original: {orig_w}x{orig_h} -> Compressed: {comp_w}x{comp_h}", flush=True)
-        else:
-            print(f"  Size: {orig_w}x{orig_h} (no compression needed)", flush=True)
+        # Create variants
+        compressed_path = compress_image(path, 1280, grayscale=False)
+        gray_path = compress_image(path, 1280, grayscale=True)
         
-        print(f"  V1 (full)...", end=" ", flush=True)
-        v1_result = v1.detect_table(path)
-        v1_time = v1_result.get('api_time', 0)
-        print(f"done ({v1_time:.1f}s). V2 (compressed)...", end=" ", flush=True)
-        v2_result = v2.detect_table(compressed_path)
-        v2_time = v2_result.get('api_time', 0)
-        print(f"done ({v2_time:.1f}s).", flush=True)
+        comp_img = Image.open(compressed_path)
+        comp_w, comp_h = comp_img.size
+        print(f"  Original: {orig_w}x{orig_h} -> Compressed: {comp_w}x{comp_h}", flush=True)
         
-        diffs = compare_v1_v2(v1_result, v2_result)
+        # Test 1: V2 full
+        print(f"  V2 (full)...", end=" ", flush=True)
+        full_result = v2.detect_table(path)
+        full_time = full_result.get('api_time', 0)
+        print(f"done ({full_time:.1f}s)", flush=True)
         
+        # Test 2: V2 compressed
+        print(f"  V2 (1280px)...", end=" ", flush=True)
+        comp_result = v2.detect_table(compressed_path)
+        comp_time = comp_result.get('api_time', 0)
+        print(f"done ({comp_time:.1f}s)", flush=True)
+        
+        # Test 3: V2 compressed + grayscale
+        print(f"  V2 (1280px+gray)...", end=" ", flush=True)
+        gray_result = v2.detect_table(gray_path)
+        gray_time = gray_result.get('api_time', 0)
+        print(f"done ({gray_time:.1f}s)", flush=True)
+        
+        # Compare results
         fields = ['hero_cards', 'community_cards', 'pot', 'to_call', 'hero_stack', 'big_blind']
-        print(f"  {'Field':<18} {'V1 (full)':<25} {'V2 (1280px)':<25} {'Match'}", flush=True)
-        print(f"  {'-'*18} {'-'*25} {'-'*25} {'-'*5}", flush=True)
+        print(f"\n  {'Field':<18} {'Full':<20} {'1280px':<20} {'1280px+Gray':<20}", flush=True)
+        print(f"  {'-'*18} {'-'*20} {'-'*20} {'-'*20}", flush=True)
+        
+        all_match = True
         for field in fields:
-            val1 = v1_result.get(field)
-            val2 = v2_result.get(field)
-            match = "OK" if val1 == val2 else "DIFF"
-            print(f"  {field:<18} {str(val1):<25} {str(val2):<25} {match}", flush=True)
+            v_full = full_result.get(field)
+            v_comp = comp_result.get(field)
+            v_gray = gray_result.get(field)
+            match_comp = "ok" if v_full == v_comp else "DIFF"
+            match_gray = "ok" if v_full == v_gray else "DIFF"
+            if v_full != v_comp or v_full != v_gray:
+                all_match = False
+            print(f"  {field:<18} {str(v_full):<20} {str(v_comp):<20} {str(v_gray):<20}", flush=True)
         
-        opponents = v2_result.get('opponents', [])
-        if opponents:
-            in_hand = [p['name'] for p in opponents if p.get('has_cards')]
-            print(f"  V2 opponents in hand: {in_hand}", flush=True)
+        print(f"\n  Time: full={full_time:.1f}s | 1280px={comp_time:.1f}s ({comp_time-full_time:+.1f}s) | gray={gray_time:.1f}s ({gray_time-full_time:+.1f}s)", flush=True)
         
-        status = "MATCH" if len(diffs) == 0 else f"MISMATCH ({len(diffs)} diffs)"
-        print(f"  Result: {status}", flush=True)
-        print(f"  Time: V1={v1_time:.1f}s, V2={v2_time:.1f}s (diff={v2_time-v1_time:+.1f}s)", flush=True)
-        
-        return {'match': len(diffs) == 0, 'diffs': diffs, 'v1': v1_result, 'v2': v2_result,
-                'v1_time': v1_time, 'v2_time': v2_time, 'orig_size': f"{orig_w}x{orig_h}"}
+        return {
+            'match': all_match,
+            'full': full_result, 'comp': comp_result, 'gray': gray_result,
+            'full_time': full_time, 'comp_time': comp_time, 'gray_time': gray_time,
+            'orig_size': f"{orig_w}x{orig_h}"
+        }
         
     except Exception as e:
         print(f"  ERROR: {e}")
+        import traceback
+        traceback.print_exc()
         return {'match': False, 'error': str(e)}
     finally:
-        if compressed_path and compressed_path != path:
-            try:
-                os.unlink(compressed_path)
-            except:
-                pass
+        for p in [compressed_path, gray_path]:
+            if p and p != path:
+                try:
+                    os.unlink(p)
+                except:
+                    pass
 
 def test_compare(path, index=None, total=None):
     """Compare V1 vs V2 on same screenshot."""
@@ -276,8 +298,8 @@ def test_single(path, mode='v2'):
 
 def main():
     if COMPRESS_MODE:
-        # Compare V1 (full) vs V2 (compressed to 1280px)
-        print("COMPRESS MODE: V1 (full) vs V2 (1280px compressed)")
+        # Compare V2: full vs compressed vs compressed+grayscale
+        print("COMPRESS MODE: V2 full vs 1280px vs 1280px+grayscale")
         print("=" * 60)
         
         if args and args[0].isdigit():
@@ -294,34 +316,28 @@ def main():
         
         print(f"Testing {len(screenshots)} screenshots...\n")
         
-        matches = 0
-        mismatches = 0
-        errors = 0
-        total_v1_time = 0
-        total_v2_time = 0
+        total_full = 0
+        total_comp = 0
+        total_gray = 0
+        count = 0
         all_results = []
         
         for i, path in enumerate(screenshots, 1):
             result = test_compress(path, i, len(screenshots))
             result['file'] = os.path.basename(path)
             all_results.append(result)
-            if result.get('error'):
-                errors += 1
-            elif result.get('match'):
-                matches += 1
-                total_v1_time += result.get('v1_time', 0)
-                total_v2_time += result.get('v2_time', 0)
-            else:
-                mismatches += 1
-                total_v1_time += result.get('v1_time', 0)
-                total_v2_time += result.get('v2_time', 0)
+            if not result.get('error'):
+                total_full += result.get('full_time', 0)
+                total_comp += result.get('comp_time', 0)
+                total_gray += result.get('gray_time', 0)
+                count += 1
         
         print("\n" + "=" * 60)
-        print(f"Results: {matches} matches, {mismatches} mismatches, {errors} errors")
-        if matches + mismatches > 0:
-            print(f"Match rate: {matches/(matches+mismatches)*100:.1f}%")
-            n = matches + mismatches
-            print(f"Avg time: V1={total_v1_time/n:.1f}s, V2 compressed={total_v2_time/n:.1f}s")
+        print("SUMMARY")
+        if count > 0:
+            print(f"Tested: {count} screenshots")
+            print(f"Avg time: full={total_full/count:.1f}s | 1280px={total_comp/count:.1f}s | gray={total_gray/count:.1f}s")
+            print(f"Speedup: 1280px={total_full/count - total_comp/count:+.1f}s | gray={total_full/count - total_gray/count:+.1f}s")
     
     elif COMPARE_MODE:
         # Default: compare V1 vs V2
