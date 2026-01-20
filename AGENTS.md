@@ -112,12 +112,20 @@ Key rule: gap > PFR = fish (for loose players VPIP 25+)
 | TAG | 18-25 | 15+ | ≤5 | Solid reg |
 | LAG | 26-35 | 20+ | ≤10 | Loose aggressive |
 
-### Default Strategy: `the_lord` (Session 62-66)
+### Default Strategy: `the_lord` (Session 62-67)
 - Opponent-aware version of value_lord
 - Uses V2 vision opponent detection + player database
-- **+50.08 EUR** postflop-only (best strategy)
+- Multiway pot discipline (Session 67): smaller bets, no bluffs vs 3+ players
+- **+59.10 EUR** postflop-only (best strategy, +18% from multiway)
 - **+1091 BB** total improvement vs hero (preflop + postflop)
-- **the_lord total: +499.6 BB (+24.98 EUR)** vs hero's -591.4 BB
+
+**Multiway betting (3+ players):**
+| Hand Strength | Bet Size | Reason |
+|---------------|----------|--------|
+| Nuts/Set | 50% pot | Keep callers |
+| Two pair/Overpair | 40% pot | Value + protection |
+| TPGK/Combo draw | 33% pot | Thin value |
+| Everything else | CHECK | No bluffs in multiway |
 
 **Archetype-specific adjustments:**
 | Archetype | Postflop Adjustment |

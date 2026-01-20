@@ -965,7 +965,7 @@ def postflop_action(hole_cards: List[Tuple[str, str]], board: List[Tuple[str, st
     # THE_LORD: Check strategy first - it uses archetype for adjustments, not simulation
     if strategy == 'the_lord':
         return _postflop_the_lord(hole_cards, board, pot, to_call, street,
-                                  strength, desc, has_any_draw, has_flush_draw, has_oesd, bb_size, is_aggressor, is_facing_raise, archetype)
+                                  strength, desc, has_any_draw, has_flush_draw, has_oesd, bb_size, is_aggressor, is_facing_raise, archetype, is_multiway)
     
     # ARCHETYPES TUNED TO REAL 2NL DATA (1036 hands, 122 opponents):
     # Real data Jan 17 2026 (2018 hands):
@@ -1368,7 +1368,7 @@ def postflop_action(hole_cards: List[Tuple[str, str]], board: List[Tuple[str, st
     
     if strategy == 'value_lord':
         return _postflop_value_lord(hole_cards, board, pot, to_call, street,
-                                    strength, desc, has_any_draw, has_flush_draw, has_oesd, bb_size, is_aggressor, is_facing_raise)
+                                    strength, desc, has_any_draw, has_flush_draw, has_oesd, bb_size, is_aggressor, is_facing_raise, is_multiway)
     
     if strategy == 'optimal_stats':
         return _postflop_optimal_stats(hole_cards, board, pot, to_call, street, is_ip,
@@ -1422,7 +1422,8 @@ def postflop_action(hole_cards: List[Tuple[str, str]], board: List[Tuple[str, st
 
 
 def _postflop_value_lord(hole_cards, board, pot, to_call, street, strength, desc, has_any_draw, 
-                         has_flush_draw=False, has_oesd=False, bb_size=0.05, is_aggressor=False, is_facing_raise=False):
+                         has_flush_draw=False, has_oesd=False, bb_size=0.05, is_aggressor=False, 
+                         is_facing_raise=False, is_multiway=False):
     """
     VALUE_LORD postflop - Data-driven betting from 2,018 real hands analysis.
     
@@ -1437,6 +1438,11 @@ def _postflop_value_lord(hole_cards, board, pot, to_call, street, strength, desc
     - River high card: NEVER call (0% win on 6 calls)
     - Flop high card: fold >4BB (33% win rate)
     - Turn weak hands: fold (29-33% win rate)
+    
+    MULTIWAY (3+ players):
+    - Bet smaller (50% max) to keep multiple callers
+    - Only bet strong value (two pair+) or strong draws
+    - Check everything else - too many opponents to bluff
     """
     # ~~~ VALUE_LORD SETUP ~~~
     hand_info = analyze_hand(hole_cards, board)
@@ -1447,6 +1453,7 @@ def _postflop_value_lord(hole_cards, board, pot, to_call, street, strength, desc
     has_strong_draw = has_flush_draw or has_oesd
     is_paired_board = hand_info['has_board_pair']
     is_double_paired = hand_info.get('is_double_paired_board', False)
+    combo_draw = has_flush_draw and has_oesd
     
     # ~~~ PAIRED BOARD DISCIPLINE ~~~
     if is_double_paired and strength < 5:
@@ -1478,6 +1485,29 @@ def _postflop_value_lord(hole_cards, board, pot, to_call, street, strength, desc
     
     if to_call == 0 or to_call is None:
         # ~~~ VALUE_LORD: BETTING (checked to us) ~~~
+        
+        # MULTIWAY: bet smaller, only strong hands, no bluffs
+        if is_multiway:
+            # Nuts (full house+): 50% to keep callers
+            if strength >= 5:
+                return ('bet', round(pot * 0.5, 2), f"{desc} - 50% multiway value")
+            # Set: 50% for value + protection
+            if strength == 4:
+                return ('bet', round(pot * 0.5, 2), f"{desc} - 50% multiway set")
+            # Two pair: 40% pot control
+            if strength == 3:
+                return ('bet', round(pot * 0.4, 2), f"{desc} - 40% multiway two pair")
+            # Overpair: 40% for value
+            if hand_info['is_overpair']:
+                return ('bet', round(pot * 0.4, 2), f"{desc} - 40% multiway overpair")
+            # Top pair good kicker: 33% thin value
+            if hand_info['has_top_pair'] and hand_info['has_good_kicker']:
+                return ('bet', round(pot * 0.33, 2), f"{desc} - 33% multiway TPGK")
+            # Combo draw: 33% semi-bluff
+            if combo_draw:
+                return ('bet', round(pot * 0.33, 2), f"combo draw - 33% multiway semi-bluff")
+            # Everything else: check (too many opponents to bluff)
+            return ('check', 0, f"{desc} - check multiway")
         
         # MONSTERS (set+): bet big, 100% win rate
         if strength >= 4:
@@ -1712,7 +1742,7 @@ def _postflop_value_lord(hole_cards, board, pot, to_call, street, strength, desc
 
 def _postflop_the_lord(hole_cards, board, pot, to_call, street, strength, desc, has_any_draw,
                        has_flush_draw=False, has_oesd=False, bb_size=0.05, is_aggressor=False, 
-                       is_facing_raise=False, villain_archetype=None):
+                       is_facing_raise=False, villain_archetype=None, is_multiway=False):
     """
     THE_LORD postflop - Opponent-aware adjustments on top of value_lord.
     
@@ -1726,6 +1756,8 @@ def _postflop_the_lord(hole_cards, board, pot, to_call, street, strength, desc, 
     
     KEY FIX (Session 64): When villain RAISES (especially check-raises), it's much stronger
     than a normal bet. Fold two pair/trips to raises - they have full house.
+    
+    MULTIWAY: Passed through to value_lord for smaller bets, tighter ranges.
     """
     # Default to FISH behavior if unknown (most 2NL unknowns are fish)
     # Real data: 216 misses vs unknown (-1069 BB) because we played too tight
@@ -1735,10 +1767,10 @@ def _postflop_the_lord(hole_cards, board, pot, to_call, street, strength, desc, 
     hand_info = analyze_hand(hole_cards, board)
     pot_pct = to_call / pot if pot > 0 and to_call else 0
     
-    # Get value_lord's decision as baseline
+    # Get value_lord's decision as baseline (pass through is_multiway)
     base_action, base_amount, base_reason = _postflop_value_lord(
         hole_cards, board, pot, to_call, street, strength, desc, has_any_draw,
-        has_flush_draw, has_oesd, bb_size, is_aggressor, is_facing_raise
+        has_flush_draw, has_oesd, bb_size, is_aggressor, is_facing_raise, is_multiway
     )
     
     # === CRITICAL: VILLAIN RAISE HANDLING (applies to ALL archetypes) ===

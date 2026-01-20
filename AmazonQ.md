@@ -1,6 +1,6 @@
 # OnyxPoker - Status Tracking
 
-**Last Updated**: January 20, 2026 02:25 UTC
+**Last Updated**: January 20, 2026 02:45 UTC
 
 ---
 
@@ -24,12 +24,12 @@
 | All test suites | ✅ | audit(30), strategy_engine(47/55), postflop(67), rules(24) |
 | Server | ✅ | 54.80.204.92:5001 |
 
-### Default Strategy: `the_lord` (Opponent-Aware)
+### Default Strategy: `the_lord` (Opponent-Aware + Multiway)
 - Based on value_lord with villain-specific adjustments
 - Uses V2 vision opponent detection + player database
-- **+50.08 EUR** postflop-only improvement
+- Multiway pot discipline (smaller bets, no bluffs vs 3+ players)
+- **+59.10 EUR** postflop-only improvement (was +50.08 before multiway)
 - **+1091 BB** total improvement vs hero (preflop + postflop)
-- **the_lord total: +499.6 BB (+24.98 EUR)** vs hero's -591.4 BB
 
 ### Player Database (565 players, deep research classification)
 | Archetype | Count | % | Advice |
@@ -44,6 +44,30 @@
 ---
 
 ## Session History
+
+### Session 67: Multiway Pot Support (January 20, 2026)
+
+**Added multiway pot handling to the_lord and value_lord strategies.**
+
+**Changes:**
+1. **Parsing**: Added `num_opponents_at_flop` from SUMMARY section
+2. **Strategy**: Multiway betting in `_postflop_value_lord`:
+   - Nuts/Set: 50% pot (keep callers)
+   - Two pair/Overpair: 40% pot
+   - TPGK/Combo draw: 33% pot
+   - Everything else: CHECK (no bluffs in multiway)
+3. **Analysis**: Pass `num_opponents` to `postflop_action`, include betting situations
+
+**Results:**
+| Strategy | Before | After | Improvement |
+|----------|--------|-------|-------------|
+| the_lord | +50.08 EUR | **+59.10 EUR** | +9.02 EUR (+18%) |
+| value_lord | +33.98 EUR | **+43.10 EUR** | +9.12 EUR (+27%) |
+
+**Data:**
+- 263 multiway hands (22% of 1190 postflop hands)
+- 271 checks (up from 246) due to multiway discipline
+- Bet Leak saved: +37.24 EUR (up from +28.22 EUR)
 
 ### Session 66: the_lord Fixes + Default Strategy (January 20, 2026)
 

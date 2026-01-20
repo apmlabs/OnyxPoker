@@ -104,6 +104,7 @@ def parse_hand(text, bb):
         'postflop_bettor': {},  # Who bet on each street (for the_lord)
         'villain_raises_before_hero': 0,  # Count of raises before hero acted
         'last_raise_amount': 0,  # Amount of last raise hero faced
+        'num_opponents_at_flop': 1,  # Number of opponents at flop (for multiway)
     }
     
     current_street = 'preflop'
@@ -290,6 +291,21 @@ def parse_hand(text, bb):
             m = re.search(r'€([\d.]+)', line)
             if m:
                 hand['hero_won'] += float(m.group(1))
+        
+        # Count players at flop from SUMMARY section
+        # "folded before Flop" = didn't see flop
+        if 'folded before Flop' in line:
+            pass  # Don't count
+        elif '*** SUMMARY ***' in line:
+            # Count players who saw flop by checking SUMMARY lines
+            # Players who saw flop: showed, won, folded on Flop/Turn/River, mucked
+            players_at_flop = 0
+            for summary_line in lines[lines.index(line):]:
+                if re.match(r'Seat \d+:', summary_line):
+                    if 'folded before Flop' not in summary_line:
+                        players_at_flop += 1
+            # num_opponents = players_at_flop - 1 (excluding hero)
+            hand['num_opponents_at_flop'] = max(1, players_at_flop - 1)
     
     # Calculate total invested from per-street tracking
     hand['hero_invested'] = sum(street_invested.values())
@@ -386,7 +402,7 @@ def evaluate_preflop(hand, strategy_name):
         return None, None
 
 def get_postflop_situations(hand):
-    """Get postflop decision points where hero faced a bet.
+    """Get ALL postflop decision points - both betting (to_call=0) and calling (to_call>0).
     
     Also calculates remaining_investment: how much hero invested AFTER this decision point.
     This is needed to correctly calculate the impact of folding vs calling.
@@ -433,9 +449,9 @@ def get_postflop_situations(hand):
                 decision_point_reached = True
                 break
         
+        # CALLING SITUATIONS: hero faced a bet and called/folded
         if to_call > 0 and hero_action_on_street:
             # Calculate remaining_investment: hero's investment AFTER this decision point
-            # This includes the current call/raise and all future street investments
             remaining = 0
             found_decision = False
             street_idx = street_order.index(street)
@@ -468,6 +484,24 @@ def get_postflop_situations(hand):
                 'is_facing_raise': is_facing_raise,
                 'remaining_investment': remaining
             })
+        
+        # BETTING SITUATIONS: hero was checked to (to_call=0) and bet/checked
+        # Only add if no calling situation was found for this street
+        elif to_call == 0 and not decision_point_reached:
+            # Find hero's first action on this street
+            for action in hand['postflop_actions']:
+                if action['street'] == street and action['action'] in ['bet', 'check']:
+                    situations.append({
+                        'street': street,
+                        'board': board,
+                        'pot': pot,
+                        'to_call': 0,
+                        'is_aggressor': is_aggressor,
+                        'hero_action': action['action'],
+                        'is_facing_raise': False,
+                        'remaining_investment': 0
+                    })
+                    break
     
     return situations
 
@@ -482,6 +516,9 @@ def evaluate_postflop(hand, situation, strategy_name):
             if bettor:
                 villain_arch = get_player_archetype(bettor)
         
+        # Get num_opponents for multiway adjustments
+        num_opponents = hand.get('num_opponents_at_flop', 1)
+        
         action, size, reason = postflop_action(
             hand['hero_cards'],
             situation['board'],
@@ -492,6 +529,7 @@ def evaluate_postflop(hand, situation, strategy_name):
             is_aggressor=situation['is_aggressor'],
             archetype=villain_arch,
             strategy=strategy_name,
+            num_opponents=num_opponents,
             is_facing_raise=situation.get('is_facing_raise', False)
         )
         return action, reason
@@ -1210,8 +1248,10 @@ def postflop_only_analysis(min_bb=None):
         is_aggressor = hand['hero_preflop_action'] == 'raise'
         
         for strategy in ALL_STRATEGIES:
-            # Check calling leaks: strategy folds, hero called
+            # Check calling leaks: strategy folds, hero called (only when facing bet)
             for sit in situations:
+                if sit['to_call'] <= 0:  # Skip betting spots
+                    continue
                 strat_action, reason = evaluate_postflop(hand, sit, strategy)
                 if strat_action == 'fold' and sit['hero_action'] != 'fold':
                     remaining = sit.get('remaining_investment', 0)
@@ -1242,6 +1282,15 @@ def postflop_only_analysis(min_bb=None):
                     continue
                 
                 board = hand['board'][:board_len]
+                num_opponents = hand.get('num_opponents_at_flop', 1)
+                
+                # Get villain archetype for the_lord
+                villain_arch = None
+                if strategy == 'the_lord':
+                    bettor = hand.get('postflop_bettor', {}).get(street)
+                    if bettor:
+                        villain_arch = get_player_archetype(bettor)
+                
                 try:
                     action, size, reason = postflop_action(
                         hand['hero_cards'], board,
@@ -1249,7 +1298,9 @@ def postflop_only_analysis(min_bb=None):
                         street=street,
                         is_ip=True,
                         is_aggressor=is_aggressor,
-                        strategy=strategy
+                        archetype=villain_arch,
+                        strategy=strategy,
+                        num_opponents=num_opponents
                     )
                     
                     if action == 'check':
