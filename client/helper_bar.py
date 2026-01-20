@@ -691,11 +691,26 @@ class HelperBar:
         
         # Show opponent info first (V2 mode) - works on preflop too
         if VISION_V2_MODE and result.get('opponent_stats'):
+            known = 0
+            unknown = 0
             for opp in result['opponent_stats']:
                 if opp.get('hands', 0) > 0:
                     arch = opp.get('archetype', '?').upper()
                     line = f"{opp['name']} ({opp['hands']}h) {arch} - {opp['advice']}\n"
                     self.stats_text.insert('end', line, 'HAND')
+                    known += 1
+                else:
+                    unknown += 1
+            # Calculate unrecognized (expected 5 opponents minus detected)
+            detected = len(result['opponent_stats'])
+            unrec = max(0, 5 - detected)
+            if unknown > 0 or unrec > 0:
+                parts = []
+                if unknown > 0:
+                    parts.append(f"UNKNOWN - {unknown}")
+                if unrec > 0:
+                    parts.append(f"UNREC - {unrec}")
+                self.stats_text.insert('end', ', '.join(parts) + '\n', 'DANGER')
             self.stats_text.insert('end', '---\n', 'DANGER')
         
         if not hand or not hand.get('valid'):
