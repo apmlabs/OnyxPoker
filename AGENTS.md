@@ -112,11 +112,12 @@ Key rule: gap > PFR = fish (for loose players VPIP 25+)
 | TAG | 18-25 | 15+ | ≤5 | Solid reg |
 | LAG | 26-35 | 20+ | ≤10 | Loose aggressive |
 
-### Default Strategy: `the_lord` (Session 62-65)
+### Default Strategy: `the_lord` (Session 62-66)
 - Opponent-aware version of value_lord
 - Uses V2 vision opponent detection + player database
-- **+48.54 EUR** postflop-only (best strategy)
-- **+970.8 BB** improvement vs hero actual play
+- **+50.08 EUR** postflop-only (best strategy)
+- **+1091 BB** total improvement vs hero (preflop + postflop)
+- **the_lord total: +499.6 BB (+24.98 EUR)** vs hero's -591.4 BB
 
 **Archetype-specific adjustments:**
 | Archetype | Postflop Adjustment |

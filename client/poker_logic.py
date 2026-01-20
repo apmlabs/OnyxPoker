@@ -1751,10 +1751,27 @@ def _postflop_the_lord(hole_cards, board, pot, to_call, street, strength, desc, 
         if strength == 6 and 'flush' in desc.lower() and street == 'river':
             return ('fold', 0, f"{desc} - fold flush vs river raise (villain has full house)")
         
-        # Trips facing raise: FOLD - villain has full house or better
-        # Real data: KTs trips lost 43BB, J8s trips lost 39BB to fish raises
+        # Trips facing raise: FOLD only on PAIRED boards where full house is possible
+        # Real data: KTs trips lost 43BB on Ac Kc Kd 5h Jd (board has KK AND 55 possible)
+        # But: ATd trips on Ac Ah 7c - villain can't have FH without pocket 7s (unlikely)
+        # FIX: Only fold trips when board has ANOTHER pair besides our trips
         if hand_info.get('has_trips') or 'trips' in desc.lower():
-            return ('fold', 0, f"{desc} - fold trips vs raise (villain has full house)")
+            board_ranks = [c[0] for c in board]
+            # Find the trips rank (appears 2+ times on board, and we have one)
+            hero_ranks = [c[0] for c in hole_cards]
+            rank_counts = {}
+            for r in board_ranks:
+                rank_counts[r] = rank_counts.get(r, 0) + 1
+            # Find which rank is our trips (board pair + hero card)
+            trips_rank = None
+            for r in hero_ranks:
+                if rank_counts.get(r, 0) >= 2:
+                    trips_rank = r
+                    break
+            # Board is "dangerous" if there's ANOTHER pair besides our trips
+            board_has_other_pair = any(count >= 2 for r, count in rank_counts.items() if r != trips_rank)
+            if board_has_other_pair:
+                return ('fold', 0, f"{desc} - fold trips vs raise on paired board (villain has full house)")
         
         # Two pair facing raise: Only fold vs TAG/NIT/ROCK (they don't bluff check-raises)
         # Real data: AJs two pair lost 103BB to TAG check-raise
@@ -1823,6 +1840,9 @@ def _postflop_the_lord(hole_cards, board, pot, to_call, street, strength, desc, 
         # Nit/Rock: "Fold to bets | Bet = nuts | Bluff more"
         # Their bet = strong, but call with two pair+ (they sometimes bluff)
         # Bet 50% pot (UI button) - they only call with nuts anyway
+        # FIX: Call small bets (<30% pot) with high card on flop - they sometimes value bet thin
+        # Real data: A6o on 4h 4s 7c - nit bet 43%, we folded, hero won 24.2 BB
+        #            A9h on 7h 2s 2c - nit bet 60%, we folded, hero won 13.6 BB
         
         if to_call == 0:  # Betting
             # Bet 50% pot for value (UI has 1/2 pot button)
@@ -1851,6 +1871,10 @@ def _postflop_the_lord(hole_cards, board, pot, to_call, street, strength, desc, 
             if (has_flush_draw or has_oesd) and pot_pct <= 0.50:
                 return ('call', 0, f"{desc} - call draw vs {villain_archetype} (good odds)")
             
+            # FIX: Call small bets (<30% pot) on flop with high card - nits value bet thin
+            if street == 'flop' and strength < 2 and pot_pct < 0.30:
+                return ('call', 0, f"{desc} - call small nit bet (they value bet thin)")
+            
             # Their bet = strong, but don't fold overpairs or top pair
             # Fold weak pairs (middle/bottom/underpair), keep top pair+
             is_weak_pair = (strength == 2 and not hand_info['is_overpair'] and 
@@ -1866,6 +1890,11 @@ def _postflop_the_lord(hole_cards, board, pot, to_call, street, strength, desc, 
     elif villain_archetype == 'maniac':
         # Maniac: "Call everything | Can't fold | Call down"
         # Bet 100% pot for value (UI button), call down with medium hands
+        # FIX: But respect their RAISES on turn/river with WEAK hands
+        # Real data: AA lost 100BB on 7d 7c Td Jc vs maniac raise (they had quads/FH)
+        #            But: 77 WON 126BB on 4h 9d 4d 9s vs maniac raise (pocket pair over board)
+        # Key insight: Pocket pairs that make two pair with board pairs are STRONG
+        #              One-card two pair / overpairs are WEAK vs maniac aggression
         
         if to_call == 0:  # Betting
             if base_action == 'bet' and strength >= 2:
@@ -1875,11 +1904,20 @@ def _postflop_the_lord(hole_cards, board, pot, to_call, street, strength, desc, 
                 # Never bluff maniac
                 return ('check', 0, f"{desc} - no bluff vs maniac (can't fold)")
         else:  # Facing bet
-            # KEY: Respect RAISES even from maniacs - raising is stronger than betting
+            # KEY: Respect RAISES on turn/river even from maniacs
             if is_facing_raise:
-                # FIX: Call middle pair+ vs maniac raises - they raise with anything
-                # Real data: KTo middle pair on Td 7h Qs 6h 6d - hero won 25.8 BB
-                # Maniac raised 78% pot on flop, hero called and won
+                # Turn/river raise from maniac: fold OVERPAIRS (they have set/two pair)
+                # Real data: AA lost 100BB, JJ lost 16.8BB vs maniac raises
+                # But DON'T fold two pair made with pocket pair (77 on 4499 won 126BB)
+                if street in ['turn', 'river'] and pot_pct > 0.40:
+                    # Fold overpairs - they're beat by sets/two pair
+                    if hand_info.get('is_overpair'):
+                        return ('fold', 0, f"{desc} - fold overpair vs maniac {street} raise (they have set/two pair)")
+                    # Fold underpairs on river with overcards
+                    if hand_info.get('is_underpair') and street == 'river':
+                        return ('fold', 0, f"{desc} - fold underpair vs maniac river raise")
+                
+                # Call with pairs+ (including two pair from pocket pairs)
                 if strength >= 2:  # Any pair or better
                     return ('call', 0, f"{desc} - call vs maniac raise (they raise wide)")
                 # Maniac RAISE with high card = fold

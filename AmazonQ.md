@@ -1,6 +1,6 @@
 # OnyxPoker - Status Tracking
 
-**Last Updated**: January 20, 2026 02:00 UTC
+**Last Updated**: January 20, 2026 02:25 UTC
 
 ---
 
@@ -27,8 +27,9 @@
 ### Default Strategy: `the_lord` (Opponent-Aware)
 - Based on value_lord with villain-specific adjustments
 - Uses V2 vision opponent detection + player database
-- **+48.54 EUR** postflop-only (best strategy)
-- **+970.8 BB** improvement vs hero actual play
+- **+50.08 EUR** postflop-only improvement
+- **+1091 BB** total improvement vs hero (preflop + postflop)
+- **the_lord total: +499.6 BB (+24.98 EUR)** vs hero's -591.4 BB
 
 ### Player Database (565 players, deep research classification)
 | Archetype | Count | % | Advice |
@@ -43,6 +44,45 @@
 ---
 
 ## Session History
+
+### Session 66: the_lord Fixes + Default Strategy (January 20, 2026)
+
+**Fixed 3 issues in the_lord and made it the default strategy.**
+
+**Fixes:**
+1. **Maniac turn/river raises**: Fold overpairs vs maniac raises on turn/river >40% pot
+   - AA on 7d7cTdJc lost 100BB to maniac - now folds
+   - 88 on 2c6d5c4s5h lost 18.4BB - now folds
+   
+2. **Trips on non-paired boards**: Only fold trips vs raise when board has ANOTHER pair
+   - ATd on AcAh7c - board only has our trips pair, villain can't have FH
+   - Now raises instead of folding (+10.6 BB recovered)
+
+3. **Default strategy consolidation**: Single source of truth
+   - `strategy_engine.py`: `DEFAULT_STRATEGY = 'the_lord'`
+   - `helper_bar.py`: imports and uses DEFAULT_STRATEGY
+
+**Final Numbers:**
+| Strategy | Total BB | Total EUR | vs Hero |
+|----------|----------|-----------|---------|
+| Hero | -591.4 | -29.57 | -- |
+| value_lord | -97.8 | -4.89 | +493.6 BB |
+| **the_lord** | **+499.6** | **+24.98** | **+1091.0 BB** |
+
+**Breakdown:**
+- Postflop improvement: +894.6 BB
+- Preflop improvement: +196.4 BB
+- Total: +1091.0 BB (+54.55 EUR)
+
+**By Archetype (postflop):**
+| Archetype | NET BB |
+|-----------|--------|
+| maniac | +327.2 |
+| unknown | +231.6 |
+| lag | +168.4 |
+| fish | +139.4 |
+| rock | +46.8 |
+| nit | -18.8 |
 
 ### Session 65: Simulation Fix Attempt + Rollback (January 20, 2026)
 

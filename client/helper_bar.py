@@ -19,12 +19,14 @@ import json
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 
+from strategy_engine import DEFAULT_STRATEGY
+
 # Parse command line arguments
 import argparse
 parser = argparse.ArgumentParser(description='OnyxPoker Helper Bar')
 parser.add_argument('--ai-only', action='store_true', help='Use AI for both vision and decisions')
 parser.add_argument('--v1', action='store_true', help='Use V1 vision (no player detection)')
-parser.add_argument('--strategy', type=str, default='value_lord', help='Strategy to use (default: value_lord)')
+parser.add_argument('--strategy', type=str, default=DEFAULT_STRATEGY, help=f'Strategy to use (default: {DEFAULT_STRATEGY})')
 args = parser.parse_args()
 
 # Default: V2 vision with player names + opponent stats
