@@ -1,6 +1,6 @@
 # OnyxPoker - Status Tracking
 
-**Last Updated**: January 20, 2026 11:35 UTC
+**Last Updated**: January 20, 2026 15:14 UTC
 
 ---
 
@@ -19,6 +19,7 @@
 | strategy_engine.py | ✅ | 3-bet/4-bet ranges + BB defense + villain archetype |
 | poker_logic.py | ✅ | Data-driven value_lord + opponent-aware the_lord |
 | poker_sim.py | ✅ | Full postflop simulation |
+| pokerkit_adapter.py | ✅ | Calibrated archetype behavior (matches real data) |
 | analyse_real_logs.py | ✅ | the_lord vs hero postflop analysis |
 | eval_session_logs.py | ✅ | Session log analysis (consolidated) |
 | All test suites | ✅ | audit(30), strategy_engine(47/55), postflop(67), rules(24) |
@@ -31,19 +32,56 @@
 - **+59.10 EUR** postflop-only improvement (was +50.08 before multiway)
 - **+1091 BB** total improvement vs hero (preflop + postflop)
 
-### Player Database (565 players, deep research classification)
+### Simulation Calibration (Session 69)
+- Archetype betting rates now match real data within 4%
+- the_lord: +14.49 BB/100 (was +11.31 before calibration)
+- value_lord: +23.79 BB/100
+- Gap narrowed from 13.8 to 9.3 BB/100
+
+### Player Database (613 players, deep research classification)
 | Archetype | Count | % | Advice |
 |-----------|-------|---|--------|
-| fish | 190 | 33.6% | Isolate wide \| Value bet \| Calls too much \| Never bluff |
-| nit | 144 | 25.5% | Steal blinds \| Fold to bets \| Too tight \| Raise IP, fold to 3bet |
-| rock | 83 | 14.7% | Steal more \| Bet = nuts \| Raises monsters \| Raise IP, fold vs bet |
-| maniac | 50 | 8.8% | Only premiums \| Call everything \| Can't fold \| vs raise: QQ+/AK |
-| lag | 49 | 8.7% | Tighten up \| Call down \| Over-aggro \| vs raise: 99+/AQ+ |
-| tag | 49 | 8.7% | Respect raises \| Play solid \| Avoid \| vs raise: TT+/AK |
+| fish | 215 | 35.1% | Isolate wide \| Value bet \| Calls too much \| Never bluff |
+| nit | 158 | 25.8% | Steal blinds \| Fold to bets \| Too tight \| Raise IP, fold to 3bet |
+| rock | 82 | 13.4% | Steal more \| Bet = nuts \| Raises monsters \| Raise IP, fold vs bet |
+| maniac | 52 | 8.5% | Only premiums \| Call everything \| Can't fold \| vs raise: QQ+/AK |
+| lag | 53 | 8.6% | Tighten up \| Call down \| Over-aggro \| vs raise: 99+/AQ+ |
+| tag | 53 | 8.6% | Respect raises \| Play solid \| Avoid \| vs raise: TT+/AK |
 
 ---
 
 ## Session History
+
+### Session 69: Calibrate Sim Archetypes to Match Real Behavior (January 20, 2026)
+
+**Fixed simulation villains to match real 2NL player behavior.**
+
+**Problem Identified:**
+- Sim villains bet too much, fold too much vs real data
+- value_lord beat the_lord in sim (+25 vs +11 BB/100)
+- But the_lord beat value_lord in real hands (+61 vs +50 EUR)
+- Root cause: sim villains had hands when they bet, real villains bluff more
+
+**Calibration Changes:**
+| Archetype | Metric | Before | After | Real |
+|-----------|--------|--------|-------|------|
+| fish | Bet% | 26% | 22% | 21% |
+| nit | Bet% | 20% | 23% | 23% |
+| tag | Bet% | 42% | 34% | 32% |
+| lag | Bet% | 38% | 31% | 27% |
+| maniac | Bet% | 46% | 25% | 28% |
+
+**Specific Fixes:**
+- Fish: Reduced top pair betting 60%→45%, weak pair 30%→20%
+- Nit: Added draw semi-bluffs 15%
+- TAG: Reduced pair betting 50%→35%, draws 60%→40%
+- LAG: Reduced pair betting 40%→25%, draws 50%→30%
+- Maniac: Reduced pair betting 55%→25%, draws 45%→18%
+
+**Results:**
+- the_lord improved from +11.31 to +14.49 BB/100
+- Gap between value_lord and the_lord narrowed from 13.8 to 9.3 BB/100
+- All 30 audit tests pass
 
 ### Session 68: Draw Detection Consolidation + UI Tweaks (January 20, 2026)
 
