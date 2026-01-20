@@ -481,8 +481,22 @@ User said "single monitor" multiple times while I kept designing for dual monito
 | Equity vs random for bets | 38 | Villain range not random | Hand strength categories |
 | Testing poker_logic only | 34 | Misses strategy_engine bugs | Test live path |
 | Hardcoding to_call=0 | 43.13 | Breaks postflop facing | Separate preflop/postflop |
+| C-bets = bluffs | 70 | C-bets win when villain folds | Allow c-bets even vs fish |
 
 ### Common Gotchas
+
+**C-bets are NOT bluffs (Session 70):**
+```python
+# BUG: Blocked all c-bets vs fish as "bluffs"
+if base_action == 'bet' and strength < 2:
+    return ('check', 0, "no bluff vs fish")  # WRONG - c-bets are profitable!
+
+# FIX: Allow c-bets when aggressor on flop
+if base_action == 'bet' and strength < 2:
+    if is_aggressor and street == 'flop':
+        return (base_action, base_amount, reason + " vs fish")  # C-bet allowed
+    return ('check', 0, "no bluff vs fish")  # Only block turn/river bluffs
+```
 
 **Preflop loop affects postflop (Session 43.13):**
 ```python

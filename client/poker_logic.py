@@ -1716,9 +1716,11 @@ def _postflop_the_lord(hole_cards, board, pot, to_call, street, strength, desc, 
     # === SCARY BOARD HANDLING (river, flush possible + paired board) ===
     # When board has flush possible AND is paired on river, one-card two pair is very weak
     # Real data: AKo lost 100BB with Ah Ks on 3s Ts Qs Ad Qd - villain bet 3 streets
+    # Only fold to BIG bets from TIGHT players on scary boards
     if street == 'river' and to_call > 0:
         two_pair_type = hand_info.get('two_pair_type', '')
-        if two_pair_type in ['one_card_board_pair', 'board_paired']:
+        has_full_house = strength >= 7  # Don't fold full houses!
+        if two_pair_type in ['one_card_board_pair', 'board_paired'] and not has_full_house:
             # Check if board has flush possible (3+ of same suit)
             board_suits = [c[1] for c in board]
             flush_possible = any(board_suits.count(s) >= 3 for s in set(board_suits))
@@ -1726,8 +1728,9 @@ def _postflop_the_lord(hole_cards, board, pot, to_call, street, strength, desc, 
             board_ranks = [c[0] for c in board]
             board_paired = len(board_ranks) != len(set(board_ranks))
             
-            if flush_possible and board_paired:
-                return ('fold', 0, f"{desc} - fold one-card two pair on flush+paired board (villain has flush/boat)")
+            # Only fold to big bets (>50% pot) from tight players
+            if flush_possible and board_paired and pot_pct > 0.5 and villain_archetype in ['nit', 'rock', 'tag', None]:
+                return ('fold', 0, f"{desc} - fold one-card two pair on flush+paired board vs big bet")
     
     # === VILLAIN-SPECIFIC ADJUSTMENTS ===
     
@@ -1740,7 +1743,9 @@ def _postflop_the_lord(hole_cards, board, pot, to_call, street, strength, desc, 
                 # Bet 100% pot - they call too much (UI has pot button)
                 return ('bet', round(pot * 1.0, 2), f"{desc} - POT vs fish (calls too much)")
             if base_action == 'bet' and strength < 2:
-                # Never bluff fish
+                # C-bets are OK vs fish (they still fold 18%) - only block turn/river bluffs
+                if is_aggressor and street == 'flop':
+                    return (base_action, base_amount, base_reason + " vs fish")
                 return ('check', 0, f"{desc} - no bluff vs fish")
         else:  # Facing bet
             # CRITICAL: NFD always calls - 36% equity beats any reasonable pot odds

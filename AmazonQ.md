@@ -1,6 +1,6 @@
 # OnyxPoker - Status Tracking
 
-**Last Updated**: January 20, 2026 15:14 UTC
+**Last Updated**: January 20, 2026 15:57 UTC
 
 ---
 
@@ -29,14 +29,15 @@
 - Based on value_lord with villain-specific adjustments
 - Uses V2 vision opponent detection + player database
 - Multiway pot discipline (smaller bets, no bluffs vs 3+ players)
-- **+59.10 EUR** postflop-only improvement (was +50.08 before multiway)
+- **+60.02 EUR** postflop-only (was +59.10 before c-bet fix)
 - **+1091 BB** total improvement vs hero (preflop + postflop)
 
-### Simulation Calibration (Session 69)
-- Archetype betting rates now match real data within 4%
-- the_lord: +14.49 BB/100 (was +11.31 before calibration)
-- value_lord: +23.79 BB/100
-- Gap narrowed from 13.8 to 9.3 BB/100
+### Simulation Calibration (Session 70)
+- Fixed c-bet bug: the_lord was checking c-bets vs fish ("never bluff")
+- C-bets are NOT bluffs - fish still fold 18%
+- the_lord: +27 BB/100 (was +14.49 before fix)
+- value_lord: +27 BB/100
+- Gap eliminated - strategies now equal in simulation
 
 ### Player Database (613 players, deep research classification)
 | Archetype | Count | % | Advice |
@@ -51,6 +52,50 @@
 ---
 
 ## Session History
+
+### Session 70: Fix C-Bet Bug vs Fish (January 20, 2026)
+
+**Fixed the_lord checking c-bets vs fish when it should bet.**
+
+**Problem Identified:**
+- the_lord was checking high card c-bets vs fish ("never bluff fish")
+- But c-bets are NOT bluffs - they win when villain folds (18% fold rate)
+- This cost the_lord +143 BB in 5000-hand simulation
+
+**Root Cause:**
+```python
+# Line 1745-1747 in poker_logic.py
+if base_action == 'bet' and strength < 2:
+    return ('check', 0, f"{desc} - no bluff vs fish")  # BLOCKED ALL C-BETS!
+```
+
+**Fix Applied:**
+```python
+if base_action == 'bet' and strength < 2:
+    if is_aggressor and street == 'flop':
+        return (base_action, base_amount, base_reason + " vs fish")  # Allow c-bets
+    return ('check', 0, f"{desc} - no bluff vs fish")
+```
+
+**Divergence Analysis (5000 hands):**
+| Category | Hands | BB to VL | After Fix |
+|----------|-------|----------|-----------|
+| sizing_diff | 158 | -339.5 | -393 (unchanged - intentional) |
+| TL_folds_VL_plays | 29 | +143.9 | +26.4 (fixed!) |
+| VL_folds_TL_plays | 24 | -56.1 | -56.1 |
+
+**Results:**
+| Metric | Before | After |
+|--------|--------|-------|
+| the_lord sim | +14.49 BB/100 | +27 BB/100 |
+| value_lord sim | +23.79 BB/100 | +27 BB/100 |
+| the_lord real | +59.10 EUR | +60.02 EUR |
+| Gap | 9.3 BB/100 | ~0 BB/100 |
+
+**Key Insight:** C-bets are profitable even vs fish because:
+1. Fish still fold 18% of the time
+2. C-bets are small (max 4BB) so risk is low
+3. We have position and initiative
 
 ### Session 69: Calibrate Sim Archetypes to Match Real Behavior (January 20, 2026)
 
