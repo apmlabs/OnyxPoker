@@ -308,11 +308,16 @@ class HelperBar:
         return ' | '.join(parts) if parts else 'No known opponents'
 
     def _format_advice_line(self, opponent_stats):
-        """Format advice for all known opponents"""
+        """Format advice for all opponents (known and unknown)"""
         lines = []
+        unknown_count = 0
         for o in opponent_stats:
             if o['hands'] > 0:
                 lines.append(f"{o['name']}: {o['advice']}")
+            else:
+                unknown_count += 1
+        if unknown_count > 0:
+            lines.append(f"UNKNOWN - {unknown_count}")
         return '\n'.join(lines) if lines else 'No opponent data'
 
     def register_hotkeys(self):
