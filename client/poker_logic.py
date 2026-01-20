@@ -1723,10 +1723,14 @@ def _postflop_the_lord(hole_cards, board, pot, to_call, street, strength, desc, 
     - vs Maniac: Call down with medium hands (they bluff too much), never bluff
     - vs LAG: Call down more (they overbluff)
     - vs TAG: Baseline (value_lord default)
+    
+    KEY FIX (Session 64): When villain RAISES (especially check-raises), it's much stronger
+    than a normal bet. Fold two pair/trips to raises - they have full house.
     """
-    # Default to TAG behavior if unknown
+    # Default to FISH behavior if unknown (most 2NL unknowns are fish)
+    # Real data: 216 misses vs unknown (-1069 BB) because we played too tight
     if not villain_archetype or villain_archetype == 'unknown':
-        villain_archetype = 'tag'
+        villain_archetype = 'fish'
     
     hand_info = analyze_hand(hole_cards, board)
     pot_pct = to_call / pot if pot > 0 and to_call else 0
@@ -1737,23 +1741,76 @@ def _postflop_the_lord(hole_cards, board, pot, to_call, street, strength, desc, 
         has_flush_draw, has_oesd, bb_size, is_aggressor, is_facing_raise
     )
     
+    # === CRITICAL: VILLAIN RAISE HANDLING (applies to ALL archetypes) ===
+    # When villain raises (especially after we bet = check-raise), they almost always have it
+    # This is the #1 leak: calling raises with two pair/trips when villain has full house
+    if is_facing_raise and to_call > 0:
+        # Flush facing raise on river: FOLD - villain has full house
+        # Real data: 54s flush lost 99BB, QTs flush lost 91BB to river raises
+        # Flush is strength 6
+        if strength == 6 and 'flush' in desc.lower() and street == 'river':
+            return ('fold', 0, f"{desc} - fold flush vs river raise (villain has full house)")
+        
+        # Trips facing raise: FOLD - villain has full house or better
+        # Real data: KTs trips lost 43BB, J8s trips lost 39BB to fish raises
+        if hand_info.get('has_trips') or 'trips' in desc.lower():
+            return ('fold', 0, f"{desc} - fold trips vs raise (villain has full house)")
+        
+        # Two pair facing raise: Only fold vs TAG/NIT/ROCK (they don't bluff check-raises)
+        # Real data: AJs two pair lost 103BB to TAG check-raise
+        # But: ATs +96BB, 77 +68BB won vs LAG/MANIAC/FISH raises (they bluff more)
+        # FIX: Don't fold two pair when we have TOP PAIR component vs TAG
+        # Real data: AKo on 3h Ad 5c 3d 6s - hero had TPTK + board pair, TAG raised turn
+        # This is strong enough to call - TAG could have Ax
+        if strength == 3 or hand_info.get('has_two_pair'):
+            if villain_archetype in ['tag', 'nit', 'rock']:
+                # Check if we have top pair as part of our two pair
+                if hand_info.get('has_top_pair'):
+                    return ('call', 0, f"{desc} - call two pair with top pair vs {villain_archetype} raise")
+                return ('fold', 0, f"{desc} - fold two pair vs {villain_archetype} raise (they don't bluff)")
+    
+    # === SCARY BOARD HANDLING (river, flush possible + paired board) ===
+    # When board has flush possible AND is paired on river, one-card two pair is very weak
+    # Real data: AKo lost 100BB with Ah Ks on 3s Ts Qs Ad Qd - villain bet 3 streets
+    if street == 'river' and to_call > 0:
+        two_pair_type = hand_info.get('two_pair_type', '')
+        if two_pair_type in ['one_card_board_pair', 'board_paired']:
+            # Check if board has flush possible (3+ of same suit)
+            board_suits = [c[1] for c in board]
+            flush_possible = any(board_suits.count(s) >= 3 for s in set(board_suits))
+            # Check if board is paired
+            board_ranks = [c[0] for c in board]
+            board_paired = len(board_ranks) != len(set(board_ranks))
+            
+            if flush_possible and board_paired:
+                return ('fold', 0, f"{desc} - fold one-card two pair on flush+paired board (villain has flush/boat)")
+    
     # === VILLAIN-SPECIFIC ADJUSTMENTS ===
     
     if villain_archetype == 'fish':
         # Fish: "Value bet | Calls too much | Never bluff"
-        # Bet bigger for value, never bluff, fold to their RAISES (rare = nuts)
+        # Bet 100% pot for value (UI button), never bluff, fold to their RAISES (rare = nuts)
         
         if to_call == 0:  # Betting
             if base_action == 'bet' and strength >= 2:
-                # Bet 70% pot instead of 50% - they call too much
-                return ('bet', round(pot * 0.70, 2), f"{desc} - 70% pot vs fish (calls too much)")
+                # Bet 100% pot - they call too much (UI has pot button)
+                return ('bet', round(pot * 1.0, 2), f"{desc} - POT vs fish (calls too much)")
             if base_action == 'bet' and strength < 2:
                 # Never bluff fish
                 return ('check', 0, f"{desc} - no bluff vs fish")
         else:  # Facing bet
+            # CRITICAL: NFD always calls - 36% equity beats any reasonable pot odds
+            if hand_info.get('is_nut_flush_draw') and street in ['flop', 'turn']:
+                return ('call', 0, f"{desc} - call NFD vs fish (36% equity)")
+            
             if is_facing_raise:
-                # Fish raise = nuts, fold weak hands but keep strong ones
-                if strength < 3:  # Less than two pair
+                # FIX: Don't fold two pair+ vs fish raise - they raise with worse
+                # Real data: QTs two pair on Qs Jc Ts lost 56.6 BB by folding to fish raise
+                # Fish raise != nuts, they raise with top pair, draws, etc.
+                if strength >= 3:  # Two pair or better
+                    return ('call', 0, f"{desc} - call {desc} vs fish raise (they raise wide)")
+                # Fish raise with weaker hands = fold
+                if strength < 3:
                     return ('fold', 0, f"{desc} - fold to fish raise (rare = nuts)")
             # Fish bet = value, only call with TOP PAIR+ (not weak pairs)
             # Data shows calling weak pairs vs fish loses money
@@ -1764,10 +1821,13 @@ def _postflop_the_lord(hole_cards, board, pot, to_call, street, strength, desc, 
     
     elif villain_archetype in ['nit', 'rock']:
         # Nit/Rock: "Fold to bets | Bet = nuts | Bluff more"
-        # Their bet = strong, fold marginal hands. Bluff them more.
-        # BUT: Don't fold draws - they have equity even vs nit's strong range
+        # Their bet = strong, but call with two pair+ (they sometimes bluff)
+        # Bet 50% pot (UI button) - they only call with nuts anyway
         
         if to_call == 0:  # Betting
+            # Bet 50% pot for value (UI has 1/2 pot button)
+            if base_action == 'bet' and strength >= 2:
+                return ('bet', round(pot * 0.5, 2), f"{desc} - 50% pot vs {villain_archetype}")
             # Bluff more - they fold too much
             if base_action == 'check' and street == 'flop' and is_aggressor:
                 return ('bet', round(pot * 0.5, 2), f"{desc} - bluff vs {villain_archetype} (folds too much)")
@@ -1776,9 +1836,19 @@ def _postflop_the_lord(hole_cards, board, pot, to_call, street, strength, desc, 
             if strength >= 5:
                 return (base_action, base_amount, base_reason + f" vs {villain_archetype}")
             
-            # Nit betting = strong hand, only call draws with good pot odds
-            # NFD ~35% equity, OESD ~32% - need pot_pct < 40% to have odds
-            if (has_flush_draw or has_oesd) and pot_pct <= 0.35:
+            # FIX: Call with two pair+ vs nit/rock - they sometimes bluff
+            # Real data: A6o on 4h 4s 7c - nit bet, we folded, they were bluffing (-31.6 BB miss)
+            if strength >= 3:  # Two pair or better
+                return ('call', 0, f"{desc} - call {desc} vs {villain_archetype} (strong hand)")
+            
+            # CRITICAL: NFD always calls - 36% equity beats any reasonable pot odds
+            # Even vs nit's strong range, NFD has enough equity to call
+            if hand_info.get('is_nut_flush_draw') and street in ['flop', 'turn']:
+                return ('call', 0, f"{desc} - call NFD vs {villain_archetype} (36% equity)")
+            
+            # Regular flush draw or OESD - need better pot odds vs nit's strong range
+            # NFD ~35% equity, OESD ~32% - need pot_pct < 50% to have odds
+            if (has_flush_draw or has_oesd) and pot_pct <= 0.50:
                 return ('call', 0, f"{desc} - call draw vs {villain_archetype} (good odds)")
             
             # Their bet = strong, but don't fold overpairs or top pair
@@ -1795,16 +1865,24 @@ def _postflop_the_lord(hole_cards, board, pot, to_call, street, strength, desc, 
     
     elif villain_archetype == 'maniac':
         # Maniac: "Call everything | Can't fold | Call down"
-        # Call down with medium hands vs BETS, but respect RAISES (even maniacs have hands sometimes)
+        # Bet 100% pot for value (UI button), call down with medium hands
         
         if to_call == 0:  # Betting
+            if base_action == 'bet' and strength >= 2:
+                # Bet 100% pot - they call too much (UI has pot button)
+                return ('bet', round(pot * 1.0, 2), f"{desc} - POT vs maniac (calls too much)")
             if base_action == 'bet' and strength < 2:
                 # Never bluff maniac
                 return ('check', 0, f"{desc} - no bluff vs maniac (can't fold)")
         else:  # Facing bet
             # KEY: Respect RAISES even from maniacs - raising is stronger than betting
-            if is_facing_raise and pot_pct > 0.5:
-                # Maniac RAISE >50% = they have something, use value_lord logic
+            if is_facing_raise:
+                # FIX: Call middle pair+ vs maniac raises - they raise with anything
+                # Real data: KTo middle pair on Td 7h Qs 6h 6d - hero won 25.8 BB
+                # Maniac raised 78% pot on flop, hero called and won
+                if strength >= 2:  # Any pair or better
+                    return ('call', 0, f"{desc} - call vs maniac raise (they raise wide)")
+                # Maniac RAISE with high card = fold
                 return (base_action, base_amount, base_reason + " (maniac raise = has hand)")
             
             # vs maniac BET (not raise): call down much lighter
@@ -1827,8 +1905,8 @@ def _postflop_the_lord(hole_cards, board, pot, to_call, street, strength, desc, 
             pass  # Same as value_lord
         else:  # Facing bet
             # KEY: Respect RAISES from LAGs - they raise with real hands
-            if is_facing_raise and pot_pct > 0.5:
-                # LAG RAISE >50% = they have something, use value_lord logic
+            if is_facing_raise:
+                # LAG RAISE = they have something, already handled above
                 return (base_action, base_amount, base_reason + " (lag raise = has hand)")
             
             # Don't override underpair folds - underpairs are too weak (11% win rate)
@@ -1845,7 +1923,19 @@ def _postflop_the_lord(hole_cards, board, pot, to_call, street, strength, desc, 
         
         return (base_action, base_amount, base_reason + " vs lag")
     
-    # TAG or unknown: use value_lord baseline
+    # TAG: Fold high card (0% win rate in real data)
+    # value_lord calls small bets with high card, but vs TAG this loses
+    if villain_archetype == 'tag':
+        if to_call > 0 and strength < 2 and not hand_info.get('has_any_pair'):
+            # Check for draws first
+            if hand_info.get('is_nut_flush_draw') and street in ['flop', 'turn']:
+                return ('call', 0, f"{desc} - call NFD vs tag")
+            if (has_flush_draw or has_oesd) and pot_pct <= 0.35:
+                return ('call', 0, f"{desc} - call draw vs tag")
+            return ('fold', 0, f"{desc} - fold high card vs tag (0% win rate)")
+        return (base_action, base_amount, base_reason + " vs tag")
+    
+    # Unknown: use value_lord baseline
     return (base_action, base_amount, base_reason)
 
 

@@ -1,6 +1,6 @@
 # OnyxPoker - Status Tracking
 
-**Last Updated**: January 19, 2026 21:45 UTC
+**Last Updated**: January 20, 2026 02:00 UTC
 
 ---
 
@@ -19,19 +19,16 @@
 | strategy_engine.py | ✅ | 3-bet/4-bet ranges + BB defense + villain archetype |
 | poker_logic.py | ✅ | Data-driven value_lord + opponent-aware the_lord |
 | poker_sim.py | ✅ | Full postflop simulation |
-| analyse_real_logs.py | ✅ | Shows unsaved losses by default |
+| analyse_real_logs.py | ✅ | the_lord vs hero postflop analysis |
+| eval_session_logs.py | ✅ | Session log analysis (consolidated) |
 | All test suites | ✅ | audit(30), strategy_engine(47/55), postflop(67), rules(24) |
 | Server | ✅ | 54.80.204.92:5001 |
 
-### Default Strategy: `value_lord`
-- Data-driven betting/calling from 2,018 real hands
-- 50% pot standard sizing, c-bet max 4BB
-- Never call river high card (0% win rate)
-
-### NEW: `the_lord` Strategy (Opponent-Aware)
+### Default Strategy: `the_lord` (Opponent-Aware)
 - Based on value_lord with villain-specific adjustments
 - Uses V2 vision opponent detection + player database
-- Adjusts preflop ranges and postflop decisions by archetype
+- **+48.54 EUR** postflop-only (best strategy)
+- **+970.8 BB** improvement vs hero actual play
 
 ### Player Database (565 players, deep research classification)
 | Archetype | Count | % | Advice |
@@ -46,6 +43,119 @@
 ---
 
 ## Session History
+
+### Session 65: Simulation Fix Attempt + Rollback (January 20, 2026)
+
+**Attempted to fix simulation to track pot through streets - rolled back after bugs.**
+
+**Investigation:**
+- Analyzed 218 hands where hero performed better than the_lord
+- Miss distribution: 49 hands (0-2 BB), 85 hands (2-5 BB), 44 hands (5-10 BB), 30 hands (10-20 BB), 10 hands (20+ BB)
+- Most misses are preflop folds that got lucky or bet sizing differences
+
+**Attempted Fixes (all rolled back):**
+- Track pot through streets when strategy bets different than hero
+- Handle case where strategy checks but hero bet
+- Include 'raise' as valid hero response to villain bet
+
+**Problem:** Simulation becomes speculative when strategy diverges from hero's line:
+- If strategy checks when hero bet, can't know if villain would have bet
+- If strategy bets different amount, can't know villain's response
+- Original simple model (fold saves + bet leaks) is more reliable
+
+**Rollback:** `git checkout ac0a2f1 -- client/analyse_real_logs.py`
+
+**Final Numbers (working analysis):**
+| Strategy | Total EUR | Total BB | vs Hero |
+|----------|-----------|----------|---------|
+| Hero | -29.57 | -591.4 | -- |
+| value_lord | +4.41 | +88.2 | +679.6 BB |
+| the_lord | +18.97 | +379.4 | +970.8 BB |
+
+**Key Insight:** the_lord would be +379.4 BB on 548 postflop hands vs hero's -591.4 BB.
+
+### Session 64: Script Consolidation (January 20, 2026)
+
+**Consolidated session log analysis scripts into one.**
+
+**Deleted (redundant):**
+- eval_strategies.py (354 lines)
+- replay_logs.py (222 lines)
+- compare_strategies_on_session.py (119 lines)
+
+**Created:**
+- `eval_session_logs.py` (340 lines) - consolidated replacement
+  - `--stats` - VPIP/PFR/CBet stats
+  - `--replay` - Disagreements with actual play
+  - `--compare` - Compare strategies on same hands
+
+**Updated analyse_real_logs.py:**
+- `--postflop-only` now shows full the_lord vs hero analysis
+- Breakdown by villain archetype
+- All saves and misses with details
+
+**Script inventory (25 Python files in client/):**
+- Core: helper_bar.py, poker_logic.py, strategy_engine.py, vision_detector*.py
+- Simulation: poker_sim.py, pokerkit_adapter.py
+- HH Analysis: analyse_real_logs.py, analyze_*.py (5 calibration scripts)
+- Session Analysis: eval_session_logs.py, eval_deep.py
+- Tests: audit_strategies.py, test_*.py (4 test suites)
+- Utils: build_player_stats.py, opponent_lookup.py, send_*.py
+
+### Session 63: the_lord Deep Optimization (January 19-20, 2026)
+
+**Deep analysis of the_lord vs hero actual play on all 1190 postflop situations.**
+
+**Key Findings:**
+- 720 disagreements between the_lord and hero
+- the_lord folds, hero plays: 698 hands
+  - Hero WINS: 12 hands (257 BB missed)
+  - Hero LOSES: 686 hands (1667 BB saved)
+- NET: +1410 BB saved vs hero actual play
+
+**Bugs Fixed:**
+
+1. **NFD Exception** (HIGH IMPACT: +4.60 EUR)
+   - Bug: the_lord was folding NFD vs nit/rock ("bet = nuts")
+   - Fix: NFD ALWAYS calls - 36% equity beats any pot odds
+   - Example: A8cc on 4d Qc 2c vs nit - was folding NFD, now calls
+
+2. **Draw Threshold Relaxed** (nit/rock)
+   - Changed from pot_pct <= 0.35 to pot_pct <= 0.50
+   - Allows calling draws with reasonable odds
+
+3. **TAG High Card Fold** (+0.21 EUR)
+   - Bug: value_lord calls small bets with high card
+   - Data: 0% win rate on high card calls vs TAG
+   - Fix: Fold high card vs TAG
+
+**Archetype Performance (after fixes):**
+| Archetype | NET BB |
+|-----------|--------|
+| fish | +454 |
+| lag | +322 |
+| unknown | +299.5 |
+| rock | +131 |
+| nit | +106 |
+| maniac | +78 |
+| tag | +19.5 |
+| **TOTAL** | **+1410** |
+
+**Remaining Missed Value (12 hands, 74.4 BB):**
+- Lucky river (correct folds): 4 hands, 30 BB
+- Correct folds (rock/nit/unknown): 4 hands, 24.4 BB
+- Borderline fish: 3 hands, 14.2 BB
+- Maybe call lag: 1 hand, 5.8 BB
+
+**Final Performance:**
+| Strategy | NET EUR | vs value_lord |
+|----------|---------|---------------|
+| the_lord | +40.15 | +6.17 |
+| value_lord | +33.98 | baseline |
+| sonnet | +30.20 | -3.78 |
+
+**Files Changed:**
+- poker_logic.py: NFD exception, draw threshold, TAG high card fold
 
 ### Session 62: the_lord Strategy - Opponent-Aware Decisions (January 19, 2026)
 
