@@ -7,10 +7,25 @@ import os
 import base64
 import json
 import time
+import tempfile
 from typing import Dict, Any, Optional
 from openai import OpenAI
+from PIL import Image
 
 DEFAULT_MODEL = "gpt-5.2"
+
+def compress_image(path, target_width=1280):
+    """Compress image to target width for faster API processing."""
+    img = Image.open(path)
+    w, h = img.size
+    if w <= target_width:
+        return path
+    ratio = target_width / w
+    new_h = int(h * ratio)
+    img = img.resize((target_width, new_h), Image.LANCZOS)
+    tmp = tempfile.NamedTemporaryFile(suffix='.png', delete=False)
+    img.save(tmp.name, 'PNG')
+    return tmp.name
 
 class VisionDetectorV2:
     def __init__(self, api_key: Optional[str] = None, logger=None, model: Optional[str] = None):
@@ -28,8 +43,18 @@ class VisionDetectorV2:
     def detect_table(self, screenshot_path: str) -> Dict[str, Any]:
         """Extract extended table data including player names."""
         
-        with open(screenshot_path, 'rb') as f:
-            image_data = base64.b64encode(f.read()).decode('utf-8')
+        # Compress image to 1280px width for faster API processing
+        compressed_path = compress_image(screenshot_path)
+        try:
+            with open(compressed_path, 'rb') as f:
+                image_data = base64.b64encode(f.read()).decode('utf-8')
+        finally:
+            # Clean up temp file if we created one
+            if compressed_path != screenshot_path:
+                try:
+                    os.unlink(compressed_path)
+                except:
+                    pass
         
         prompt = """Read this PokerStars 6-max table screenshot. Return ONLY valid JSON:
 
