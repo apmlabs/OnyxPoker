@@ -26,6 +26,7 @@ import argparse
 parser = argparse.ArgumentParser(description='OnyxPoker Helper Bar')
 parser.add_argument('--ai-only', action='store_true', help='Use AI for both vision and decisions')
 parser.add_argument('--v1', action='store_true', help='Use V1 vision (no player detection)')
+parser.add_argument('--v2', action='store_true', default=True, help='Use V2 vision with player detection (default)')
 parser.add_argument('--strategy', type=str, default=DEFAULT_STRATEGY, help=f'Strategy to use (default: {DEFAULT_STRATEGY})')
 args = parser.parse_args()
 
@@ -34,6 +35,7 @@ args = parser.parse_args()
 # --ai-only: gpt-5.2 does both vision + decision
 AI_ONLY_MODE = args.ai_only
 V1_MODE = args.v1
+VISION_V2_MODE = args.v2
 STRATEGY = args.strategy
 
 if AI_ONLY_MODE:
