@@ -4,16 +4,46 @@ Opponent lookup - get stats and advice for players at the table.
 
 import json
 import os
+from difflib import SequenceMatcher
 from typing import Dict, List, Optional
 
 STATS_FILE = os.path.join(os.path.dirname(__file__), 'player_stats.json')
+FUZZY_THRESHOLD = 0.82  # 82% similarity to match
+
+_stats_cache = None
+_fuzzy_cache = {}  # Cache fuzzy matches
 
 def load_player_stats() -> Dict:
     """Load player stats from JSON file."""
+    global _stats_cache
+    if _stats_cache is not None:
+        return _stats_cache
     if not os.path.exists(STATS_FILE):
         return {}
     with open(STATS_FILE) as f:
-        return json.load(f)
+        _stats_cache = json.load(f)
+    return _stats_cache
+
+def fuzzy_match(name: str, stats: Dict) -> Optional[str]:
+    """Find best fuzzy match for a name in stats DB."""
+    if name in _fuzzy_cache:
+        return _fuzzy_cache[name]
+    
+    if name in stats:
+        _fuzzy_cache[name] = name
+        return name
+    
+    best_match = None
+    best_ratio = FUZZY_THRESHOLD
+    
+    for db_name in stats.keys():
+        ratio = SequenceMatcher(None, name.lower(), db_name.lower()).ratio()
+        if ratio > best_ratio:
+            best_ratio = ratio
+            best_match = db_name
+    
+    _fuzzy_cache[name] = best_match
+    return best_match
 
 def get_advice(archetype: str) -> str:
     """Get short exploitation advice."""
@@ -26,15 +56,17 @@ def get_advice(archetype: str) -> str:
     }.get(archetype, "Play solid")
 
 def lookup_opponents(player_names: List[str]) -> List[Dict]:
-    """Look up stats for a list of player names."""
+    """Look up stats for a list of player names (with fuzzy matching)."""
     stats = load_player_stats()
     results = []
     
     for name in player_names:
-        if name in stats:
-            s = stats[name]
+        matched_name = fuzzy_match(name, stats)
+        if matched_name:
+            s = stats[matched_name]
             results.append({
                 'name': name,
+                'matched_name': matched_name if matched_name != name else None,
                 'hands': s['hands'],
                 'vpip': s['vpip'],
                 'pfr': s['pfr'],
@@ -44,6 +76,7 @@ def lookup_opponents(player_names: List[str]) -> List[Dict]:
         else:
             results.append({
                 'name': name,
+                'matched_name': None,
                 'hands': 0,
                 'archetype': 'unknown',
                 'advice': 'No data - play solid'

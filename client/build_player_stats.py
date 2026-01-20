@@ -1,16 +1,19 @@
 """
 Build player statistics from PokerStars hand histories.
 Calculates VPIP, PFR, AF, 3-bet% for each opponent.
+Consolidates OCR variations of names using fuzzy matching.
 """
 
 import os
 import re
 import json
 from collections import defaultdict
+from difflib import SequenceMatcher
 from typing import Dict, List, Tuple
 
 HAND_HISTORY_DIR = "../idealistslp_extracted"
 HERO_NAME = "idealistslp"
+FUZZY_THRESHOLD = 0.82  # 82% similarity to merge names
 
 def parse_hand_file(filepath: str) -> List[Dict]:
     """Parse a hand history file into individual hands."""
@@ -81,6 +84,54 @@ def parse_single_hand(text: str) -> Dict:
         'preflop_actions': preflop_actions,
         'postflop_actions': postflop_actions
     }
+
+def consolidate_names(stats: Dict[str, Dict]) -> Dict[str, Dict]:
+    """Merge similar player names, keeping the one with most hands."""
+    names = list(stats.keys())
+    merged = {}  # canonical_name -> list of merged names
+    name_map = {}  # any_name -> canonical_name
+    
+    for name in sorted(names, key=lambda n: -stats[n]['hands']):
+        if name in name_map:
+            continue  # Already merged into another
+        
+        # Find similar names not yet assigned
+        similar = [name]
+        for other in names:
+            if other == name or other in name_map:
+                continue
+            ratio = SequenceMatcher(None, name.lower(), other.lower()).ratio()
+            if ratio > FUZZY_THRESHOLD:
+                similar.append(other)
+                name_map[other] = name
+        
+        name_map[name] = name
+        merged[name] = similar
+    
+    # Combine stats for merged names
+    result = {}
+    for canonical, variants in merged.items():
+        combined = stats[canonical].copy()
+        for var in variants[1:]:  # Skip canonical itself
+            s = stats[var]
+            combined['hands'] += s['hands']
+            # Weighted average for percentages
+            total = combined['hands']
+            w1 = stats[canonical]['hands'] / total
+            w2 = s['hands'] / total
+            combined['vpip'] = round(combined['vpip'] * w1 + s['vpip'] * w2, 1)
+            combined['pfr'] = round(combined['pfr'] * w1 + s['pfr'] * w2, 1)
+            combined['3bet'] = round(combined['3bet'] * w1 + s['3bet'] * w2, 1)
+            combined['af'] = round(combined['af'] * w1 + s['af'] * w2, 2)
+        
+        # Reclassify with combined stats
+        combined['archetype'] = classify_archetype(combined['vpip'], combined['pfr'], combined['af'])
+        combined['advice'] = get_advice(combined['archetype'], {})
+        if len(variants) > 1:
+            combined['aliases'] = variants[1:]  # Store merged names
+        result[canonical] = combined
+    
+    return result
 
 def calculate_stats(hands: List[Dict]) -> Dict[str, Dict]:
     """Calculate VPIP, PFR, AF, 3-bet% for each player."""
@@ -255,12 +306,20 @@ def main():
     
     # Calculate stats
     player_stats = calculate_stats(all_hands)
+    before_count = len(player_stats)
+    
+    # Consolidate similar names
+    player_stats = consolidate_names(player_stats)
+    merged_count = before_count - len(player_stats)
     
     # Sort by hands played
     sorted_players = sorted(player_stats.items(), key=lambda x: x[1]['hands'], reverse=True)
     
-    print(f"\nFound {len(sorted_players)} players with 5+ hands\n")
-    print(f"{'Player':<20} {'Hands':>6} {'VPIP':>6} {'PFR':>6} {'3bet':>6} {'AF':>6} {'Type':<8} Advice")
+    print(f"\nFound {len(sorted_players)} players with 5+ hands")
+    if merged_count > 0:
+        print(f"Merged {merged_count} duplicate names")
+    
+    print(f"\n{'Player':<20} {'Hands':>6} {'VPIP':>6} {'PFR':>6} {'3bet':>6} {'AF':>6} {'Type':<8} Advice")
     print("-" * 100)
     
     for player, s in sorted_players[:30]:  # Top 30

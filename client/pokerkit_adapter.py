@@ -22,7 +22,7 @@ def get_position(idx, num_players):
     return positions[idx % num_players]
 
 
-def strategy_decision(state, player_idx, strategy, is_aggressor=True):
+def strategy_decision(state, player_idx, strategy, is_aggressor=True, all_strategies=None):
     """Get decision from our strategy."""
     # Convert PokerKit cards to our format
     hole = [f"{c.rank}{c.suit}" for c in state.hole_cards[player_idx]]
@@ -42,8 +42,18 @@ def strategy_decision(state, player_idx, strategy, is_aggressor=True):
     suited = 's' if s1 == s2 else 'o'
     hand_str = r1 + r2 if r1 == r2 else r1 + r2 + suited
     
-    archetypes = ['fish', 'nit', 'tag', 'lag', 'maniac']
+    archetypes = ['fish', 'nit', 'tag', 'lag', 'maniac', 'rock']
     is_archetype = strategy in archetypes
+    
+    # Find opponent archetype for the_lord (use first active opponent)
+    villain_archetype = None
+    if strategy == 'the_lord' and all_strategies:
+        for i, strat in enumerate(all_strategies):
+            if i != player_idx and strat in archetypes:
+                # Check if player still has chips (still in hand)
+                if state.stacks[i] > 0 or any(state.bets):
+                    villain_archetype = strat
+                    break
     
     if street == 'preflop':
         if to_call <= 0.02: facing = 'none'
@@ -60,7 +70,7 @@ def strategy_decision(state, player_idx, strategy, is_aggressor=True):
         action, size, _ = postflop_action(
             hole, board, pot, to_call, street,
             is_ip=True, is_aggressor=is_aggressor,
-            archetype=strategy if is_archetype else None,
+            archetype=villain_archetype if strategy == 'the_lord' else (strategy if is_archetype else None),
             strategy=strategy if not is_archetype else None
         )
     return action, size
@@ -106,7 +116,7 @@ def run_hand(strategies, verbose=False, track_details=False):
             continue
         
         idx = state.actor_index
-        action, size = strategy_decision(state, idx, strategies[idx], opener == idx)
+        action, size = strategy_decision(state, idx, strategies[idx], opener == idx, all_strategies=strategies)
         to_call = float(state.checking_or_calling_amount or 0)
         
         if details:
@@ -139,11 +149,11 @@ def run_hand(strategies, verbose=False, track_details=False):
 
 def random_5nl_table():
     """Generate random 5-player table matching real 2NL composition.
-    Updated Jan 18 2026 from analyze_table_composition.py (deep research):
-    Real: 34% fish, 25% nit, 15% rock, 9% lag, 9% tag, 9% maniac
+    Updated Jan 20 2026 from analyze_table_composition.py:
+    Real: 34% fish, 26% nit, 15% rock, 10% lag, 9% tag, 6% maniac
     """
     archetypes = ['fish', 'nit', 'rock', 'lag', 'tag', 'maniac']
-    weights = [0.34, 0.25, 0.15, 0.09, 0.09, 0.09]
+    weights = [0.34, 0.26, 0.15, 0.10, 0.09, 0.06]
     return [random.choices(archetypes, weights)[0] for _ in range(5)]
 
 
@@ -264,7 +274,7 @@ if __name__ == '__main__':
         strategies = [strat] if strat else ['value_lord', 'kiro_optimal', 'kiro_lord', 'sonnet']
         
         print(f"PokerKit simulation: {num} hands", flush=True)
-        print("Opponents: random 2NL table (34% fish, 25% nit, 15% rock, 9% lag, 9% tag, 9% maniac)")
+        print("Opponents: random 2NL table (34% fish, 26% nit, 15% rock, 10% lag, 9% tag, 6% maniac)")
         print("=" * 50, flush=True)
         
         for bot in strategies:

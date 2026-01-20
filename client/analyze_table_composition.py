@@ -195,8 +195,8 @@ def main():
     print(f"{'Archetype':<10} {'Real%':>8} {'Sim%':>8} {'Diff':>8}")
     print("-" * 40)
     
-    # Current simulation: 60% fish, 25% nit, 15% tag
-    sim_comp = {'fish': 60, 'nit': 25, 'tag': 15, 'lag': 0, 'maniac': 0}
+    # Current simulation (from pokerkit_adapter.py random_5nl_table)
+    sim_comp = {'fish': 34, 'nit': 26, 'rock': 15, 'lag': 10, 'tag': 9, 'maniac': 6}
     
     for arch in ['fish', 'nit', 'tag', 'lag', 'maniac', 'rock']:
         real_pct = total_by_arch.get(arch, 0) / grand_total * 100 if grand_total > 0 else 0
