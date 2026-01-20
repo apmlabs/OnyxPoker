@@ -783,20 +783,25 @@ def parse_card(card: str) -> Tuple[str, str]:
 
 
 def check_draws(hole_cards: List[Tuple[str, str]], board: List[Tuple[str, str]]) -> List[str]:
-    """Check for flush and straight draws."""
+    """Check for flush and straight draws. No draws on river."""
     draws = []
-    if len(board) < 3:
+    if len(board) < 3 or len(board) >= 5:  # No draws preflop or on river
         return draws
     
     all_cards = hole_cards + board
     suits = [c[1] for c in all_cards]
+    hero_suits = [c[1] for c in hole_cards]
     
     suit_counts = {}
+    hero_suit_counts = {}
     for s in suits:
         suit_counts[s] = suit_counts.get(s, 0) + 1
+    for s in hero_suits:
+        hero_suit_counts[s] = hero_suit_counts.get(s, 0) + 1
     
+    # Flush draw: 4 of a suit AND hero has 2 of that suit
     for s, count in suit_counts.items():
-        if count == 4:
+        if count == 4 and hero_suit_counts.get(s, 0) >= 2:
             draws.append("flush_draw")
             break
     
