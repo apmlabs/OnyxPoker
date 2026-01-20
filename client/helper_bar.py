@@ -691,19 +691,25 @@ class HelperBar:
         
         # Show opponent info first (V2 mode) - works on preflop too
         if VISION_V2_MODE and result.get('opponent_stats'):
+            unknown_names = []
             for opp in result['opponent_stats']:
                 if opp.get('hands', 0) > 0:
                     arch = opp.get('archetype', '?').upper()
                     line = f"{opp['name']} ({opp['hands']}h) {arch} - {opp['advice']}\n"
                     self.stats_text.insert('end', line, 'HAND')
                 else:
-                    line = f"{opp['name']} - no reads\n"
-                    self.stats_text.insert('end', line, 'DANGER')
-            # Show unrecognized count (expected 5 minus detected)
+                    unknown_names.append(opp['name'])
+            # Show unknown + unrec on same line
             detected = len(result['opponent_stats'])
             unrec = max(0, 5 - detected)
-            if unrec > 0:
-                self.stats_text.insert('end', f"UNREC - {unrec}\n", 'DANGER')
+            if unknown_names or unrec > 0:
+                if unknown_names:
+                    self.stats_text.insert('end', f"UNKNOWN: {', '.join(unknown_names)}", 'DRAW')
+                    if unrec > 0:
+                        self.stats_text.insert('end', " | ", 'DANGER')
+                if unrec > 0:
+                    self.stats_text.insert('end', f"UNREC: {unrec}", 'DANGER')
+                self.stats_text.insert('end', '\n', 'DANGER')
             self.stats_text.insert('end', '---\n', 'DANGER')
         
         if not hand or not hand.get('valid'):
