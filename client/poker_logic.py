@@ -127,12 +127,20 @@ def analyze_hand(hole_cards: List[Tuple[str, str]], board: List[Tuple[str, str]]
                 else:
                     has_middle_pair = True
     
-    # Flush draw detection
+    # Flush draw detection - hero needs 2 cards of same suit, and not on river
     hero_suits = [c[1] for c in hole_cards]
     board_suits = [c[1] for c in board] if board else []
     all_suits = hero_suits + board_suits
     suit_counts = Counter(all_suits)
-    has_flush_draw = any(c >= 4 for c in suit_counts.values()) and not any(c >= 5 for c in suit_counts.values())
+    hero_suit_counts = Counter(hero_suits)
+    is_river = len(board) == 5
+    # Flush draw: 4 of a suit total AND hero has at least 2 of that suit AND not river
+    has_flush_draw = False
+    if not is_river:
+        for suit, count in suit_counts.items():
+            if count == 4 and hero_suit_counts.get(suit, 0) >= 2:
+                has_flush_draw = True
+                break
     has_flush = any(c >= 5 for c in suit_counts.values())
     
     # Nut flush draw detection - do we have the Ace or King of the flush suit?
@@ -149,16 +157,17 @@ def analyze_hand(hole_cards: List[Tuple[str, str]], board: List[Tuple[str, str]]
         elif 11 in hero_flush_vals and 12 not in board_flush_vals:  # King, no Ace on board
             is_nut_flush_draw = True
     
-    # Straight draw detection (simplified - OESD or gutshot)
+    # Straight draw detection (simplified - OESD or gutshot) - not on river
     all_vals_unique = sorted(set(hero_vals + board_vals))
     has_straight_draw = False
     has_straight = False
     if len(all_vals_unique) >= 4:
         # Check for 4 in a row (OESD) or 4 out of 5 (gutshot)
-        for i in range(len(all_vals_unique) - 3):
-            window = all_vals_unique[i:i+4]
-            if window[-1] - window[0] <= 4:  # 4 cards within 5 ranks = draw
-                has_straight_draw = True
+        if not is_river:
+            for i in range(len(all_vals_unique) - 3):
+                window = all_vals_unique[i:i+4]
+                if window[-1] - window[0] <= 4:  # 4 cards within 5 ranks = draw
+                    has_straight_draw = True
         # Check for made straight (5 in a row)
         if len(all_vals_unique) >= 5:
             for i in range(len(all_vals_unique) - 4):
@@ -170,7 +179,7 @@ def analyze_hand(hole_cards: List[Tuple[str, str]], board: List[Tuple[str, str]]
     if {12, 0, 1, 2, 3}.issubset(set(hero_vals + board_vals)):
         has_straight = True
         has_straight_draw = False
-    elif len({12, 0, 1, 2, 3} & set(hero_vals + board_vals)) >= 4:
+    elif not is_river and len({12, 0, 1, 2, 3} & set(hero_vals + board_vals)) >= 4:
         has_straight_draw = True
     
     # Board texture analysis - straight possibilities
