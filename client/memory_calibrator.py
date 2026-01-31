@@ -240,9 +240,12 @@ def get_reader():
     return _reader
 
 
+SAMPLES_FILE = os.path.join(os.path.dirname(__file__), 'memory_samples.json')
+
 def calibrate_with_gpt(gpt_cards):
     """
-    Find memory addresses for hero cards using GPT-detected values.
+    Collect memory samples for hero cards. After multiple hands,
+    find addresses that consistently match.
     Returns error string or None on success.
     """
     print(f"[MEM] calibrate_with_gpt called with {gpt_cards}")
@@ -271,22 +274,70 @@ def calibrate_with_gpt(gpt_cards):
         regions = reader.enumerate_regions()
         return f"Cards {gpt_cards[0]} {gpt_cards[1]} not found in {len(regions)} memory regions"
     
-    # Use first candidate
-    best = candidates[0]
-    reader.card1_addr = best['addr']
-    reader.card1_encoding = best['encoding']
-    reader.card1_gap = best['gap']
+    # Load existing samples
+    samples = []
+    if os.path.exists(SAMPLES_FILE):
+        try:
+            with open(SAMPLES_FILE) as f:
+                samples = json.load(f)
+        except:
+            samples = []
+    
+    # Add this sample
+    sample = {
+        'cards': gpt_cards,
+        'candidates': [{'addr': c['addr'], 'enc': c['encoding'], 'gap': c['gap']} 
+                       for c in candidates[:1000]],  # Keep top 1000
+        'timestamp': datetime.now().isoformat()
+    }
+    samples.append(sample)
+    
+    # Save samples
+    with open(SAMPLES_FILE, 'w') as f:
+        json.dump(samples, f, indent=2)
+    
+    print(f"[MEM] Sample {len(samples)} saved ({len(candidates)} candidates)")
+    
+    # Need at least 3 different hands to find stable address
+    unique_hands = len(set(tuple(s['cards']) for s in samples))
+    if unique_hands < 3:
+        print(f"[MEM] Need {3 - unique_hands} more different hands to calibrate")
+        return None  # Not an error, just need more data
+    
+    # Find addresses that appear in ALL samples
+    # Group by (addr, encoding, gap)
+    addr_counts = {}
+    for s in samples:
+        for c in s['candidates']:
+            key = (c['addr'], c['enc'], c['gap'])
+            if key not in addr_counts:
+                addr_counts[key] = 0
+            addr_counts[key] += 1
+    
+    # Find addresses present in all samples
+    stable = [(k, v) for k, v in addr_counts.items() if v == len(samples)]
+    
+    if not stable:
+        print(f"[MEM] No stable address found across {len(samples)} samples")
+        # Clear samples to start fresh
+        os.remove(SAMPLES_FILE)
+        return None
+    
+    # Use the one with most occurrences (should all be equal)
+    best_key = stable[0][0]
+    print(f"[MEM] Found stable address: {hex(best_key[0])}, enc={best_key[1]}")
     
     # Save calibration
-    print(f"[MEM] Saving calibration: addr={hex(best['addr'])}, enc={best['encoding']}")
     save_calibration({
-        'card1_addr': best['addr'],
-        'encoding': best['encoding'],
-        'gap': best['gap'],
-        'candidates': len(candidates),
-        'cards_found': gpt_cards,
+        'card1_addr': best_key[0],
+        'encoding': best_key[1],
+        'gap': best_key[2],
+        'samples': len(samples),
         'timestamp': datetime.now().isoformat()
     })
+    
+    # Clear samples
+    os.remove(SAMPLES_FILE)
     
     return None  # Success
 

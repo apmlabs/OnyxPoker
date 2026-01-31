@@ -384,31 +384,10 @@ class HelperBar:
                 img = pyautogui.screenshot(region=region)
                 self.last_screenshot = img
                 
-                # CALIBRATION: Check if already calibrated, try fast read
-                memory_cards = None
+                # CALIBRATION: Disabled fast read - addresses change per hand
+                # Need to find pointer chain for stable reads
                 memory_error = None
                 calibration_status = None
-                if CALIBRATE_MODE:
-                    self.root.after(0, lambda: self.log("Memory: starting...", "DEBUG"))
-                    try:
-                        from memory_calibrator import is_calibrated, read_cards_fast, load_calibration
-                        self.root.after(0, lambda: self.log("Memory: imported", "DEBUG"))
-                        cal_file = load_calibration()
-                        calibration_status = f"file={cal_file}"
-                        self.root.after(0, lambda s=calibration_status: self.log(f"Memory: {s}", "DEBUG"))
-                        is_cal = is_calibrated()
-                        calibration_status += f", is_cal={is_cal}"
-                        self.root.after(0, lambda s=calibration_status: self.log(f"Memory: {s}", "DEBUG"))
-                        if is_cal:
-                            memory_cards = read_cards_fast()
-                            calibration_status += f", read={memory_cards}"
-                            if memory_cards:
-                                self.root.after(0, lambda c=memory_cards: self.log(f"Memory: {c[0]} {c[1]}", "INFO"))
-                    except Exception as e:
-                        import traceback
-                        memory_error = f"{e}"
-                        calibration_status = f"exception: {traceback.format_exc()}"
-                        self.root.after(0, lambda e=e: self.log(f"Memory: {e}", "ERROR"))
 
                 # Save to screenshots folder for future testing
                 screenshots_dir = os.path.join(os.path.dirname(__file__), 'screenshots')
@@ -575,20 +554,28 @@ class HelperBar:
                         result['all_positions'] = all_position_results
                     result['api_time'] = api_time
 
-                # CALIBRATION: If not calibrated yet, use GPT cards to find in memory
-                if CALIBRATE_MODE and not memory_cards:
+                # CALIBRATION: Collect samples to find stable address
+                if CALIBRATE_MODE:
                     hero_cards = result.get('hero_cards', [])
                     if hero_cards and len(hero_cards) == 2:
-                        self.root.after(0, lambda c=hero_cards: self.log(f"Calibrating with {c}...", "DEBUG"))
+                        self.root.after(0, lambda c=hero_cards: self.log(f"Scanning for {c}...", "DEBUG"))
                         try:
-                            from memory_calibrator import calibrate_with_gpt
+                            from memory_calibrator import calibrate_with_gpt, is_calibrated, SAMPLES_FILE
+                            import os
                             err = calibrate_with_gpt(hero_cards)
                             if err:
-                                self.root.after(0, lambda e=err: self.log(f"Calibration: {e}", "WARN"))
+                                self.root.after(0, lambda e=err: self.log(f"Memory: {e}", "WARN"))
                                 result['memory_error'] = err
-                            else:
-                                self.root.after(0, lambda: self.log("CALIBRATED! Fast reads enabled", "INFO"))
+                            elif is_calibrated():
+                                self.root.after(0, lambda: self.log("CALIBRATED! Stable address found", "INFO"))
                                 result['memory_status'] = 'calibrated'
+                            elif os.path.exists(SAMPLES_FILE):
+                                import json
+                                with open(SAMPLES_FILE) as f:
+                                    samples = json.load(f)
+                                unique = len(set(tuple(s['cards']) for s in samples))
+                                self.root.after(0, lambda u=unique: self.log(f"Sample {u}/3 collected", "INFO"))
+                                result['memory_status'] = f'sampling_{unique}'
                         except Exception as e:
                             import traceback
                             tb = traceback.format_exc()
@@ -599,8 +586,6 @@ class HelperBar:
                 # Add memory info to result for logging
                 if memory_error:
                     result['memory_error'] = memory_error
-                if memory_cards:
-                    result['memory_cards'] = memory_cards
                 if calibration_status:
                     result['calibration_status'] = calibration_status
 
