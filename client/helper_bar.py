@@ -380,15 +380,15 @@ class HelperBar:
                 img = pyautogui.screenshot(region=region)
                 self.last_screenshot = img
                 
-                # CALIBRATION: Take memory snapshot at same instant as screenshot
+                # CALIBRATION: Check if already calibrated, try fast read
+                memory_cards = None
                 if CALIBRATE_MODE:
                     try:
-                        from memory_calibrator import memory_snapshot
-                        memory_candidates = memory_snapshot()
-                        if memory_candidates:
-                            self.root.after(0, lambda n=len(memory_candidates): self.log(f"Memory: {n} candidates", "DEBUG"))
-                        else:
-                            self.root.after(0, lambda: self.log("Memory: scan failed", "WARN"))
+                        from memory_calibrator import is_calibrated, read_cards_fast
+                        if is_calibrated():
+                            memory_cards = read_cards_fast()
+                            if memory_cards:
+                                self.root.after(0, lambda c=memory_cards: self.log(f"Memory: {c[0]} {c[1]}", "INFO"))
                     except Exception as e:
                         self.root.after(0, lambda e=e: self.log(f"Memory: {e}", "ERROR"))
 
@@ -557,16 +557,16 @@ class HelperBar:
                         result['all_positions'] = all_position_results
                     result['api_time'] = api_time
 
-                # CALIBRATION: Correlate memory snapshot with GPT-detected cards
-                if CALIBRATE_MODE and memory_candidates:
+                # CALIBRATION: If not calibrated yet, use GPT cards to find base pointer
+                if CALIBRATE_MODE and not memory_cards:
                     hero_cards = result.get('hero_cards', [])
                     if hero_cards and len(hero_cards) == 2:
                         try:
-                            from memory_calibrator import calibration_step
-                            matches, stable = calibration_step(screenshot_name, hero_cards, memory_candidates)
-                            self.root.after(0, lambda n=len(matches): self.log(f"Calibration: {n} matches", "INFO"))
-                            if stable:
-                                self.root.after(0, lambda: self.log("STABLE OFFSETS FOUND!", "INFO"))
+                            from memory_calibrator import calibrate_with_gpt
+                            if calibrate_with_gpt(hero_cards):
+                                self.root.after(0, lambda: self.log("CALIBRATED! Fast reads enabled", "INFO"))
+                            else:
+                                self.root.after(0, lambda: self.log("Calibration: pattern not found", "WARN"))
                         except Exception as e:
                             self.root.after(0, lambda e=e: self.log(f"Calibration error: {e}", "ERROR"))
 
@@ -982,10 +982,9 @@ class HelperBar:
 def main():
     if CALIBRATE_MODE:
         print("=== MEMORY CALIBRATION MODE ===")
-        print("Press F9 to capture screenshot + memory snapshot")
-        print("GPT will identify cards, then correlate with memory")
-        print("After ~10 hands, stable offsets should be found")
-        print("Check memory_calibration.json for results")
+        print("Press F9 once - GPT detects cards, we find the base pointer.")
+        print("After that, cards are read in <1ms instead of ~5s.")
+        print("Offsets saved to memory_offsets.json")
         print("")
     app = HelperBar()
     app.run()
