@@ -24,6 +24,8 @@ if IS_WINDOWS:
     PROCESS_VM_READ = 0x0010
     PROCESS_QUERY_INFORMATION = 0x0400
     MEM_COMMIT = 0x1000
+    MEM_PRIVATE = 0x20000  # Heap allocations - where game objects live
+    MEM_IMAGE = 0x1000000  # DLLs - skip
     PAGE_READABLE = 0x02 | 0x04 | 0x20 | 0x40 | 0x80
 
     class MEMORY_BASIC_INFORMATION(ctypes.Structure):
@@ -118,8 +120,8 @@ class MemoryReader:
             return buf.raw[:read.value]
         return None
     
-    def enumerate_regions(self):
-        """Get all readable memory regions."""
+    def enumerate_regions(self, private_only=False):
+        """Get all readable memory regions. If private_only, skip DLLs/mapped files."""
         if not IS_WINDOWS or not self.handle:
             return []
         regions = []
@@ -130,16 +132,18 @@ class MemoryReader:
         ):
             base = mbi.BaseAddress
             size = mbi.RegionSize
-            # Safety: size must be positive
             if size is None or size <= 0:
                 break
             if mbi.State == MEM_COMMIT and (mbi.Protect & PAGE_READABLE):
-                regions.append((base, size))
-            # Move to next region (base can be 0 for first region)
+                # Filter by type if requested
+                if private_only and mbi.Type != MEM_PRIVATE:
+                    pass  # Skip non-private (DLLs, mapped files)
+                else:
+                    regions.append((base, size, mbi.Type))
             if base is None:
                 base = 0
             addr = base + size
-            if addr <= base:  # Overflow check
+            if addr <= base:
                 break
         return regions
     
@@ -155,14 +159,12 @@ class MemoryReader:
             return []
         
         candidates = []
-        regions = self.enumerate_regions()
+        regions = self.enumerate_regions(private_only=True)
         print(f"[MEM] Scanning {len(regions)} regions...")
         
         scanned = 0
-        for base, size in regions:
+        for base, size, _ in regions:
             if size is None or size <= 0:
-                continue
-            if size > 10 * 1024 * 1024:  # Skip >10MB
                 continue
             if base is None:
                 base = 0
@@ -210,21 +212,17 @@ class MemoryReader:
             return []
         
         candidates = []
-        regions = self.enumerate_regions()
+        regions = self.enumerate_regions(private_only=True)
         print(f"[MEM] Scanning {len(regions)} regions for {card}...")
         
         scanned = 0
-        for base, size in regions:
+        for base, size, _ in regions:
             if size is None or size <= 0:
-                continue
-            if size > 10 * 1024 * 1024:  # Skip >10MB
                 continue
             if base is None:
                 base = 0
             
             scanned += 1
-            if scanned % 100 == 0:
-                print(f"[MEM] Scanned {scanned} regions, {len(candidates)} candidates...")
             
             # Read in chunks
             chunk_size = 65536
@@ -291,6 +289,7 @@ def get_reader():
 def scan_memory_snapshot():
     """
     Scan memory NOW and save snapshot. Called at screenshot time.
+    Only scans MEM_PRIVATE regions (heap) where game objects live.
     Returns dict of {addr: byte_value} for all card-like values.
     """
     global _last_snapshot
@@ -306,38 +305,33 @@ def scan_memory_snapshot():
             print("[MEM] Could not open process")
             return None
     
+    # Only scan private memory (heap) - skip DLLs and mapped files
+    regions = reader.enumerate_regions(private_only=True)
+    total_size = sum(r[1] for r in regions)
+    print(f"[MEM] {len(regions)} private regions, {total_size // 1024 // 1024}MB total")
+    
     snapshot = {}
-    regions = reader.enumerate_regions()
-    print(f"[MEM] Scanning {len(regions)} regions...")
+    scanned = 0
     
-    scanned_bytes = 0
-    max_bytes = 50 * 1024 * 1024  # 50MB limit
-    
-    for base, size in regions:
+    for base, size, _ in regions:
         if size is None or size <= 0:
-            continue
-        # Skip very large regions (likely not game data)
-        if size > 2 * 1024 * 1024:
             continue
         if base is None:
             base = 0
         
-        # Stop if we've scanned enough
-        if scanned_bytes > max_bytes:
-            break
-        
-        data = reader.read_bytes(base, min(size, 1024 * 1024))
+        # Read whole region (private regions are usually small)
+        data = reader.read_bytes(base, size)
         if not data:
             continue
         
-        scanned_bytes += len(data)
+        scanned += len(data)
         
         for i, byte in enumerate(data):
             if byte <= 51:
                 snapshot[base + i] = byte
     
     _last_snapshot = snapshot
-    print(f"[MEM] Snapshot: {len(snapshot)} addrs from {scanned_bytes // 1024}KB")
+    print(f"[MEM] Snapshot: {len(snapshot)} addrs from {scanned // 1024}KB")
     return snapshot
 
 
@@ -572,9 +566,12 @@ if __name__ == '__main__':
             print("Could not open process (try running as admin?)")
             sys.exit(1)
         
-        regions = reader.enumerate_regions()
-        total_mb = sum(r[1] for r in regions) / 1024 / 1024
-        print(f"Found {len(regions)} memory regions ({total_mb:.1f} MB)")
+        all_regions = reader.enumerate_regions(private_only=False)
+        private_regions = reader.enumerate_regions(private_only=True)
+        all_mb = sum(r[1] for r in all_regions) / 1024 / 1024
+        private_mb = sum(r[1] for r in private_regions) / 1024 / 1024
+        print(f"All regions: {len(all_regions)} ({all_mb:.1f} MB)")
+        print(f"Private (heap): {len(private_regions)} ({private_mb:.1f} MB)")
         print("Memory access OK!")
         
         reader.close()
