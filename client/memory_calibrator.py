@@ -252,6 +252,14 @@ def calibrate_with_gpt(gpt_cards):
     if not gpt_cards or len(gpt_cards) < 2:
         return "Need 2 cards"
     
+    # Auto-cleanup old calibration on first run
+    if os.path.exists(CALIBRATION_FILE) and not os.path.exists(SAMPLES_FILE):
+        try:
+            os.remove(CALIBRATION_FILE)
+            print("[MEM] Cleared old calibration, starting fresh")
+        except:
+            pass
+    
     reader = get_reader()
     
     # Open process if needed
