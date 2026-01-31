@@ -72,6 +72,7 @@ class MemoryReader:
         self.handle = None
         self.card1_addr = None  # Address of first hero card
         self.card1_encoding = None
+        self.card1_gap = 1  # Gap between card1 and card2
         
     def find_pokerstars(self):
         """Find PokerStars.exe PID."""
@@ -276,6 +277,10 @@ def read_cards_fast():
         reader.card1_encoding = cal['encoding']
         reader.card1_gap = cal.get('gap', 1)
     
+    # Safety check
+    if not reader.card1_addr:
+        return None
+    
     # Open process if needed
     if not reader.handle:
         reader.pid = reader.find_pokerstars()
@@ -314,7 +319,16 @@ def save_calibration(data):
 def is_calibrated():
     """Check if memory reader is calibrated."""
     cal = load_calibration()
-    return cal and cal.get('card1_addr') is not None
+    # Must have card1_addr (new format) - old format had seat_base
+    if cal and cal.get('card1_addr'):
+        return True
+    # Delete old format calibration files
+    if cal and 'seat_base' in cal:
+        try:
+            os.remove(CALIBRATION_FILE)
+        except:
+            pass
+    return False
 
 
 if __name__ == '__main__':
