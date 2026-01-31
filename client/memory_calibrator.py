@@ -233,21 +233,22 @@ def calibrate_with_gpt(gpt_cards):
     if not reader.handle:
         reader.pid = reader.find_pokerstars()
         if not reader.pid:
-            return "PokerStars not found"
+            return "PokerStars.exe not found in process list"
         reader.handle = reader.open_process(reader.pid)
         if not reader.handle:
-            return "Could not open process"
+            return f"Could not open process {reader.pid} (try admin?)"
     
     # Scan for card pair
     candidates = reader.scan_for_card_pair(gpt_cards[0], gpt_cards[1])
     
     if not candidates:
-        return f"Cards {gpt_cards[0]} {gpt_cards[1]} not found in memory"
+        return f"Cards {gpt_cards[0]} {gpt_cards[1]} not found in {len(reader.enumerate_regions())} memory regions"
     
-    # Use first candidate (could be smarter later)
+    # Use first candidate
     best = candidates[0]
     reader.card1_addr = best['addr']
     reader.card1_encoding = best['encoding']
+    reader.card1_gap = best['gap']
     
     # Save calibration
     save_calibration({
@@ -255,6 +256,7 @@ def calibrate_with_gpt(gpt_cards):
         'encoding': best['encoding'],
         'gap': best['gap'],
         'candidates': len(candidates),
+        'cards_found': gpt_cards,
         'timestamp': datetime.now().isoformat()
     })
     
@@ -271,14 +273,16 @@ def read_cards_fast():
     # Load calibration if needed
     if not reader.card1_addr:
         cal = load_calibration()
-        if not cal or not cal.get('card1_addr'):
+        if not cal:
+            return None
+        if not cal.get('card1_addr'):
             return None
         reader.card1_addr = cal['card1_addr']
-        reader.card1_encoding = cal['encoding']
+        reader.card1_encoding = cal.get('encoding')
         reader.card1_gap = cal.get('gap', 1)
     
     # Safety check
-    if not reader.card1_addr:
+    if not reader.card1_addr or not reader.card1_encoding:
         return None
     
     # Open process if needed

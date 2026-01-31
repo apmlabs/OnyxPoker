@@ -385,13 +385,19 @@ class HelperBar:
                 memory_error = None
                 if CALIBRATE_MODE:
                     try:
-                        from memory_calibrator import is_calibrated, read_cards_fast
+                        from memory_calibrator import is_calibrated, read_cards_fast, load_calibration
+                        cal_status = load_calibration()
                         if is_calibrated():
                             memory_cards = read_cards_fast()
                             if memory_cards:
                                 self.root.after(0, lambda c=memory_cards: self.log(f"Memory: {c[0]} {c[1]}", "INFO"))
+                            else:
+                                memory_error = f"read failed (cal={cal_status})"
+                        else:
+                            memory_error = f"not calibrated (file={cal_status})"
                     except Exception as e:
-                        memory_error = str(e)
+                        import traceback
+                        memory_error = f"{e} | {traceback.format_exc()}"
                         self.root.after(0, lambda e=e: self.log(f"Memory: {e}", "ERROR"))
 
                 # Save to screenshots folder for future testing
