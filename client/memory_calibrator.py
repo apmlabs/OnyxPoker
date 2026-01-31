@@ -1,12 +1,12 @@
 """
-Memory Reader - Read PokerStars data using known offsets from poker-supernova.
+Memory Reader - Find PokerStars card data by scanning for known card values.
 
-Offsets are relative to base pointers. We find the base pointer once per session
-by searching for the known offset pattern, then read data instantly.
+Since offsets change between PS versions, we scan memory for the actual card
+values that GPT detected, then remember those addresses.
 
 Usage:
     Integrated into helper_bar.py --calibrate
-    python memory_calibrator.py --test       # Test if offsets work
+    python memory_calibrator.py --test       # Test memory access
 """
 
 import sys
@@ -37,38 +37,41 @@ if IS_WINDOWS:
             ("Type", wintypes.DWORD),
         ]
 
-# Known offsets from poker-supernova (PokerStars 7 Build 46014)
-# These are RELATIVE offsets from base pointers
-OFFSETS = {
-    'table': {
-        'card_values': 0x64,   # 5 bytes, one per community card
-        'card_suits': 0x68,    # 5 bytes
-        'pot': 0x18,
-        'hand_id': 0x40,
-        'num_cards': 0x58,
-    },
-    'seat': {
-        'name': 0x00,          # String
-        'stack': 0x58,         # Float/int
-        'bet': 0x68,
-        'card_values': 0x9C,   # 2 bytes for hole cards
-        'card_suits': 0xA0,    # 2 bytes
-    }
-}
-
-# Card decoding
+# Card decoding - multiple possible encodings
 RANKS = ['2', '3', '4', '5', '6', '7', '8', '9', 'T', 'J', 'Q', 'K', 'A']
 SUITS = ['c', 'd', 'h', 's']
 
 CALIBRATION_FILE = os.path.join(os.path.dirname(__file__), 'memory_offsets.json')
 
 
+def card_to_encodings(card_str):
+    """Convert card like 'Ah' to all possible byte encodings."""
+    if not card_str or len(card_str) < 2:
+        return []
+    
+    rank_char = card_str[0].upper()
+    suit_char = card_str[1].lower()
+    
+    if rank_char not in RANKS or suit_char not in SUITS:
+        return []
+    
+    r = RANKS.index(rank_char)  # 0-12
+    s = SUITS.index(suit_char)  # 0-3
+    
+    return [
+        ('rank_0_12', r),           # 0-12
+        ('rank_2_14', r + 2),       # 2-14
+        ('combined_r4s', r * 4 + s),  # 0-51
+        ('combined_s13r', s * 13 + r), # 0-51 alt
+    ]
+
+
 class MemoryReader:
     def __init__(self):
         self.pid = None
         self.handle = None
-        self.table_base = None  # Found during calibration
-        self.seat_base = None   # Hero's seat base
+        self.card1_addr = None  # Address of first hero card
+        self.card1_encoding = None
         
     def find_pokerstars(self):
         """Find PokerStars.exe PID."""
@@ -114,36 +117,9 @@ class MemoryReader:
             return buf.raw[:read.value]
         return None
     
-    def read_int(self, address):
-        """Read 4-byte int."""
-        data = self.read_bytes(address, 4)
-        return int.from_bytes(data, 'little') if data else None
-    
-    def read_float(self, address):
-        """Read 4-byte float."""
-        import struct
-        data = self.read_bytes(address, 4)
-        return struct.unpack('<f', data)[0] if data else None
-    
-    def read_string(self, address, max_len=32):
-        """Read null-terminated string."""
-        data = self.read_bytes(address, max_len)
-        if data:
-            null = data.find(b'\x00')
-            return data[:null].decode('utf-8', errors='ignore') if null > 0 else None
-        return None
-    
-    def decode_card(self, rank_byte, suit_byte):
-        """Decode card from rank/suit bytes."""
-        if rank_byte is None or suit_byte is None:
-            return None
-        if 0 <= rank_byte <= 12 and 0 <= suit_byte <= 3:
-            return RANKS[rank_byte] + SUITS[suit_byte]
-        return None
-    
     def enumerate_regions(self):
         """Get all readable memory regions."""
-        if not IS_WINDOWS:
+        if not IS_WINDOWS or not self.handle:
             return []
         regions = []
         addr = 0
@@ -158,82 +134,78 @@ class MemoryReader:
                 break
         return regions
     
-    def find_base_pointers(self, hero_cards):
+    def scan_for_card_pair(self, card1, card2):
         """
-        Find base pointers by searching for hero's cards at known offset.
-        hero_cards: list like ['Ah', 'Kd']
+        Scan memory for two cards appearing close together.
+        Returns list of (address, encoding) candidates.
         """
-        if not hero_cards or len(hero_cards) < 2:
-            return False
+        enc1_list = card_to_encodings(card1)
+        enc2_list = card_to_encodings(card2)
         
-        # Parse expected card values
-        c1, c2 = hero_cards[0], hero_cards[1]
-        r1 = RANKS.index(c1[0].upper()) if c1[0].upper() in RANKS else None
-        s1 = SUITS.index(c1[1].lower()) if c1[1].lower() in SUITS else None
-        r2 = RANKS.index(c2[0].upper()) if c2[0].upper() in RANKS else None
-        s2 = SUITS.index(c2[1].lower()) if c2[1].lower() in SUITS else None
+        if not enc1_list or not enc2_list:
+            return []
         
-        if None in [r1, s1, r2, s2]:
-            return False
-        
-        # Search memory for this pattern at seat offset
-        card_offset = OFFSETS['seat']['card_values']  # 0x9C
-        suit_offset = OFFSETS['seat']['card_suits']   # 0xA0
-        
+        candidates = []
         regions = self.enumerate_regions()
+        
         for base, size in regions:
-            if size > 10 * 1024 * 1024:  # Skip >10MB regions
+            if size > 10 * 1024 * 1024:  # Skip >10MB
                 continue
             
-            # Read region in chunks
-            chunk = 65536
-            for off in range(0, size - 0xA4, chunk):
-                data = self.read_bytes(base + off, min(chunk + 0xA4, size - off))
+            # Read in chunks
+            chunk_size = 65536
+            for offset in range(0, size, chunk_size):
+                read_size = min(chunk_size + 16, size - offset)  # +16 for card pair
+                data = self.read_bytes(base + offset, read_size)
                 if not data:
                     continue
                 
-                # Search for card pattern
-                for i in range(len(data) - 0xA4):
-                    # Check if cards match at expected offsets
-                    if (data[i + card_offset] == r1 and 
-                        data[i + card_offset + 1] == r2 and
-                        data[i + suit_offset] == s1 and 
-                        data[i + suit_offset + 1] == s2):
-                        
-                        self.seat_base = base + off + i
-                        print(f"Found seat base: {hex(self.seat_base)}")
-                        return True
+                # Search for card1 followed by card2 within 8 bytes
+                for enc1_name, enc1_val in enc1_list:
+                    for i, byte in enumerate(data[:-8]):
+                        if byte == enc1_val:
+                            # Check if card2 is nearby (1-8 bytes after)
+                            for enc2_name, enc2_val in enc2_list:
+                                if enc1_name == enc2_name:  # Same encoding type
+                                    for gap in range(1, 8):
+                                        if i + gap < len(data) and data[i + gap] == enc2_val:
+                                            addr = base + offset + i
+                                            candidates.append({
+                                                'addr': addr,
+                                                'encoding': enc1_name,
+                                                'gap': gap,
+                                                'card1': card1,
+                                                'card2': card2
+                                            })
         
-        return False
+        return candidates
     
-    def read_hero_cards(self):
-        """Read hero's hole cards using calibrated offset."""
-        if not self.seat_base:
+    def read_card(self, address, encoding):
+        """Read a card from memory using known encoding."""
+        data = self.read_bytes(address, 1)
+        if not data:
             return None
         
-        r1 = self.read_bytes(self.seat_base + OFFSETS['seat']['card_values'], 1)
-        r2 = self.read_bytes(self.seat_base + OFFSETS['seat']['card_values'] + 1, 1)
-        s1 = self.read_bytes(self.seat_base + OFFSETS['seat']['card_suits'], 1)
-        s2 = self.read_bytes(self.seat_base + OFFSETS['seat']['card_suits'] + 1, 1)
+        val = data[0]
         
-        if all([r1, r2, s1, s2]):
-            c1 = self.decode_card(r1[0], s1[0])
-            c2 = self.decode_card(r2[0], s2[0])
-            if c1 and c2:
-                return [c1, c2]
+        if encoding == 'rank_0_12':
+            if 0 <= val <= 12:
+                return RANKS[val]
+        elif encoding == 'rank_2_14':
+            if 2 <= val <= 14:
+                return RANKS[val - 2]
+        elif encoding == 'combined_r4s':
+            if 0 <= val <= 51:
+                r = val // 4
+                s = val % 4
+                return RANKS[r] + SUITS[s]
+        elif encoding == 'combined_s13r':
+            if 0 <= val <= 51:
+                s = val // 13
+                r = val % 13
+                return RANKS[r] + SUITS[s]
+        
         return None
-    
-    def read_hero_stack(self):
-        """Read hero's stack."""
-        if not self.seat_base:
-            return None
-        return self.read_float(self.seat_base + OFFSETS['seat']['stack'])
-    
-    def read_hero_name(self):
-        """Read hero's name."""
-        if not self.seat_base:
-            return None
-        return self.read_string(self.seat_base + OFFSETS['seat']['name'])
 
 
 # Global instance
@@ -248,78 +220,106 @@ def get_reader():
 
 def calibrate_with_gpt(gpt_cards):
     """
-    Calibrate memory reader using GPT-detected cards.
-    Called by helper_bar.py after GPT returns cards.
-    Returns True if calibration successful.
+    Find memory addresses for hero cards using GPT-detected values.
+    Returns error string or None on success.
     """
+    if not gpt_cards or len(gpt_cards) < 2:
+        return "Need 2 cards"
+    
     reader = get_reader()
     
     # Open process if needed
     if not reader.handle:
         reader.pid = reader.find_pokerstars()
         if not reader.pid:
-            print("PokerStars not found")
-            return False
+            return "PokerStars not found"
         reader.handle = reader.open_process(reader.pid)
         if not reader.handle:
-            print("Could not open PokerStars process")
-            return False
+            return "Could not open process"
     
-    # Find base pointer using GPT cards
-    if reader.find_base_pointers(gpt_cards):
-        # Save calibration
-        save_calibration({'seat_base': reader.seat_base})
-        return True
+    # Scan for card pair
+    candidates = reader.scan_for_card_pair(gpt_cards[0], gpt_cards[1])
     
-    return False
+    if not candidates:
+        return f"Cards {gpt_cards[0]} {gpt_cards[1]} not found in memory"
+    
+    # Use first candidate (could be smarter later)
+    best = candidates[0]
+    reader.card1_addr = best['addr']
+    reader.card1_encoding = best['encoding']
+    
+    # Save calibration
+    save_calibration({
+        'card1_addr': best['addr'],
+        'encoding': best['encoding'],
+        'gap': best['gap'],
+        'candidates': len(candidates),
+        'timestamp': datetime.now().isoformat()
+    })
+    
+    return None  # Success
 
 
 def read_cards_fast():
     """
-    Read hero cards instantly using calibrated offsets.
-    Returns cards list or None if not calibrated.
+    Read hero cards using calibrated address.
+    Returns [card1, card2] or None.
     """
     reader = get_reader()
     
     # Load calibration if needed
-    if not reader.seat_base:
+    if not reader.card1_addr:
         cal = load_calibration()
-        if cal and cal.get('seat_base'):
-            reader.seat_base = cal['seat_base']
-            # Reopen process
-            reader.pid = reader.find_pokerstars()
-            if reader.pid:
-                reader.handle = reader.open_process(reader.pid)
+        if not cal or not cal.get('card1_addr'):
+            return None
+        reader.card1_addr = cal['card1_addr']
+        reader.card1_encoding = cal['encoding']
+        reader.card1_gap = cal.get('gap', 1)
     
-    if not reader.seat_base or not reader.handle:
-        return None
+    # Open process if needed
+    if not reader.handle:
+        reader.pid = reader.find_pokerstars()
+        if not reader.pid:
+            return None
+        reader.handle = reader.open_process(reader.pid)
+        if not reader.handle:
+            return None
     
-    return reader.read_hero_cards()
+    # Read cards
+    c1 = reader.read_card(reader.card1_addr, reader.card1_encoding)
+    c2 = reader.read_card(reader.card1_addr + reader.card1_gap, reader.card1_encoding)
+    
+    if c1 and c2:
+        return [c1, c2]
+    return None
 
 
 def load_calibration():
     """Load saved calibration."""
     if os.path.exists(CALIBRATION_FILE):
-        with open(CALIBRATION_FILE) as f:
-            return json.load(f)
+        try:
+            with open(CALIBRATION_FILE) as f:
+                return json.load(f)
+        except:
+            pass
     return None
 
 
 def save_calibration(data):
     """Save calibration."""
     with open(CALIBRATION_FILE, 'w') as f:
-        json.dump(data, f)
+        json.dump(data, f, indent=2)
 
 
 def is_calibrated():
     """Check if memory reader is calibrated."""
     cal = load_calibration()
-    return cal and cal.get('seat_base') is not None
+    return cal and cal.get('card1_addr') is not None
 
 
 if __name__ == '__main__':
     if '--test' in sys.argv:
-        print("Testing memory reader...")
+        print("Testing memory access...")
         reader = MemoryReader()
         reader.pid = reader.find_pokerstars()
         
@@ -331,33 +331,21 @@ if __name__ == '__main__':
         reader.handle = reader.open_process(reader.pid)
         
         if not reader.handle:
-            print("Could not open process")
+            print("Could not open process (try running as admin?)")
             sys.exit(1)
         
         regions = reader.enumerate_regions()
         total_mb = sum(r[1] for r in regions) / 1024 / 1024
         print(f"Found {len(regions)} memory regions ({total_mb:.1f} MB)")
-        
-        # Check if already calibrated
-        cal = load_calibration()
-        if cal and cal.get('seat_base'):
-            reader.seat_base = cal['seat_base']
-            print(f"Using saved seat base: {hex(reader.seat_base)}")
-            cards = reader.read_hero_cards()
-            if cards:
-                print(f"Hero cards: {cards[0]} {cards[1]}")
-            else:
-                print("Could not read cards (offsets may have changed)")
-        else:
-            print("Not calibrated. Run helper_bar.py --calibrate")
+        print("Memory access OK!")
         
         reader.close()
     else:
-        print("Memory Reader - Uses known PokerStars offsets")
+        print("Memory Calibrator")
         print("")
         print("Usage:")
-        print("  python memory_calibrator.py --test  # Test reading")
+        print("  python memory_calibrator.py --test  # Test memory access")
         print("")
         print("Calibration: python helper_bar.py --calibrate")
-        print("Then press F9 once - GPT detects cards, we find the base pointer.")
-        print("After that, cards are read in <1ms instead of ~5s.")
+        print("Press F9 with cards visible - we find them in memory.")
+        print("After calibration, cards read instantly (<1ms).")

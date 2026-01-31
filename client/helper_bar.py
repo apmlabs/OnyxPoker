@@ -559,18 +559,19 @@ class HelperBar:
                         result['all_positions'] = all_position_results
                     result['api_time'] = api_time
 
-                # CALIBRATION: If not calibrated yet, use GPT cards to find base pointer
+                # CALIBRATION: If not calibrated yet, use GPT cards to find in memory
                 if CALIBRATE_MODE and not memory_cards:
                     hero_cards = result.get('hero_cards', [])
                     if hero_cards and len(hero_cards) == 2:
                         try:
                             from memory_calibrator import calibrate_with_gpt
-                            if calibrate_with_gpt(hero_cards):
+                            err = calibrate_with_gpt(hero_cards)
+                            if err:
+                                self.root.after(0, lambda e=err: self.log(f"Calibration: {e}", "WARN"))
+                                result['memory_error'] = err
+                            else:
                                 self.root.after(0, lambda: self.log("CALIBRATED! Fast reads enabled", "INFO"))
                                 result['memory_status'] = 'calibrated'
-                            else:
-                                self.root.after(0, lambda: self.log("Calibration: pattern not found", "WARN"))
-                                result['memory_error'] = 'pattern not found'
                         except Exception as e:
                             memory_error = str(e)
                             self.root.after(0, lambda e=e: self.log(f"Calibration error: {e}", "ERROR"))
