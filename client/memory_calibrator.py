@@ -156,7 +156,9 @@ class MemoryReader:
         
         candidates = []
         regions = self.enumerate_regions()
+        print(f"[MEM] Scanning {len(regions)} regions...")
         
+        scanned = 0
         for base, size in regions:
             if size is None or size <= 0:
                 continue
@@ -164,6 +166,10 @@ class MemoryReader:
                 continue
             if base is None:
                 base = 0
+            
+            scanned += 1
+            if scanned % 100 == 0:
+                print(f"[MEM] Scanned {scanned} regions, {len(candidates)} candidates...")
             
             # Read in chunks
             chunk_size = 65536
@@ -191,6 +197,7 @@ class MemoryReader:
                                                 'card2': card2
                                             })
         
+        print(f"[MEM] Scan complete: {scanned} regions, {len(candidates)} candidates")
         return candidates
         
         return candidates
@@ -238,6 +245,7 @@ def calibrate_with_gpt(gpt_cards):
     Find memory addresses for hero cards using GPT-detected values.
     Returns error string or None on success.
     """
+    print(f"[MEM] calibrate_with_gpt called with {gpt_cards}")
     if not gpt_cards or len(gpt_cards) < 2:
         return "Need 2 cards"
     
@@ -245,18 +253,23 @@ def calibrate_with_gpt(gpt_cards):
     
     # Open process if needed
     if not reader.handle:
+        print("[MEM] Finding PokerStars...")
         reader.pid = reader.find_pokerstars()
         if not reader.pid:
             return "PokerStars.exe not found in process list"
+        print(f"[MEM] Found PID {reader.pid}, opening process...")
         reader.handle = reader.open_process(reader.pid)
         if not reader.handle:
             return f"Could not open process {reader.pid} (try admin?)"
     
     # Scan for card pair
+    print(f"[MEM] Scanning for {gpt_cards[0]} {gpt_cards[1]}...")
     candidates = reader.scan_for_card_pair(gpt_cards[0], gpt_cards[1])
+    print(f"[MEM] Found {len(candidates)} candidates")
     
     if not candidates:
-        return f"Cards {gpt_cards[0]} {gpt_cards[1]} not found in {len(reader.enumerate_regions())} memory regions"
+        regions = reader.enumerate_regions()
+        return f"Cards {gpt_cards[0]} {gpt_cards[1]} not found in {len(regions)} memory regions"
     
     # Use first candidate
     best = candidates[0]
@@ -265,6 +278,7 @@ def calibrate_with_gpt(gpt_cards):
     reader.card1_gap = best['gap']
     
     # Save calibration
+    print(f"[MEM] Saving calibration: addr={hex(best['addr'])}, enc={best['encoding']}")
     save_calibration({
         'card1_addr': best['addr'],
         'encoding': best['encoding'],

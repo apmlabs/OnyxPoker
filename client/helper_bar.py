@@ -389,12 +389,16 @@ class HelperBar:
                 memory_error = None
                 calibration_status = None
                 if CALIBRATE_MODE:
+                    self.root.after(0, lambda: self.log("Memory: starting...", "DEBUG"))
                     try:
                         from memory_calibrator import is_calibrated, read_cards_fast, load_calibration
+                        self.root.after(0, lambda: self.log("Memory: imported", "DEBUG"))
                         cal_file = load_calibration()
                         calibration_status = f"file={cal_file}"
+                        self.root.after(0, lambda s=calibration_status: self.log(f"Memory: {s}", "DEBUG"))
                         is_cal = is_calibrated()
                         calibration_status += f", is_cal={is_cal}"
+                        self.root.after(0, lambda s=calibration_status: self.log(f"Memory: {s}", "DEBUG"))
                         if is_cal:
                             memory_cards = read_cards_fast()
                             calibration_status += f", read={memory_cards}"
@@ -575,6 +579,7 @@ class HelperBar:
                 if CALIBRATE_MODE and not memory_cards:
                     hero_cards = result.get('hero_cards', [])
                     if hero_cards and len(hero_cards) == 2:
+                        self.root.after(0, lambda c=hero_cards: self.log(f"Calibrating with {c}...", "DEBUG"))
                         try:
                             from memory_calibrator import calibrate_with_gpt
                             err = calibrate_with_gpt(hero_cards)
