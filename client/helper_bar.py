@@ -383,21 +383,23 @@ class HelperBar:
                 # CALIBRATION: Check if already calibrated, try fast read
                 memory_cards = None
                 memory_error = None
+                calibration_status = None
                 if CALIBRATE_MODE:
                     try:
                         from memory_calibrator import is_calibrated, read_cards_fast, load_calibration
-                        cal_status = load_calibration()
-                        if is_calibrated():
+                        cal_file = load_calibration()
+                        calibration_status = f"file={cal_file}"
+                        is_cal = is_calibrated()
+                        calibration_status += f", is_cal={is_cal}"
+                        if is_cal:
                             memory_cards = read_cards_fast()
+                            calibration_status += f", read={memory_cards}"
                             if memory_cards:
                                 self.root.after(0, lambda c=memory_cards: self.log(f"Memory: {c[0]} {c[1]}", "INFO"))
-                            else:
-                                memory_error = f"read failed (cal={cal_status})"
-                        else:
-                            memory_error = f"not calibrated (file={cal_status})"
                     except Exception as e:
                         import traceback
-                        memory_error = f"{e} | {traceback.format_exc()}"
+                        memory_error = f"{e}"
+                        calibration_status = f"exception: {traceback.format_exc()}"
                         self.root.after(0, lambda e=e: self.log(f"Memory: {e}", "ERROR"))
 
                 # Save to screenshots folder for future testing
@@ -587,6 +589,8 @@ class HelperBar:
                     result['memory_error'] = memory_error
                 if memory_cards:
                     result['memory_cards'] = memory_cards
+                if calibration_status:
+                    result['calibration_status'] = calibration_status
 
                 elapsed = time.time() - start
                 self.root.after(0, lambda t=api_time: self.log(f"API done: {t:.1f}s", "DEBUG"))
@@ -676,6 +680,8 @@ class HelperBar:
             log_entry['memory_cards'] = result['memory_cards']
         if result.get('memory_status'):
             log_entry['memory_status'] = result['memory_status']
+        if result.get('calibration_status'):
+            log_entry['calibration_status'] = result['calibration_status']
         
         with open(SESSION_LOG, 'a') as f:
             f.write(json.dumps(log_entry) + '\n')

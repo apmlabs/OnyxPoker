@@ -323,15 +323,16 @@ def save_calibration(data):
 def is_calibrated():
     """Check if memory reader is calibrated."""
     cal = load_calibration()
-    # Must have card1_addr (new format) - old format had seat_base
-    if cal and cal.get('card1_addr'):
+    if not cal:
+        return False
+    # Must have card1_addr AND encoding (new format)
+    if cal.get('card1_addr') and cal.get('encoding'):
         return True
-    # Delete old format calibration files
-    if cal and 'seat_base' in cal:
-        try:
-            os.remove(CALIBRATION_FILE)
-        except:
-            pass
+    # Delete any invalid/old calibration files
+    try:
+        os.remove(CALIBRATION_FILE)
+    except:
+        pass
     return False
 
 
