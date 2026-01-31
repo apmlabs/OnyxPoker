@@ -248,19 +248,21 @@ class MemoryReader:
         return candidates
     
     def read_card(self, address, encoding):
-        """Read a card from memory using known encoding."""
+        """Read a card from memory using known encoding. Returns full card like 'As'."""
         data = self.read_bytes(address, 1)
         if not data:
             return None
         
         val = data[0]
         
+        # For rank-only encodings, we can only return the rank
+        # These won't work for our purposes - need combined encoding
         if encoding == 'rank_0_12':
             if 0 <= val <= 12:
-                return RANKS[val]
+                return RANKS[val]  # Just rank, no suit
         elif encoding == 'rank_2_14':
             if 2 <= val <= 14:
-                return RANKS[val - 2]
+                return RANKS[val - 2]  # Just rank, no suit
         elif encoding == 'combined_r4s':
             if 0 <= val <= 51:
                 r = val // 4
@@ -323,11 +325,18 @@ def calibrate_with_gpt(gpt_cards):
             return f"Could not open process {reader.pid} (try admin?)"
     
     # Load existing tracking data
-    tracking = {'card1_addrs': {}, 'card2_addrs': {}, 'hands': 0}
+    tracking = {'card1_addrs': {}, 'hands': 0}
     if os.path.exists(SAMPLES_FILE):
         try:
             with open(SAMPLES_FILE) as f:
-                tracking = json.load(f)
+                loaded = json.load(f)
+            # Check if it's the new format (has 'hands' key as int)
+            if isinstance(loaded.get('hands'), int) and isinstance(loaded.get('card1_addrs'), dict):
+                tracking = loaded
+            else:
+                # Old format, delete and start fresh
+                print("[MEM] Old samples format detected, starting fresh")
+                os.remove(SAMPLES_FILE)
         except:
             pass
     
