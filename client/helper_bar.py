@@ -193,9 +193,13 @@ class HelperBar:
         self.time_label.pack(pady=2)
 
     def log(self, message, level="INFO"):
-        """Add message to log queue"""
+        """Add message to log queue and buffer for session log"""
         timestamp = datetime.now().strftime("%H:%M:%S")
         self.log_queue.put((timestamp, level, message))
+        # Buffer for session log
+        if not hasattr(self, 'ui_log_buffer'):
+            self.ui_log_buffer = []
+        self.ui_log_buffer.append(f"[{timestamp}] {level}: {message}")
 
     def update_log_display(self):
         """Process log queue"""
@@ -687,6 +691,11 @@ class HelperBar:
             log_entry['calibration_status'] = result['calibration_status']
         if result.get('calibration_traceback'):
             log_entry['calibration_traceback'] = result['calibration_traceback']
+        
+        # UI logs - what user sees
+        if hasattr(self, 'ui_log_buffer') and self.ui_log_buffer:
+            log_entry['ui_logs'] = self.ui_log_buffer.copy()
+            self.ui_log_buffer.clear()
         
         with open(SESSION_LOG, 'a') as f:
             f.write(json.dumps(log_entry) + '\n')
