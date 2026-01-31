@@ -313,17 +313,20 @@ def calibrate_with_gpt(gpt_cards):
         return None  # Not an error, just need more data
     
     # Find addresses that appear in ALL samples
-    # Group by (addr, encoding, gap)
-    addr_counts = {}
-    for s in samples:
+    # Count how many SAMPLES contain each address (not total occurrences)
+    addr_samples = {}
+    for sample_idx, s in enumerate(samples):
+        seen_in_sample = set()
         for c in s['candidates']:
             key = (c['addr'], c['enc'], c['gap'])
-            if key not in addr_counts:
-                addr_counts[key] = 0
-            addr_counts[key] += 1
+            seen_in_sample.add(key)
+        for key in seen_in_sample:
+            if key not in addr_samples:
+                addr_samples[key] = 0
+            addr_samples[key] += 1
     
     # Find addresses present in all samples
-    stable = [(k, v) for k, v in addr_counts.items() if v == len(samples)]
+    stable = [(k, v) for k, v in addr_samples.items() if v == len(samples)]
     
     if not stable:
         print(f"[MEM] No stable address found across {len(samples)} samples")

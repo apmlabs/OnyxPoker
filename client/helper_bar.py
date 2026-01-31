@@ -16,6 +16,8 @@ import os
 import sys
 import tempfile
 import json
+import traceback
+import time
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 
@@ -356,8 +358,6 @@ class HelperBar:
 
     def _analyze_thread(self, test_image_path=None):
         """Background analysis. If test_image_path provided, use that instead of screenshot."""
-        import time
-        from datetime import datetime
         start = time.time()
         screenshot_name = None
         memory_candidates = None  # For calibration mode
@@ -383,11 +383,6 @@ class HelperBar:
 
                 img = pyautogui.screenshot(region=region)
                 self.last_screenshot = img
-                
-                # CALIBRATION: Disabled fast read - addresses change per hand
-                # Need to find pointer chain for stable reads
-                memory_error = None
-                calibration_status = None
 
                 # Save to screenshots folder for future testing
                 screenshots_dir = os.path.join(os.path.dirname(__file__), 'screenshots')
@@ -575,18 +570,11 @@ class HelperBar:
                                 self.root.after(0, lambda u=unique: self.log(f"Sample {u}/3 collected", "INFO"))
                                 result['memory_status'] = f'sampling_{unique}'
                         except Exception as e:
-                            import traceback
                             tb = traceback.format_exc()
                             result['memory_error'] = f"calibrate exception: {e}"
                             result['calibration_traceback'] = tb
                             self.root.after(0, lambda e=e: self.log(f"Calibration error: {e}", "ERROR"))
                 
-                # Add memory info to result for logging
-                if memory_error:
-                    result['memory_error'] = memory_error
-                if calibration_status:
-                    result['calibration_status'] = calibration_status
-
                 elapsed = time.time() - start
                 self.root.after(0, lambda t=api_time: self.log(f"API done: {t:.1f}s", "DEBUG"))
                 self.root.after(0, lambda: self._display_result(result, elapsed, img, screenshot_name))
@@ -596,7 +584,6 @@ class HelperBar:
                     os.unlink(temp_path)
 
         except Exception as e:
-            import traceback
             self.root.after(0, lambda: self.log(f"Error: {e}", "ERROR"))
             self.root.after(0, lambda: self.log(traceback.format_exc(), "DEBUG"))
         finally:
@@ -907,7 +894,6 @@ class HelperBar:
 
     def _bot_loop(self):
         """Continuous bot loop"""
-        import time
         while self.bot_running:
             self.on_f9()
             # Wait for analysis to complete
