@@ -349,7 +349,12 @@ def calibrate_with_gpt(gpt_cards, snapshot=None):
         return "Need 2 cards"
     
     card1, card2 = gpt_cards[0], gpt_cards[1]
-    print(f"[MEM] calibrate: {card1} {card2}, snapshot={len(snapshot)} addrs")
+    
+    # Log encodings for debugging
+    enc1_list = card_to_encodings(card1)
+    enc2_list = card_to_encodings(card2)
+    print(f"[MEM] calibrate: {card1}={enc1_list} {card2}={enc2_list}")
+    print(f"[MEM] snapshot has {len(snapshot)} addresses")
     
     # Get expected byte values for both cards
     enc1_map = {enc: val for enc, val in card_to_encodings(card1)}
@@ -406,8 +411,10 @@ def calibrate_with_gpt(gpt_cards, snapshot=None):
     else:
         # Subsequent hands: filter to addresses that have new cards in snapshot
         print(f"[MEM] Hand {tracking['hands'] + 1} - checking {card1} {card2}...")
+        print(f"[MEM] Expected values: card1={enc1_map}, card2={enc2_map}")
         
         surviving = {}
+        checked = 0
         for addr_str, info in tracking['addrs'].items():
             addr = int(addr_str)
             enc = info['enc']
@@ -416,10 +423,22 @@ def calibrate_with_gpt(gpt_cards, snapshot=None):
             if enc not in enc1_map or enc not in enc2_map:
                 continue
             
+            checked += 1
+            expected1 = enc1_map[enc]
+            expected2 = enc2_map[enc]
+            
             # Check snapshot for both cards
             if addr in snapshot and (addr + gap) in snapshot:
-                if snapshot[addr] == enc1_map[enc] and snapshot[addr + gap] == enc2_map[enc]:
+                actual1 = snapshot[addr]
+                actual2 = snapshot[addr + gap]
+                if actual1 == expected1 and actual2 == expected2:
                     surviving[addr_str] = info
+                elif checked <= 5:  # Log first few mismatches
+                    print(f"[MEM] Addr {hex(addr)}: expected {expected1},{expected2} got {actual1},{actual2}")
+            elif checked <= 5:
+                in1 = addr in snapshot
+                in2 = (addr + gap) in snapshot
+                print(f"[MEM] Addr {hex(addr)}: not in snapshot (in1={in1}, in2={in2})")
         
         print(f"[MEM] {len(surviving)} survived (was {len(tracking['addrs'])})")
         
