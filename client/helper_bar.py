@@ -383,6 +383,16 @@ class HelperBar:
 
                 img = pyautogui.screenshot(region=region)
                 self.last_screenshot = img
+                
+                # CALIBRATION: Scan memory NOW, at same instant as screenshot
+                memory_snapshot = None
+                if CALIBRATE_MODE:
+                    try:
+                        from memory_calibrator import scan_memory_snapshot
+                        self.root.after(0, lambda: self.log("Memory scan...", "DEBUG"))
+                        memory_snapshot = scan_memory_snapshot()
+                    except Exception as e:
+                        self.root.after(0, lambda e=e: self.log(f"Scan error: {e}", "WARN"))
 
                 # Save to screenshots folder for future testing
                 screenshots_dir = os.path.join(os.path.dirname(__file__), 'screenshots')
@@ -549,14 +559,14 @@ class HelperBar:
                         result['all_positions'] = all_position_results
                     result['api_time'] = api_time
 
-                # CALIBRATION: Collect samples to find stable address
-                if CALIBRATE_MODE:
+                # CALIBRATION: Use snapshot taken at screenshot time
+                if CALIBRATE_MODE and memory_snapshot:
                     hero_cards = result.get('hero_cards', [])
                     if hero_cards and len(hero_cards) == 2:
-                        self.root.after(0, lambda c=hero_cards: self.log(f"Scanning for {c[0]} {c[1]}...", "DEBUG"))
+                        self.root.after(0, lambda c=hero_cards: self.log(f"Matching {c[0]} {c[1]}...", "DEBUG"))
                         try:
                             from memory_calibrator import calibrate_with_gpt, is_calibrated, SAMPLES_FILE
-                            err = calibrate_with_gpt(hero_cards)
+                            err = calibrate_with_gpt(hero_cards, memory_snapshot)
                             if err:
                                 self.root.after(0, lambda e=err: self.log(f"Memory: {e}", "WARN"))
                                 result['memory_error'] = err

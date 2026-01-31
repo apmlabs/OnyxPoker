@@ -279,6 +279,7 @@ class MemoryReader:
 
 # Global instance
 _reader = None
+_last_snapshot = None  # Memory snapshot taken at screenshot time
 
 def get_reader():
     global _reader
@@ -287,42 +288,72 @@ def get_reader():
     return _reader
 
 
+def scan_memory_snapshot():
+    """
+    Scan memory NOW and save snapshot. Called at screenshot time.
+    Returns dict of {addr: byte_value} for all card-like values.
+    """
+    global _last_snapshot
+    reader = get_reader()
+    
+    if not reader.handle:
+        reader.pid = reader.find_pokerstars()
+        if not reader.pid:
+            return None
+        reader.handle = reader.open_process(reader.pid)
+        if not reader.handle:
+            return None
+    
+    # Scan for all possible card values (0-51 for combined encodings)
+    snapshot = {}
+    regions = reader.enumerate_regions()
+    
+    for base, size in regions:
+        if size is None or size <= 0 or size > 10 * 1024 * 1024:
+            continue
+        if base is None:
+            base = 0
+        
+        chunk_size = 65536
+        for offset in range(0, size, chunk_size):
+            read_size = min(chunk_size, size - offset)
+            data = reader.read_bytes(base + offset, read_size)
+            if not data:
+                continue
+            
+            for i, byte in enumerate(data):
+                # Keep bytes that could be cards (0-51 range covers most encodings)
+                if byte <= 51:
+                    snapshot[base + offset + i] = byte
+    
+    _last_snapshot = snapshot
+    print(f"[MEM] Snapshot: {len(snapshot)} card-like addresses")
+    return snapshot
+
+
 SAMPLES_FILE = os.path.join(os.path.dirname(__file__), 'memory_samples.json')
 
-def calibrate_with_gpt(gpt_cards):
+def calibrate_with_gpt(gpt_cards, snapshot=None):
     """
-    Cheat Engine approach: Track addresses that change correctly between hands.
-    
-    Hand 1: Cards = Ah 4s → Find all addresses with Ah, record them
-    Hand 2: Cards = Jc 3s → Check which of those addresses now have Jc
-    Hand 3: Cards = 9h 3h → Check which still track correctly
-    
-    The addresses that always have the correct card = real card storage
+    Use snapshot (taken at screenshot time) to find card addresses.
     """
-    print(f"[MEM] calibrate_with_gpt called with {gpt_cards}")
+    global _last_snapshot
+    
+    if snapshot is None:
+        snapshot = _last_snapshot
+    
+    if not snapshot:
+        return "No memory snapshot - scan failed?"
+    
     if not gpt_cards or len(gpt_cards) < 2:
         return "Need 2 cards"
     
-    # Auto-cleanup old calibration on first run
-    if os.path.exists(CALIBRATION_FILE) and not os.path.exists(SAMPLES_FILE):
-        try:
-            os.remove(CALIBRATION_FILE)
-            print("[MEM] Cleared old calibration, starting fresh")
-        except:
-            pass
+    card1, card2 = gpt_cards[0], gpt_cards[1]
+    print(f"[MEM] calibrate: {card1} {card2}, snapshot={len(snapshot)} addrs")
     
-    reader = get_reader()
-    
-    # Open process if needed
-    if not reader.handle:
-        print("[MEM] Finding PokerStars...")
-        reader.pid = reader.find_pokerstars()
-        if not reader.pid:
-            return "PokerStars.exe not found in process list"
-        print(f"[MEM] Found PID {reader.pid}, opening process...")
-        reader.handle = reader.open_process(reader.pid)
-        if not reader.handle:
-            return f"Could not open process {reader.pid} (try admin?)"
+    # Get expected byte values for both cards
+    enc1_map = {enc: val for enc, val in card_to_encodings(card1)}
+    enc2_map = {enc: val for enc, val in card_to_encodings(card2)}
     
     # Load existing tracking data
     tracking = {'addrs': {}, 'hands': 0}
@@ -333,58 +364,62 @@ def calibrate_with_gpt(gpt_cards):
             if isinstance(loaded.get('hands'), int) and isinstance(loaded.get('addrs'), dict):
                 tracking = loaded
             else:
-                print("[MEM] Old format, starting fresh")
                 os.remove(SAMPLES_FILE)
         except:
             pass
     
-    card1, card2 = gpt_cards[0], gpt_cards[1]
-    
     if tracking['hands'] == 0:
-        # First hand: scan for card PAIR
-        print(f"[MEM] Hand 1 - scanning for {card1} {card2} pair...")
-        candidates = reader.scan_for_card_pair(card1, card2)
+        # First hand: find pairs in snapshot
+        print(f"[MEM] Hand 1 - finding {card1} {card2} pairs in snapshot...")
+        
+        candidates = {}
+        snapshot_addrs = sorted(snapshot.keys())
+        
+        for enc_name in enc1_map:
+            if enc_name not in enc2_map:
+                continue
+            val1 = enc1_map[enc_name]
+            val2 = enc2_map[enc_name]
+            
+            for addr in snapshot_addrs:
+                if snapshot[addr] == val1:
+                    # Check if card2 is nearby (gap 1-8)
+                    for gap in range(1, 9):
+                        addr2 = addr + gap
+                        if addr2 in snapshot and snapshot[addr2] == val2:
+                            candidates[str(addr)] = {'enc': enc_name, 'gap': gap}
+        
         print(f"[MEM] Found {len(candidates)} pair candidates")
         
         if not candidates:
-            return f"No candidates found for {card1} {card2}"
+            return f"No pairs found for {card1} {card2}"
         
-        # Store: addr -> {encoding, gap}
-        tracking['addrs'] = {
-            str(c['addr']): {'enc': c['encoding'], 'gap': c['gap']} 
-            for c in candidates
-        }
+        tracking['addrs'] = candidates
         tracking['hands'] = 1
         
         with open(SAMPLES_FILE, 'w') as f:
             json.dump(tracking, f)
         
-        print(f"[MEM] Hand 1 done. Tracking {len(tracking['addrs'])} addresses.")
+        print(f"[MEM] Hand 1 done. Tracking {len(candidates)} addresses.")
         return None
     
     else:
-        # Subsequent hands: check which addresses now have the new card pair
-        print(f"[MEM] Hand {tracking['hands'] + 1} - checking for {card1} {card2}...")
-        
-        enc1_map = {enc: val for enc, val in card_to_encodings(card1)}
-        enc2_map = {enc: val for enc, val in card_to_encodings(card2)}
+        # Subsequent hands: filter to addresses that have new cards in snapshot
+        print(f"[MEM] Hand {tracking['hands'] + 1} - checking {card1} {card2}...")
         
         surviving = {}
-        checked = 0
         for addr_str, info in tracking['addrs'].items():
             addr = int(addr_str)
             enc = info['enc']
             gap = info['gap']
             
-            # Read both card bytes
-            data = reader.read_bytes(addr, gap + 1)
-            if data and enc in enc1_map and enc in enc2_map:
-                if data[0] == enc1_map[enc] and data[gap] == enc2_map[enc]:
-                    surviving[addr_str] = info
+            if enc not in enc1_map or enc not in enc2_map:
+                continue
             
-            checked += 1
-            if checked % 50000 == 0:
-                print(f"[MEM] Checked {checked}, {len(surviving)} surviving...")
+            # Check snapshot for both cards
+            if addr in snapshot and (addr + gap) in snapshot:
+                if snapshot[addr] == enc1_map[enc] and snapshot[addr + gap] == enc2_map[enc]:
+                    surviving[addr_str] = info
         
         print(f"[MEM] {len(surviving)} survived (was {len(tracking['addrs'])})")
         
@@ -397,7 +432,6 @@ def calibrate_with_gpt(gpt_cards):
             return None
         
         if len(surviving) <= 5 and tracking['hands'] >= 3:
-            # Found it!
             addr_str = list(surviving.keys())[0]
             info = surviving[addr_str]
             print(f"[MEM] FOUND! Address {hex(int(addr_str))}, enc={info['enc']}, gap={info['gap']}")
