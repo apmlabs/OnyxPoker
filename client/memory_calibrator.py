@@ -199,7 +199,52 @@ class MemoryReader:
         
         print(f"[MEM] Scan complete: {scanned} regions, {len(candidates)} candidates")
         return candidates
+    
+    def scan_for_single_card(self, card):
+        """
+        Scan memory for a single card value.
+        Returns list of {addr, encoding} for all matches.
+        """
+        enc_list = card_to_encodings(card)
+        if not enc_list:
+            return []
         
+        candidates = []
+        regions = self.enumerate_regions()
+        print(f"[MEM] Scanning {len(regions)} regions for {card}...")
+        
+        scanned = 0
+        for base, size in regions:
+            if size is None or size <= 0:
+                continue
+            if size > 10 * 1024 * 1024:  # Skip >10MB
+                continue
+            if base is None:
+                base = 0
+            
+            scanned += 1
+            if scanned % 100 == 0:
+                print(f"[MEM] Scanned {scanned} regions, {len(candidates)} candidates...")
+            
+            # Read in chunks
+            chunk_size = 65536
+            for offset in range(0, size, chunk_size):
+                read_size = min(chunk_size, size - offset)
+                data = self.read_bytes(base + offset, read_size)
+                if not data:
+                    continue
+                
+                # Search for card value in all encodings
+                for enc_name, enc_val in enc_list:
+                    for i, byte in enumerate(data):
+                        if byte == enc_val:
+                            addr = base + offset + i
+                            candidates.append({
+                                'addr': addr,
+                                'encoding': enc_name
+                            })
+        
+        print(f"[MEM] Scan complete: {scanned} regions, {len(candidates)} candidates")
         return candidates
     
     def read_card(self, address, encoding):
@@ -244,9 +289,13 @@ SAMPLES_FILE = os.path.join(os.path.dirname(__file__), 'memory_samples.json')
 
 def calibrate_with_gpt(gpt_cards):
     """
-    Collect memory samples for hero cards. After multiple hands,
-    find addresses that consistently match.
-    Returns error string or None on success.
+    Cheat Engine approach: Track addresses that change correctly between hands.
+    
+    Hand 1: Cards = Ah 4s → Find all addresses with Ah, record them
+    Hand 2: Cards = Jc 3s → Check which of those addresses now have Jc
+    Hand 3: Cards = 9h 3h → Check which still track correctly
+    
+    The addresses that always have the correct card = real card storage
     """
     print(f"[MEM] calibrate_with_gpt called with {gpt_cards}")
     if not gpt_cards or len(gpt_cards) < 2:
@@ -273,81 +322,84 @@ def calibrate_with_gpt(gpt_cards):
         if not reader.handle:
             return f"Could not open process {reader.pid} (try admin?)"
     
-    # Scan for card pair
-    print(f"[MEM] Scanning for {gpt_cards[0]} {gpt_cards[1]}...")
-    candidates = reader.scan_for_card_pair(gpt_cards[0], gpt_cards[1])
-    print(f"[MEM] Found {len(candidates)} candidates")
-    
-    if not candidates:
-        regions = reader.enumerate_regions()
-        return f"Cards {gpt_cards[0]} {gpt_cards[1]} not found in {len(regions)} memory regions"
-    
-    # Load existing samples
-    samples = []
+    # Load existing tracking data
+    tracking = {'card1_addrs': {}, 'card2_addrs': {}, 'hands': 0}
     if os.path.exists(SAMPLES_FILE):
         try:
             with open(SAMPLES_FILE) as f:
-                samples = json.load(f)
+                tracking = json.load(f)
         except:
-            samples = []
+            pass
     
-    # Add this sample
-    sample = {
-        'cards': gpt_cards,
-        'candidates': [{'addr': c['addr'], 'enc': c['encoding'], 'gap': c['gap']} 
-                       for c in candidates[:1000]],  # Keep top 1000
-        'timestamp': datetime.now().isoformat()
-    }
-    samples.append(sample)
+    card1, card2 = gpt_cards[0], gpt_cards[1]
     
-    # Save samples
-    with open(SAMPLES_FILE, 'w') as f:
-        json.dump(samples, f, indent=2)
-    
-    print(f"[MEM] Sample {len(samples)} saved ({len(candidates)} candidates)")
-    
-    # Need at least 3 different hands to find stable address
-    unique_hands = len(set(tuple(s['cards']) for s in samples))
-    if unique_hands < 3:
-        print(f"[MEM] Need {3 - unique_hands} more different hands to calibrate")
-        return None  # Not an error, just need more data
-    
-    # Find addresses that appear in ALL samples
-    # Count how many SAMPLES contain each address (not total occurrences)
-    addr_samples = {}
-    for sample_idx, s in enumerate(samples):
-        seen_in_sample = set()
-        for c in s['candidates']:
-            key = (c['addr'], c['enc'], c['gap'])
-            seen_in_sample.add(key)
-        for key in seen_in_sample:
-            if key not in addr_samples:
-                addr_samples[key] = 0
-            addr_samples[key] += 1
-    
-    # Find addresses present in all samples
-    stable = [(k, v) for k, v in addr_samples.items() if v == len(samples)]
-    
-    if not stable:
-        print(f"[MEM] No stable address found across {len(samples)} samples")
-        # Clear samples to start fresh
-        os.remove(SAMPLES_FILE)
+    if tracking['hands'] == 0:
+        # First hand: scan for card1 addresses
+        print(f"[MEM] First hand - scanning for {card1}...")
+        card1_candidates = reader.scan_for_single_card(card1)
+        print(f"[MEM] Found {len(card1_candidates)} addresses with {card1}")
+        
+        # Store addresses with their encoding
+        tracking['card1_addrs'] = {
+            str(c['addr']): c['encoding'] for c in card1_candidates[:50000]
+        }
+        tracking['card1_expected'] = card1
+        tracking['hands'] = 1
+        
+        with open(SAMPLES_FILE, 'w') as f:
+            json.dump(tracking, f)
+        
+        print(f"[MEM] Hand 1 done. Tracking {len(tracking['card1_addrs'])} addresses. Need 2 more hands.")
         return None
     
-    # Use the one with most occurrences (should all be equal)
-    best_key = stable[0][0]
-    print(f"[MEM] Found stable address: {hex(best_key[0])}, enc={best_key[1]}")
-    
-    # Save calibration
-    save_calibration({
-        'card1_addr': best_key[0],
-        'encoding': best_key[1],
-        'gap': best_key[2],
-        'samples': len(samples),
-        'timestamp': datetime.now().isoformat()
-    })
-    
-    # Clear samples
+    else:
+        # Subsequent hands: filter to addresses that now have the new card
+        print(f"[MEM] Hand {tracking['hands'] + 1} - checking which addresses now have {card1}...")
+        
+        surviving = {}
+        checked = 0
+        for addr_str, encoding in tracking['card1_addrs'].items():
+            addr = int(addr_str)
+            current_card = reader.read_card(addr, encoding)
+            if current_card == card1:
+                surviving[addr_str] = encoding
+            checked += 1
+            if checked % 10000 == 0:
+                print(f"[MEM] Checked {checked}, {len(surviving)} surviving...")
+        
+        print(f"[MEM] {len(surviving)} addresses still correct (was {len(tracking['card1_addrs'])})")
+        
+        tracking['card1_addrs'] = surviving
+        tracking['hands'] += 1
+        
+        # Check if we found it
+        if len(surviving) == 0:
+            print("[MEM] No addresses survived - starting over")
+            os.remove(SAMPLES_FILE)
+            return None
+        
+        if len(surviving) <= 10 and tracking['hands'] >= 3:
+            # Found it!
+            addr_str = list(surviving.keys())[0]
+            encoding = surviving[addr_str]
+            print(f"[MEM] FOUND! Address {hex(int(addr_str))}, encoding {encoding}")
+            
+            save_calibration({
+                'card1_addr': int(addr_str),
+                'encoding': encoding,
+                'gap': 1,  # Will need to find card2 separately
+                'hands_to_calibrate': tracking['hands'],
+                'timestamp': datetime.now().isoformat()
+            })
+            
+            os.remove(SAMPLES_FILE)
+            return None
+        
+        with open(SAMPLES_FILE, 'w') as f:
+            json.dump(tracking, f)
+        
+        print(f"[MEM] Hand {tracking['hands']} done. {len(surviving)} candidates remain. Keep going!")
+        return None
     os.remove(SAMPLES_FILE)
     
     return None  # Success

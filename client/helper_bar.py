@@ -553,7 +553,7 @@ class HelperBar:
                 if CALIBRATE_MODE:
                     hero_cards = result.get('hero_cards', [])
                     if hero_cards and len(hero_cards) == 2:
-                        self.root.after(0, lambda c=hero_cards: self.log(f"Scanning for {c}...", "DEBUG"))
+                        self.root.after(0, lambda c=hero_cards: self.log(f"Scanning for {c[0]}...", "DEBUG"))
                         try:
                             from memory_calibrator import calibrate_with_gpt, is_calibrated, SAMPLES_FILE
                             err = calibrate_with_gpt(hero_cards)
@@ -561,14 +561,15 @@ class HelperBar:
                                 self.root.after(0, lambda e=err: self.log(f"Memory: {e}", "WARN"))
                                 result['memory_error'] = err
                             elif is_calibrated():
-                                self.root.after(0, lambda: self.log("CALIBRATED! Stable address found", "INFO"))
+                                self.root.after(0, lambda: self.log("CALIBRATED! Fast reads enabled", "INFO"))
                                 result['memory_status'] = 'calibrated'
                             elif os.path.exists(SAMPLES_FILE):
                                 with open(SAMPLES_FILE) as f:
-                                    samples = json.load(f)
-                                unique = len(set(tuple(s['cards']) for s in samples))
-                                self.root.after(0, lambda u=unique: self.log(f"Sample {u}/3 collected", "INFO"))
-                                result['memory_status'] = f'sampling_{unique}'
+                                    tracking = json.load(f)
+                                hands = tracking.get('hands', 0)
+                                addrs = len(tracking.get('card1_addrs', {}))
+                                self.root.after(0, lambda h=hands, a=addrs: self.log(f"Hand {h}: {a} candidates remain", "INFO"))
+                                result['memory_status'] = f'tracking_{hands}_{addrs}'
                         except Exception as e:
                             tb = traceback.format_exc()
                             result['memory_error'] = f"calibrate exception: {e}"
