@@ -561,7 +561,6 @@ class HelperBar:
                         self.root.after(0, lambda c=hero_cards: self.log(f"Scanning for {c}...", "DEBUG"))
                         try:
                             from memory_calibrator import calibrate_with_gpt, is_calibrated, SAMPLES_FILE
-                            import os
                             err = calibrate_with_gpt(hero_cards)
                             if err:
                                 self.root.after(0, lambda e=err: self.log(f"Memory: {e}", "WARN"))
@@ -570,7 +569,6 @@ class HelperBar:
                                 self.root.after(0, lambda: self.log("CALIBRATED! Stable address found", "INFO"))
                                 result['memory_status'] = 'calibrated'
                             elif os.path.exists(SAMPLES_FILE):
-                                import json
                                 with open(SAMPLES_FILE) as f:
                                     samples = json.load(f)
                                 unique = len(set(tuple(s['cards']) for s in samples))
