@@ -581,7 +581,10 @@ class HelperBar:
                                 self.root.after(0, lambda: self.log("CALIBRATED! Fast reads enabled", "INFO"))
                                 result['memory_status'] = 'calibrated'
                         except Exception as e:
-                            memory_error = str(e)
+                            import traceback
+                            tb = traceback.format_exc()
+                            result['memory_error'] = f"calibrate exception: {e}"
+                            result['calibration_traceback'] = tb
                             self.root.after(0, lambda e=e: self.log(f"Calibration error: {e}", "ERROR"))
                 
                 # Add memory info to result for logging
@@ -682,6 +685,8 @@ class HelperBar:
             log_entry['memory_status'] = result['memory_status']
         if result.get('calibration_status'):
             log_entry['calibration_status'] = result['calibration_status']
+        if result.get('calibration_traceback'):
+            log_entry['calibration_traceback'] = result['calibration_traceback']
         
         with open(SESSION_LOG, 'a') as f:
             f.write(json.dumps(log_entry) + '\n')
