@@ -299,35 +299,45 @@ def scan_memory_snapshot():
     if not reader.handle:
         reader.pid = reader.find_pokerstars()
         if not reader.pid:
+            print("[MEM] PokerStars not found")
             return None
         reader.handle = reader.open_process(reader.pid)
         if not reader.handle:
+            print("[MEM] Could not open process")
             return None
     
-    # Scan for all possible card values (0-51 for combined encodings)
     snapshot = {}
     regions = reader.enumerate_regions()
+    print(f"[MEM] Scanning {len(regions)} regions...")
+    
+    scanned_bytes = 0
+    max_bytes = 50 * 1024 * 1024  # 50MB limit
     
     for base, size in regions:
-        if size is None or size <= 0 or size > 10 * 1024 * 1024:
+        if size is None or size <= 0:
+            continue
+        # Skip very large regions (likely not game data)
+        if size > 2 * 1024 * 1024:
             continue
         if base is None:
             base = 0
         
-        chunk_size = 65536
-        for offset in range(0, size, chunk_size):
-            read_size = min(chunk_size, size - offset)
-            data = reader.read_bytes(base + offset, read_size)
-            if not data:
-                continue
-            
-            for i, byte in enumerate(data):
-                # Keep bytes that could be cards (0-51 range covers most encodings)
-                if byte <= 51:
-                    snapshot[base + offset + i] = byte
+        # Stop if we've scanned enough
+        if scanned_bytes > max_bytes:
+            break
+        
+        data = reader.read_bytes(base, min(size, 1024 * 1024))
+        if not data:
+            continue
+        
+        scanned_bytes += len(data)
+        
+        for i, byte in enumerate(data):
+            if byte <= 51:
+                snapshot[base + i] = byte
     
     _last_snapshot = snapshot
-    print(f"[MEM] Snapshot: {len(snapshot)} card-like addresses")
+    print(f"[MEM] Snapshot: {len(snapshot)} addrs from {scanned_bytes // 1024}KB")
     return snapshot
 
 
