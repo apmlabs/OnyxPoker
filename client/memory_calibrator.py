@@ -128,10 +128,15 @@ class MemoryReader:
         while ctypes.windll.kernel32.VirtualQueryEx(
             self.handle, ctypes.c_void_p(addr), ctypes.byref(mbi), ctypes.sizeof(mbi)
         ):
+            base = mbi.BaseAddress
+            size = mbi.RegionSize
+            # Safety: skip if base is None or 0
+            if not base or not size:
+                break
             if mbi.State == MEM_COMMIT and (mbi.Protect & PAGE_READABLE):
-                regions.append((mbi.BaseAddress, mbi.RegionSize))
-            addr = mbi.BaseAddress + mbi.RegionSize
-            if addr <= mbi.BaseAddress:
+                regions.append((base, size))
+            addr = base + size
+            if addr <= base:  # Overflow check
                 break
         return regions
     
@@ -150,6 +155,8 @@ class MemoryReader:
         regions = self.enumerate_regions()
         
         for base, size in regions:
+            if not base or not size:
+                continue
             if size > 10 * 1024 * 1024:  # Skip >10MB
                 continue
             
@@ -178,6 +185,8 @@ class MemoryReader:
                                                 'card1': card1,
                                                 'card2': card2
                                             })
+        
+        return candidates
         
         return candidates
     
