@@ -365,13 +365,18 @@ def calibrate_with_gpt(gpt_cards):
         # Subsequent hands: filter to addresses that now have the new card
         print(f"[MEM] Hand {tracking['hands'] + 1} - checking which addresses now have {card1}...")
         
+        # Get expected values for the new card
+        new_card_encodings = {enc: val for enc, val in card_to_encodings(card1)}
+        
         surviving = {}
         checked = 0
         for addr_str, encoding in tracking['card1_addrs'].items():
             addr = int(addr_str)
-            current_card = reader.read_card(addr, encoding)
-            if current_card == card1:
-                surviving[addr_str] = encoding
+            # Read raw byte and compare to expected value for this encoding
+            data = reader.read_bytes(addr, 1)
+            if data and encoding in new_card_encodings:
+                if data[0] == new_card_encodings[encoding]:
+                    surviving[addr_str] = encoding
             checked += 1
             if checked % 10000 == 0:
                 print(f"[MEM] Checked {checked}, {len(surviving)} surviving...")
