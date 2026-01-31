@@ -325,17 +325,15 @@ def calibrate_with_gpt(gpt_cards):
             return f"Could not open process {reader.pid} (try admin?)"
     
     # Load existing tracking data
-    tracking = {'card1_addrs': {}, 'hands': 0}
+    tracking = {'addrs': {}, 'hands': 0}
     if os.path.exists(SAMPLES_FILE):
         try:
             with open(SAMPLES_FILE) as f:
                 loaded = json.load(f)
-            # Check if it's the new format (has 'hands' key as int)
-            if isinstance(loaded.get('hands'), int) and isinstance(loaded.get('card1_addrs'), dict):
+            if isinstance(loaded.get('hands'), int) and isinstance(loaded.get('addrs'), dict):
                 tracking = loaded
             else:
-                # Old format, delete and start fresh
-                print("[MEM] Old samples format detected, starting fresh")
+                print("[MEM] Old format, starting fresh")
                 os.remove(SAMPLES_FILE)
         except:
             pass
@@ -343,80 +341,82 @@ def calibrate_with_gpt(gpt_cards):
     card1, card2 = gpt_cards[0], gpt_cards[1]
     
     if tracking['hands'] == 0:
-        # First hand: scan for card1 addresses
-        print(f"[MEM] First hand - scanning for {card1}...")
-        card1_candidates = reader.scan_for_single_card(card1)
-        print(f"[MEM] Found {len(card1_candidates)} addresses with {card1}")
+        # First hand: scan for card PAIR
+        print(f"[MEM] Hand 1 - scanning for {card1} {card2} pair...")
+        candidates = reader.scan_for_card_pair(card1, card2)
+        print(f"[MEM] Found {len(candidates)} pair candidates")
         
-        # Store addresses with their encoding
-        tracking['card1_addrs'] = {
-            str(c['addr']): c['encoding'] for c in card1_candidates[:50000]
+        if not candidates:
+            return f"No candidates found for {card1} {card2}"
+        
+        # Store: addr -> {encoding, gap}
+        tracking['addrs'] = {
+            str(c['addr']): {'enc': c['encoding'], 'gap': c['gap']} 
+            for c in candidates
         }
-        tracking['card1_expected'] = card1
         tracking['hands'] = 1
         
         with open(SAMPLES_FILE, 'w') as f:
             json.dump(tracking, f)
         
-        print(f"[MEM] Hand 1 done. Tracking {len(tracking['card1_addrs'])} addresses. Need 2 more hands.")
+        print(f"[MEM] Hand 1 done. Tracking {len(tracking['addrs'])} addresses.")
         return None
     
     else:
-        # Subsequent hands: filter to addresses that now have the new card
-        print(f"[MEM] Hand {tracking['hands'] + 1} - checking which addresses now have {card1}...")
+        # Subsequent hands: check which addresses now have the new card pair
+        print(f"[MEM] Hand {tracking['hands'] + 1} - checking for {card1} {card2}...")
         
-        # Get expected values for the new card
-        new_card_encodings = {enc: val for enc, val in card_to_encodings(card1)}
+        enc1_map = {enc: val for enc, val in card_to_encodings(card1)}
+        enc2_map = {enc: val for enc, val in card_to_encodings(card2)}
         
         surviving = {}
         checked = 0
-        for addr_str, encoding in tracking['card1_addrs'].items():
+        for addr_str, info in tracking['addrs'].items():
             addr = int(addr_str)
-            # Read raw byte and compare to expected value for this encoding
-            data = reader.read_bytes(addr, 1)
-            if data and encoding in new_card_encodings:
-                if data[0] == new_card_encodings[encoding]:
-                    surviving[addr_str] = encoding
+            enc = info['enc']
+            gap = info['gap']
+            
+            # Read both card bytes
+            data = reader.read_bytes(addr, gap + 1)
+            if data and enc in enc1_map and enc in enc2_map:
+                if data[0] == enc1_map[enc] and data[gap] == enc2_map[enc]:
+                    surviving[addr_str] = info
+            
             checked += 1
-            if checked % 10000 == 0:
+            if checked % 50000 == 0:
                 print(f"[MEM] Checked {checked}, {len(surviving)} surviving...")
         
-        print(f"[MEM] {len(surviving)} addresses still correct (was {len(tracking['card1_addrs'])})")
+        print(f"[MEM] {len(surviving)} survived (was {len(tracking['addrs'])})")
         
-        tracking['card1_addrs'] = surviving
+        tracking['addrs'] = surviving
         tracking['hands'] += 1
         
-        # Check if we found it
         if len(surviving) == 0:
             print("[MEM] No addresses survived - starting over")
             os.remove(SAMPLES_FILE)
             return None
         
-        if len(surviving) <= 10 and tracking['hands'] >= 3:
+        if len(surviving) <= 5 and tracking['hands'] >= 3:
             # Found it!
             addr_str = list(surviving.keys())[0]
-            encoding = surviving[addr_str]
-            print(f"[MEM] FOUND! Address {hex(int(addr_str))}, encoding {encoding}")
+            info = surviving[addr_str]
+            print(f"[MEM] FOUND! Address {hex(int(addr_str))}, enc={info['enc']}, gap={info['gap']}")
             
             save_calibration({
                 'card1_addr': int(addr_str),
-                'encoding': encoding,
-                'gap': 1,  # Will need to find card2 separately
+                'encoding': info['enc'],
+                'gap': info['gap'],
                 'hands_to_calibrate': tracking['hands'],
                 'timestamp': datetime.now().isoformat()
             })
-            
             os.remove(SAMPLES_FILE)
             return None
         
         with open(SAMPLES_FILE, 'w') as f:
             json.dump(tracking, f)
         
-        print(f"[MEM] Hand {tracking['hands']} done. {len(surviving)} candidates remain. Keep going!")
+        print(f"[MEM] Hand {tracking['hands']} done. {len(surviving)} remain.")
         return None
-    os.remove(SAMPLES_FILE)
-    
-    return None  # Success
 
 
 def read_cards_fast():

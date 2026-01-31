@@ -553,7 +553,7 @@ class HelperBar:
                 if CALIBRATE_MODE:
                     hero_cards = result.get('hero_cards', [])
                     if hero_cards and len(hero_cards) == 2:
-                        self.root.after(0, lambda c=hero_cards: self.log(f"Scanning for {c[0]}...", "DEBUG"))
+                        self.root.after(0, lambda c=hero_cards: self.log(f"Scanning for {c[0]} {c[1]}...", "DEBUG"))
                         try:
                             from memory_calibrator import calibrate_with_gpt, is_calibrated, SAMPLES_FILE
                             err = calibrate_with_gpt(hero_cards)
@@ -567,8 +567,8 @@ class HelperBar:
                                 with open(SAMPLES_FILE) as f:
                                     tracking = json.load(f)
                                 hands = tracking.get('hands', 0)
-                                addrs = len(tracking.get('card1_addrs', {}))
-                                self.root.after(0, lambda h=hands, a=addrs: self.log(f"Hand {h}: {a} candidates remain", "INFO"))
+                                addrs = len(tracking.get('addrs', {}))
+                                self.root.after(0, lambda h=hands, a=addrs: self.log(f"Hand {h}: {a} candidates", "INFO"))
                                 result['memory_status'] = f'tracking_{hands}_{addrs}'
                         except Exception as e:
                             tb = traceback.format_exc()
