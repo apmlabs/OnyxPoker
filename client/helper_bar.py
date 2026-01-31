@@ -382,6 +382,7 @@ class HelperBar:
                 
                 # CALIBRATION: Check if already calibrated, try fast read
                 memory_cards = None
+                memory_error = None
                 if CALIBRATE_MODE:
                     try:
                         from memory_calibrator import is_calibrated, read_cards_fast
@@ -390,6 +391,7 @@ class HelperBar:
                             if memory_cards:
                                 self.root.after(0, lambda c=memory_cards: self.log(f"Memory: {c[0]} {c[1]}", "INFO"))
                     except Exception as e:
+                        memory_error = str(e)
                         self.root.after(0, lambda e=e: self.log(f"Memory: {e}", "ERROR"))
 
                 # Save to screenshots folder for future testing
@@ -565,10 +567,19 @@ class HelperBar:
                             from memory_calibrator import calibrate_with_gpt
                             if calibrate_with_gpt(hero_cards):
                                 self.root.after(0, lambda: self.log("CALIBRATED! Fast reads enabled", "INFO"))
+                                result['memory_status'] = 'calibrated'
                             else:
                                 self.root.after(0, lambda: self.log("Calibration: pattern not found", "WARN"))
+                                result['memory_error'] = 'pattern not found'
                         except Exception as e:
+                            memory_error = str(e)
                             self.root.after(0, lambda e=e: self.log(f"Calibration error: {e}", "ERROR"))
+                
+                # Add memory info to result for logging
+                if memory_error:
+                    result['memory_error'] = memory_error
+                if memory_cards:
+                    result['memory_cards'] = memory_cards
 
                 elapsed = time.time() - start
                 self.root.after(0, lambda t=api_time: self.log(f"API done: {t:.1f}s", "DEBUG"))
@@ -650,6 +661,14 @@ class HelperBar:
             log_entry['draws'] = result.get('draws', [])
             log_entry['outs'] = result.get('outs', 0)
             log_entry['pot_odds'] = result.get('pot_odds', 0)
+        
+        # Memory calibration info
+        if result.get('memory_error'):
+            log_entry['memory_error'] = result['memory_error']
+        if result.get('memory_cards'):
+            log_entry['memory_cards'] = result['memory_cards']
+        if result.get('memory_status'):
+            log_entry['memory_status'] = result['memory_status']
         
         with open(SESSION_LOG, 'a') as f:
             f.write(json.dumps(log_entry) + '\n')
