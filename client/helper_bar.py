@@ -27,19 +27,28 @@ parser = argparse.ArgumentParser(description='OnyxPoker Helper Bar')
 parser.add_argument('--ai-only', action='store_true', help='Use AI for both vision and decisions')
 parser.add_argument('--v1', action='store_true', help='Use V1 vision (no player detection)')
 parser.add_argument('--v2', action='store_true', default=True, help='Use V2 vision with player detection (default)')
+parser.add_argument('--cv', action='store_true', help='Use OpenCV vision (fast, ~2.5s)')
 parser.add_argument('--strategy', type=str, default=DEFAULT_STRATEGY, help=f'Strategy to use (default: {DEFAULT_STRATEGY})')
+parser.add_argument('--calibrate', action='store_true', help='Memory calibration mode: scan memory alongside screenshots')
 args = parser.parse_args()
 
 # Default: V2 vision with player names + opponent stats
 # --v1: V1 vision (no player detection)
 # --ai-only: gpt-5.2 does both vision + decision
+# --calibrate: Memory calibration mode
 AI_ONLY_MODE = args.ai_only
 V1_MODE = args.v1
 VISION_V2_MODE = args.v2
+CV_MODE = args.cv
 STRATEGY = args.strategy
+CALIBRATE_MODE = args.calibrate
 
 if AI_ONLY_MODE:
     from vision_detector import VisionDetector, MODEL
+elif CV_MODE:
+    sys.path.insert(0, os.path.join(os.path.dirname(__file__), 'vision_ocr'))
+    from vision_detector_cv import VisionDetectorCV
+    from strategy_engine import StrategyEngine
 elif V1_MODE:
     from vision_detector_lite import VisionDetectorLite, DEFAULT_MODEL
     from strategy_engine import StrategyEngine
@@ -347,6 +356,7 @@ class HelperBar:
         from datetime import datetime
         start = time.time()
         screenshot_name = None
+        memory_candidates = None  # For calibration mode
 
         try:
             if test_image_path:
@@ -369,6 +379,18 @@ class HelperBar:
 
                 img = pyautogui.screenshot(region=region)
                 self.last_screenshot = img
+                
+                # CALIBRATION: Take memory snapshot at same instant as screenshot
+                if CALIBRATE_MODE:
+                    try:
+                        from memory_calibrator import memory_snapshot
+                        memory_candidates = memory_snapshot()
+                        if memory_candidates:
+                            self.root.after(0, lambda n=len(memory_candidates): self.log(f"Memory: {n} candidates", "DEBUG"))
+                        else:
+                            self.root.after(0, lambda: self.log("Memory: scan failed", "WARN"))
+                    except Exception as e:
+                        self.root.after(0, lambda e=e: self.log(f"Memory: {e}", "ERROR"))
 
                 # Save to screenshots folder for future testing
                 screenshots_dir = os.path.join(os.path.dirname(__file__), 'screenshots')
@@ -442,6 +464,57 @@ class HelperBar:
                         result = {**table_data, **all_position_results['BTN']}
                         result['api_time'] = api_time
                         result['all_positions'] = all_position_results
+                elif CV_MODE:
+                    # CV mode: OpenCV + tesseract for vision (~2.5s)
+                    self.root.after(0, lambda: self.log("CV vision...", "DEBUG"))
+                    api_start = time.time()
+                    vision = VisionDetectorCV()
+                    table_data = vision.detect_table(temp_path)
+                    api_time = time.time() - api_start
+                    
+                    # Merge opponents with previous detection
+                    hero_cards = table_data.get('hero_cards')
+                    raw_opponents = table_data.get('opponents', [])
+                    merged_opponents = self._merge_opponents(raw_opponents, hero_cards)
+                    table_data['opponents'] = merged_opponents
+                    
+                    # Lookup opponent stats
+                    opponent_stats = self._lookup_opponent_stats(merged_opponents)
+                    table_data['opponent_stats'] = opponent_stats
+                    table_data['opponent_line'] = self._format_opponent_line(opponent_stats)
+                    table_data['advice_line'] = self._format_advice_line(opponent_stats)
+                    
+                    # Calculate num_players
+                    opponents = table_data.get('opponents', [])
+                    active_opponents = sum(1 for o in opponents if o.get('has_cards', False))
+                    table_data['num_players'] = active_opponents + 1
+                    
+                    engine = StrategyEngine(STRATEGY)
+                    board = table_data.get('community_cards', [])
+                    
+                    if board:  # Postflop
+                        table_data['is_aggressor'] = self.last_preflop_action == 'open'
+                        current_street = 'flop' if len(board) == 3 else ('turn' if len(board) == 4 else 'river')
+                        if current_street != self.last_street:
+                            self.last_hero_action = None
+                            self.last_street = current_street
+                        to_call = table_data.get('to_call', 0)
+                        is_facing_raise = self.last_hero_action in ('bet', 'raise', 'check') and to_call and to_call > 0
+                        table_data['is_facing_raise'] = is_facing_raise
+                        
+                        decision = engine.get_action(table_data)
+                        result = {**table_data, **decision}
+                        result['api_time'] = api_time
+                        result['all_positions'] = None
+                    else:  # Preflop
+                        all_position_results = {}
+                        for pos in ['UTG', 'MP', 'CO', 'BTN', 'SB', 'BB']:
+                            pos_data = {**table_data, 'position': pos, 'to_call': 0}
+                            decision = engine.get_action(pos_data)
+                            all_position_results[pos] = decision
+                        result = {**table_data, **all_position_results['BTN']}
+                        result['api_time'] = api_time
+                        result['all_positions'] = all_position_results
                 else:
                     # Default: V2 mode - vision with player detection + strategy engine
                     self.root.after(0, lambda: self.log(f"V2 API call ({DEFAULT_MODEL})...", "DEBUG"))
@@ -483,6 +556,19 @@ class HelperBar:
                         result = {**table_data, **all_position_results['BTN']}
                         result['all_positions'] = all_position_results
                     result['api_time'] = api_time
+
+                # CALIBRATION: Correlate memory snapshot with GPT-detected cards
+                if CALIBRATE_MODE and memory_candidates:
+                    hero_cards = result.get('hero_cards', [])
+                    if hero_cards and len(hero_cards) == 2:
+                        try:
+                            from memory_calibrator import calibration_step
+                            matches, stable = calibration_step(screenshot_name, hero_cards, memory_candidates)
+                            self.root.after(0, lambda n=len(matches): self.log(f"Calibration: {n} matches", "INFO"))
+                            if stable:
+                                self.root.after(0, lambda: self.log("STABLE OFFSETS FOUND!", "INFO"))
+                        except Exception as e:
+                            self.root.after(0, lambda e=e: self.log(f"Calibration error: {e}", "ERROR"))
 
                 elapsed = time.time() - start
                 self.root.after(0, lambda t=api_time: self.log(f"API done: {t:.1f}s", "DEBUG"))
@@ -894,6 +980,13 @@ class HelperBar:
 
 
 def main():
+    if CALIBRATE_MODE:
+        print("=== MEMORY CALIBRATION MODE ===")
+        print("Press F9 to capture screenshot + memory snapshot")
+        print("GPT will identify cards, then correlate with memory")
+        print("After ~10 hands, stable offsets should be found")
+        print("Check memory_calibration.json for results")
+        print("")
     app = HelperBar()
     app.run()
 

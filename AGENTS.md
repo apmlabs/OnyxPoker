@@ -145,11 +145,57 @@ Key rule: gap > PFR = fish (for loose players VPIP 25+)
 **Windows Client** (C:\aws\onyx-client\)
 - User runs helper_bar.py
 - Screenshots taken locally
-- `send_logs.py` uploads to server
+- GPT-5.2 API called directly from Windows (not via server)
+- `send_logs.py` uploads session logs to server
 
 **EC2 Server** (54.80.204.92:5001)
 - Receives uploads at POST /logs
 - Stores in /home/ubuntu/mcpprojects/onyxpoker/server/uploads/
+
+### Memory Reading Architecture (Session 71)
+
+**Goal:** Replace ~5s GPT vision latency with <1ms memory reads.
+
+**Challenge:** Memory offsets change with PokerStars updates. Need auto-calibration.
+
+**Solution:** Use GPT vision as "oracle" to find offsets automatically.
+
+```
+Windows (memory_calibrator.py):
+  1. F9 pressed (or automatic trigger)
+  2. Screenshot + Memory scan (SAME INSTANT)
+     - Scan for all card-like values (0-51, 2-14, ASCII)
+     - Save: {address: value} for all matches
+  3. Send screenshot to GPT-5.2 (~5s)
+  4. GPT returns: "Ah Kd" (hero cards)
+  5. Correlate: which addresses had Ah=14/0, Kd=13/1?
+  6. Log candidate addresses to JSON
+  
+  After N hands:
+  - Addresses that consistently match = stable offsets
+  - Save to offsets.json
+  - Future reads use offsets directly (<1ms)
+```
+
+**Card Encodings to Search:**
+| Encoding | Ace of Hearts | King of Diamonds |
+|----------|---------------|------------------|
+| Rank 2-14 | 14 | 13 |
+| Rank 0-12 | 12 | 11 |
+| Combined 0-51 | rank*4+suit | rank*4+suit |
+| ASCII | 'A' (65) | 'K' (75) |
+
+**Known Offsets (poker-supernova, PokerStars 7 Build 46014):**
+```python
+OFFSETS = {
+    'table': {'card_values': 0x64, 'card_suits': 0x68},
+    'seat': {'card_values': 0x9C, 'card_suits': 0xA0}
+}
+```
+
+**Fallback (Option A):** If real-time scan too slow, dump full memory region to file, search offline.
+
+**Anti-cheat:** ReadProcessMemory is standard Windows API, undetectable without kernel hooks. PokerTracker uses same approach ("Memory Grabber").
 
 ---
 
@@ -202,6 +248,9 @@ onyxpoker/                    # Main repo (GitHub: apmlabs/OnyxPoker)
 │   │ # === UTILITIES ===
 │   ├── send_logs.py          # Upload logs to server
 │   ├── send_to_kiro.py       # Send to Kiro server
+│   │
+│   │ # === MEMORY CALIBRATION (Session 71) ===
+│   ├── memory_calibrator.py  # Auto-find memory offsets using GPT as oracle
 │   │
 │   └── pokerstrategy_*       # Strategy definition files
 │

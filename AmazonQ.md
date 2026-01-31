@@ -1,6 +1,6 @@
 # OnyxPoker - Status Tracking
 
-**Last Updated**: January 20, 2026 15:57 UTC
+**Last Updated**: January 31, 2026 10:51 UTC
 
 ---
 
@@ -52,6 +52,61 @@
 ---
 
 ## Session History
+
+### Session 71: Memory Reading Research (January 31, 2026)
+
+**Exploring memory reading as faster alternative to GPT vision (~5s latency).**
+
+**Research Findings:**
+
+1. **poker-supernova** (GitHub) - Python package that reads PokerStars memory directly
+   - Uses Windows `ReadProcessMemory` via ctypes
+   - Offsets for PokerStars 7 Build 46014:
+   ```python
+   OFFSETS = {
+       'client': {'num_tables': 0x133CAB0},
+       'table': {'pot': 0x18, 'hand_id': 0x40, 'num_cards': 0x58, 'card_values': 0x64, 'card_suits': 0x68},
+       'seat': {'name': 0x00, 'stack': 0x58, 'bet': 0x68, 'card_values': 0x9C, 'card_suits': 0xA0}
+   }
+   ```
+   - Problem: Offsets break when PokerStars updates
+
+2. **Anti-cheat detection** - ReadProcessMemory is standard Windows API
+   - Generally undetectable without kernel-level hooks (obRegisterCallbacks)
+   - PokerTracker uses "Memory Grabber" feature - memory reading appears tolerated
+   - PokerStars likely doesn't use kernel hooks for HUD software compatibility
+
+3. **nowakowsky/Pokerstars-Api** (GitHub) - OCR approach
+   - Forces window to 640x540, hardcodes all pixel coordinates
+   - Uses Tesseract OCR for rank only, detects suit by color (4-color deck)
+   - Only extracts cards + game stage - NO pot/names/stacks
+   - Too fragile and incomplete for our needs
+
+**Planned Approach: Auto-Calibration with GPT Vision as Oracle**
+
+Use GPT-5.2 vision (which works) to automatically find memory offsets:
+
+1. Screenshot + scan memory for card-like values (same instant)
+2. Save candidate addresses: "address X had value Y"
+3. Wait ~5s for GPT to identify actual cards
+4. Filter to addresses that had correct values
+5. Repeat across hands until stable offsets found
+
+**Option A (Fallback):** Full memory dump per hand, search offline
+**Option B (Chosen):** Real-time scan for card-like values, correlate after GPT responds
+
+**Implementation Plan:**
+- New script: `memory_calibrator.py`
+- Runs alongside helper_bar.py on Windows
+- Logs candidate addresses + GPT results to JSON
+- After N hands, identifies stable offsets
+- Once calibrated, can read cards in <1ms instead of ~5s
+
+**Card Encoding to Search:**
+- Rank as 2-14 (2=2, 14=A)
+- Rank as 0-12 (0=2, 12=A)
+- Combined 0-51 encoding
+- ASCII characters ('A', 'K', '2')
 
 ### Session 70: Fix C-Bet Bug vs Fish (January 20, 2026)
 
