@@ -130,11 +130,14 @@ class MemoryReader:
         ):
             base = mbi.BaseAddress
             size = mbi.RegionSize
-            # Safety: skip if base is None or 0
-            if not base or not size:
+            # Safety: size must be positive
+            if size is None or size <= 0:
                 break
             if mbi.State == MEM_COMMIT and (mbi.Protect & PAGE_READABLE):
                 regions.append((base, size))
+            # Move to next region (base can be 0 for first region)
+            if base is None:
+                base = 0
             addr = base + size
             if addr <= base:  # Overflow check
                 break
@@ -155,10 +158,12 @@ class MemoryReader:
         regions = self.enumerate_regions()
         
         for base, size in regions:
-            if not base or not size:
+            if size is None or size <= 0:
                 continue
             if size > 10 * 1024 * 1024:  # Skip >10MB
                 continue
+            if base is None:
+                base = 0
             
             # Read in chunks
             chunk_size = 65536
