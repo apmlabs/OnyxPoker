@@ -39,33 +39,29 @@ if IS_WINDOWS:
             ("Type", wintypes.DWORD),
         ]
 
-# Card decoding - multiple possible encodings
+# Card decoding - PokerStars stores rank and suit SEPARATELY
+# card_values at offset X, card_suits at offset X+4
 RANKS = ['2', '3', '4', '5', '6', '7', '8', '9', 'T', 'J', 'Q', 'K', 'A']
-SUITS = ['c', 'd', 'h', 's']
+SUITS = ['c', 'd', 'h', 's']  # clubs=0, diamonds=1, hearts=2, spades=3
 
 CALIBRATION_FILE = os.path.join(os.path.dirname(__file__), 'memory_offsets.json')
 
 
-def card_to_encodings(card_str):
-    """Convert card like 'Ah' to all possible byte encodings."""
+def card_to_rank_suit(card_str):
+    """Convert card like 'Ah' to (rank_byte, suit_byte) for PokerStars encoding."""
     if not card_str or len(card_str) < 2:
-        return []
+        return None, None
     
     rank_char = card_str[0].upper()
     suit_char = card_str[1].lower()
     
     if rank_char not in RANKS or suit_char not in SUITS:
-        return []
+        return None, None
     
-    r = RANKS.index(rank_char)  # 0-12
+    r = RANKS.index(rank_char)  # 0-12 (2=0, A=12)
     s = SUITS.index(suit_char)  # 0-3
     
-    return [
-        ('rank_0_12', r),           # 0-12
-        ('rank_2_14', r + 2),       # 2-14
-        ('combined_r4s', r * 4 + s),  # 0-51
-        ('combined_s13r', s * 13 + r), # 0-51 alt
-    ]
+    return r, s
 
 
 class MemoryReader:
@@ -147,132 +143,6 @@ class MemoryReader:
                 break
         return regions
     
-    def scan_for_card_pair(self, card1, card2):
-        """
-        Scan memory for two cards appearing close together.
-        Returns list of (address, encoding) candidates.
-        """
-        enc1_list = card_to_encodings(card1)
-        enc2_list = card_to_encodings(card2)
-        
-        if not enc1_list or not enc2_list:
-            return []
-        
-        candidates = []
-        regions = self.enumerate_regions(private_only=True)
-        print(f"[MEM] Scanning {len(regions)} regions...")
-        
-        scanned = 0
-        for base, size, _ in regions:
-            if size is None or size <= 0:
-                continue
-            if base is None:
-                base = 0
-            
-            scanned += 1
-            if scanned % 100 == 0:
-                print(f"[MEM] Scanned {scanned} regions, {len(candidates)} candidates...")
-            
-            # Read in chunks
-            chunk_size = 65536
-            for offset in range(0, size, chunk_size):
-                read_size = min(chunk_size + 16, size - offset)  # +16 for card pair
-                data = self.read_bytes(base + offset, read_size)
-                if not data:
-                    continue
-                
-                # Search for card1 followed by card2 within 8 bytes
-                for enc1_name, enc1_val in enc1_list:
-                    for i, byte in enumerate(data[:-8]):
-                        if byte == enc1_val:
-                            # Check if card2 is nearby (1-8 bytes after)
-                            for enc2_name, enc2_val in enc2_list:
-                                if enc1_name == enc2_name:  # Same encoding type
-                                    for gap in range(1, 8):
-                                        if i + gap < len(data) and data[i + gap] == enc2_val:
-                                            addr = base + offset + i
-                                            candidates.append({
-                                                'addr': addr,
-                                                'encoding': enc1_name,
-                                                'gap': gap,
-                                                'card1': card1,
-                                                'card2': card2
-                                            })
-        
-        print(f"[MEM] Scan complete: {scanned} regions, {len(candidates)} candidates")
-        return candidates
-    
-    def scan_for_single_card(self, card):
-        """
-        Scan memory for a single card value.
-        Returns list of {addr, encoding} for all matches.
-        """
-        enc_list = card_to_encodings(card)
-        if not enc_list:
-            return []
-        
-        candidates = []
-        regions = self.enumerate_regions(private_only=True)
-        print(f"[MEM] Scanning {len(regions)} regions for {card}...")
-        
-        scanned = 0
-        for base, size, _ in regions:
-            if size is None or size <= 0:
-                continue
-            if base is None:
-                base = 0
-            
-            scanned += 1
-            
-            # Read in chunks
-            chunk_size = 65536
-            for offset in range(0, size, chunk_size):
-                read_size = min(chunk_size, size - offset)
-                data = self.read_bytes(base + offset, read_size)
-                if not data:
-                    continue
-                
-                # Search for card value in all encodings
-                for enc_name, enc_val in enc_list:
-                    for i, byte in enumerate(data):
-                        if byte == enc_val:
-                            addr = base + offset + i
-                            candidates.append({
-                                'addr': addr,
-                                'encoding': enc_name
-                            })
-        
-        print(f"[MEM] Scan complete: {scanned} regions, {len(candidates)} candidates")
-        return candidates
-    
-    def read_card(self, address, encoding):
-        """Read a card from memory using known encoding. Returns full card like 'As'."""
-        data = self.read_bytes(address, 1)
-        if not data:
-            return None
-        
-        val = data[0]
-        
-        # For rank-only encodings, we can only return the rank
-        # These won't work for our purposes - need combined encoding
-        if encoding == 'rank_0_12':
-            if 0 <= val <= 12:
-                return RANKS[val]  # Just rank, no suit
-        elif encoding == 'rank_2_14':
-            if 2 <= val <= 14:
-                return RANKS[val - 2]  # Just rank, no suit
-        elif encoding == 'combined_r4s':
-            if 0 <= val <= 51:
-                r = val // 4
-                s = val % 4
-                return RANKS[r] + SUITS[s]
-        elif encoding == 'combined_s13r':
-            if 0 <= val <= 51:
-                s = val // 13
-                r = val % 13
-                return RANKS[r] + SUITS[s]
-        
-        return None
 
 
 # Global instance
@@ -289,8 +159,8 @@ def get_reader():
 def scan_memory_snapshot():
     """
     Scan memory NOW and save snapshot. Called at screenshot time.
-    Only scans MEM_PRIVATE regions (heap) where game objects live.
-    Returns dict of {addr: byte_value} for all card-like values.
+    PokerStars stores ranks at addr, suits at addr+4.
+    Returns dict of {addr: (byte0, byte1, byte4, byte5)} for potential card locations.
     """
     global _last_snapshot
     reader = get_reader()
@@ -314,24 +184,28 @@ def scan_memory_snapshot():
     scanned = 0
     
     for base, size, _ in regions:
-        if size is None or size <= 0:
+        if size is None or size <= 0 or size < 6:
             continue
         if base is None:
             base = 0
         
-        # Read whole region (private regions are usually small)
         data = reader.read_bytes(base, size)
-        if not data:
+        if not data or len(data) < 6:
             continue
         
         scanned += len(data)
         
-        for i, byte in enumerate(data):
-            if byte <= 51:
-                snapshot[base + i] = byte
+        # Look for potential card structures: ranks 0-12 at i,i+1 and suits 0-3 at i+4,i+5
+        for i in range(len(data) - 5):
+            r1, r2 = data[i], data[i + 1]
+            s1, s2 = data[i + 4], data[i + 5]
+            
+            # Both ranks must be 0-12, both suits must be 0-3
+            if r1 <= 12 and r2 <= 12 and s1 <= 3 and s2 <= 3:
+                snapshot[base + i] = (r1, r2, s1, s2)
     
     _last_snapshot = snapshot
-    print(f"[MEM] Snapshot: {len(snapshot)} addrs from {scanned // 1024}KB")
+    print(f"[MEM] Snapshot: {len(snapshot)} card-like structures from {scanned // 1024}KB")
     return snapshot
 
 
@@ -339,7 +213,8 @@ SAMPLES_FILE = os.path.join(os.path.dirname(__file__), 'memory_samples.json')
 
 def calibrate_with_gpt(gpt_cards, snapshot=None):
     """
-    Use snapshot (taken at screenshot time) to find card addresses.
+    Use snapshot to find card addresses.
+    PokerStars format: ranks at addr, addr+1; suits at addr+4, addr+5
     """
     global _last_snapshot
     
@@ -353,55 +228,35 @@ def calibrate_with_gpt(gpt_cards, snapshot=None):
         return "Need 2 cards"
     
     card1, card2 = gpt_cards[0], gpt_cards[1]
+    r1, s1 = card_to_rank_suit(card1)
+    r2, s2 = card_to_rank_suit(card2)
     
-    # Log encodings for debugging
-    enc1_list = card_to_encodings(card1)
-    enc2_list = card_to_encodings(card2)
-    print(f"[MEM] calibrate: {card1}={enc1_list} {card2}={enc2_list}")
-    print(f"[MEM] snapshot has {len(snapshot)} addresses")
+    if r1 is None or r2 is None:
+        return f"Invalid cards: {card1} {card2}"
     
-    # Get expected byte values for both cards
-    enc1_map = {enc: val for enc, val in card_to_encodings(card1)}
-    enc2_map = {enc: val for enc, val in card_to_encodings(card2)}
+    print(f"[MEM] Looking for {card1}(r={r1},s={s1}) {card2}(r={r2},s={s2})")
+    print(f"[MEM] Snapshot has {len(snapshot)} potential card structures")
     
     # Load existing tracking data
-    tracking = {'addrs': {}, 'hands': 0}
+    tracking = {'addrs': [], 'hands': 0}
     if os.path.exists(SAMPLES_FILE):
         try:
             with open(SAMPLES_FILE) as f:
-                loaded = json.load(f)
-            if isinstance(loaded.get('hands'), int) and isinstance(loaded.get('addrs'), dict):
-                tracking = loaded
-            else:
-                os.remove(SAMPLES_FILE)
+                tracking = json.load(f)
         except:
             pass
     
     if tracking['hands'] == 0:
-        # First hand: find pairs in snapshot
-        print(f"[MEM] Hand 1 - finding {card1} {card2} pairs in snapshot...")
+        # First hand: find matching structures in snapshot
+        candidates = []
+        for addr, (sr1, sr2, ss1, ss2) in snapshot.items():
+            if sr1 == r1 and sr2 == r2 and ss1 == s1 and ss2 == s2:
+                candidates.append(addr)
         
-        candidates = {}
-        snapshot_addrs = sorted(snapshot.keys())
-        
-        for enc_name in enc1_map:
-            if enc_name not in enc2_map:
-                continue
-            val1 = enc1_map[enc_name]
-            val2 = enc2_map[enc_name]
-            
-            for addr in snapshot_addrs:
-                if snapshot[addr] == val1:
-                    # Check if card2 is nearby (gap 1-8)
-                    for gap in range(1, 9):
-                        addr2 = addr + gap
-                        if addr2 in snapshot and snapshot[addr2] == val2:
-                            candidates[str(addr)] = {'enc': enc_name, 'gap': gap}
-        
-        print(f"[MEM] Found {len(candidates)} pair candidates")
+        print(f"[MEM] Hand 1: {len(candidates)} exact matches")
         
         if not candidates:
-            return f"No pairs found for {card1} {card2}"
+            return f"No matches for {card1} {card2}"
         
         tracking['addrs'] = candidates
         tracking['hands'] = 1
@@ -409,42 +264,18 @@ def calibrate_with_gpt(gpt_cards, snapshot=None):
         with open(SAMPLES_FILE, 'w') as f:
             json.dump(tracking, f)
         
-        print(f"[MEM] Hand 1 done. Tracking {len(candidates)} addresses.")
         return None
     
     else:
-        # Subsequent hands: filter to addresses that have new cards in snapshot
-        print(f"[MEM] Hand {tracking['hands'] + 1} - checking {card1} {card2}...")
-        print(f"[MEM] Expected values: card1={enc1_map}, card2={enc2_map}")
+        # Subsequent hands: filter to addresses that now have new cards
+        surviving = []
+        for addr in tracking['addrs']:
+            if addr in snapshot:
+                sr1, sr2, ss1, ss2 = snapshot[addr]
+                if sr1 == r1 and sr2 == r2 and ss1 == s1 and ss2 == s2:
+                    surviving.append(addr)
         
-        surviving = {}
-        checked = 0
-        for addr_str, info in tracking['addrs'].items():
-            addr = int(addr_str)
-            enc = info['enc']
-            gap = info['gap']
-            
-            if enc not in enc1_map or enc not in enc2_map:
-                continue
-            
-            checked += 1
-            expected1 = enc1_map[enc]
-            expected2 = enc2_map[enc]
-            
-            # Check snapshot for both cards
-            if addr in snapshot and (addr + gap) in snapshot:
-                actual1 = snapshot[addr]
-                actual2 = snapshot[addr + gap]
-                if actual1 == expected1 and actual2 == expected2:
-                    surviving[addr_str] = info
-                elif checked <= 5:  # Log first few mismatches
-                    print(f"[MEM] Addr {hex(addr)}: expected {expected1},{expected2} got {actual1},{actual2}")
-            elif checked <= 5:
-                in1 = addr in snapshot
-                in2 = (addr + gap) in snapshot
-                print(f"[MEM] Addr {hex(addr)}: not in snapshot (in1={in1}, in2={in2})")
-        
-        print(f"[MEM] {len(surviving)} survived (was {len(tracking['addrs'])})")
+        print(f"[MEM] Hand {tracking['hands'] + 1}: {len(surviving)} survived (was {len(tracking['addrs'])})")
         
         tracking['addrs'] = surviving
         tracking['hands'] += 1
@@ -454,15 +285,12 @@ def calibrate_with_gpt(gpt_cards, snapshot=None):
             os.remove(SAMPLES_FILE)
             return None
         
-        if len(surviving) <= 5 and tracking['hands'] >= 3:
-            addr_str = list(surviving.keys())[0]
-            info = surviving[addr_str]
-            print(f"[MEM] FOUND! Address {hex(int(addr_str))}, enc={info['enc']}, gap={info['gap']}")
+        if len(surviving) <= 3 and tracking['hands'] >= 3:
+            addr = surviving[0]
+            print(f"[MEM] FOUND! Address {hex(addr)}")
             
             save_calibration({
-                'card1_addr': int(addr_str),
-                'encoding': info['enc'],
-                'gap': info['gap'],
+                'card_addr': addr,
                 'hands_to_calibrate': tracking['hands'],
                 'timestamp': datetime.now().isoformat()
             })
@@ -472,31 +300,23 @@ def calibrate_with_gpt(gpt_cards, snapshot=None):
         with open(SAMPLES_FILE, 'w') as f:
             json.dump(tracking, f)
         
-        print(f"[MEM] Hand {tracking['hands']} done. {len(surviving)} remain.")
         return None
 
 
 def read_cards_fast():
     """
     Read hero cards using calibrated address.
+    PokerStars: ranks at addr, addr+1; suits at addr+4, addr+5
     Returns [card1, card2] or None.
     """
     reader = get_reader()
     
     # Load calibration if needed
-    if not reader.card1_addr:
-        cal = load_calibration()
-        if not cal:
-            return None
-        if not cal.get('card1_addr'):
-            return None
-        reader.card1_addr = cal['card1_addr']
-        reader.card1_encoding = cal.get('encoding')
-        reader.card1_gap = cal.get('gap', 1)
-    
-    # Safety check
-    if not reader.card1_addr or not reader.card1_encoding:
+    cal = load_calibration()
+    if not cal or not cal.get('card_addr'):
         return None
+    
+    addr = cal['card_addr']
     
     # Open process if needed
     if not reader.handle:
@@ -507,13 +327,21 @@ def read_cards_fast():
         if not reader.handle:
             return None
     
-    # Read cards
-    c1 = reader.read_card(reader.card1_addr, reader.card1_encoding)
-    c2 = reader.read_card(reader.card1_addr + reader.card1_gap, reader.card1_encoding)
+    # Read 6 bytes: ranks at 0,1 and suits at 4,5
+    data = reader.read_bytes(addr, 6)
+    if not data or len(data) < 6:
+        return None
     
-    if c1 and c2:
-        return [c1, c2]
-    return None
+    r1, r2 = data[0], data[1]
+    s1, s2 = data[4], data[5]
+    
+    if r1 > 12 or r2 > 12 or s1 > 3 or s2 > 3:
+        return None
+    
+    card1 = RANKS[r1] + SUITS[s1]
+    card2 = RANKS[r2] + SUITS[s2]
+    
+    return [card1, card2]
 
 
 def load_calibration():
@@ -538,13 +366,9 @@ def is_calibrated():
     cal = load_calibration()
     if not cal:
         return False
-    # Must have card1_addr AND encoding (new format)
-    if cal.get('card1_addr') and cal.get('encoding'):
+    if cal.get('card_addr'):
         return True
-    # Delete any invalid/old calibration files
-    try:
-        os.remove(CALIBRATION_FILE)
-    except:
+    return False
         pass
     return False
 
