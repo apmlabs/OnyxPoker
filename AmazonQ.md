@@ -1,6 +1,6 @@
 # OnyxPoker - Status Tracking
 
-**Last Updated**: January 31, 2026 10:51 UTC
+**Last Updated**: February 2, 2026 20:13 UTC
 
 ---
 
@@ -12,6 +12,7 @@
 | helper_bar.py | ✅ | V2 vision default (opponent tracking) |
 | helper_bar.py --v1 | ✅ | V1 vision (no opponent detection) |
 | helper_bar.py --ai-only | ✅ | AI does both vision + decision |
+| helper_bar.py --calibrate | 🔄 | Memory calibration mode (in progress) |
 | test_screenshots.py | ✅ | V1 vs V2 comparison + --track mode |
 | vision_detector_lite.py | ✅ | GPT-5.2 for vision only (V1) ~3.9s |
 | vision_detector_v2.py | ✅ | GPT-5.2 + opponent detection (V2) ~5.5s |
@@ -52,6 +53,38 @@
 ---
 
 ## Session History
+
+### Session 72: Memory Calibration v2 - Hand ID Approach (February 2, 2026)
+
+**Problem with v1:** Scanning for card values (0-12) found millions of matches - too common.
+
+**New Approach:** Use hand_id as unique anchor
+1. GPT reads `hand_id` (12-digit number in top-left) from screenshot
+2. Scan memory for hand_id - essentially unique, very few matches
+3. Explore nearby memory for card pattern matching hero_cards
+4. Track successful addresses across hands until stable
+
+**Changes:**
+- `vision_detector_v2.py`: Added `hand_id` to JSON output
+- `memory_calibrator.py`: Complete rewrite using hand_id anchor
+- `helper_bar.py`: Auto-calibration passes full GPT result
+
+**Why this should work:**
+- Hand ID "234567890123" is unique in memory (vs card bytes 0-12 everywhere)
+- poker-supernova shows hand_id at offset 0x40, cards at 0x64/0x68
+- Once we find hand_id, cards are at known offset nearby
+
+**Usage:**
+```bash
+python helper_bar.py --calibrate  # Automatic calibration
+# Press F9 on each hand - tracks candidates until stable address found
+```
+
+**Files:**
+- memory_calibrator.py - Scans for hand_id, explores nearby for cards
+- memory_offsets.json - Saved calibration (once found)
+- memory_tracking.json - Candidate tracking across hands
+- logs/memory_scan.log - Debug output
 
 ### Session 71: Memory Reading Research (January 31, 2026)
 

@@ -177,25 +177,39 @@ Windows (memory_calibrator.py):
   - Future reads use offsets directly (<1ms)
 ```
 
-**Card Encodings to Search:**
-| Encoding | Ace of Hearts | King of Diamonds |
-|----------|---------------|------------------|
-| Rank 2-14 | 14 | 13 |
-| Rank 0-12 | 12 | 11 |
-| Combined 0-51 | rank*4+suit | rank*4+suit |
-| ASCII | 'A' (65) | 'K' (75) |
-
 **Known Offsets (poker-supernova, PokerStars 7 Build 46014):**
 ```python
 OFFSETS = {
-    'table': {'card_values': 0x64, 'card_suits': 0x68},
-    'seat': {'card_values': 0x9C, 'card_suits': 0xA0}
+    'table': {'hand_id': 0x40, 'card_values': 0x64, 'card_suits': 0x68},
+    'seat': {'name': 0x00, 'card_values': 0x9C, 'card_suits': 0xA0}
 }
 ```
 
-**Fallback (Option A):** If real-time scan too slow, dump full memory region to file, search offline.
-
 **Anti-cheat:** ReadProcessMemory is standard Windows API, undetectable without kernel hooks. PokerTracker uses same approach ("Memory Grabber").
+
+### Memory Calibration v2 (Session 72)
+
+**Problem:** Card values (0-12) are too common - millions of matches in memory.
+
+**Solution:** Use hand_id as unique anchor:
+1. GPT reads `hand_id` (12-digit number) from screenshot
+2. Scan memory for hand_id - essentially unique
+3. Explore nearby memory for card pattern
+4. Track across hands until stable
+
+```
+Flow:
+  F9 → Screenshot → GPT returns {hand_id, hero_cards}
+                  → Scan for hand_id bytes
+                  → Check nearby memory for [r1, r2, ?, ?, s1, s2]
+                  → Track candidates across hands
+                  → Save stable address to memory_offsets.json
+```
+
+**Files:**
+- `memory_calibrator.py` - Auto-calibration using hand_id anchor
+- `memory_offsets.json` - Saved calibration (card address)
+- `memory_tracking.json` - Candidate tracking across hands
 
 ---
 
@@ -216,7 +230,10 @@ onyxpoker/                    # Main repo (GitHub: apmlabs/OnyxPoker)
 │   ├── strategy_engine.py    # Applies strategy (default: the_lord)
 │   ├── vision_detector.py    # AI-only mode: gpt-5.2 for vision + decisions
 │   ├── vision_detector_lite.py # V1 vision: gpt-5.2 for vision only (~3.9s)
-│   ├── vision_detector_v2.py # V2 vision: + opponent detection (default, ~5.5s)
+│   ├── vision_detector_v2.py # V2 vision: + opponent detection + hand_id (default, ~5.5s)
+│   │
+│   │ # === MEMORY CALIBRATION ===
+│   ├── memory_calibrator.py  # Auto-find card address using hand_id anchor
 │   │
 │   │ # === SIMULATION ===
 │   ├── poker_sim.py          # Monte Carlo simulator (200k+ hands)
