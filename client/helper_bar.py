@@ -383,16 +383,6 @@ class HelperBar:
 
                 img = pyautogui.screenshot(region=region)
                 self.last_screenshot = img
-                
-                # CALIBRATION: Scan memory NOW, at same instant as screenshot
-                memory_snapshot = None
-                if CALIBRATE_MODE:
-                    try:
-                        from memory_calibrator import scan_memory_snapshot
-                        self.root.after(0, lambda: self.log("Memory scan...", "DEBUG"))
-                        memory_snapshot = scan_memory_snapshot()
-                    except Exception as e:
-                        self.root.after(0, lambda e=e: self.log(f"Scan error: {e}", "WARN"))
 
                 # Save to screenshots folder for future testing
                 screenshots_dir = os.path.join(os.path.dirname(__file__), 'screenshots')
@@ -559,32 +549,33 @@ class HelperBar:
                         result['all_positions'] = all_position_results
                     result['api_time'] = api_time
 
-                # CALIBRATION: Use snapshot taken at screenshot time
-                if CALIBRATE_MODE and memory_snapshot:
+                # CALIBRATION: Now that we have cards, scan memory for them
+                if CALIBRATE_MODE:
                     hero_cards = result.get('hero_cards', [])
                     if hero_cards and len(hero_cards) == 2:
-                        self.root.after(0, lambda c=hero_cards: self.log(f"Matching {c[0]} {c[1]}...", "DEBUG"))
+                        self.root.after(0, lambda c=hero_cards: self.log(f"Scanning for {c[0]} {c[1]}...", "DEBUG"))
                         try:
-                            from memory_calibrator import calibrate_with_gpt, is_calibrated, SAMPLES_FILE
-                            err = calibrate_with_gpt(hero_cards, memory_snapshot)
+                            from memory_calibrator import calibrate_after_gpt, is_calibrated, SAMPLES_FILE
+                            err = calibrate_after_gpt(hero_cards)
                             if err:
                                 self.root.after(0, lambda e=err: self.log(f"Memory: {e}", "WARN"))
                                 result['memory_error'] = err
                             elif is_calibrated():
-                                self.root.after(0, lambda: self.log("CALIBRATED! Fast reads enabled", "INFO"))
+                                self.root.after(0, lambda: self.log("CALIBRATED!", "INFO"))
                                 result['memory_status'] = 'calibrated'
                             elif os.path.exists(SAMPLES_FILE):
                                 with open(SAMPLES_FILE) as f:
                                     tracking = json.load(f)
                                 hands = tracking.get('hands', 0)
-                                addrs = len(tracking.get('addrs', {}))
+                                addrs = len(tracking.get('addrs', []))
                                 self.root.after(0, lambda h=hands, a=addrs: self.log(f"Hand {h}: {a} candidates", "INFO"))
                                 result['memory_status'] = f'tracking_{hands}_{addrs}'
                         except Exception as e:
-                            tb = traceback.format_exc()
-                            result['memory_error'] = f"calibrate exception: {e}"
-                            result['calibration_traceback'] = tb
-                            self.root.after(0, lambda e=e: self.log(f"Calibration error: {e}", "ERROR"))
+                            result['memory_error'] = str(e)
+                            self.root.after(0, lambda e=e: self.log(f"Calibration: {e}", "ERROR"))
+                
+                elapsed = time.time() - start
+                self.root.after(0, lambda t=api_time: self.log(f"API done: {t:.1f}s", "DEBUG"))
                 
                 elapsed = time.time() - start
                 self.root.after(0, lambda t=api_time: self.log(f"API done: {t:.1f}s", "DEBUG"))
