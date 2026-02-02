@@ -182,12 +182,17 @@ def scan_memory_snapshot():
     
     snapshot = {}
     scanned = 0
+    region_count = 0
     
     for base, size, _ in regions:
         if size is None or size <= 0 or size < 6:
             continue
         if base is None:
             base = 0
+        
+        region_count += 1
+        if region_count % 50 == 0:
+            print(f"[MEM] Progress: {region_count}/{len(regions)} regions, {len(snapshot)} matches")
         
         data = reader.read_bytes(base, size)
         if not data or len(data) < 6:
