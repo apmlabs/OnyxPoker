@@ -1,19 +1,19 @@
 """
-Memory Calibrator - Find PokerStars card addresses using GPT as oracle.
+Memory Calibrator v2 - Find cards by searching for UNIQUE values first.
 
-PokerStars stores cards as:
-  - ranks (0-12) at offset 0x9C from seat base
-  - suits (0-3) at offset 0xA0 (4 bytes after ranks)
+Strategy: Card values (0-12) are too common. Instead:
+1. GPT reads hand_id (12-digit number) from screenshot
+2. Scan memory for hand_id - very few matches
+3. Card data is at known offset from hand_id location
 
-Flow:
-  1. GPT detects cards from screenshot
-  2. We scan memory for those exact card values
-  3. Track addresses across hands - real address has correct values each time
+From poker-supernova offsets:
+  table: hand_id at 0x40, card_values at 0x64, card_suits at 0x68
+  seat: card_values at 0x9C, card_suits at 0xA0
 """
 
 import sys
 import os
-import json
+import struct
 from datetime import datetime
 
 IS_WINDOWS = sys.platform == 'win32'
@@ -25,7 +25,6 @@ if IS_WINDOWS:
     PROCESS_VM_READ = 0x0010
     PROCESS_QUERY_INFORMATION = 0x0400
     MEM_COMMIT = 0x1000
-    MEM_PRIVATE = 0x20000
     PAGE_READABLE = 0x02 | 0x04 | 0x20 | 0x40 | 0x80
 
     class MEMORY_BASIC_INFORMATION(ctypes.Structure):
@@ -39,16 +38,12 @@ if IS_WINDOWS:
             ("Type", wintypes.DWORD),
         ]
 
+LOG_FILE = os.path.join(os.path.dirname(__file__), 'logs', 'memory_scan.log')
 RANKS = ['2', '3', '4', '5', '6', '7', '8', '9', 'T', 'J', 'Q', 'K', 'A']
 SUITS = ['c', 'd', 'h', 's']
 
-CALIBRATION_FILE = os.path.join(os.path.dirname(__file__), 'memory_offsets.json')
-SAMPLES_FILE = os.path.join(os.path.dirname(__file__), 'memory_samples.json')
-LOG_FILE = os.path.join(os.path.dirname(__file__), 'logs', 'memory_scan.log')
-
 
 def log(msg):
-    """Log to file and console."""
     line = f"{datetime.now().strftime('%H:%M:%S')} {msg}"
     print(f"[MEM] {msg}")
     try:
@@ -59,21 +54,10 @@ def log(msg):
         pass
 
 
-def card_to_bytes(card_str):
-    """Convert 'Ah' to (rank=12, suit=2)."""
-    if not card_str or len(card_str) < 2:
-        return None, None
-    rank_char = card_str[0].upper()
-    suit_char = card_str[1].lower()
-    if rank_char not in RANKS or suit_char not in SUITS:
-        return None, None
-    return RANKS.index(rank_char), SUITS.index(suit_char)
-
-
-class MemoryReader:
+class MemoryScanner:
     def __init__(self):
-        self.pid = None
         self.handle = None
+        self.pid = None
     
     def find_pokerstars(self):
         if not IS_WINDOWS:
@@ -90,225 +74,231 @@ class MemoryReader:
             pass
         return None
     
-    def open_process(self, pid):
+    def open(self):
         if not IS_WINDOWS:
-            return None
-        handle = ctypes.windll.kernel32.OpenProcess(
-            PROCESS_VM_READ | PROCESS_QUERY_INFORMATION, False, pid
+            return False
+        self.pid = self.find_pokerstars()
+        if not self.pid:
+            log("PokerStars not found")
+            return False
+        self.handle = ctypes.windll.kernel32.OpenProcess(
+            PROCESS_VM_READ | PROCESS_QUERY_INFORMATION, False, self.pid
         )
-        return handle if handle else None
+        if not self.handle:
+            log("Could not open process")
+            return False
+        log(f"Attached to PID {self.pid}")
+        return True
     
-    def read_bytes(self, address, size):
-        if not IS_WINDOWS or not self.handle:
+    def read(self, addr, size):
+        if not self.handle:
             return None
         buf = ctypes.create_string_buffer(size)
         read = ctypes.c_size_t()
         if ctypes.windll.kernel32.ReadProcessMemory(
-            self.handle, ctypes.c_void_p(address), buf, size, ctypes.byref(read)
+            self.handle, ctypes.c_void_p(addr), buf, size, ctypes.byref(read)
         ):
             return buf.raw[:read.value]
         return None
     
-    def get_regions(self):
-        """Get private memory regions (heap)."""
-        if not IS_WINDOWS or not self.handle:
+    def scan_for_bytes(self, pattern):
+        """Scan all readable memory for byte pattern. Returns list of addresses."""
+        if not self.handle:
             return []
-        regions = []
+        
+        matches = []
         addr = 0
         mbi = MEMORY_BASIC_INFORMATION()
+        regions_scanned = 0
+        
         while ctypes.windll.kernel32.VirtualQueryEx(
             self.handle, ctypes.c_void_p(addr), ctypes.byref(mbi), ctypes.sizeof(mbi)
         ):
             if mbi.RegionSize is None or mbi.RegionSize <= 0:
                 break
-            if mbi.State == MEM_COMMIT and mbi.Type == MEM_PRIVATE and (mbi.Protect & PAGE_READABLE):
-                regions.append((mbi.BaseAddress or 0, mbi.RegionSize))
+            
+            # Only scan committed, readable memory
+            if mbi.State == MEM_COMMIT and (mbi.Protect & PAGE_READABLE):
+                base = mbi.BaseAddress or 0
+                size = mbi.RegionSize
+                
+                # Skip huge regions
+                if size <= 50 * 1024 * 1024:
+                    data = self.read(base, size)
+                    if data:
+                        # Find all occurrences
+                        idx = 0
+                        while True:
+                            idx = data.find(pattern, idx)
+                            if idx == -1:
+                                break
+                            matches.append(base + idx)
+                            idx += 1
+                    regions_scanned += 1
+                    if regions_scanned % 200 == 0:
+                        log(f"Scanned {regions_scanned} regions, {len(matches)} matches so far")
+            
             addr = (mbi.BaseAddress or 0) + mbi.RegionSize
             if addr <= (mbi.BaseAddress or 0):
                 break
-        return regions
-    
-    def scan_for_cards(self, r1, s1, r2, s2):
-        """
-        Scan memory for specific card values.
-        PokerStars format: [r1, r2, ?, ?, s1, s2] at card address.
-        Returns list of matching addresses.
-        """
-        regions = self.get_regions()
-        total_mb = sum(r[1] for r in regions) / 1024 / 1024
-        log(f"Scanning {len(regions)} regions ({total_mb:.0f}MB) for r1={r1} r2={r2} s1={s1} s2={s2}")
         
-        matches = []
-        scanned = 0
-        
-        for i, (base, size) in enumerate(regions):
-            if i % 100 == 0 and i > 0:
-                log(f"Progress: {i}/{len(regions)} regions, {len(matches)} matches")
-            
-            if size > 10 * 1024 * 1024:  # Skip >10MB regions
-                continue
-            
-            data = self.read_bytes(base, size)
-            if not data or len(data) < 6:
-                continue
-            
-            scanned += len(data)
-            
-            # Search for pattern: [r1, r2, ?, ?, s1, s2]
-            for j in range(len(data) - 5):
-                if data[j] == r1 and data[j+1] == r2 and data[j+4] == s1 and data[j+5] == s2:
-                    matches.append(base + j)
-        
-        log(f"Done: {len(matches)} matches in {scanned // 1024}KB")
         return matches
 
 
-_reader = None
-
-def get_reader():
-    global _reader
-    if _reader is None:
-        _reader = MemoryReader()
-    return _reader
-
-
-def calibrate_after_gpt(gpt_cards):
+def calibrate_with_hand_id(hand_id, hero_cards=None):
     """
-    Called after GPT returns cards. Scan memory for those cards.
-    Track addresses across hands until we find the stable one.
+    Find card memory location using hand_id as anchor.
+    
+    hand_id: string like "234567890123" (12 digits)
+    hero_cards: optional ["Ah", "Kd"] to verify we found the right spot
     """
-    log(f"=== calibrate_after_gpt({gpt_cards}) ===")
+    log(f"=== Calibrating with hand_id={hand_id} ===")
     
-    if not gpt_cards or len(gpt_cards) < 2:
-        return "Need 2 cards"
+    scanner = MemoryScanner()
+    if not scanner.open():
+        return None
     
-    r1, s1 = card_to_bytes(gpt_cards[0])
-    r2, s2 = card_to_bytes(gpt_cards[1])
+    # Try different encodings of hand_id
+    patterns = []
     
-    if r1 is None or r2 is None:
-        return f"Invalid cards: {gpt_cards}"
+    # As ASCII string
+    patterns.append(('ascii', hand_id.encode('ascii')))
     
-    reader = get_reader()
-    if not reader.handle:
-        reader.pid = reader.find_pokerstars()
-        if not reader.pid:
-            return "PokerStars not found"
-        reader.handle = reader.open_process(reader.pid)
-        if not reader.handle:
-            return "Could not open process"
+    # As int64
+    try:
+        patterns.append(('int64', struct.pack('<Q', int(hand_id))))
+    except:
+        pass
     
-    log(f"PID: {reader.pid}")
+    # As UTF-16
+    patterns.append(('utf16', hand_id.encode('utf-16-le')))
     
-    # Load tracking data
-    tracking = {'addrs': [], 'hands': 0}
-    if os.path.exists(SAMPLES_FILE):
-        try:
-            with open(SAMPLES_FILE) as f:
-                tracking = json.load(f)
-        except:
-            pass
+    all_matches = {}
+    for name, pattern in patterns:
+        log(f"Searching for {name}: {pattern.hex()}")
+        matches = scanner.scan_for_bytes(pattern)
+        log(f"  Found {len(matches)} matches")
+        if matches:
+            all_matches[name] = matches
     
-    if tracking['hands'] == 0:
-        # First hand: find all matches
-        matches = reader.scan_for_cards(r1, s1, r2, s2)
+    if not all_matches:
+        log("No matches for hand_id - try a different hand")
+        return None
+    
+    # For each match, look for card data nearby
+    # poker-supernova: hand_id at 0x40, cards at 0x64/0x68 (table) or 0x9C/0xA0 (seat)
+    # So cards could be at offset +0x24 to +0x60 from hand_id
+    
+    log("\n=== Exploring nearby memory for card patterns ===")
+    
+    for encoding, addrs in all_matches.items():
+        for addr in addrs[:10]:  # Check first 10 matches
+            # Read 256 bytes around the match
+            data = scanner.read(addr - 64, 256)
+            if not data:
+                continue
+            
+            # Look for card-like patterns (two bytes 0-12 followed by two bytes 0-3)
+            for offset in range(len(data) - 6):
+                r1, r2 = data[offset], data[offset+1]
+                # Check various gaps for suits
+                for gap in [2, 3, 4]:  # suits might be 2-4 bytes after ranks
+                    if offset + gap + 2 > len(data):
+                        continue
+                    s1, s2 = data[offset+gap], data[offset+gap+1]
+                    
+                    if 0 <= r1 <= 12 and 0 <= r2 <= 12 and 0 <= s1 <= 3 and 0 <= s2 <= 3:
+                        card1 = RANKS[r1] + SUITS[s1]
+                        card2 = RANKS[r2] + SUITS[s2]
+                        real_addr = addr - 64 + offset
+                        
+                        # If we have hero_cards, check if this matches
+                        if hero_cards:
+                            if card1 == hero_cards[0] and card2 == hero_cards[1]:
+                                log(f"MATCH! {card1} {card2} at {hex(real_addr)} (gap={gap})")
+                                return {'addr': real_addr, 'gap': gap}
+                        else:
+                            log(f"Candidate: {card1} {card2} at {hex(real_addr)} (gap={gap})")
+    
+    return None
+
+
+def calibrate_with_player_name(name, hero_cards=None):
+    """Find card memory using player name as anchor."""
+    log(f"=== Calibrating with player_name={name} ===")
+    
+    scanner = MemoryScanner()
+    if not scanner.open():
+        return None
+    
+    # Player names are usually UTF-16 in Windows
+    patterns = [
+        ('utf16', name.encode('utf-16-le')),
+        ('ascii', name.encode('ascii')),
+    ]
+    
+    for enc_name, pattern in patterns:
+        log(f"Searching for {enc_name}: {pattern[:20].hex()}...")
+        matches = scanner.scan_for_bytes(pattern)
+        log(f"  Found {len(matches)} matches")
+        
         if not matches:
-            return f"No matches for {gpt_cards[0]} {gpt_cards[1]}"
+            continue
         
-        tracking['addrs'] = matches
-        tracking['hands'] = 1
-        log(f"Hand 1: {len(matches)} candidates")
-    else:
-        # Subsequent hands: filter to addresses that still match
-        matches = reader.scan_for_cards(r1, s1, r2, s2)
-        match_set = set(matches)
+        # seat base is at name offset 0x00, cards at 0x9C/0xA0
+        # So cards are ~156 bytes after name start
         
-        surviving = [a for a in tracking['addrs'] if a in match_set]
-        log(f"Hand {tracking['hands']+1}: {len(surviving)} survived (was {len(tracking['addrs'])})")
-        
-        tracking['addrs'] = surviving
-        tracking['hands'] += 1
-        
-        if len(surviving) == 0:
-            log("No addresses survived - restarting")
-            os.remove(SAMPLES_FILE)
-            return None
-        
-        if len(surviving) <= 3 and tracking['hands'] >= 3:
-            addr = surviving[0]
-            log(f"CALIBRATED! Address: {hex(addr)}")
-            save_calibration({'card_addr': addr, 'hands': tracking['hands']})
-            os.remove(SAMPLES_FILE)
-            return None
-    
-    with open(SAMPLES_FILE, 'w') as f:
-        json.dump(tracking, f)
+        for addr in matches[:20]:
+            # Read memory after the name
+            data = scanner.read(addr, 256)
+            if not data:
+                continue
+            
+            # Look for card pattern around offset 0x9C (156 bytes)
+            for offset in range(140, 180):
+                if offset + 6 > len(data):
+                    continue
+                r1, r2 = data[offset], data[offset+1]
+                for gap in [2, 3, 4]:
+                    if offset + gap + 2 > len(data):
+                        continue
+                    s1, s2 = data[offset+gap], data[offset+gap+1]
+                    
+                    if 0 <= r1 <= 12 and 0 <= r2 <= 12 and 0 <= s1 <= 3 and 0 <= s2 <= 3:
+                        card1 = RANKS[r1] + SUITS[s1]
+                        card2 = RANKS[r2] + SUITS[s2]
+                        
+                        if hero_cards:
+                            if card1 == hero_cards[0] and card2 == hero_cards[1]:
+                                log(f"MATCH! {card1} {card2} at name+{offset} (gap={gap})")
+                                return {'name_addr': addr, 'card_offset': offset, 'gap': gap}
+                        else:
+                            log(f"Candidate: {card1} {card2} at name+{offset}")
     
     return None
-
-
-def read_cards_fast():
-    """Read cards from calibrated address."""
-    cal = load_calibration()
-    if not cal or not cal.get('card_addr'):
-        return None
-    
-    reader = get_reader()
-    if not reader.handle:
-        reader.pid = reader.find_pokerstars()
-        if not reader.pid:
-            return None
-        reader.handle = reader.open_process(reader.pid)
-        if not reader.handle:
-            return None
-    
-    data = reader.read_bytes(cal['card_addr'], 6)
-    if not data or len(data) < 6:
-        return None
-    
-    r1, r2, s1, s2 = data[0], data[1], data[4], data[5]
-    if r1 > 12 or r2 > 12 or s1 > 3 or s2 > 3:
-        return None
-    
-    return [RANKS[r1] + SUITS[s1], RANKS[r2] + SUITS[s2]]
-
-
-def load_calibration():
-    if os.path.exists(CALIBRATION_FILE):
-        try:
-            with open(CALIBRATION_FILE) as f:
-                return json.load(f)
-        except:
-            pass
-    return None
-
-
-def save_calibration(data):
-    with open(CALIBRATION_FILE, 'w') as f:
-        json.dump(data, f, indent=2)
-
-
-def is_calibrated():
-    cal = load_calibration()
-    return cal is not None and cal.get('card_addr') is not None
 
 
 if __name__ == '__main__':
-    if '--test' in sys.argv:
-        print("Testing memory access...")
-        reader = MemoryReader()
-        reader.pid = reader.find_pokerstars()
-        if not reader.pid:
-            print("PokerStars not running")
-            sys.exit(1)
-        print(f"PID: {reader.pid}")
-        reader.handle = reader.open_process(reader.pid)
-        if not reader.handle:
-            print("Could not open process")
-            sys.exit(1)
-        regions = reader.get_regions()
-        total_mb = sum(r[1] for r in regions) / 1024 / 1024
-        print(f"Private regions: {len(regions)} ({total_mb:.0f}MB)")
-        print("OK!")
+    import argparse
+    parser = argparse.ArgumentParser()
+    parser.add_argument('--hand-id', help='12-digit hand ID from table')
+    parser.add_argument('--name', help='Your player name')
+    parser.add_argument('--cards', help='Your hole cards, e.g. "Ah,Kd"')
+    args = parser.parse_args()
+    
+    hero_cards = None
+    if args.cards:
+        hero_cards = [c.strip() for c in args.cards.split(',')]
+    
+    if args.hand_id:
+        result = calibrate_with_hand_id(args.hand_id, hero_cards)
+        if result:
+            print(f"\nSUCCESS: {result}")
+    elif args.name:
+        result = calibrate_with_player_name(args.name, hero_cards)
+        if result:
+            print(f"\nSUCCESS: {result}")
     else:
-        print("Usage: python memory_calibrator.py --test")
-        print("Calibration: python helper_bar.py --calibrate")
+        print("Usage:")
+        print("  python memory_calibrator.py --hand-id 234567890123 --cards Ah,Kd")
+        print("  python memory_calibrator.py --name idealistslp --cards Ah,Kd")
