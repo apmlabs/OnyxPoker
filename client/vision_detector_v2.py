@@ -59,6 +59,7 @@ class VisionDetectorV2:
         prompt = """Read this PokerStars 6-max table screenshot. Return ONLY valid JSON:
 
 {
+  "hand_id": "234567890123",
   "hero_cards": ["As", "Kh"],
   "community_cards": ["Qd", "Jc", "Ts"],
   "pot": 0.15,
@@ -85,6 +86,7 @@ COMMON MISTAKES TO AVOID:
 - Mixing up card order
 
 READING RULES:
+- hand_id: The hand number shown in TOP-LEFT corner of table (12+ digit number like "234567890123"). Read exact digits.
 - hero_cards: TWO face-up cards at BOTTOM CENTER. Format: As=Ace spades, Kh=King hearts, Td=Ten diamonds. null if no visible cards or cards face-down.
 - community_cards: Cards in CENTER of table. Empty [] if preflop (no board yet).
 - pot: Total pot amount shown in CENTER. Read exact decimal value.

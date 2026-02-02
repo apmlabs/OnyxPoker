@@ -549,27 +549,25 @@ class HelperBar:
                         result['all_positions'] = all_position_results
                     result['api_time'] = api_time
 
-                # CALIBRATION: Now that we have cards, scan memory for them
+                # CALIBRATION: Use hand_id to find card memory location
                 if CALIBRATE_MODE:
+                    hand_id = result.get('hand_id')
                     hero_cards = result.get('hero_cards', [])
-                    if hero_cards and len(hero_cards) == 2:
-                        self.root.after(0, lambda c=hero_cards: self.log(f"Scanning for {c[0]} {c[1]}...", "DEBUG"))
+                    if hand_id and hero_cards and len(hero_cards) == 2:
+                        self.root.after(0, lambda: self.log(f"Scanning for hand_id {hand_id}...", "DEBUG"))
                         try:
-                            from memory_calibrator import calibrate_after_gpt, is_calibrated, SAMPLES_FILE
-                            err = calibrate_after_gpt(hero_cards)
-                            if err:
-                                self.root.after(0, lambda e=err: self.log(f"Memory: {e}", "WARN"))
-                                result['memory_error'] = err
-                            elif is_calibrated():
+                            from memory_calibrator import calibrate_after_gpt, is_calibrated, load_tracking
+                            calibrate_after_gpt(result)
+                            if is_calibrated():
                                 self.root.after(0, lambda: self.log("CALIBRATED!", "INFO"))
                                 result['memory_status'] = 'calibrated'
-                            elif os.path.exists(SAMPLES_FILE):
-                                with open(SAMPLES_FILE) as f:
-                                    tracking = json.load(f)
+                            else:
+                                tracking = load_tracking()
                                 hands = tracking.get('hands', 0)
-                                addrs = len(tracking.get('addrs', []))
-                                self.root.after(0, lambda h=hands, a=addrs: self.log(f"Hand {h}: {a} candidates", "INFO"))
-                                result['memory_status'] = f'tracking_{hands}_{addrs}'
+                                cands = len(tracking.get('candidates', []))
+                                if hands > 0:
+                                    self.root.after(0, lambda h=hands, c=cands: self.log(f"Hand {h}: {c} candidates", "INFO"))
+                                    result['memory_status'] = f'tracking_{hands}_{cands}'
                         except Exception as e:
                             result['memory_error'] = str(e)
                             self.root.after(0, lambda e=e: self.log(f"Calibration: {e}", "ERROR"))

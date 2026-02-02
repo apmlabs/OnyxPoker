@@ -1,18 +1,16 @@
 """
-Memory Calibrator v2 - Find cards by searching for UNIQUE values first.
+Memory Calibrator v2 - Auto-find cards using GPT-detected hand_id as anchor.
 
-Strategy: Card values (0-12) are too common. Instead:
-1. GPT reads hand_id (12-digit number) from screenshot
-2. Scan memory for hand_id - very few matches
-3. Card data is at known offset from hand_id location
-
-From poker-supernova offsets:
-  table: hand_id at 0x40, card_values at 0x64, card_suits at 0x68
-  seat: card_values at 0x9C, card_suits at 0xA0
+Flow:
+1. GPT reads screenshot, returns hand_id + hero_cards
+2. Scan memory for hand_id (unique 12-digit number)
+3. Explore nearby memory for card values matching hero_cards
+4. Track successful addresses across hands until stable
 """
 
 import sys
 import os
+import json
 import struct
 from datetime import datetime
 
@@ -39,6 +37,9 @@ if IS_WINDOWS:
         ]
 
 LOG_FILE = os.path.join(os.path.dirname(__file__), 'logs', 'memory_scan.log')
+CALIBRATION_FILE = os.path.join(os.path.dirname(__file__), 'memory_offsets.json')
+TRACKING_FILE = os.path.join(os.path.dirname(__file__), 'memory_tracking.json')
+
 RANKS = ['2', '3', '4', '5', '6', '7', '8', '9', 'T', 'J', 'Q', 'K', 'A']
 SUITS = ['c', 'd', 'h', 's']
 
@@ -52,6 +53,17 @@ def log(msg):
             f.write(line + '\n')
     except:
         pass
+
+
+def card_to_values(card_str):
+    """Convert 'Ah' to (rank=12, suit=2)."""
+    if not card_str or len(card_str) < 2:
+        return None, None
+    r = card_str[0].upper()
+    s = card_str[1].lower()
+    if r not in RANKS or s not in SUITS:
+        return None, None
+    return RANKS.index(r), SUITS.index(s)
 
 
 class MemoryScanner:
@@ -79,16 +91,11 @@ class MemoryScanner:
             return False
         self.pid = self.find_pokerstars()
         if not self.pid:
-            log("PokerStars not found")
             return False
         self.handle = ctypes.windll.kernel32.OpenProcess(
             PROCESS_VM_READ | PROCESS_QUERY_INFORMATION, False, self.pid
         )
-        if not self.handle:
-            log("Could not open process")
-            return False
-        log(f"Attached to PID {self.pid}")
-        return True
+        return bool(self.handle)
     
     def read(self, addr, size):
         if not self.handle:
@@ -102,31 +109,24 @@ class MemoryScanner:
         return None
     
     def scan_for_bytes(self, pattern):
-        """Scan all readable memory for byte pattern. Returns list of addresses."""
+        """Scan memory for byte pattern."""
         if not self.handle:
             return []
-        
         matches = []
         addr = 0
         mbi = MEMORY_BASIC_INFORMATION()
-        regions_scanned = 0
         
         while ctypes.windll.kernel32.VirtualQueryEx(
             self.handle, ctypes.c_void_p(addr), ctypes.byref(mbi), ctypes.sizeof(mbi)
         ):
             if mbi.RegionSize is None or mbi.RegionSize <= 0:
                 break
-            
-            # Only scan committed, readable memory
             if mbi.State == MEM_COMMIT and (mbi.Protect & PAGE_READABLE):
                 base = mbi.BaseAddress or 0
                 size = mbi.RegionSize
-                
-                # Skip huge regions
                 if size <= 50 * 1024 * 1024:
                     data = self.read(base, size)
                     if data:
-                        # Find all occurrences
                         idx = 0
                         while True:
                             idx = data.find(pattern, idx)
@@ -134,171 +134,182 @@ class MemoryScanner:
                                 break
                             matches.append(base + idx)
                             idx += 1
-                    regions_scanned += 1
-                    if regions_scanned % 200 == 0:
-                        log(f"Scanned {regions_scanned} regions, {len(matches)} matches so far")
-            
             addr = (mbi.BaseAddress or 0) + mbi.RegionSize
             if addr <= (mbi.BaseAddress or 0):
                 break
-        
         return matches
 
 
-def calibrate_with_hand_id(hand_id, hero_cards=None):
+_scanner = None
+
+def get_scanner():
+    global _scanner
+    if _scanner is None:
+        _scanner = MemoryScanner()
+    return _scanner
+
+
+def calibrate_after_gpt(gpt_result):
     """
-    Find card memory location using hand_id as anchor.
+    Called automatically after GPT returns. Uses hand_id to find cards.
     
-    hand_id: string like "234567890123" (12 digits)
-    hero_cards: optional ["Ah", "Kd"] to verify we found the right spot
+    gpt_result: dict with 'hand_id' and 'hero_cards'
     """
-    log(f"=== Calibrating with hand_id={hand_id} ===")
+    hand_id = gpt_result.get('hand_id')
+    hero_cards = gpt_result.get('hero_cards')
     
-    scanner = MemoryScanner()
-    if not scanner.open():
-        return None
+    if not hand_id or not hero_cards or len(hero_cards) < 2:
+        return
     
-    # Try different encodings of hand_id
-    patterns = []
+    log(f"=== Auto-calibrate: hand_id={hand_id}, cards={hero_cards} ===")
     
-    # As ASCII string
-    patterns.append(('ascii', hand_id.encode('ascii')))
+    r1, s1 = card_to_values(hero_cards[0])
+    r2, s2 = card_to_values(hero_cards[1])
+    if r1 is None or r2 is None:
+        return
     
-    # As int64
+    scanner = get_scanner()
+    if not scanner.handle:
+        if not scanner.open():
+            log("Could not open PokerStars")
+            return
+        log(f"Attached to PID {scanner.pid}")
+    
+    # Search for hand_id in memory
+    patterns = [
+        ('ascii', hand_id.encode('ascii')),
+        ('utf16', hand_id.encode('utf-16-le')),
+    ]
     try:
         patterns.append(('int64', struct.pack('<Q', int(hand_id))))
     except:
         pass
     
-    # As UTF-16
-    patterns.append(('utf16', hand_id.encode('utf-16-le')))
-    
-    all_matches = {}
-    for name, pattern in patterns:
-        log(f"Searching for {name}: {pattern.hex()}")
-        matches = scanner.scan_for_bytes(pattern)
-        log(f"  Found {len(matches)} matches")
-        if matches:
-            all_matches[name] = matches
-    
-    if not all_matches:
-        log("No matches for hand_id - try a different hand")
-        return None
-    
-    # For each match, look for card data nearby
-    # poker-supernova: hand_id at 0x40, cards at 0x64/0x68 (table) or 0x9C/0xA0 (seat)
-    # So cards could be at offset +0x24 to +0x60 from hand_id
-    
-    log("\n=== Exploring nearby memory for card patterns ===")
-    
-    for encoding, addrs in all_matches.items():
-        for addr in addrs[:10]:  # Check first 10 matches
-            # Read 256 bytes around the match
-            data = scanner.read(addr - 64, 256)
-            if not data:
-                continue
-            
-            # Look for card-like patterns (two bytes 0-12 followed by two bytes 0-3)
-            for offset in range(len(data) - 6):
-                r1, r2 = data[offset], data[offset+1]
-                # Check various gaps for suits
-                for gap in [2, 3, 4]:  # suits might be 2-4 bytes after ranks
-                    if offset + gap + 2 > len(data):
-                        continue
-                    s1, s2 = data[offset+gap], data[offset+gap+1]
-                    
-                    if 0 <= r1 <= 12 and 0 <= r2 <= 12 and 0 <= s1 <= 3 and 0 <= s2 <= 3:
-                        card1 = RANKS[r1] + SUITS[s1]
-                        card2 = RANKS[r2] + SUITS[s2]
-                        real_addr = addr - 64 + offset
-                        
-                        # If we have hero_cards, check if this matches
-                        if hero_cards:
-                            if card1 == hero_cards[0] and card2 == hero_cards[1]:
-                                log(f"MATCH! {card1} {card2} at {hex(real_addr)} (gap={gap})")
-                                return {'addr': real_addr, 'gap': gap}
-                        else:
-                            log(f"Candidate: {card1} {card2} at {hex(real_addr)} (gap={gap})")
-    
-    return None
-
-
-def calibrate_with_player_name(name, hero_cards=None):
-    """Find card memory using player name as anchor."""
-    log(f"=== Calibrating with player_name={name} ===")
-    
-    scanner = MemoryScanner()
-    if not scanner.open():
-        return None
-    
-    # Player names are usually UTF-16 in Windows
-    patterns = [
-        ('utf16', name.encode('utf-16-le')),
-        ('ascii', name.encode('ascii')),
-    ]
+    found_cards = []
     
     for enc_name, pattern in patterns:
-        log(f"Searching for {enc_name}: {pattern[:20].hex()}...")
         matches = scanner.scan_for_bytes(pattern)
-        log(f"  Found {len(matches)} matches")
-        
         if not matches:
             continue
+        log(f"hand_id as {enc_name}: {len(matches)} matches")
         
-        # seat base is at name offset 0x00, cards at 0x9C/0xA0
-        # So cards are ~156 bytes after name start
-        
+        # Check memory around each match for our cards
         for addr in matches[:20]:
-            # Read memory after the name
-            data = scanner.read(addr, 256)
+            data = scanner.read(addr - 128, 512)
             if not data:
                 continue
             
-            # Look for card pattern around offset 0x9C (156 bytes)
-            for offset in range(140, 180):
-                if offset + 6 > len(data):
-                    continue
-                r1, r2 = data[offset], data[offset+1]
-                for gap in [2, 3, 4]:
-                    if offset + gap + 2 > len(data):
-                        continue
-                    s1, s2 = data[offset+gap], data[offset+gap+1]
-                    
-                    if 0 <= r1 <= 12 and 0 <= r2 <= 12 and 0 <= s1 <= 3 and 0 <= s2 <= 3:
-                        card1 = RANKS[r1] + SUITS[s1]
-                        card2 = RANKS[r2] + SUITS[s2]
-                        
-                        if hero_cards:
-                            if card1 == hero_cards[0] and card2 == hero_cards[1]:
-                                log(f"MATCH! {card1} {card2} at name+{offset} (gap={gap})")
-                                return {'name_addr': addr, 'card_offset': offset, 'gap': gap}
-                        else:
-                            log(f"Candidate: {card1} {card2} at name+{offset}")
+            # Look for [r1, r2, ?, ?, s1, s2] pattern
+            for offset in range(len(data) - 6):
+                if data[offset] == r1 and data[offset+1] == r2:
+                    for gap in [4]:  # PokerStars uses gap of 4
+                        if offset + gap + 2 > len(data):
+                            continue
+                        if data[offset+gap] == s1 and data[offset+gap+1] == s2:
+                            real_addr = addr - 128 + offset
+                            log(f"FOUND cards at {hex(real_addr)} (hand_id+{offset-128})")
+                            found_cards.append({
+                                'card_addr': real_addr,
+                                'hand_id_addr': addr,
+                                'offset_from_hand_id': offset - 128
+                            })
     
+    if not found_cards:
+        log("No card matches found near hand_id")
+        return
+    
+    # Track addresses across hands
+    tracking = load_tracking()
+    
+    if tracking.get('hands', 0) == 0:
+        # First hand - save all candidates
+        tracking['candidates'] = [f['card_addr'] for f in found_cards]
+        tracking['hands'] = 1
+        log(f"Hand 1: {len(found_cards)} candidates")
+    else:
+        # Filter to addresses that matched again
+        new_addrs = set(f['card_addr'] for f in found_cards)
+        surviving = [a for a in tracking.get('candidates', []) if a in new_addrs]
+        tracking['candidates'] = surviving
+        tracking['hands'] += 1
+        log(f"Hand {tracking['hands']}: {len(surviving)} survived")
+        
+        if len(surviving) == 1 and tracking['hands'] >= 2:
+            # Found stable address!
+            save_calibration({'card_addr': surviving[0]})
+            log(f"CALIBRATED! Card address: {hex(surviving[0])}")
+            tracking = {}  # Reset tracking
+        elif len(surviving) == 0:
+            log("No addresses survived - restarting")
+            tracking = {}
+    
+    save_tracking(tracking)
+
+
+def read_cards_fast():
+    """Read cards from calibrated address. Returns ['Ah', 'Kd'] or None."""
+    cal = load_calibration()
+    if not cal or not cal.get('card_addr'):
+        return None
+    
+    scanner = get_scanner()
+    if not scanner.handle:
+        if not scanner.open():
+            return None
+    
+    data = scanner.read(cal['card_addr'], 6)
+    if not data or len(data) < 6:
+        return None
+    
+    r1, r2, s1, s2 = data[0], data[1], data[4], data[5]
+    if r1 > 12 or r2 > 12 or s1 > 3 or s2 > 3:
+        return None
+    
+    return [RANKS[r1] + SUITS[s1], RANKS[r2] + SUITS[s2]]
+
+
+def is_calibrated():
+    cal = load_calibration()
+    return cal is not None and cal.get('card_addr') is not None
+
+
+def load_calibration():
+    if os.path.exists(CALIBRATION_FILE):
+        try:
+            with open(CALIBRATION_FILE) as f:
+                return json.load(f)
+        except:
+            pass
     return None
+
+
+def save_calibration(data):
+    with open(CALIBRATION_FILE, 'w') as f:
+        json.dump(data, f, indent=2)
+
+
+def load_tracking():
+    if os.path.exists(TRACKING_FILE):
+        try:
+            with open(TRACKING_FILE) as f:
+                return json.load(f)
+        except:
+            pass
+    return {}
+
+
+def save_tracking(data):
+    with open(TRACKING_FILE, 'w') as f:
+        json.dump(data, f, indent=2)
 
 
 if __name__ == '__main__':
-    import argparse
-    parser = argparse.ArgumentParser()
-    parser.add_argument('--hand-id', help='12-digit hand ID from table')
-    parser.add_argument('--name', help='Your player name')
-    parser.add_argument('--cards', help='Your hole cards, e.g. "Ah,Kd"')
-    args = parser.parse_args()
-    
-    hero_cards = None
-    if args.cards:
-        hero_cards = [c.strip() for c in args.cards.split(',')]
-    
-    if args.hand_id:
-        result = calibrate_with_hand_id(args.hand_id, hero_cards)
-        if result:
-            print(f"\nSUCCESS: {result}")
-    elif args.name:
-        result = calibrate_with_player_name(args.name, hero_cards)
-        if result:
-            print(f"\nSUCCESS: {result}")
+    # Manual test
+    if len(sys.argv) >= 3:
+        hand_id = sys.argv[1]
+        cards = sys.argv[2].split(',')
+        calibrate_after_gpt({'hand_id': hand_id, 'hero_cards': cards})
     else:
-        print("Usage:")
-        print("  python memory_calibrator.py --hand-id 234567890123 --cards Ah,Kd")
-        print("  python memory_calibrator.py --name idealistslp --cards Ah,Kd")
+        print("Usage: python memory_calibrator.py <hand_id> <card1,card2>")
+        print("Example: python memory_calibrator.py 234567890123 Ah,Kd")
+        print("\nOr run helper_bar.py - calibration happens automatically")
