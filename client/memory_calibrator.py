@@ -163,22 +163,36 @@ def scan_memory_snapshot():
     Returns dict of {addr: (byte0, byte1, byte4, byte5)} for potential card locations.
     """
     global _last_snapshot
+    
+    # Log to file that gets flushed immediately
+    log_path = os.path.join(os.path.dirname(__file__), 'logs', 'memory_scan.log')
+    os.makedirs(os.path.dirname(log_path), exist_ok=True)
+    
+    def log(msg):
+        print(f"[MEM] {msg}")
+        with open(log_path, 'a') as f:
+            f.write(f"{datetime.now().isoformat()} {msg}\n")
+    
+    log("=== SCAN START ===")
+    
     reader = get_reader()
     
     if not reader.handle:
         reader.pid = reader.find_pokerstars()
         if not reader.pid:
-            print("[MEM] PokerStars not found")
+            log("PokerStars not found")
             return None
         reader.handle = reader.open_process(reader.pid)
         if not reader.handle:
-            print("[MEM] Could not open process")
+            log("Could not open process")
             return None
+    
+    log(f"PID: {reader.pid}")
     
     # Only scan private memory (heap) - skip DLLs and mapped files
     regions = reader.enumerate_regions(private_only=True)
     total_size = sum(r[1] for r in regions)
-    print(f"[MEM] {len(regions)} private regions, {total_size // 1024 // 1024}MB total")
+    log(f"{len(regions)} private regions, {total_size // 1024 // 1024}MB total")
     
     snapshot = {}
     scanned = 0
@@ -192,7 +206,7 @@ def scan_memory_snapshot():
         
         region_count += 1
         if region_count % 50 == 0:
-            print(f"[MEM] Progress: {region_count}/{len(regions)} regions, {len(snapshot)} matches")
+            log(f"Progress: {region_count}/{len(regions)} regions, {len(snapshot)} matches, {scanned//1024}KB")
         
         data = reader.read_bytes(base, size)
         if not data or len(data) < 6:
@@ -210,7 +224,7 @@ def scan_memory_snapshot():
                 snapshot[base + i] = (r1, r2, s1, s2)
     
     _last_snapshot = snapshot
-    print(f"[MEM] Snapshot: {len(snapshot)} card-like structures from {scanned // 1024}KB")
+    log(f"DONE: {len(snapshot)} card-like structures from {scanned // 1024}KB")
     return snapshot
 
 
