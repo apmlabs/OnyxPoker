@@ -1,5 +1,6 @@
 """Inactive postflop strategies: optimal_stats, value_max, gpt, sonnet_max"""
 
+import random
 from poker_logic.card_utils import RANK_VAL
 from poker_logic.hand_analysis import analyze_hand
 
