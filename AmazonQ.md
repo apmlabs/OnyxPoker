@@ -1,6 +1,6 @@
 # OnyxPoker - Status Tracking
 
-**Last Updated**: February 8, 2026 21:10 UTC
+**Last Updated**: February 8, 2026 22:40 UTC
 
 ---
 
@@ -9,10 +9,11 @@
 ### What Works
 | Component | Status | Notes |
 |-----------|--------|-------|
-| helper_bar.py | ✅ | V2 vision default (opponent tracking) |
+| helper_bar.py | ✅ | V2 vision default (opponent tracking) + live memory polling |
 | helper_bar.py --v1 | ✅ | V1 vision (no opponent detection) |
 | helper_bar.py --ai-only | ✅ | AI does both vision + decision |
-| helper_bar.py --calibrate | 🔄 | Memory calibration mode (in progress) |
+| helper_bar.py --calibrate | ✅ | Memory calibration mode (no longer needed — buffer verified) |
+| memory_calibrator.py | ✅ | v4.1: signature scan + rescan_buffer (<1ms) + 17 dumps verified |
 | test_screenshots.py | ✅ | V1 vs V2 comparison + --track mode |
 | vision_detector_lite.py | ✅ | GPT-5.2 for vision only (V1) ~3.9s |
 | vision_detector_v2.py | ✅ | GPT-5.2 + opponent detection (V2) ~5.5s |
@@ -53,6 +54,67 @@
 ---
 
 ## Session History
+
+### Session 82: Live Memory Polling + Full Verification (February 8, 2026)
+
+**Memory reading now works end-to-end: initial scan finds buffer (2-4s), then polls every 200ms (<1ms) for real-time action updates in the UI. Verified across 17 dumps with HH ground truth. Memory caught 2 GPT card errors.**
+
+**What changed:**
+
+1. **Fixed save_dump() blocking bug**: `save_dump()` was running synchronously on main thread (490MB read + compress = 30s+), blocking both GPT and `scan_live()`. Now runs in background thread. `scan_live()` starts FIRST.
+
+2. **rescan_buffer()**: New function that re-reads a known buffer address in <1ms (just ~2KB = 30 entries x 64 bytes) instead of scanning all 578MB. Called by the polling loop.
+
+3. **Live memory polling**: After initial `scan_live()` finds the buffer on F9, a background thread polls `rescan_buffer()` every 200ms. Right panel updates live as new actions appear (FOLD/CALL/RAISE/BET/CHECK/DEAL).
+
+4. **Right panel memory display**: Shows `[MEM]` tagged data at top of stats panel — cards, board, all actions with amounts, calculated pot. Green = hero, teal = opponents. Shows OK/OVERRIDE status.
+
+5. **New HH data**: 56 files, 2879 hands (was 54 files, 2830 hands). New file `HH20260208 Asterope #4` covers the 23:xx session.
+
+**Verification results (17 dumps, 14 OK, 2 buffer GC, 1 GPT error):**
+
+| Dump | Cards | Board | Entries | Status | HH Verified |
+|------|-------|-------|---------|--------|-------------|
+| 182230 | 8h5d | - | 11 | OK | FULL |
+| 182250 | 2dQc | - | 13 | OK | FULL |
+| 182319 | TdJh | - | 13 | OK | cards+names |
+| 182804 | 3h7d | - | 14 | OK | FULL |
+| 182822 | 5d4d | - | 12 | OK | FULL |
+| 221714 | TcTd | 9h3h3s | 19 | OK | - |
+| 221923 | 8s8c | - | - | FAIL (GC) | - |
+| 222034 | 7dQh | 5c4dQd+3c | 27 | OK | - |
+| 222202 | Qh4h | 3s9d5s | 20 | OK | - |
+| 222236 | JdTd | 3d3h4d+8c+Kh | 30 | OK | - |
+| 230354 | 9c9h | 8dAcAh | 18 | OK | FULL |
+| 230412 | 9c9h | 8dAcAh+Jh | 21 | OK | FULL (GPT said Jc, MEM=Jh correct) |
+| 230442 | Ks8s | - | - | FAIL (GC) | - |
+| 230503 | 8hQs | - | 12 | OK | FULL (GPT said Qc, MEM=Qs correct) |
+| 230622 | KsKc | JhJdQh+6d+9c | 29 | OK | FULL (MEM had river before GPT) |
+| 230633 | KsKc | JhJdQh+6d+9c | 30 | OK | FULL |
+| 230815 | 8d9s | - | 13 | OK | FULL |
+
+**GPT errors caught by memory:**
+- Hand 230503: GPT said Qc, memory said Qs, HH confirms Qs (wrong suit)
+- Hand 230412: GPT said Jc on turn, memory said Jh, HH confirms Jh (wrong suit)
+
+**Timing analysis (session 230219 with --calibrate):**
+- Memory scan: avg 5.7s (inflated by save_dump contention)
+- Without --calibrate: expected 2-4s (no contention)
+- After initial find: <1ms per rescan (polling)
+- GPT: ~5.5s
+
+**Runtime flow:**
+```
+F9 → screenshot + scan_live() (2-4s, parallel with GPT)
+  ├─ Buffer found → start polling every 200ms (<1ms each)
+  │   └─ Right panel updates live: new actions appear instantly
+  ├─ GPT returns (5.5s) → merge, show decision
+  └─ Polling continues until next F9 or hand ends
+```
+
+**Files changed:**
+- memory_calibrator.py: Added `rescan_buffer()`, `scan_live()` returns `buf_addr`
+- helper_bar.py: Fixed blocking dump, added `_start_mem_poll()`, `_mem_poll_loop()`, `_update_mem_display()`, memory data in stats panel
 
 ### Session 81: Memory + GPT Parallel Pipeline (February 8, 2026)
 

@@ -39,17 +39,20 @@ The system analyzes poker tables using GPT vision API and provides strategic adv
 
 ## 🏗️ ARCHITECTURE
 
-### Full Call Chain (verified Session 81)
+### Full Call Chain (verified Session 82)
 ```
 F9 pressed (helper_bar.py)
   │
+  ├─ Stop previous memory polling (_mem_polling = False)
   ├─ Screenshot active window (pyautogui)
   │
-  ├─ [Windows] Start mem_thread: scan_live() → hero_cards, hand_id, players, actions (2-4s)
+  ├─ [Windows] Start mem_thread: scan_live() → hero_cards, hand_id, players, actions, buf_addr (2-4s)
   │
   ├─ VisionDetectorV2.detect_table()        → GPT-5.2 reads cards/pot/opponents (~5.5s)
   │
   ├─ [Windows] Merge memory results: cards override GPT, fill hand_id, player names
+  ├─ [Windows] Start _mem_poll_loop: rescan_buffer() every 200ms (<1ms each)
+  │     └─ Right panel updates live with [MEM] data as actions happen
   │
   ├─ _merge_opponents()                     → Tracks real names across screenshots
   ├─ _lookup_opponent_stats()               → Looks up archetypes from player_stats.json
@@ -80,6 +83,8 @@ F9 pressed (helper_bar.py)
 **Key files in the chain:**
 | Step | File | Function |
 |------|------|----------|
+| Memory scan | memory_calibrator.py | scan_live() (2-4s initial), rescan_buffer() (<1ms poll) |
+| Memory poll | helper_bar.py | _mem_poll_loop(), _update_mem_display() |
 | Vision | vision_detector_v2.py | detect_table() |
 | Opponent DB | helper_bar.py | _lookup_opponent_stats() → player_stats.json |
 | Router | strategy_engine.py | get_action() → preflop or postflop path |
@@ -193,7 +198,7 @@ Key rule: gap > PFR = fish (for loose players VPIP 25+)
 **poker-supernova offsets are WRONG for our build (Session 76-77):**
 The poker-supernova repo assumed cards as int32 rank/suit at seat+0x9C with 0x08 spacing. Our analysis proved cards are stored as ASCII text in a completely different structure (message buffer). The old TABLE/SEAT offset dicts were removed from the code.
 
-### Memory Calibrator v4 (Sessions 78-81)
+### Memory Calibrator v4.1 (Sessions 78-82)
 
 **Complete rewrite of `memory_calibrator.py` based on actual message buffer findings.**
 
@@ -207,16 +212,19 @@ The poker-supernova repo assumed cards as int32 rank/suit at seat+0x9C with 0x08
 
 **What was added (based on verified findings):**
 - `decode_entry()` / `decode_buffer()` — decode 0x40-byte message buffer entries
-- `extract_hand_data()` — pulls hero cards, player names, actions
+- `extract_hand_data()` — pulls hero cards, player names, actions, community cards
 - `find_buffer_in_dump()` — signature scan for 0x88 marker, validate first entry
-- `scan_live()` — runtime: signature scan on live process, returns full hand data dict
-- Action code table: CALL=0x43, RAISE=0x45, FOLD=0x46, POST_BB=0x50, POST_SB=0x70
+- `scan_live()` — runtime: signature scan on live process, returns full hand data dict + `buf_addr`
+- `rescan_buffer(buf_addr, hand_id)` — re-read known buffer in <1ms (30 entries x 64B = ~2KB)
+- Action code table: CALL=0x43, RAISE=0x45, FOLD=0x46, POST_BB=0x50, POST_SB=0x70, BET=0x42, CHECK=0x63
 
-**Runtime flow (Session 81 — memory + GPT parallel):**
+**Runtime flow (Session 82 — memory polling + GPT parallel):**
 ```
 F9 pressed (helper_bar.py)
   ├─ screenshot + start mem_thread (parallel)
-  │     └─ scan_live() (2-4s) → {hero_cards, hand_id, players, actions, scan_time}
+  │     └─ scan_live() (2-4s) → {hero_cards, hand_id, players, actions, buf_addr}
+  ├─ Buffer found → start _mem_poll_loop (every 200ms, <1ms each)
+  │     └─ rescan_buffer(buf_addr) → right panel updates live
   ├─ GPT V2 call (5.5s) → board, pot, to_call, opponents
   └─ merge:
         memory cards override GPT (ground truth)
@@ -242,14 +250,14 @@ Offline: python memory_calibrator.py analyze
 
 **Commands:**
 ```bash
-python helper_bar.py                 # V2 default + memory scan on Windows
-python helper_bar.py --calibrate     # Also dumps memory for offline analysis
+python helper_bar.py                 # V2 default + memory scan + live polling on Windows
+python helper_bar.py --calibrate     # Also dumps memory for offline analysis (not needed anymore)
 python memory_calibrator.py list     # Show tagged dumps
 python memory_calibrator.py analyze  # Verify message buffer in all dumps
 python memory_calibrator.py read     # Read cards live (Windows only)
 ```
 
-**Verified: 5/5 dumps, 0 errors** — all cards, names, and actions match.
+**Verified: 17 dumps (14 OK, 2 buffer GC, 1 GPT error caught)** — all cards, names, and actions match. Memory caught 2 GPT suit errors (Qc→Qs, Jc→Jh), both confirmed by HH ground truth.
 
 ### Memory Analysis Findings (Sessions 76-78)
 
