@@ -634,11 +634,7 @@ class HelperBar:
         self.stats_text.delete('1.0', 'end')
 
         mc = hd.get('hero_cards', '')
-        cards_str = f"{mc[0:2]} {mc[2:4]}" if mc and len(mc) == 4 else '??'
         cc = hd.get('community_cards', [])
-        board_str = f" | {' '.join(cc)}" if cc else ''
-        ts = datetime.now().strftime("%H:%M:%S")
-        self.stats_text.insert('end', f"[MEM LIVE {ts}] {cards_str}{board_str} ({entry_count})\n", 'MEM')
 
         # Re-evaluate strategy with memory data
         advice = self._reeval_with_memory(hd)
@@ -651,13 +647,20 @@ class HelperBar:
                 act_str = f"{act} {amt:.2f}"
             else:
                 act_str = act
+            # LINE 1: THE ACTION — what you do right now
             self.stats_text.insert('end', f"=> {act_str}\n", 'ACTION')
+            # LINE 2: why
             reason_str = advice.get('reasoning', '')
             if reason_str:
                 self.stats_text.insert('end', f"{reason_str}\n", 'DRAW')
+            # LINE 3: hand strength
             ha = advice.get('hand_analysis', {})
             if ha and ha.get('valid'):
                 self.stats_text.insert('end', self._hand_strength_str(ha) + '\n', 'HAND')
+        else:
+            # No advice yet (preflop, no board) — show cards
+            cards_str = f"{mc[0:2]} {mc[2:4]}" if mc and len(mc) == 4 else '??'
+            self.stats_text.insert('end', f"[MEM] {cards_str} (waiting...)\n", 'MEM')
 
         # Opponent info from last GPT result
         lr = self._last_result
@@ -668,7 +671,7 @@ class HelperBar:
                     self.stats_text.insert('end',
                         f"{opp['name']} {opp['archetype'].upper()} - {opp['advice']}\n", 'OPPONENT')
 
-        # Compact memory actions at bottom
+        # Memory actions at bottom with street markers
         actions = hd.get('actions', [])
         if actions:
             self.stats_text.insert('end', '---\n', 'MEMDATA')
@@ -679,7 +682,8 @@ class HelperBar:
                 if act_code == 'DEAL' or name is None:
                     deal_count += 1
                     street = {1: 'FLOP', 2: 'TURN', 3: 'RIVER'}.get(deal_count, 'DEAL')
-                    self.stats_text.insert('end', f"--- {street} ---\n", 'DRAW')
+                    board_at = cc[:3] if deal_count == 1 else (cc[:4] if deal_count == 2 else cc)
+                    self.stats_text.insert('end', f"--- {street} {' '.join(board_at)} ---\n", 'DRAW')
                     continue
                 line = f"{name or '?'}: {act_code}"
                 if amt > 0:
