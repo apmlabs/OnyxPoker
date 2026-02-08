@@ -39,13 +39,17 @@ The system analyzes poker tables using GPT vision API and provides strategic adv
 
 ## 🏗️ ARCHITECTURE
 
-### Full Call Chain (verified Session 74)
+### Full Call Chain (verified Session 81)
 ```
 F9 pressed (helper_bar.py)
   │
   ├─ Screenshot active window (pyautogui)
   │
+  ├─ [Windows] Start mem_thread: scan_live() → hero_cards, hand_id, players, actions (2-4s)
+  │
   ├─ VisionDetectorV2.detect_table()        → GPT-5.2 reads cards/pot/opponents (~5.5s)
+  │
+  ├─ [Windows] Merge memory results: cards override GPT, fill hand_id, player names
   │
   ├─ _merge_opponents()                     → Tracks real names across screenshots
   ├─ _lookup_opponent_stats()               → Looks up archetypes from player_stats.json
@@ -178,82 +182,176 @@ Key rule: gap > PFR = fish (for loose players VPIP 25+)
 - Receives uploads at POST /logs
 - Stores in /home/ubuntu/mcpprojects/onyxpoker/server/uploads/
 
-### Memory Reading Architecture (Session 71)
+### Memory Reading Architecture (Sessions 71-78)
 
 **Goal:** Replace ~5s GPT vision latency with <1ms memory reads.
 
-**Challenge:** Memory offsets change with PokerStars updates. Need auto-calibration.
-
-**Solution:** Use GPT vision as "oracle" to find offsets automatically.
-
-```
-Windows (memory_calibrator.py):
-  1. F9 pressed (or automatic trigger)
-  2. Screenshot + Memory scan (SAME INSTANT)
-     - Scan for all card-like values (0-51, 2-14, ASCII)
-     - Save: {address: value} for all matches
-  3. Send screenshot to GPT-5.2 (~5s)
-  4. GPT returns: "Ah Kd" (hero cards)
-  5. Correlate: which addresses had Ah=14/0, Kd=13/1?
-  6. Log candidate addresses to JSON
-  
-  After N hands:
-  - Addresses that consistently match = stable offsets
-  - Save to offsets.json
-  - Future reads use offsets directly (<1ms)
-```
-
-**Known Offsets (poker-supernova, PokerStars 7 Build 46014):**
-```python
-OFFSETS = {
-    'table': {'hand_id': 0x40, 'card_values': 0x64, 'card_suits': 0x68},
-    'seat': {'name': 0x00, 'card_values': 0x9C, 'card_suits': 0xA0}
-}
-```
-
 **Anti-cheat:** ReadProcessMemory is standard Windows API, undetectable without kernel hooks. PokerTracker uses same approach ("Memory Grabber").
 
-### Memory Calibration v3 (Session 75)
+**Packet sniffing ruled out (Session 75):** PokerStars uses TLS + LZHL compression + custom binary protocol. Memory reading is the only viable path.
 
-**Problem with v2:** Searched within 128 bytes of hand_id — but hero cards are at seat_base+0x9C, hundreds of bytes away.
+**poker-supernova offsets are WRONG for our build (Session 76-77):**
+The poker-supernova repo assumed cards as int32 rank/suit at seat+0x9C with 0x08 spacing. Our analysis proved cards are stored as ASCII text in a completely different structure (message buffer). The old TABLE/SEAT offset dicts were removed from the code.
 
-**Key insight from poker-supernova:** PokerStars stores table data behind a multi-level pointer chain. The struct layout is stable:
-```python
-TABLE = {'hand_id': 0x40, 'num_cards': 0x58, 'card_values': 0x64, 'card_suits': 0x68}
-SEAT  = {'base': 0x0218, 'interval': 0x0160, 'name': 0x00, 'card_values': 0x9C, 'card_suits': 0xA0}
-# Cards spaced 0x08 apart, ranks 0-12, suits 0-3
+### Memory Calibrator v4 (Sessions 78-81)
+
+**Complete rewrite of `memory_calibrator.py` based on actual message buffer findings.**
+
+**What was removed (all wrong):**
+- poker-supernova TABLE/SEAT offset dicts
+- Pointer chain resolution (`_resolve_pointer_chain`)
+- Name cluster search at 0x160 spacing (that was the UI struct, not game state)
+- Int32 card verification at seat+0x9C
+- gzip compression in save_dump()
+- `cmd_pointers()` — CE-style pointer chain scan (infeasible in pure Python: 130M dict entries per dump)
+
+**What was added (based on verified findings):**
+- `decode_entry()` / `decode_buffer()` — decode 0x40-byte message buffer entries
+- `extract_hand_data()` — pulls hero cards, player names, actions
+- `find_buffer_in_dump()` — signature scan for 0x88 marker, validate first entry
+- `scan_live()` — runtime: signature scan on live process, returns full hand data dict
+- Action code table: CALL=0x43, RAISE=0x45, FOLD=0x46, POST_BB=0x50, POST_SB=0x70
+
+**Runtime flow (Session 81 — memory + GPT parallel):**
+```
+F9 pressed (helper_bar.py)
+  ├─ screenshot + start mem_thread (parallel)
+  │     └─ scan_live() (2-4s) → {hero_cards, hand_id, players, actions, scan_time}
+  ├─ GPT V2 call (5.5s) → board, pot, to_call, opponents
+  └─ merge:
+        memory cards override GPT (ground truth)
+        hand_id from memory if GPT missed it
+        player names from memory (no action-word confusion)
+        UI: [MEM] 8h5d hand=259644772106 (2.3s)
+        Log: memory_cards, memory_hand_id, memory_players, memory_scan_time, memory_status
 ```
 
-**New approach: dump on F9 + offline analysis**
+**memory_status values:** CONFIRMED (GPT matches), OVERRIDE (GPT wrong, memory corrected), NO_BUFFER (scan failed)
+
+**Calibration workflow (--calibrate mode, for offline verification):**
 ```
-F9 pressed
-  ├─ Screenshot saved
-  ├─ save_dump() → memory_dumps/dump_TIMESTAMP.bin + .json  (same instant)
-  ├─ GPT returns hand_id/cards/opponents (~5.5s)
+F9 pressed (helper_bar.py --calibrate)
+  ├─ save_dump() → memory_dumps/dump_TIMESTAMP.bin + .json
+  ├─ GPT returns cards/opponents (~5.5s)
   └─ tag_dump() → writes GPT data into .json sidecar
 
-Offline:
-  python memory_calibrator.py analyze
-    → Loads all tagged dumps
-    → Searches for hand_id as int64
-    → Verifies table struct: hand_id at +0x40, hero cards at seat+0x9C
-    → Cross-checks opponent names at other seats
-    → Saves calibration to memory_offsets.json
+Offline: python memory_calibrator.py analyze
+  → Finds buffer via 0x88 signature + first entry validation
+  → Decodes all entries, verifies cards + names against GPT data
 ```
 
 **Commands:**
 ```bash
-python helper_bar.py --calibrate     # Auto-dumps on each F9
+python helper_bar.py                 # V2 default + memory scan on Windows
+python helper_bar.py --calibrate     # Also dumps memory for offline analysis
 python memory_calibrator.py list     # Show tagged dumps
-python memory_calibrator.py analyze  # Search all dumps (offline)
-python memory_calibrator.py read     # Read cards after calibration
+python memory_calibrator.py analyze  # Verify message buffer in all dumps
+python memory_calibrator.py read     # Read cards live (Windows only)
 ```
 
-**Packet sniffing ruled out (Session 75 research):**
-- PokerStars uses TLS + LZHL compression + custom binary protocol
-- Protocol reversed in 2009 (daeken) but breaks every PS update
-- MITM requires patching PS binary (cert pinning) — too fragile
-- Memory reading is the only viable path to sub-second reads
+**Verified: 5/5 dumps, 0 errors** — all cards, names, and actions match.
+
+### Memory Analysis Findings (Sessions 76-78)
+
+**BREAKTHROUGH: Complete game event buffer decoded and verified across ALL 5 dumps.**
+
+The message buffer contains everything needed for poker decisions: hero cards, all player names with seats, and every action with amounts. Stack sizes are NOT in this buffer but are unnecessary — we only need to know what players bet.
+
+**Message buffer entry format (0x40 = 64 bytes):**
+```
++0x00: hand_id (8B little-endian)
++0x08: sequence_number (4B, incrementing 1,2,3...)
++0x14: msg_type (1B) — 0x0A=new_hand, 0x01=action, 0x02=seated, 0x07=action_start
++0x16: seat_index (1B, 0-based, 255=table-level)
++0x17: action_code (1B) — 0x43=CALL, 0x45=RAISE, 0x46=FOLD, 0x50=POST_BB, 0x70=POST_SB
++0x18: amount (2B uint16, in cents) — e.g. 55 = €0.55
++0x1C: name_ptr (4B) -> null-terminated player name string
++0x20: name_len (4B)
++0x24: name_capacity (4B)
++0x28: extra_ptr (4B) -> for hero's type 0x02 entry: 4-byte ASCII card string
++0x2C: extra_len (4B)
+```
+
+**Entry sequence per hand:**
+1. type=0x0A: NEW HAND (table-level, seat=255)
+2. type=0x01: POST_SB (action_code=0x70, amount=SB in cents)
+3. type=0x01: POST_BB (action_code=0x50, amount=BB in cents)
+4. type=0x02: SEATED x6 (one per player, hero entry has extra_ptr -> ASCII cards)
+5. type=0x07: ACTION_START (first player to act)
+6. type=0x01: Actions in order (CALL/RAISE/FOLD with amounts in cents)
+
+**Action codes (verified against HH ground truth):**
+| Code | Action | Amount field |
+|------|--------|-------------|
+| 0x43 | CALL | call amount in cents |
+| 0x45 | RAISE | raise-to amount in cents |
+| 0x46 | FOLD | 0 |
+| 0x50 | POST_BB | BB amount in cents |
+| 0x70 | POST_SB | SB amount in cents |
+
+**How to read hero cards at runtime:**
+1. Find buffer (array of 0x40-byte entries, each starting with same hand_id LE)
+2. Scan entries for msg_type=0x02 where name_ptr -> "idealistslp"
+3. Dereference extra_ptr at entry+0x28 — first 4 bytes = ASCII cards (e.g. "8h5d")
+4. Card format: rank+suit+rank+suit, e.g. "8h5d" = 8♥ 5♦, "TdJh" = T♦ J♥
+
+**Verified across ALL 5 dumps (0 errors):**
+| Dump | Time | Buffer Addr | Hand ID | Hero Cards | Players | HH Match |
+|------|------|------------|---------|------------|---------|----------|
+| 1 | 182230 | 0x199F6048 | 259644772106 | "8h5d" | 6/6 names OK | FULL |
+| 2 | 182250 | 0x1E4B8758 | 259644777045 | "2dQc" | 6/6 names OK | FULL |
+| 3 | 182319 | 0x1E4B97C0 | 259644786517 | "TdJh" | 6/6 names OK | cards+names |
+| 4 | 182804 | 0x1ED6A3A0 | 259644860629 | "3h7d" | 6/6 names OK | FULL |
+| 5 | 182822 | 0x19105D80 | 259644864917 | "5d4d" | 6/6 names OK | FULL |
+
+Dumps 1,2,4,5: full action sequence verified against hand history files (every action, amount, player matches).
+Dump 3: hand_id not in HH files (different table session), but cards and opponent names match screenshot metadata.
+
+**What the buffer gives us (complete for poker decisions):**
+- Hero hole cards (ASCII, instant read)
+- All 6 player names with seat indices
+- Who posted blinds and how much
+- Every action in order: who called/raised/folded and for how much
+- Pot is calculable from summing all amounts
+
+**What the buffer does NOT contain:**
+- Stack sizes (not needed — we only need bet amounts)
+- Community cards (likely appear in later entries post-flop, but all 5 dumps captured preflop action only)
+
+**SOLVED: Fast Buffer Finder (Session 79) — 2-4 seconds, 5/5 dumps correct.**
+
+No pointer chain needed. The buffer has a discoverable signature:
+
+**Signature (10 bytes immediately before first entry):**
+```
+00 88 00 00 00 00 00 00 00 00 [first entry starts here]
+```
+- byte at buf-10: always `0x00`
+- byte at buf-9: always `0x88` ← magic marker
+- bytes buf-8 to buf-1: always 8 zero bytes
+- Then the first 0x40-byte entry begins (hand_id LE, seq=1)
+
+**Algorithm:**
+1. Scan all committed readable memory for the 10-byte signature `00 88 00 00 00 00 00 00 00 00`
+2. For each match, check if what follows is a valid first entry: `hand_id` in 200B-300B range AND `seq == 1`
+3. Typically 1-4 candidates (stale buffers from previous hands remain in memory)
+4. Pick the candidate with the **highest hand_id** (= most recent hand)
+5. If tied (rare — dump4 had two with same hand_id), pick the one where hero's SEATED entry has a readable `name_ptr` → "idealistslp"
+
+**Performance:** 2-4 seconds per ~500MB dump (signature scan). No pointer chains, no module offsets, no Cheat Engine needed.
+
+**Why stale buffers exist:** Old hand buffers aren't zeroed out after the hand ends. They keep the 0x88 signature and valid-looking entries, but their name pointers may become dangling (freed strings). The current hand's buffer always has the highest hand_id and valid string pointers.
+
+**Verified: 5/5 dumps, 0 errors, avg 2.6s per dump.**
+
+**HH-verified seat assignments:**
+| Dump | Seat 0 | Seat 1 | Seat 2 | Seat 3 | Seat 4 | Seat 5 |
+|------|--------|--------|--------|--------|--------|--------|
+| 1 | andresrodr8 | JaviGGWP | **idealistslp** | kemberaid | TJDasNeves | sramaverick2 |
+| 2 | fidotc3 | **idealistslp** | codolfito | Prisedeguerre | Ferchyman77 | Miguel_C_Ca |
+| 3 | CORDEVIGO | hope201319 | **idealistslp** | Thendo888 | sramaverick2 | chiinche |
+| 4 | Miguel_C_Ca | SirButterman | **idealistslp** | iam_xCidx | urubull | kemberaid |
+| 5 | **idealistslp** | kastlemoney | GOLDGAMMER | Bestiote | hotboycowboy | CHIKANEUR |
 
 ---
 
@@ -286,7 +384,7 @@ onyxpoker/                    # Main repo (GitHub: apmlabs/OnyxPoker)
 │   ├── vision_detector_v2.py # V2 vision: + opponent detection + hand_id (default, ~5.5s)
 │   │
 │   │ # === MEMORY CALIBRATION (Windows only) ===
-│   ├── memory_calibrator.py  # Auto-dump on F9 + offline analysis (v3)
+│   ├── memory_calibrator.py  # Auto-dump on F9 + offline analysis (v4, signature-based)
 │   │
 │   │ # === SIMULATION ===
 │   ├── poker_sim.py          # Monte Carlo simulator (200k+ hands)

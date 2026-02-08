@@ -1,25 +1,32 @@
 """
-Memory Calibrator v3 - Auto-dump on F9, offline analysis
+Memory Calibrator v4 - Message buffer approach (signature-based search)
 
-On each F9 press, helper_bar calls save_dump() which:
-  1. Dumps all readable PS memory to a .bin file
-  2. Saves metadata (timestamp) to a .json sidecar
+Reads hero cards + actions from PokerStars message buffer in memory.
 
-After GPT returns, helper_bar calls tag_dump() which adds:
-  - hand_id, hero_cards, community_cards, pot, opponents
+The message buffer is an array of 0x40-byte entries on the heap:
+  +0x00: hand_id (8B LE)
+  +0x08: sequence (4B)
+  +0x14: msg_type (1B) — 0x0A=new_hand, 0x01=action, 0x02=seated, 0x07=action_start
+  +0x16: seat_index (1B, 0-based)
+  +0x17: action_code (1B) — 0x43=CALL, 0x45=RAISE, 0x46=FOLD, 0x50=POST_BB, 0x70=POST_SB
+  +0x18: amount (2B uint16, cents)
+  +0x1C: name_ptr (4B) -> player name
+  +0x20: name_len (4B)
+  +0x24: name_capacity (4B)
+  +0x28: extra_ptr (4B) -> hero's type 0x02: 4-byte ASCII cards (e.g. "8h5d")
+  +0x2C: extra_len (4B)
 
-Then run offline:
-  python memory_calibrator.py analyze   # Search ALL dumps automatically
-  python memory_calibrator.py read      # Read cards from calibrated address
+Buffer discovery: 10-byte signature `00 88 00 00 00 00 00 00 00 00` immediately
+precedes the first entry. Scan memory for signature, validate first entry
+(hand_id in range + seq=1), pick highest hand_id = current hand.
 
-Table struct layout (from poker-supernova, PokerStars 7):
-  table_base + 0x40 = hand_id (int64)
-  table_base + 0x58 = num_community_cards (int32)
-  table_base + 0x64 = community card_values (0x08 spacing)
-  table_base + 0x68 = community card_suits  (0x08 spacing)
-  table_base + 0x0218 + seat*0x0160 + 0x00 = name (string)
-  table_base + 0x0218 + seat*0x0160 + 0x9C = card_values (0x08 spacing)
-  table_base + 0x0218 + seat*0x0160 + 0xA0 = card_suits  (0x08 spacing)
+On Windows (live):
+  helper_bar.py calls save_dump() on F9, tag_dump() after GPT returns.
+
+Offline analysis:
+  python memory_calibrator.py list      # Show tagged dumps
+  python memory_calibrator.py analyze   # Verify message buffer in all dumps
+  python memory_calibrator.py read      # Read cards (Windows only)
 """
 
 import sys
@@ -53,25 +60,101 @@ if IS_WINDOWS:
 DUMP_DIR = os.path.join(os.path.dirname(__file__), 'memory_dumps')
 CALIBRATION_FILE = os.path.join(os.path.dirname(__file__), 'memory_offsets.json')
 
-RANKS = ['2', '3', '4', '5', '6', '7', '8', '9', 'T', 'J', 'Q', 'K', 'A']
-SUITS = ['c', 'd', 'h', 's']
-
-# Known struct offsets (stable across PS versions, pointer chain changes)
-TABLE = {'hand_id': 0x40, 'num_cards': 0x58, 'card_values': 0x64, 'card_suits': 0x68}
-SEAT = {'base': 0x0218, 'interval': 0x0160, 'name': 0x00, 'card_values': 0x9C, 'card_suits': 0xA0}
+HERO_NAME = 'idealistslp'
+ENTRY_SIZE = 0x40
+# 10-byte signature immediately before first buffer entry
+BUFFER_SIGNATURE = bytes([0x00, 0x88, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00])
+ACTION_NAMES = {0x43: 'CALL', 0x45: 'RAISE', 0x46: 'FOLD', 0x50: 'POST_BB', 0x70: 'POST_SB'}
+MSG_TYPES = {0x0A: 'NEW_HAND', 0x01: 'ACTION', 0x02: 'SEATED', 0x07: 'ACTION_START'}
 
 
 def log(msg):
     print(f"[MEM] {msg}")
 
 
-def card_to_rank_suit(card_str):
-    if not card_str or len(card_str) < 2:
-        return None, None
-    r, s = card_str[0].upper(), card_str[1].lower()
-    if r not in RANKS or s not in SUITS:
-        return None, None
-    return RANKS.index(r), SUITS.index(s)
+# ── Entry Decoder ────────────────────────────────────────────────────
+
+def decode_entry(data_40bytes, read_str_fn=None):
+    """Decode a single 0x40-byte message buffer entry."""
+    e = data_40bytes
+    hand_id = struct.unpack('<Q', e[0:8])[0]
+    seq = struct.unpack('<I', e[8:12])[0]
+    msg_type = e[0x14]
+    seat = e[0x16]
+    action_code = e[0x17]
+    amount = struct.unpack('<H', e[0x18:0x1A])[0]
+    name_ptr = struct.unpack('<I', e[0x1C:0x20])[0]
+    name_len = struct.unpack('<I', e[0x20:0x24])[0]
+    extra_ptr = struct.unpack('<I', e[0x28:0x2C])[0]
+    extra_len = struct.unpack('<I', e[0x2C:0x30])[0]
+
+    name = None
+    extra = None
+    if read_str_fn and 0x01000000 < name_ptr < 0x7FFFFFFF:
+        name = read_str_fn(name_ptr, 64)
+    if read_str_fn and 0x01000000 < extra_ptr < 0x7FFFFFFF:
+        extra = read_str_fn(extra_ptr, 16)
+
+    return {
+        'hand_id': hand_id, 'seq': seq, 'msg_type': msg_type,
+        'seat': seat, 'action_code': action_code, 'amount': amount,
+        'name_ptr': name_ptr, 'name': name,
+        'extra_ptr': extra_ptr, 'extra': extra,
+    }
+
+
+def decode_buffer(buf_addr, read_bytes_fn, read_str_fn, max_entries=30):
+    """Decode all entries from a message buffer. Returns list of entry dicts."""
+    entries = []
+    first_hid = None
+    for i in range(max_entries):
+        data = read_bytes_fn(buf_addr + i * ENTRY_SIZE, ENTRY_SIZE)
+        if not data or len(data) < ENTRY_SIZE:
+            break
+        e = decode_entry(data, read_str_fn)
+        if i == 0:
+            first_hid = e['hand_id']
+        elif e['hand_id'] != first_hid:
+            break
+        entries.append(e)
+    return entries
+
+
+def format_entry(e):
+    """Human-readable string for one entry."""
+    if e['msg_type'] == 0x0A:
+        return f"[{e['seq']:2d}] NEW_HAND"
+    elif e['msg_type'] == 0x02:
+        cards = f" [{e['extra']}]" if e['extra'] else ""
+        return f"[{e['seq']:2d}] SEATED seat={e['seat']} {e['name']}{cards}"
+    elif e['msg_type'] == 0x01:
+        act = ACTION_NAMES.get(e['action_code'], f"0x{e['action_code']:02X}")
+        return f"[{e['seq']:2d}] {act} {e['name']} {e['amount']}c"
+    elif e['msg_type'] == 0x07:
+        return f"[{e['seq']:2d}] ACTION_START {e['name']}"
+    mt = MSG_TYPES.get(e['msg_type'], f"0x{e['msg_type']:02X}")
+    return f"[{e['seq']:2d}] type={mt} seat={e['seat']} {e['name']}"
+
+
+def extract_hand_data(entries):
+    """Extract poker-relevant data from decoded entries."""
+    if not entries:
+        return None
+    hand_id = entries[0]['hand_id']
+    hero_cards = None
+    players = {}
+    actions = []
+
+    for e in entries:
+        if e['msg_type'] == 0x02:
+            players[e['seat']] = e['name']
+            if e['extra'] and e['name'] == HERO_NAME:
+                hero_cards = e['extra']
+        elif e['msg_type'] == 0x01:
+            act = ACTION_NAMES.get(e['action_code'], f"0x{e['action_code']:02X}")
+            actions.append((e['name'], act, e['amount']))
+
+    return {'hand_id': hand_id, 'hero_cards': hero_cards, 'players': players, 'actions': actions}
 
 
 # ── Process Reader (Windows only) ───────────────────────────────────
@@ -84,17 +167,16 @@ class ProcessReader:
 
     def attach(self):
         if not IS_WINDOWS:
-            log("Not Windows"); return False
+            return False
         self.pid = self._find_pid()
         if not self.pid:
-            log("PokerStars.exe not found in tasklist"); return False
-        log(f"Found PID {self.pid}")
+            log("PokerStars.exe not found"); return False
         self.handle = ctypes.windll.kernel32.OpenProcess(
             PROCESS_VM_READ | PROCESS_QUERY_INFORMATION, False, self.pid)
         if not self.handle:
-            log(f"OpenProcess failed (run as admin?)"); return False
+            log("OpenProcess failed"); return False
         self.module_base = self._get_module_base()
-        log(f"Attached: PID={self.pid} module_base={hex(self.module_base or 0)}")
+        log(f"Attached: PID={self.pid} module=0x{self.module_base or 0:X}")
         return True
 
     def _find_pid(self):
@@ -103,14 +185,12 @@ class ProcessReader:
             out = subprocess.check_output(
                 'tasklist /FI "IMAGENAME eq PokerStars.exe" /FO CSV',
                 shell=True, stderr=subprocess.DEVNULL)
-            lines = out.decode().strip().split('\n')
-            log(f"tasklist returned {len(lines)} lines")
-            for line in lines[1:]:
+            for line in out.decode().strip().split('\n')[1:]:
                 parts = line.split(',')
                 if len(parts) >= 2:
                     return int(parts[1].strip('"'))
-        except Exception as e:
-            log(f"tasklist error: {e}")
+        except Exception:
+            pass
         return None
 
     def _get_module_base(self):
@@ -121,7 +201,7 @@ class ProcessReader:
                 self.handle, hMods, ctypes.sizeof(hMods),
                 ctypes.byref(needed), 0x03)
             return hMods[0] if needed.value > 0 else None
-        except:
+        except Exception:
             return None
 
     def read(self, addr, size):
@@ -132,6 +212,18 @@ class ProcessReader:
         ok = ctypes.windll.kernel32.ReadProcessMemory(
             self.handle, ctypes.c_void_p(addr), buf, size, ctypes.byref(nread))
         return buf.raw[:nread.value] if ok and nread.value > 0 else None
+
+    def read_str(self, addr, maxlen=64):
+        data = self.read(addr, maxlen)
+        if not data:
+            return None
+        end = data.find(b'\x00')
+        if end <= 0:
+            return None
+        try:
+            return data[:end].decode('ascii')
+        except Exception:
+            return None
 
     def iter_regions(self):
         addr = 0
@@ -152,27 +244,24 @@ class ProcessReader:
 _reader = None
 
 def save_dump(timestamp=None):
-    """Called on F9 press. Dumps PS memory to disk. Returns dump_id or None."""
+    """Called on F9. Dumps PS memory to disk. Returns dump_id or None."""
     global _reader
     if not IS_WINDOWS:
-        log("save_dump: not Windows"); return None
+        return None
     if _reader is None:
         _reader = ProcessReader()
-    if not _reader.handle:
-        if not _reader.attach():
-            log("save_dump: could not attach to PokerStars"); return None
+    if not _reader.handle and not _reader.attach():
+        return None
 
     os.makedirs(DUMP_DIR, exist_ok=True)
     ts = timestamp or datetime.now().strftime('%Y%m%d_%H%M%S')
     dump_id = f'dump_{ts}'
-    bin_path = os.path.join(DUMP_DIR, f'{dump_id}.bin.gz')
+    bin_path = os.path.join(DUMP_DIR, f'{dump_id}.bin')
     meta_path = os.path.join(DUMP_DIR, f'{dump_id}.json')
 
-    import gzip
-    log(f"Dumping memory to {dump_id}...")
     regions = []
     file_offset = 0
-    with gzip.open(bin_path, 'wb', compresslevel=1) as f:
+    with open(bin_path, 'wb') as f:
         for base, size in _reader.iter_regions():
             if size > 100 * 1024 * 1024:
                 continue
@@ -182,25 +271,19 @@ def save_dump(timestamp=None):
                 regions.append({'base': base, 'size': len(data), 'file_offset': file_offset})
                 file_offset += len(data)
 
-    gz_mb = os.path.getsize(bin_path) / 1024 / 1024
     meta = {
-        'dump_id': dump_id,
-        'timestamp': ts,
-        'pid': _reader.pid,
-        'module_base': _reader.module_base,
-        'regions': regions,
-        'bytes_total': file_offset,
-        'compressed': True,
+        'dump_id': dump_id, 'timestamp': ts,
+        'pid': _reader.pid, 'module_base': _reader.module_base,
+        'regions': regions, 'bytes_total': file_offset,
     }
     with open(meta_path, 'w') as f:
         json.dump(meta, f)
-
-    log(f"Dump saved: {len(regions)} regions, {file_offset / 1024 / 1024:.1f} MB raw, {gz_mb:.1f} MB compressed")
+    log(f"Dump: {len(regions)} regions, {file_offset/1024/1024:.0f} MB")
     return dump_id
 
 
 def tag_dump(dump_id, gpt_result):
-    """Called after GPT returns. Tags the dump with vision data."""
+    """Called after GPT returns. Tags dump with vision data."""
     if not dump_id:
         return
     meta_path = os.path.join(DUMP_DIR, f'{dump_id}.json')
@@ -208,26 +291,21 @@ def tag_dump(dump_id, gpt_result):
         return
     with open(meta_path) as f:
         meta = json.load(f)
-
     meta['hand_id'] = gpt_result.get('hand_id')
     meta['hero_cards'] = gpt_result.get('hero_cards', [])
     meta['community_cards'] = gpt_result.get('community_cards', [])
     meta['pot'] = gpt_result.get('pot')
-    meta['opponents'] = []
-    for opp in gpt_result.get('opponents', []):
-        meta['opponents'].append({
-            'name': opp.get('name', ''),
-            'has_cards': opp.get('has_cards', False),
-        })
-
+    meta['opponents'] = [
+        {'name': o.get('name', ''), 'has_cards': o.get('has_cards', False)}
+        for o in gpt_result.get('opponents', [])
+    ]
     with open(meta_path, 'w') as f:
         json.dump(meta, f)
 
 
-# ── Offline Analysis ────────────────────────────────────────────────
+# ── Dump File Helpers ────────────────────────────────────────────────
 
 def _load_tagged_dumps():
-    """Load all dumps that have been tagged with GPT data."""
     if not os.path.isdir(DUMP_DIR):
         return []
     dumps = []
@@ -235,238 +313,233 @@ def _load_tagged_dumps():
         if not fname.endswith('.json'):
             continue
         meta_path = os.path.join(DUMP_DIR, fname)
-        # Support both .bin and .bin.gz
-        base = meta_path.replace('.json', '')
-        bin_path = base + '.bin.gz'
-        if not os.path.exists(bin_path):
-            bin_path = base + '.bin'
+        bin_path = meta_path.replace('.json', '.bin')
         if not os.path.exists(bin_path):
             continue
         with open(meta_path) as f:
             meta = json.load(f)
-        if not meta.get('hero_cards'):
-            continue  # not tagged yet
+        if not meta.get('hero_cards') or len(meta['hero_cards']) < 2:
+            continue
         meta['_bin_path'] = bin_path
         dumps.append(meta)
     return dumps
 
 
-def _decompress_if_needed(bin_path):
-    """If .gz, decompress to .bin for random access. Returns plain path."""
-    if not bin_path.endswith('.gz'):
-        return bin_path
-    plain_path = bin_path[:-3]
-    if os.path.exists(plain_path):
-        return plain_path
-    import gzip
-    log(f"Decompressing {os.path.basename(bin_path)}...")
-    with gzip.open(bin_path, 'rb') as f_in, open(plain_path, 'wb') as f_out:
-        while True:
-            chunk = f_in.read(4 * 1024 * 1024)
-            if not chunk:
-                break
-            f_out.write(chunk)
-    log(f"Decompressed: {os.path.getsize(plain_path) / 1024 / 1024:.1f} MB")
-    return plain_path
+def _make_read_fns(bin_path, regions):
+    """Return (read_bytes, read_str) functions for a dump file."""
+    def read_bytes(addr, size):
+        for r in regions:
+            if r['base'] <= addr < r['base'] + r['size']:
+                off = addr - r['base']
+                with open(bin_path, 'rb') as f:
+                    f.seek(r['file_offset'] + off)
+                    return f.read(min(size, r['size'] - off))
+        return None
+
+    def read_str(addr, maxlen=64):
+        data = read_bytes(addr, maxlen)
+        if not data:
+            return None
+        end = data.find(b'\x00')
+        if end <= 0:
+            return None
+        try:
+            return data[:end].decode('ascii')
+        except Exception:
+            return None
+
+    return read_bytes, read_str
 
 
-def _search_dump(bin_path, regions, pattern):
-    """Search for byte pattern in dump file. Returns real memory addresses."""
-    path = _decompress_if_needed(bin_path)
-    matches = []
-    with open(path, 'rb') as f:
+# ── Signature-Based Buffer Finder ────────────────────────────────────
+
+def find_buffer_in_dump(bin_path, regions, expected_cards_ascii=None):
+    """Find the message buffer using the 0x88 signature.
+
+    Scans for `00 88 00 00 00 00 00 00 00 00`, validates the first entry
+    (hand_id in 200B-300B, seq=1), picks highest hand_id. Tiebreak by
+    checking which candidate has readable hero name_ptr.
+
+    Returns (buf_addr, entries) or (None, None).
+    """
+    read_bytes, read_str = _make_read_fns(bin_path, regions)
+    candidates = []  # (buf_addr, hand_id)
+
+    with open(bin_path, 'rb') as f:
         for r in regions:
             f.seek(r['file_offset'])
             data = f.read(r['size'])
             idx = 0
             while True:
-                idx = data.find(pattern, idx)
-                if idx == -1:
+                idx = data.find(BUFFER_SIGNATURE, idx)
+                if idx < 0:
                     break
-                matches.append(r['base'] + idx)
+                entry_off = idx + 10  # signature is 10 bytes before first entry
+                if entry_off + 16 <= len(data):
+                    hid = struct.unpack('<Q', data[entry_off:entry_off+8])[0]
+                    seq = struct.unpack('<I', data[entry_off+8:entry_off+12])[0]
+                    if 200_000_000_000 < hid < 300_000_000_000 and seq == 1:
+                        candidates.append((r['base'] + entry_off, hid))
                 idx += 1
-    return matches
+
+    if not candidates:
+        return None, None
+
+    # Pick highest hand_id
+    max_hid = max(c[1] for c in candidates)
+    best = [c for c in candidates if c[1] == max_hid]
+
+    if len(best) == 1:
+        buf_addr = best[0][0]
+    else:
+        # Tiebreak: find the one with readable hero name in SEATED entries
+        buf_addr = best[0][0]
+        for ba, hid in best:
+            entries = decode_buffer(ba, read_bytes, read_str)
+            for e in entries:
+                if e['msg_type'] == 0x02 and e['name'] == HERO_NAME:
+                    buf_addr = ba
+                    break
+
+    entries = decode_buffer(buf_addr, read_bytes, read_str)
+    return (buf_addr, entries) if len(entries) >= 3 else (None, None)
 
 
-def _read_dump_at(bin_path, regions, addr, size):
-    """Read bytes from dump at a real memory address."""
-    path = _decompress_if_needed(bin_path)
-    for r in regions:
-        if r['base'] <= addr < r['base'] + r['size']:
-            off = addr - r['base']
-            avail = min(size, r['size'] - off)
-            with open(path, 'rb') as f:
-                f.seek(r['file_offset'] + off)
-                return f.read(avail)
-    return None
-
-
-def _verify_table_struct(read_fn, base, hand_id_int, hero_cards, opponent_names=None):
-    """Check if base looks like a valid table struct. Returns info dict or None."""
-    # Verify hand_id at +0x40
-    hid_data = read_fn(base + TABLE['hand_id'], 8)
-    if not hid_data or len(hid_data) < 8:
-        return None
-    if int.from_bytes(hid_data, 'little') != hand_id_int:
-        return None
-
-    r1, s1 = card_to_rank_suit(hero_cards[0])
-    r2, s2 = card_to_rank_suit(hero_cards[1])
-    if r1 is None:
-        return None
-
-    # Check each seat for hero cards
-    for seat_idx in range(10):
-        seat_base = base + SEAT['base'] + SEAT['interval'] * seat_idx
-        cv = read_fn(seat_base + SEAT['card_values'], 16)
-        cs = read_fn(seat_base + SEAT['card_suits'], 16)
-        if not cv or not cs or len(cv) < 9 or len(cs) < 9:
-            continue
-        cr1, cr2, cs1, cs2 = cv[0], cv[8], cs[0], cs[8]
-        # Match either order
-        match = (cr1 == r1 and cs1 == s1 and cr2 == r2 and cs2 == s2)
-        match_rev = (cr1 == r2 and cs1 == s2 and cr2 == r1 and cs2 == s1)
-        if match or match_rev:
-            name_data = read_fn(seat_base + SEAT['name'], 20)
-            name = name_data.split(b'\x00')[0].decode('ascii', errors='replace') if name_data else ''
-            # Bonus: check if opponent names match other seats
-            opp_names_found = []
-            if opponent_names:
-                for si in range(10):
-                    if si == seat_idx:
-                        continue
-                    sb = base + SEAT['base'] + SEAT['interval'] * si
-                    nd = read_fn(sb + SEAT['name'], 20)
-                    if nd:
-                        sn = nd.split(b'\x00')[0].decode('ascii', errors='replace')
-                        if sn and sn in opponent_names:
-                            opp_names_found.append(sn)
-            return {
-                'table_base': base,
-                'hero_seat': seat_idx,
-                'hero_name': name,
-                'cards_reversed': match_rev,
-                'opp_names_found': opp_names_found,
-            }
-    return None
-
+# ── Offline Analysis ─────────────────────────────────────────────────
 
 def cmd_analyze():
-    """Analyze all tagged dumps to find the table struct."""
+    """Verify message buffer structure across all tagged dumps."""
     dumps = _load_tagged_dumps()
     if not dumps:
-        log("No tagged dumps found.")
-        log("Play some hands with --calibrate, then run this again.")
+        log("No tagged dumps. Run: python helper_bar.py --calibrate")
         return
 
-    log(f"Found {len(dumps)} tagged dumps")
-    results = []
+    log(f"=== Memory Calibrator v4 (Signature-Based) ===")
+    log(f"Dumps: {len(dumps)}\n")
 
+    errors = 0
     for meta in dumps:
-        hand_id = meta['hand_id']
+        dump_id = meta['dump_id']
         hero_cards = meta['hero_cards']
         bin_path = meta['_bin_path']
         regions = meta['regions']
-        opp_names = [o['name'] for o in meta.get('opponents', []) if o.get('name')]
+        opps = [o['name'] for o in meta.get('opponents', []) if o.get('name')]
+        expected = ''.join(hero_cards) if hero_cards else None
 
-        log(f"\n--- {meta['dump_id']}: hand_id={hand_id} cards={hero_cards} ---")
+        log(f"{'='*60}")
+        log(f"{dump_id}: cards={hero_cards} opps={opps}")
 
-        try:
-            hand_id_int = int(hand_id)
-        except (ValueError, TypeError):
-            log(f"  Invalid hand_id: {hand_id}")
+        t0 = time.time()
+        buf_addr, entries = find_buffer_in_dump(bin_path, regions, expected)
+        elapsed = time.time() - t0
+
+        if not buf_addr:
+            log(f"  FAIL: buffer not found ({elapsed:.1f}s)")
+            errors += 1
             continue
 
-        # Search for hand_id as int64
-        pattern = struct.pack('<Q', hand_id_int)
-        matches = _search_dump(bin_path, regions, pattern)
-        log(f"  hand_id int64 matches: {len(matches)}")
+        hand_data = extract_hand_data(entries)
+        found_cards = hand_data['hero_cards']
 
-        read_fn = lambda addr, size, bp=bin_path, rg=regions: _read_dump_at(bp, rg, addr, size)
+        # Verify cards (allow reversed order)
+        cards_ok = False
+        if found_cards and expected:
+            cards_ok = found_cards == expected
+            if not cards_ok and len(found_cards) == 4:
+                cards_ok = found_cards[2:4] + found_cards[0:2] == expected
 
-        found = False
-        for addr in matches:
-            table_base = addr - TABLE['hand_id']
-            result = _verify_table_struct(read_fn, table_base, hand_id_int, hero_cards, opp_names)
-            if result:
-                log(f"  FOUND: table_base={hex(table_base)} seat={result['hero_seat']} name={result['hero_name']}")
-                if result['opp_names_found']:
-                    log(f"  Opponents confirmed: {result['opp_names_found']}")
-                result['dump_id'] = meta['dump_id']
-                result['module_base'] = meta.get('module_base')
-                result['hand_id'] = hand_id
-                results.append(result)
-                found = True
-                break
+        # Verify opponent names
+        found_names = set(hand_data['players'].values())
+        opps_ok = all(n in found_names for n in opps) if opps else True
 
-        if not found:
-            # Try ASCII hand_id
-            ascii_matches = _search_dump(bin_path, regions, str(hand_id).encode('ascii'))
-            log(f"  hand_id ASCII matches: {len(ascii_matches)}")
-            # Try searching for opponent names as anchors
-            if opp_names:
-                for name in opp_names[:3]:
-                    name_matches = _search_dump(bin_path, regions, name.encode('ascii'))
-                    log(f"  name '{name}' matches: {len(name_matches)}")
+        if not cards_ok:
+            errors += 1
+        if not opps_ok:
+            errors += 1
 
-    if not results:
-        log("\nNo table structs found in any dump.")
-        log("Possible reasons:")
-        log("  - Card encoding differs from 0-12 rank / 0-3 suit")
-        log("  - Struct layout changed from poker-supernova offsets")
-        log("  - hand_id stored differently (not int64)")
-        return
+        log(f"  Buffer: 0x{buf_addr:08X} ({len(entries)} entries, {elapsed:.1f}s)")
+        log(f"  Hand ID: {hand_data['hand_id']}")
+        log(f"  Cards: '{found_cards}' {'OK' if cards_ok else 'FAIL (expected '+str(expected)+')'}")
+        log(f"  Players: {dict(hand_data['players'])} {'OK' if opps_ok else 'FAIL'}")
+        log(f"  Actions: {len(hand_data['actions'])}")
+        for e in entries:
+            log(f"    {format_entry(e)}")
 
-    # Check consistency across dumps
-    log(f"\n=== RESULTS: {len(results)} table structs found ===")
-    for r in results:
-        mb = r.get('module_base') or 0
-        tb = r['table_base']
-        log(f"  {r['dump_id']}: base={hex(tb)} module+{hex(tb - mb)} seat={r['hero_seat']} name={r['hero_name']}")
-
-    # Save calibration from most recent result
-    best = results[-1]
-    save_calibration({
-        'table_base': best['table_base'],
-        'hero_seat': best['hero_seat'],
-        'hero_name': best['hero_name'],
-        'module_base': best.get('module_base'),
-        'module_offset': best['table_base'] - (best.get('module_base') or 0),
-    })
-    log(f"\nCalibration saved to {CALIBRATION_FILE}")
+    log(f"\n{'='*60}")
+    log(f"TOTAL ERRORS: {errors}")
+    if errors == 0:
+        log(f"ALL {len(dumps)} DUMPS VERIFIED")
 
 
-# ── Fast Card Read ──────────────────────────────────────────────────
+# ── Fast Card Read (Windows runtime) ────────────────────────────────
 
-def read_cards_fast():
-    """API for helper_bar: returns ['Ah', 'Kd'] or None."""
-    cal = load_calibration()
-    if not cal or not cal.get('table_base'):
-        return None
+def scan_live():
+    """Scan live PS memory for current hand data using 0x88 signature.
+
+    Returns dict with hand_id, hero_cards, players, actions, scan_time
+    or None on failure.
+    """
     global _reader
     if _reader is None:
         _reader = ProcessReader()
-    if not _reader.handle:
-        if not _reader.attach():
-            return None
-    seat_base = cal['table_base'] + SEAT['base'] + SEAT['interval'] * cal.get('hero_seat', 0)
-    cv = _reader.read(seat_base + SEAT['card_values'], 16)
-    cs = _reader.read(seat_base + SEAT['card_suits'], 16)
-    if not cv or not cs or len(cv) < 9 or len(cs) < 9:
+    if not _reader.handle and not _reader.attach():
         return None
-    r1, r2, s1, s2 = cv[0], cv[8], cs[0], cs[8]
-    if r1 > 12 or r2 > 12 or s1 > 3 or s2 > 3:
+
+    t0 = time.time()
+    candidates = []
+
+    for base, size in _reader.iter_regions():
+        if size > 100 * 1024 * 1024:
+            continue
+        data = _reader.read(base, size)
+        if not data:
+            continue
+        idx = 0
+        while True:
+            idx = data.find(BUFFER_SIGNATURE, idx)
+            if idx < 0:
+                break
+            entry_off = idx + 10
+            if entry_off + 16 <= len(data):
+                hid = struct.unpack('<Q', data[entry_off:entry_off+8])[0]
+                seq = struct.unpack('<I', data[entry_off+8:entry_off+12])[0]
+                if 200_000_000_000 < hid < 300_000_000_000 and seq == 1:
+                    candidates.append((base + entry_off, hid))
+            idx += 1
+
+    if not candidates:
         return None
-    return [RANKS[r1] + SUITS[s1], RANKS[r2] + SUITS[s2]]
+
+    candidates.sort(key=lambda c: c[1], reverse=True)
+
+    for buf_addr, hid in candidates:
+        entries = decode_buffer(buf_addr, _reader.read, _reader.read_str)
+        hand_data = extract_hand_data(entries)
+        if hand_data and hand_data['hero_cards']:
+            hand_data['scan_time'] = round(time.time() - t0, 2)
+            return hand_data
+
+    return None
+
+
+def read_cards_fast():
+    """API for helper_bar: returns ['Ah', 'Kd'] or None."""
+    result = scan_live()
+    if not result or not result.get('hero_cards'):
+        return None
+    cards = result['hero_cards']
+    if len(cards) != 4:
+        return None
+    return [cards[0:2], cards[2:4]]
 
 
 def is_calibrated():
-    cal = load_calibration()
-    return cal is not None and cal.get('table_base') is not None
+    """Signature-based approach doesn't need pre-calibration."""
+    return IS_WINDOWS
 
 
 def calibrate_after_gpt(gpt_result):
-    """Legacy API - now a no-op since we use dump+analyze workflow."""
+    """Legacy API - no-op."""
     pass
 
 
@@ -474,7 +547,7 @@ def load_calibration():
     try:
         with open(CALIBRATION_FILE) as f:
             return json.load(f)
-    except:
+    except Exception:
         return None
 
 
@@ -483,19 +556,22 @@ def save_calibration(data):
         json.dump(data, f, indent=2)
 
 
-# ── CLI ─────────────────────────────────────────────────────────────
+# ── CLI ──────────────────────────────────────────────────────────────
 
 if __name__ == '__main__':
     cmd = sys.argv[1].lower() if len(sys.argv) > 1 else ''
     if cmd == 'analyze':
         cmd_analyze()
     elif cmd == 'read':
-        cal = load_calibration()
-        if not cal:
-            log("Not calibrated. Run: python memory_calibrator.py analyze")
+        if not IS_WINDOWS:
+            log("Windows only")
         else:
-            cards = read_cards_fast()
-            log(f"Cards: {cards}" if cards else "Could not read cards")
+            r = scan_live()
+            if r:
+                log(f"Cards: {r['hero_cards']}  hand_id: {r['hand_id']}  "
+                    f"players: {r['players']}  ({r['scan_time']}s)")
+            else:
+                log("Could not find buffer")
     elif cmd == 'dump':
         did = save_dump()
         log(f"Saved: {did}" if did else "Failed (Windows only)")
@@ -507,7 +583,7 @@ if __name__ == '__main__':
                 f"opps={[o['name'] for o in d.get('opponents',[])]}")
     else:
         print("Usage:")
-        print("  python memory_calibrator.py analyze  # Search all dumps for table struct")
-        print("  python memory_calibrator.py read     # Read cards (after calibration)")
+        print("  python memory_calibrator.py analyze  # Verify message buffer in all dumps")
+        print("  python memory_calibrator.py read     # Read cards live (Windows only)")
         print("  python memory_calibrator.py list     # Show tagged dumps")
-        print("  python memory_calibrator.py dump     # Manual dump (normally auto on F9)")
+        print("  python memory_calibrator.py dump     # Manual dump (Windows only)")

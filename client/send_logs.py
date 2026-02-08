@@ -82,8 +82,15 @@ if __name__ == '__main__':
             if not os.path.exists(bin_path):
                 bf = jf.replace('.json', '.bin')
                 bin_path = os.path.join(DUMP_DIR, bf)
-            # Send metadata json as a log
-            send_log(json_path)
+            # Send metadata json to memory_dumps/ subdir (same as binary)
+            print(f"Uploading {jf}...")
+            with open(json_path, 'rb') as f:
+                resp = requests.post(f'{SERVER_URL}/upload-dump',
+                                     data=f,
+                                     headers={'X-Filename': jf,
+                                              'Content-Type': 'application/octet-stream'},
+                                     timeout=30)
+            print(resp.json())
             # Send binary dump
             if os.path.exists(bin_path):
                 send_dump(bin_path)

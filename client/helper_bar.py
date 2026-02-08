@@ -14,6 +14,7 @@ import pygetwindow as gw
 import keyboard
 import os
 import sys
+IS_WINDOWS = sys.platform == 'win32'
 import tempfile
 import json
 import traceback
@@ -387,8 +388,10 @@ class HelperBar:
                 img.save(saved_path)
                 self.root.after(0, lambda p=saved_path: self.log(f"Saved: {os.path.basename(p)}", "DEBUG"))
 
-                # Memory dump at same instant as screenshot
+                # Memory scan (parallel with GPT) + calibration dump
                 dump_id = None
+                mem_result = [None]  # mutable for thread
+                mem_thread = None
                 if CALIBRATE_MODE:
                     try:
                         from memory_calibrator import save_dump
@@ -398,6 +401,15 @@ class HelperBar:
                     except Exception as e:
                         print(f"[CALIBRATE] Dump error: {e}")
                         self.root.after(0, lambda e=e: self.log(f"Dump failed: {e}", "ERROR"))
+                if IS_WINDOWS:
+                    def _mem_scan():
+                        try:
+                            from memory_calibrator import scan_live
+                            mem_result[0] = scan_live()
+                        except Exception as e:
+                            mem_result[0] = {'error': str(e)}
+                    mem_thread = threading.Thread(target=_mem_scan, daemon=True)
+                    mem_thread.start()
 
                 # Also save temp for API
                 with tempfile.NamedTemporaryFile(suffix='.png', delete=False) as f:
@@ -513,6 +525,41 @@ class HelperBar:
                     except Exception as e:
                         print(f"[CALIBRATE] Tag error: {e}")
                 
+
+                # Merge memory scan results (if running on Windows)
+                if IS_WINDOWS and mem_thread:
+                    mem_thread.join(timeout=5)
+                    mr = mem_result[0]
+                    if mr and not mr.get('error'):
+                        result['memory_cards'] = mr.get('hero_cards')
+                        result['memory_hand_id'] = mr.get('hand_id')
+                        result['memory_players'] = mr.get('players')
+                        result['memory_actions'] = mr.get('actions')
+                        result['memory_scan_time'] = mr.get('scan_time')
+                        mc = mr.get('hero_cards')
+                        if mc and len(mc) == 4:
+                            gpt_cards = result.get('hero_cards', [])
+                            mem_cards = [mc[0:2], mc[2:4]]
+                            if gpt_cards != mem_cards:
+                                result['memory_status'] = f"OVERRIDE {gpt_cards}->{mem_cards}"
+                                self.root.after(0, lambda g=gpt_cards, m=mem_cards:
+                                    self.log(f"[MEM] Cards override: GPT {g} -> MEM {m}", "INFO"))
+                            else:
+                                result['memory_status'] = 'CONFIRMED'
+                            result['hero_cards'] = mem_cards
+                        if not result.get('hand_id') and mr.get('hand_id'):
+                            result['hand_id'] = mr['hand_id']
+                        st = mr.get('scan_time', '?')
+                        self.root.after(0, lambda s=st, c=mr.get('hero_cards'):
+                            self.log(f"[MEM] {c} hand={mr.get('hand_id')} ({s}s)", "INFO"))
+                    elif mr and mr.get('error'):
+                        result['memory_error'] = mr['error']
+                        self.root.after(0, lambda e=mr['error']:
+                            self.log(f"[MEM] Error: {e}", "DEBUG"))
+                    else:
+                        result['memory_status'] = 'NO_BUFFER'
+                        self.root.after(0, lambda: self.log("[MEM] No buffer found", "DEBUG"))
+
                 elapsed = time.time() - start
                 self.root.after(0, lambda t=api_time: self.log(f"API done: {t:.1f}s", "DEBUG"))
                 self.root.after(0, lambda: self._display_result(result, elapsed, img, screenshot_name))
@@ -572,6 +619,7 @@ class HelperBar:
         log_entry = {
             'timestamp': datetime.now().isoformat(),
             'screenshot': screenshot_name,
+            'hand_id': result.get('hand_id'),
             'hero_cards': cards,
             'board': board,
             'pot': pot,
@@ -600,10 +648,12 @@ class HelperBar:
             log_entry['memory_cards'] = result['memory_cards']
         if result.get('memory_status'):
             log_entry['memory_status'] = result['memory_status']
-        if result.get('calibration_status'):
-            log_entry['calibration_status'] = result['calibration_status']
-        if result.get('calibration_traceback'):
-            log_entry['calibration_traceback'] = result['calibration_traceback']
+        if result.get('memory_hand_id'):
+            log_entry['memory_hand_id'] = result['memory_hand_id']
+        if result.get('memory_players'):
+            log_entry['memory_players'] = result['memory_players']
+        if result.get('memory_scan_time'):
+            log_entry['memory_scan_time'] = result['memory_scan_time']
         
         # UI logs - what user sees
         if hasattr(self, 'ui_log_buffer') and self.ui_log_buffer:
@@ -940,9 +990,9 @@ class HelperBar:
 def main():
     if CALIBRATE_MODE:
         print("=== MEMORY CALIBRATION MODE ===")
-        print("Press F9 once - GPT detects cards, we find the base pointer.")
-        print("After that, cards are read in <1ms instead of ~5s.")
-        print("Offsets saved to memory_offsets.json")
+        print("Press F9 on each hand - dumps memory + GPT reads cards.")
+        print("Run 'python memory_calibrator.py analyze' offline to verify.")
+        print("Dumps saved to memory_dumps/")
         print("")
     app = HelperBar()
     app.run()

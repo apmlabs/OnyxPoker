@@ -1,6 +1,6 @@
 # OnyxPoker - Status Tracking
 
-**Last Updated**: February 8, 2026 17:18 UTC
+**Last Updated**: February 8, 2026 21:10 UTC
 
 ---
 
@@ -53,6 +53,267 @@
 ---
 
 ## Session History
+
+### Session 81: Memory + GPT Parallel Pipeline (February 8, 2026)
+
+**Wired up live memory reading into helper_bar.py. Memory scan runs in parallel with GPT — cards confirmed/overridden by memory ground truth.**
+
+**What changed:**
+
+1. **memory_calibrator.py**: Replaced `find_cards_live()` with `scan_live()` — returns full hand data (cards, hand_id, players, actions, scan_time), not just card string
+2. **helper_bar.py**: On Windows, starts memory scan thread alongside GPT call. After both finish, merges results:
+   - Memory cards override GPT cards (memory = ground truth)
+   - hand_id filled from memory if GPT missed it
+   - Player names from memory (no action-word confusion)
+   - UI shows `[MEM] 8h5d hand=259644772106 (2.3s)`
+   - Session log includes all memory fields
+3. **Removed `cmd_pointers()`** — pure Python can't build 130M-entry reverse pointer map (500MB dumps, ~130M 4-byte words each). The 0x88 signature scan (2-4s) is the production solution.
+
+**Runtime flow on Windows:**
+```
+F9 → screenshot + start mem_thread
+       ├─ mem_thread: scan_live() (2-4s) → hero_cards, players, hand_id, actions
+       └─ GPT V2 call (5.5s) → board, pot, to_call, opponents
+     → merge: memory cards = truth, GPT = visual data
+     → display + log everything
+```
+
+**Session log now includes:** `memory_cards`, `memory_hand_id`, `memory_players`, `memory_scan_time`, `memory_status` (CONFIRMED/OVERRIDE/NO_BUFFER)
+
+**Tests:** 24 rules + 30 audit = all pass. Analyze command verified 5/5 dumps still working.
+
+### Session 80: Pointer Chain Scan Attempt — Dead End (February 8, 2026)
+
+**Attempted Cheat Engine-style cross-validated pointer chain scan. Abandoned — infeasible in pure Python.**
+
+- Researched CE algorithm: build reverse pointer map (value → addresses), cross-validate between two dumps
+- Implemented `cmd_pointers()` with pmap building + multi-level scan
+- Problem: 130M 4-byte words per dump × dict insert = too slow, too much RAM
+- numpy attempt also killed the host
+- Key insight: the 0x88 signature scan from Session 79 (2-4s) IS the production solution
+- Pointer chains only needed for <1ms reads, which isn't necessary — memory scan finishes before GPT anyway
+
+### Session 79: Fast Buffer Finder — No Pointer Chain Needed (February 8, 2026)
+
+**SOLVED the runtime buffer finding problem. 2-4 seconds, 5/5 dumps correct.**
+
+**The problem:** Buffer is on the heap — different address every hand (range 0x19-0x1E, ~92MB spread). No module pointer chain found. Previous approach (find_buffer_in_dump) searched for hero card ASCII string then traced pointers back — worked but required knowing the cards first.
+
+**Discovery: 0x88 signature**
+
+Compared bytes before the buffer start across all 5 dumps byte-by-byte. Found a consistent 10-byte signature immediately before the first entry:
+
+```
+buf-10: 00  (always)
+buf-9:  88  (always) ← magic marker
+buf-8 to buf-1: 00 00 00 00 00 00 00 00  (always 8 zeros)
+[first 0x40-byte entry starts here]
+```
+
+The 4 bytes at buf-16 to buf-13 vary per hand (some kind of hash/counter), and buf-12 to buf-11 vary too, but buf-10 through buf-1 are rock solid across all 5 dumps.
+
+**Algorithm:**
+1. Scan all committed readable memory for `00 88 00 00 00 00 00 00 00 00`
+2. Check if what follows is a valid first entry: hand_id in 200B-300B range AND seq == 1
+3. ~6600 signature matches per dump, but only 1-4 pass the entry validation
+4. Pick candidate with highest hand_id (= most recent hand)
+5. If tied (dump4 had two with same hand_id), pick the one with readable hero name_ptr
+
+**Results:**
+| Dump | Candidates | Correct? | Time |
+|------|-----------|----------|------|
+| 1 (182230) | 1 | YES | 2.6s |
+| 2 (182250) | 2 | YES (highest hid) | 2.9s |
+| 3 (182319) | 3 | YES (highest hid) | 3.8s |
+| 4 (182804) | 4 | YES (tiebreak by name_ptr) | 0.7s |
+| 5 (182822) | 3 | YES (highest hid) | 3.1s |
+
+**Why stale buffers exist:** Old hand buffers aren't freed/zeroed. They keep the 0x88 signature but their name string pointers become dangling (freed memory). The current hand's buffer always has the highest hand_id and valid string pointers.
+
+**Dump4 tiebreak detail:** Two candidates had hand_id=259644860629. The stale one at 0x19105D80 had corrupted names (garbage bytes like \x05), while the correct one at 0x1ED6A3A0 had all 6 player names readable. This is because the stale buffer's name strings were freed.
+
+**Level 1 pointer scan (partial):** Also started scanning what points TO the buffer from the module. Dump1 had only 5 pointers to the buffer area, none from the module. The signature approach is far simpler and faster than pointer chains.
+
+**What this means for runtime:**
+- No need for Cheat Engine, no pointer chains, no module offsets
+- Just scan PS memory for the signature + validate the first entry
+- 2-4 seconds on ~500MB dump; should be similar or faster on live process
+- This is the complete solution for finding the buffer every hand
+
+**Next:** Rewrite memory_calibrator.py to use signature-based search instead of card-string search. Then continue investigating if a pointer chain exists (for even faster <1ms reads).
+
+### Session 78: Full Verification Across All 5 Dumps (February 8, 2026)
+
+**Final consistency check: message buffer structure verified across ALL 5 dumps with 0 errors.**
+
+**Key realization:** We don't need stack sizes. The message buffer gives us everything for poker decisions — hero cards, player names, seats, and all actions with amounts. Pot is calculable from summing amounts.
+
+**Dump 3 decoded (previously unverifiable):**
+- Found buffer at 0x1E4B97C0 by searching for ASCII card string "TdJh"
+- hand_id = 259644786517 (not in HH files — different table session)
+- Hero cards "TdJh" match screenshot metadata (Jh, Td)
+- 6 players: CORDEVIGO, hope201319, idealistslp, Thendo888, sramaverick2, chiinche
+- Actions decoded: POST_SB hope201319 2c, POST_BB idealistslp 5c, CALL Thendo888 5c, FOLD sramaverick2, FOLD chiinche
+
+**Complete verification results (0 errors across all 5 dumps):**
+| Dump | Time | Buffer Addr | Hand ID | Cards | Names | Actions | HH Match |
+|------|------|------------|---------|-------|-------|---------|----------|
+| 1 | 182230 | 0x199F6048 | 259644772106 | 8h5d | 6/6 | 10 entries | FULL |
+| 2 | 182250 | 0x1E4B8758 | 259644777045 | 2dQc | 6/6 | 12 entries | FULL |
+| 3 | 182319 | 0x1E4B97C0 | 259644786517 | TdJh | 6/6 | 13 entries | cards+names |
+| 4 | 182804 | 0x1ED6A3A0 | 259644860629 | 3h7d | 6/6 | 12 entries | FULL |
+| 5 | 182822 | 0x19105D80 | 259644864917 | 5d4d | 6/6 | 9 entries | FULL |
+
+**What we have (complete for poker decisions):**
+- Hero hole cards as ASCII (instant read)
+- All 6 player names with seat indices (0-5)
+- Blind posts with amounts
+- Every preflop action: CALL/RAISE/FOLD with amounts in cents
+- Pot calculable from summing all amounts
+
+**What's left: finding the buffer at runtime on Windows.**
+
+**Code rewrite: memory_calibrator.py v4**
+- Removed all poker-supernova offsets (TABLE/SEAT dicts, pointer chains, 0x160 name clusters, int32 card encoding, gzip)
+- Added: `decode_entry()`, `decode_buffer()`, `extract_hand_data()`, `find_buffer_in_dump()`, `find_cards_live()`
+- Analyze command verified 5/5 dumps with 0 errors
+- All helper_bar.py APIs preserved (save_dump, tag_dump, read_cards_fast, is_calibrated)
+
+**Files Updated:**
+- AGENTS.md — Complete rewrite of Memory Reading Architecture + Analysis Findings sections
+- memory_calibrator.py — v4 rewrite based on message buffer (removed all poker-supernova code)
+
+### Session 77: BREAKTHROUGH - Cards Found in Memory (February 8, 2026)
+
+**Found hero cards as ASCII text in all 4 verified dumps. Decoded the full message buffer structure. Cheat Engine-style pointer scan working.**
+
+**Data Verification (HH ground truth):**
+- Extracted new HH file `HH20260208 Asterope #2` from updated 7z — contains hands from 18:28 CET
+- Dump 1 (182230): hand_id 259644772106 VERIFIED — 8h 5d, pot 0.17, all 5 opponents match HH
+- Dump 2 (182250): hand_id 259644777045 VERIFIED — Qc 2d, pot 0.85, all 5 opponents match HH
+- Dump 3 (182319): UNVERIFIABLE — GPT couldn't read hand_id
+- Dump 4 (182804): hand_id 259644860629 VERIFIED — 7d 3h, pot 0.07, all 5 opponents match HH
+- Dump 5 (182822): hand_id 259644864917 VERIFIED — 5d 4d, pot 0.07, all 5 opponents match HH
+
+**HH Seat Assignments (verified):**
+| Dump | Seat 1 | Seat 2 | Seat 3 | Seat 4 | Seat 5 | Seat 6 |
+|------|--------|--------|--------|--------|--------|--------|
+| 1 | andresrodr8 | JaviGGWP | **idealistslp** | kemberaid | TJDasNeves | sramaverick2 |
+| 2 | fidotc3 | **idealistslp** | codolfito | Prisedeguerre | Ferchyman77 | Miguel_C_Ca |
+| 4 | Miguel_C_Ca | SirButterman | **idealistslp** | iam_xCidx | urubull | kemberaid |
+| 5 | **idealistslp** | kastlemoney | GOLDGAMMER | Bestiote | hotboycowboy | CHIKANEUR |
+
+**BREAKTHROUGH: Message Buffer Structure Decoded**
+
+Found a repeating 0x40-byte entry array containing hand_id + player names + hero cards:
+
+```
+Entry format (0x40 = 64 bytes):
++0x00: hand_id (8B little-endian)
++0x08: sequence_number (4B, incrementing 1,2,3...)
++0x14: msg_type (1B) — 0x01=player_info, 0x02=seated, 0x07=raise
++0x16: seat_index (1B, 0-based)
++0x1C: name_ptr (4B) -> null-terminated player name
++0x20: name_len (4B)
++0x28: extra_ptr (4B) -> for hero type 0x02: ASCII card string
+```
+
+**Hero cards found as ASCII at extra_ptr+0x00:**
+| Dump | Buffer Address | Hero Entry | Extra Ptr | Cards at +0x00 |
+|------|---------------|------------|-----------|----------------|
+| 1 | 0x199F6048 | entry 5 | 0x1A6FFA40 | "8h5d" |
+| 2 | 0x1E4B8758 | entry 4 | 0x1E5DC858 | "2dQc" |
+| 4 | 0x1ED6A3A0 | entry 5 | 0x1E4EA138 | "3h7d" |
+| 5 | 0x19105D80 | entry 3 | 0x13B0B3C8 | "5d4d" |
+
+Cards are 4-byte ASCII (e.g., "8h5d"), sometimes in reverse order vs HH. All 4 dumps verified.
+
+**Pointer Scan Progress (Cheat Engine approach):**
+- Level 1: Found 43 module pointers to hand_id area in dump 1 (0x1D740000 region)
+- But that region was a STALE buffer — only valid in dump 1, overwritten in dumps 4/5
+- `module+0x1AF19E4` is the only offset consistent across all 4 dumps, but points to HH text buffer
+- No direct module pointers to the message buffer addresses
+- Next: need level-2 scan — find what points to the message buffer, then what points to THAT
+
+**What's Left:**
+- The message buffer is on the heap (different address each hand)
+- No direct module pointer to it — need multi-level pointer chain
+- Need to scan entire dump for pointers to buffer, then trace back to module
+- Alternative: search for the buffer header/metadata structure that contains the buffer pointer
+
+### Session 76: Memory Dump Analysis - Structure Discovery (February 8, 2026)
+
+**Analyzed all 5 memory dumps. Found two data structures containing player names, but neither is the game state struct yet. Key findings narrow the search significantly.**
+
+**Dump Inventory (all from same PS session, module_base=0xC90000):**
+| Dump | Hero Cards | Hand ID | Opponents | Size |
+|------|-----------|---------|-----------|------|
+| 182230 | 8h 5d | 259644772106 | TJDasNeves, sramaverick2, andresrodr8, JaviGGWP, kemberaid | 494 MB |
+| 182250 | Qc 2d | 259644777045 | Prisedeguerre, Ferchyman77, Miguel_C_Ca, fidotc3, codolfito | 478 MB |
+| 182319 | Jh Td | None | CORDEVIGO, hope201319 | 479 MB |
+| 182804 | 7d 3h | 259644860629 | urubull, kemberaid, Miguel_C_Ca, SirButterman, iam_xCidx | 489 MB |
+| 182822 | 5d 4d | 259644864917 | GOLDGAMMER, Bestiote, hotboycowboy, CHIKANEUR, kastlemoney | 485 MB |
+
+**Finding 1: UI Rendering Struct (NOT game state)**
+- Opponent names found at 0x160 spacing in 4/5 dumps (confirmed seat interval from poker-supernova)
+- BUT this struct also contains font names ("stars-slim-sans", "Courier New"), table names ("Leader Boards"), and "SfnReplayer.113" — it's a UI/rendering data structure
+- Hero name "idealistslp" appears at offset -0x18 from opponent names in this struct
+- Conclusion: 0x160 seat interval is CORRECT, but this is the wrong struct
+
+**Finding 2: Protocol Message Buffer (NOT game state)**
+- hand_id appears near player names, but in BIG-ENDIAN format (network byte order)
+- Format: `hand_id(8B BE) + type(1B) + seat(1B) + flags(2B) + data(4B) + name`
+- Two message types per player:
+  - Type 0x01: Player info (seat + extra data like stack/bet)
+  - Type 0x02: Player seated notification (seat + 0x00 padding)
+- Seat numbers confirmed: byte 2 of unk1 = seat index (0-5)
+- Conclusion: This is decoded protocol data in memory, not the game state struct
+
+**Finding 3: hand_id as int64 LE (33 matches in dump 182230)**
+- The REAL game state stores hand_id as int64 little-endian
+- 33 matches found across the entire 494 MB dump
+- Closest to the UI name cluster: -0.6 MB and +3.4 MB away
+- hand_id and seat data are in SEPARATE memory regions (confirmed from Session 4)
+
+**Finding 4: Card bytes NOT found near any name occurrence**
+- Searched +/- 512 bytes around ALL "idealistslp" occurrences (36-342 per dump)
+- Tried every card encoding: byte, int32, 0x08 spacing, adjacent, combined 0-51
+- No consistent card pattern found at any fixed offset from hero name
+- This means either: (a) cards are at a larger offset, or (b) the name occurrences we checked aren't in the game state struct
+
+**Finding 5: 33 hand_id LE matches are ALL false positives**
+- Checked all 33 against poker-supernova struct layout (names at +0x218+seat*0x160): zero matches
+- Widened search to +/- 8KB for any opponent name: only HID #20 had names, but that's the protocol buffer area
+- Examined context of each match: file paths, font names, XML encoders — random data that happens to contain the hand_id bytes
+- Conclusion: hand_id as int64 LE is NOT how the game state stores it, or the game state is in unreadable memory
+
+**Finding 6: Card pattern (int32 rank+suit) region 0x068xxxxx is a STATIC LOOKUP TABLE**
+- Searched for 16-byte pattern: rank1(4B) suit1(4B) rank2(4B) suit2(4B) as int32 LE
+- Region 0x068xxxxx had matches in ALL 4 dumps (12-45 per dump)
+- But the bytes at these addresses are IDENTICAL across dumps — it's constant data, not per-hand game state
+- The "deck" is a lookup table containing all card value combinations
+
+**Finding 7: Protocol buffer does NOT contain card data**
+- Hero's Type 2 messages have 4 bytes after the name that change per hand
+- But these bytes don't correlate with card values in any encoding tested
+- Cards are likely only sent to the owning player via a separate message type, not stored in the seat info messages
+
+**What This Means:**
+- The poker-supernova struct layout (0x160 interval) is confirmed by the UI struct
+- But the ACTUAL game state struct has not been found — it's behind a pointer chain
+- The protocol buffer gives us seat assignments but not cards
+- The 33 hand_id LE matches are all false positives
+- Card values as int32 in region 0x068x are a static lookup table
+
+**Next Steps:**
+- The game state struct is only reachable via pointer chain from module_base
+- The first offset in the chain (0x01344248 for Build 46014) is build-specific
+- Need to either: (a) brute-force scan the first offset, or (b) use Cheat Engine on Windows to find it
+- Cheat Engine pointer scan is the standard approach: find a known value, then scan for what points to it
+- Alternative: dump the PokerStars.exe module and look for the offset in the code
+
+**Files Changed:**
+- memory_calibrator.py — Rewrote cmd_analyze with real-time progress logging, 3-phase approach
 
 ### Session 75: New HH Data + Memory Calibrator v3 (February 8, 2026)
 

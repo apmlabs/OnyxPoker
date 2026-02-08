@@ -52,9 +52,10 @@ python helper_bar.py --strategy sonnet
 
 - **No calibration needed** - F9 screenshots the active window
 - **GPT-5.2 Vision** reads cards, pot, stacks, buttons (96.9% accuracy)
+- **Memory reading** (Windows) runs in parallel — confirms/overrides GPT cards with ground truth from process memory
 - **Strategy Engine** applies hardcoded poker logic from strategy files
 - **Preflop**: Shows advice for ALL 6 positions automatically
-- **6-9 seconds** per analysis
+- **~5.5 seconds** per analysis (memory finishes in 2-4s, GPT in 5.5s)
 
 **AI-Only Mode**: Use `--ai-only` flag for GPT-5.2 to make all decisions (old behavior)
 

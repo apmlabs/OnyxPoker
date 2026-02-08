@@ -59,6 +59,7 @@ Thumbs.db
 config.json
 auth_tokens.json
 onyxpoker
+onyxpoker2
 SERVER_TEST_REPORT.md
 SERVER_QUICK_REFERENCE.md
 SERVER_STATUS.md
@@ -70,3 +71,4 @@ idealistslp_extracted/
 idealistslp.7z
 client/memory_dumps/
 memory_dumps.7z
+memory_dumps_extracted/
