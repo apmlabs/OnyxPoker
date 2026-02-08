@@ -389,18 +389,10 @@ class HelperBar:
                 self.root.after(0, lambda p=saved_path: self.log(f"Saved: {os.path.basename(p)}", "DEBUG"))
 
                 # Memory scan (parallel with GPT) + calibration dump
-                dump_id = None
+                dump_id_holder = [None]
                 mem_result = [None]  # mutable for thread
                 mem_thread = None
-                if CALIBRATE_MODE:
-                    try:
-                        from memory_calibrator import save_dump
-                        dump_id = save_dump(timestamp)
-                        if dump_id:
-                            self.root.after(0, lambda d=dump_id: self.log(f"Memory dump: {d}", "DEBUG"))
-                    except Exception as e:
-                        print(f"[CALIBRATE] Dump error: {e}")
-                        self.root.after(0, lambda e=e: self.log(f"Dump failed: {e}", "ERROR"))
+                dump_thread = None
                 if IS_WINDOWS:
                     def _mem_scan():
                         try:
@@ -410,6 +402,17 @@ class HelperBar:
                             mem_result[0] = {'error': str(e)}
                     mem_thread = threading.Thread(target=_mem_scan, daemon=True)
                     mem_thread.start()
+                if CALIBRATE_MODE:
+                    def _dump():
+                        try:
+                            from memory_calibrator import save_dump
+                            dump_id_holder[0] = save_dump(timestamp)
+                            if dump_id_holder[0]:
+                                self.root.after(0, lambda d=dump_id_holder[0]: self.log(f"Memory dump: {d}", "DEBUG"))
+                        except Exception as e:
+                            print(f"[CALIBRATE] Dump error: {e}")
+                    dump_thread = threading.Thread(target=_dump, daemon=True)
+                    dump_thread.start()
 
                 # Also save temp for API
                 with tempfile.NamedTemporaryFile(suffix='.png', delete=False) as f:
@@ -516,25 +519,29 @@ class HelperBar:
                         result['all_positions'] = all_position_results
                     result['api_time'] = api_time
 
-                # CALIBRATION: Tag the memory dump with GPT results
-                if CALIBRATE_MODE and dump_id:
-                    try:
-                        from memory_calibrator import tag_dump
-                        tag_dump(dump_id, result)
-                        print(f"[CALIBRATE] Tagged {dump_id}: hand={result.get('hand_id')} cards={result.get('hero_cards')}")
-                    except Exception as e:
-                        print(f"[CALIBRATE] Tag error: {e}")
+                # CALIBRATION: Wait for dump, then tag with GPT results
+                if CALIBRATE_MODE and dump_thread:
+                    dump_thread.join(timeout=120)
+                    dump_id = dump_id_holder[0]
+                    if dump_id:
+                        try:
+                            from memory_calibrator import tag_dump
+                            tag_dump(dump_id, result)
+                            print(f"[CALIBRATE] Tagged {dump_id}: hand={result.get('hand_id')} cards={result.get('hero_cards')}")
+                        except Exception as e:
+                            print(f"[CALIBRATE] Tag error: {e}")
                 
 
                 # Merge memory scan results (if running on Windows)
                 if IS_WINDOWS and mem_thread:
-                    mem_thread.join(timeout=5)
+                    mem_thread.join(timeout=10)
                     mr = mem_result[0]
                     if mr and not mr.get('error'):
                         result['memory_cards'] = mr.get('hero_cards')
                         result['memory_hand_id'] = mr.get('hand_id')
                         result['memory_players'] = mr.get('players')
                         result['memory_actions'] = mr.get('actions')
+                        result['memory_community'] = mr.get('community_cards')
                         result['memory_scan_time'] = mr.get('scan_time')
                         mc = mr.get('hero_cards')
                         if mc and len(mc) == 4:
@@ -654,6 +661,10 @@ class HelperBar:
             log_entry['memory_players'] = result['memory_players']
         if result.get('memory_scan_time'):
             log_entry['memory_scan_time'] = result['memory_scan_time']
+        if result.get('memory_community'):
+            log_entry['memory_community'] = result['memory_community']
+        if result.get('memory_actions'):
+            log_entry['memory_actions'] = result['memory_actions']
         
         # UI logs - what user sees
         if hasattr(self, 'ui_log_buffer') and self.ui_log_buffer:
