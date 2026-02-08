@@ -152,7 +152,10 @@ def extract_hand_data(entries):
     actions = []
 
     for e in entries:
-        if e['msg_type'] == 0x02:
+        if e['msg_type'] == 0x05:
+            # DEAL marker — street boundary for action tracking
+            actions.append((None, 'DEAL', 0))
+        elif e['msg_type'] == 0x02:
             if e['seat'] == 255 and e['extra']:
                 # Community cards: seat=255, extra = card string
                 cc = e['extra']

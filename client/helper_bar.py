@@ -610,46 +610,51 @@ class HelperBar:
 
     def _mem_poll_loop(self):
         """Background thread: rescan buffer every 200ms, push UI updates."""
-        from memory_calibrator import rescan_buffer, ACTION_NAMES
+        from memory_calibrator import rescan_buffer
+        self.root.after(0, lambda: self.log("[MEM] Polling started", "DEBUG"))
         while self._mem_polling:
             try:
                 hd = rescan_buffer(self._mem_buf_addr, self._mem_hand_id)
                 if hd is None:
-                    # Buffer gone (new hand or GC) — stop polling
                     self._mem_polling = False
+                    self.root.after(0, lambda: self.log("[MEM] Buffer gone, polling stopped", "DEBUG"))
                     break
                 n = hd.get('entry_count', 0)
                 if n != self._mem_last_entries:
                     self._mem_last_entries = n
-                    self.root.after(0, lambda d=hd: self._update_mem_display(d))
-            except Exception:
+                    self.root.after(0, lambda d=hd, cnt=n: self._update_mem_display(d, cnt))
+            except Exception as e:
                 self._mem_polling = False
+                self.root.after(0, lambda e=e: self.log(f"[MEM] Poll error: {e}", "DEBUG"))
                 break
             time.sleep(0.2)
 
-    def _update_mem_display(self, hd):
-        """Update the right panel with live advice from memory data."""
+    def _update_mem_display(self, hd, entry_count=0):
+        """Update the right panel with live advice from memory data + log it."""
         self.stats_text.delete('1.0', 'end')
-        # [MEM] status line — compact
+
         mc = hd.get('hero_cards', '')
         cards_str = f"{mc[0:2]} {mc[2:4]}" if mc and len(mc) == 4 else '??'
         cc = hd.get('community_cards', [])
         board_str = f" | {' '.join(cc)}" if cc else ''
-        self.stats_text.insert('end', f"[MEM] {cards_str}{board_str}\n", 'MEM')
+        ts = datetime.now().strftime("%H:%M:%S")
+        self.stats_text.insert('end', f"[MEM LIVE {ts}] {cards_str}{board_str} ({entry_count})\n", 'MEM')
 
         # Re-evaluate strategy with memory data
         advice = self._reeval_with_memory(hd)
+        act_str = ''
+        reason_str = ''
         if advice:
             act = advice.get('action', '').upper()
             amt = advice.get('bet_size')
             if amt and act in ('BET', 'RAISE'):
-                self.stats_text.insert('end', f"=> {act} {amt:.2f}\n", 'ACTION')
+                act_str = f"{act} {amt:.2f}"
             else:
-                self.stats_text.insert('end', f"=> {act}\n", 'ACTION')
-            reason = advice.get('reasoning', '')
-            if reason:
-                self.stats_text.insert('end', f"{reason}\n", 'DRAW')
-            # Hand strength
+                act_str = act
+            self.stats_text.insert('end', f"=> {act_str}\n", 'ACTION')
+            reason_str = advice.get('reasoning', '')
+            if reason_str:
+                self.stats_text.insert('end', f"{reason_str}\n", 'DRAW')
             ha = advice.get('hand_analysis', {})
             if ha and ha.get('valid'):
                 self.stats_text.insert('end', self._hand_strength_str(ha) + '\n', 'HAND')
@@ -667,14 +672,47 @@ class HelperBar:
         actions = hd.get('actions', [])
         if actions:
             self.stats_text.insert('end', '---\n', 'MEMDATA')
-            for name, act, amt in actions:
-                if act in ('POST_SB', 'POST_BB'):
+            deal_count = 0
+            for name, act_code, amt in actions:
+                if act_code in ('POST_SB', 'POST_BB'):
                     continue
-                line = f"{name or '?'}: {act}"
+                if act_code == 'DEAL' or name is None:
+                    deal_count += 1
+                    street = {1: 'FLOP', 2: 'TURN', 3: 'RIVER'}.get(deal_count, 'DEAL')
+                    self.stats_text.insert('end', f"--- {street} ---\n", 'DRAW')
+                    continue
+                line = f"{name or '?'}: {act_code}"
                 if amt > 0:
                     line += f" {amt/100:.2f}"
                 tag = 'MEM' if name == 'idealistslp' else 'MEMDATA'
                 self.stats_text.insert('end', line + '\n', tag)
+
+        # Log the live update to left panel
+        if act_str:
+            self.log(f"[MEM LIVE] => {act_str} | {reason_str}", "DECISION")
+
+        # Log to session file so we capture live re-evaluations
+        self._log_mem_update(hd, advice)
+
+    def _log_mem_update(self, hd, advice):
+        """Append a memory poll update to the session log."""
+        entry = {
+            'timestamp': datetime.now().isoformat(),
+            'type': 'mem_poll',
+            'memory_cards': hd.get('hero_cards'),
+            'memory_community': hd.get('community_cards', []),
+            'memory_actions': hd.get('actions', []),
+            'entry_count': hd.get('entry_count', 0),
+        }
+        if advice:
+            entry['action'] = advice.get('action')
+            entry['bet_size'] = advice.get('bet_size')
+            entry['reasoning'] = advice.get('reasoning')
+        try:
+            with open(SESSION_LOG, 'a') as f:
+                f.write(json.dumps(entry) + '\n')
+        except Exception:
+            pass
 
     def _reeval_with_memory(self, hd):
         """Re-run strategy engine using memory data. Returns decision dict or None."""
@@ -685,26 +723,47 @@ class HelperBar:
         cc = hd.get('community_cards', [])
         board = cc if cc else []
 
-        # Calculate pot from memory actions
+        # Calculate pot from memory actions (sum ALL amounts across all streets)
         pot_cents = sum(a[2] for a in hd.get('actions', []))
-        pot = pot_cents / 100.0 if pot_cents > 0 else 0.07  # fallback to min pot
+        pot = pot_cents / 100.0 if pot_cents > 0 else 0.07
 
-        # Determine to_call: last action aimed at hero
-        to_call = 0.0
+        # Determine to_call on the CURRENT street
+        # Community cards tell us the street boundary — actions after the last
+        # DEAL (community card appearance) are the current street's actions
         actions = hd.get('actions', [])
-        # Find the last bet/raise not by hero — that's what hero faces
-        last_bet = 0
-        hero_invested_street = 0
+        to_call = 0.0
+        # Walk actions to find current street's betting round
+        # The memory buffer has actions in order; community cards appear as
+        # separate entries (type 0x02 seat=255). We track the last villain
+        # bet/raise and hero's investment on the current street.
+        last_villain_bet = 0
+        hero_invested = 0
         for name, act, amt in actions:
-            if act in ('BET', 'RAISE') and name != 'idealistslp':
-                last_bet = amt / 100.0
-            elif act in ('BET', 'RAISE', 'CALL') and name == 'idealistslp':
-                hero_invested_street = amt / 100.0
-        if last_bet > hero_invested_street:
-            to_call = last_bet - hero_invested_street
+            if act == 'DEAL':
+                # New street — reset street tracking
+                last_villain_bet = 0
+                hero_invested = 0
+                continue
+            if name == 'idealistslp':
+                if act in ('BET', 'RAISE', 'CALL'):
+                    hero_invested = amt / 100.0  # RAISE amount is total, not incremental
+            else:
+                if act in ('BET', 'RAISE'):
+                    last_villain_bet = amt / 100.0
+        if last_villain_bet > hero_invested:
+            to_call = last_villain_bet - hero_invested
 
-        # Build table_data from last GPT result + memory overrides
+        # Determine aggressor: did hero raise/bet preflop?
         lr = self._last_result or {}
+        is_aggressor = lr.get('is_aggressor', True)
+        # If we have memory actions, check if hero raised preflop
+        for name, act, amt in actions:
+            if act == 'DEAL':
+                break  # stop at first deal = end of preflop
+            if name == 'idealistslp' and act == 'RAISE':
+                is_aggressor = True
+                break
+
         table_data = {
             'hero_cards': cards,
             'community_cards': board,
@@ -713,7 +772,7 @@ class HelperBar:
             'big_blind': lr.get('big_blind', 0.02),
             'position': lr.get('position', 'BTN'),
             'num_players': lr.get('num_players', 2),
-            'is_aggressor': lr.get('is_aggressor', True),
+            'is_aggressor': is_aggressor,
             'is_facing_raise': to_call > 0,
             'opponent_stats': lr.get('opponent_stats', []),
             'opponents': lr.get('opponents', []),
@@ -1041,8 +1100,14 @@ class HelperBar:
         mem_actions = result.get('memory_actions', [])
         if mem_actions:
             self.stats_text.insert('end', '---\n', 'MEMDATA')
+            deal_count = 0
             for name, act, amt in mem_actions:
                 if act in ('POST_SB', 'POST_BB'):
+                    continue
+                if act == 'DEAL' or name is None:
+                    deal_count += 1
+                    street = {1: 'FLOP', 2: 'TURN', 3: 'RIVER'}.get(deal_count, 'DEAL')
+                    self.stats_text.insert('end', f"--- {street} ---\n", 'DRAW')
                     continue
                 line = f"{name or '?'}: {act}"
                 if amt > 0:

@@ -86,20 +86,34 @@ def sync_logs(server_files):
         server_size = server_files.get(name, -1)
         if server_size == local_size:
             continue  # already synced
-        to_upload.append((name, path, local_size))
+        if server_size > 0 and local_size > server_size:
+            # Server has older version — send only new lines (append)
+            to_upload.append((name, path, local_size, server_size))
+        else:
+            # New file or server has nothing
+            to_upload.append((name, path, local_size, 0))
 
     skipped = len(local_files) - len(to_upload)
     if skipped:
         print(f"  {skipped} log(s) already on server, skipping")
 
     uploaded = 0
-    for name, path, size in to_upload:
-        print(f"  Uploading {name} ({fmt_size(size)})...", end=' ', flush=True)
+    for name, path, size, skip_bytes in to_upload:
         with open(path, 'r') as f:
-            content = f.read()
-        resp = requests.post(f'{SERVER_URL}/logs', json={
-            'filename': name, 'content': content
-        }, timeout=30)
+            if skip_bytes > 0:
+                f.seek(skip_bytes)
+                new_content = f.read()
+                new_lines = len(new_content.strip().split('\n')) if new_content.strip() else 0
+                print(f"  Appending {name} (+{fmt_size(size - skip_bytes)}, {new_lines} new lines)...", end=' ', flush=True)
+                resp = requests.post(f'{SERVER_URL}/logs', json={
+                    'filename': name, 'content': new_content, 'append': True
+                }, timeout=30)
+            else:
+                content = f.read()
+                print(f"  Uploading {name} ({fmt_size(size)})...", end=' ', flush=True)
+                resp = requests.post(f'{SERVER_URL}/logs', json={
+                    'filename': name, 'content': content
+                }, timeout=30)
         r = resp.json()
         print(f"OK ({r.get('lines', '?')} lines)")
         uploaded += 1

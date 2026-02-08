@@ -76,12 +76,18 @@ def receive_logs():
     data = request.json
     filename = data.get('filename', 'unknown.jsonl')
     content = data.get('content', '')
+    append_mode = data.get('append', False)
     
     log_path = os.path.join(UPLOAD_DIR, filename)
-    with open(log_path, 'w') as f:
+    mode = 'a' if append_mode else 'w'
+    with open(log_path, mode) as f:
         f.write(content)
     
-    return jsonify({'status': 'ok', 'path': log_path, 'lines': len(content.strip().split('\n'))})
+    total_lines = 0
+    with open(log_path, 'r') as f:
+        total_lines = sum(1 for line in f if line.strip())
+    
+    return jsonify({'status': 'ok', 'path': log_path, 'lines': total_lines})
 
 
 @app.route('/upload-dump', methods=['POST'])
