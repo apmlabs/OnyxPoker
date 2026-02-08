@@ -102,6 +102,22 @@ def upload_dump():
     size_mb = os.path.getsize(out_path) / 1024 / 1024
     return jsonify({'status': 'ok', 'path': out_path, 'size_mb': round(size_mb, 1)})
 
+@app.route('/list-files', methods=['GET'])
+def list_files():
+    """Return inventory of all files on server with sizes (for sync)."""
+    logs = {}
+    dumps = {}
+    # Session logs
+    for f in os.listdir(UPLOAD_DIR):
+        if f.endswith(('.jsonl', '.log')):
+            logs[f] = os.path.getsize(os.path.join(UPLOAD_DIR, f))
+    # Memory dumps
+    dump_dir = os.path.join(UPLOAD_DIR, 'memory_dumps')
+    if os.path.isdir(dump_dir):
+        for f in os.listdir(dump_dir):
+            dumps[f] = os.path.getsize(os.path.join(dump_dir, f))
+    return jsonify({'logs': logs, 'dumps': dumps})
+
 @app.route('/health', methods=['GET'])
 def health():
     return jsonify({'status': 'ok', 'uploads_dir': UPLOAD_DIR})

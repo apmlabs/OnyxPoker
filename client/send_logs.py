@@ -1,109 +1,224 @@
 """
-Send session logs + memory dumps to server for analysis
-Usage: python send_logs.py [--dumps]
+Sync session logs + memory dumps to server.
+No flags needed - syncs everything automatically, skips what's already there.
 """
 import sys
 import os
+import time
 import requests
 
 SERVER_URL = os.getenv('KIRO_SERVER', 'http://54.80.204.92:5001')
-DUMP_DIR = os.path.join(os.path.dirname(__file__), 'memory_dumps')
-LOG_DIR = os.path.join(os.path.dirname(__file__), 'logs')
+LOG_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'logs')
+DUMP_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'memory_dumps')
 
 
-def send_log(path):
-    print(f"Sending {path}...")
-    with open(path, 'r') as f:
-        content = f.read()
-    resp = requests.post(f'{SERVER_URL}/logs', json={
-        'filename': os.path.basename(path), 'content': content
-    }, timeout=10)
-    print(resp.json())
+def fmt_size(b):
+    if b < 1024: return f"{b} B"
+    if b < 1024**2: return f"{b/1024:.1f} KB"
+    if b < 1024**3: return f"{b/1024**2:.1f} MB"
+    return f"{b/1024**3:.2f} GB"
 
 
-def send_dump(path):
-    """Compress (if needed) and upload binary dump file to server."""
+def progress_upload(url, path, headers, timeout=600):
+    """Upload file with progress bar."""
+    total = os.path.getsize(path)
+    sent = 0
+    start = time.time()
+    bar_width = 30
+
+    def gen():
+        nonlocal sent
+        with open(path, 'rb') as f:
+            while True:
+                chunk = f.read(256 * 1024)
+                if not chunk:
+                    break
+                sent += len(chunk)
+                elapsed = time.time() - start
+                speed = sent / elapsed if elapsed > 0 else 0
+                pct = sent / total if total > 0 else 1
+                filled = int(bar_width * pct)
+                bar = '#' * filled + '-' * (bar_width - filled)
+                eta = (total - sent) / speed if speed > 0 else 0
+                print(f"\r  [{bar}] {pct*100:5.1f}% | {fmt_size(sent)}/{fmt_size(total)} | {fmt_size(speed)}/s | ETA {eta:.0f}s", end='', flush=True)
+                yield chunk
+
+    resp = requests.post(url, data=gen(), headers=headers, timeout=timeout)
+    elapsed = time.time() - start
+    speed = total / elapsed if elapsed > 0 else 0
+    print(f"\r  [{'#'*bar_width}] 100.0% | {fmt_size(total)} | {fmt_size(speed)}/s | {elapsed:.1f}s          ")
+    return resp
+
+
+def get_server_inventory():
+    """Ask server what files it already has."""
+    try:
+        resp = requests.get(f'{SERVER_URL}/list-files', timeout=10)
+        return resp.json()
+    except Exception as e:
+        print(f"  WARNING: Could not get server inventory ({e}), uploading everything")
+        return {'logs': {}, 'dumps': {}}
+
+
+def sync_logs(server_files):
+    """Sync session logs (.jsonl) and memory_scan.log."""
+    if not os.path.isdir(LOG_DIR):
+        print(f"  Log dir not found: {LOG_DIR}")
+        return 0, 0
+
+    local_files = []
+    # memory_scan.log
+    mem_log = os.path.join(LOG_DIR, 'memory_scan.log')
+    if os.path.exists(mem_log):
+        local_files.append(('memory_scan.log', mem_log))
+    # session logs
+    for f in sorted(os.listdir(LOG_DIR)):
+        if f.endswith('.jsonl'):
+            local_files.append((f, os.path.join(LOG_DIR, f)))
+
+    if not local_files:
+        print("  No log files found")
+        return 0, 0
+
+    to_upload = []
+    for name, path in local_files:
+        local_size = os.path.getsize(path)
+        server_size = server_files.get(name, -1)
+        if server_size == local_size:
+            continue  # already synced
+        to_upload.append((name, path, local_size))
+
+    skipped = len(local_files) - len(to_upload)
+    if skipped:
+        print(f"  {skipped} log(s) already on server, skipping")
+
+    uploaded = 0
+    for name, path, size in to_upload:
+        print(f"  Uploading {name} ({fmt_size(size)})...", end=' ', flush=True)
+        with open(path, 'r') as f:
+            content = f.read()
+        resp = requests.post(f'{SERVER_URL}/logs', json={
+            'filename': name, 'content': content
+        }, timeout=30)
+        r = resp.json()
+        print(f"OK ({r.get('lines', '?')} lines)")
+        uploaded += 1
+
+    return uploaded, skipped
+
+
+def sync_dumps(server_files):
+    """Sync memory dumps (.json metadata + .bin/.bin.gz binaries)."""
+    if not os.path.isdir(DUMP_DIR):
+        print("  No memory_dumps/ folder found")
+        return 0, 0
+
+    # Collect all dump files (json + bin + bin.gz)
+    local_files = []
+    for f in sorted(os.listdir(DUMP_DIR)):
+        if f.endswith(('.json', '.bin', '.bin.gz')):
+            local_files.append((f, os.path.join(DUMP_DIR, f)))
+
+    if not local_files:
+        print("  No dump files found")
+        return 0, 0
+
+    to_upload = []
+    for name, path in local_files:
+        local_size = os.path.getsize(path)
+        server_size = server_files.get(name, -1)
+        if server_size == local_size:
+            continue
+        to_upload.append((name, path, local_size))
+
+    skipped = len(local_files) - len(to_upload)
+    if skipped:
+        print(f"  {skipped} dump file(s) already on server, skipping")
+
+    # Compress uncompressed .bin files before upload
     import gzip
-    name = os.path.basename(path)
-    size_mb = os.path.getsize(path) / 1024 / 1024
+    final_uploads = []
+    for name, path, size in to_upload:
+        if name.endswith('.bin') and not name.endswith('.bin.gz'):
+            gz_path = path + '.gz'
+            gz_name = name + '.gz'
+            # Check if gz already exists on server
+            if server_files.get(gz_name, -1) >= 0:
+                print(f"  {gz_name} already on server, skipping {name}")
+                continue
+            if not os.path.exists(gz_path):
+                print(f"  Compressing {name} ({fmt_size(size)})...", end=' ', flush=True)
+                start = time.time()
+                with open(path, 'rb') as f_in, gzip.open(gz_path, 'wb', compresslevel=1) as f_out:
+                    while True:
+                        chunk = f_in.read(4 * 1024 * 1024)
+                        if not chunk:
+                            break
+                        f_out.write(chunk)
+                gz_size = os.path.getsize(gz_path)
+                ratio = gz_size / size * 100 if size > 0 else 0
+                print(f"{fmt_size(gz_size)} ({ratio:.0f}%) in {time.time()-start:.1f}s")
+            else:
+                gz_size = os.path.getsize(gz_path)
+            final_uploads.append((gz_name, gz_path, gz_size))
+        else:
+            final_uploads.append((name, path, size))
 
-    # Compress if not already gzipped
-    if not path.endswith('.gz'):
-        gz_path = path + '.gz'
-        if not os.path.exists(gz_path):
-            print(f"Compressing {name} ({size_mb:.1f} MB)...")
-            with open(path, 'rb') as f_in, gzip.open(gz_path, 'wb', compresslevel=1) as f_out:
-                while True:
-                    chunk = f_in.read(4 * 1024 * 1024)
-                    if not chunk:
-                        break
-                    f_out.write(chunk)
-        path = gz_path
-        name = os.path.basename(gz_path)
-        size_mb = os.path.getsize(path) / 1024 / 1024
+    uploaded = 0
+    for name, path, size in final_uploads:
+        print(f"  Uploading {name} ({fmt_size(size)})...")
+        headers = {'X-Filename': name, 'Content-Type': 'application/octet-stream'}
+        if size > 1024 * 1024:  # progress bar for >1MB
+            resp = progress_upload(f'{SERVER_URL}/upload-dump', path, headers)
+        else:
+            with open(path, 'rb') as f:
+                resp = requests.post(f'{SERVER_URL}/upload-dump', data=f, headers=headers, timeout=30)
+            print(f"  OK")
+        r = resp.json()
+        if r.get('status') != 'ok':
+            print(f"  ERROR: {r}")
+        uploaded += 1
 
-    print(f"Uploading {name} ({size_mb:.1f} MB)...")
-    with open(path, 'rb') as f:
-        resp = requests.post(f'{SERVER_URL}/upload-dump',
-                             data=f,
-                             headers={'X-Filename': name,
-                                      'Content-Type': 'application/octet-stream'},
-                             timeout=600)
-    print(resp.json())
+    return uploaded, skipped
 
 
 if __name__ == '__main__':
-    send_dumps = '--dumps' in sys.argv
+    print(f"=== OnyxPoker Sync ===")
     print(f"Server: {SERVER_URL}")
-    print(f"Log dir: {LOG_DIR} (exists: {os.path.isdir(LOG_DIR)})")
-    if send_dumps:
-        print(f"Dump dir: {DUMP_DIR} (exists: {os.path.isdir(DUMP_DIR)})")
+    print()
 
-    # Send memory_scan.log if exists
-    mem_log = os.path.join(LOG_DIR, 'memory_scan.log')
-    if os.path.exists(mem_log):
-        print("Sending memory_scan.log...")
-        send_log(mem_log)
+    # Check server
+    print("[1/3] Checking server...", end=' ', flush=True)
+    try:
+        resp = requests.get(f'{SERVER_URL}/health', timeout=5)
+        print(f"OK")
+    except Exception as e:
+        print(f"FAILED: {e}")
+        print("Cannot reach server. Aborting.")
+        sys.exit(1)
 
-    # Send latest session log
-    if os.path.isdir(LOG_DIR):
-        logs = [f for f in os.listdir(LOG_DIR) if f.endswith('.jsonl')]
-        if logs:
-            latest = max(logs, key=lambda f: os.path.getmtime(os.path.join(LOG_DIR, f)))
-            print(f"Sending latest: {latest}")
-            send_log(os.path.join(LOG_DIR, latest))
+    # Get server inventory
+    print("[2/3] Getting server inventory...", end=' ', flush=True)
+    inv = get_server_inventory()
+    server_logs = inv.get('logs', {})
+    server_dumps = inv.get('dumps', {})
+    print(f"{len(server_logs)} logs, {len(server_dumps)} dumps on server")
+    print()
 
-    # Send memory dumps (.json metadata + .bin data)
-    if send_dumps and os.path.isdir(DUMP_DIR):
-        dumps = sorted(f for f in os.listdir(DUMP_DIR) if f.endswith('.json'))
-        if not dumps:
-            print("No memory dumps found")
-        for jf in dumps:
-            bf = jf.replace('.json', '.bin.gz')
-            json_path = os.path.join(DUMP_DIR, jf)
-            bin_path = os.path.join(DUMP_DIR, bf)
-            # Fall back to uncompressed
-            if not os.path.exists(bin_path):
-                bf = jf.replace('.json', '.bin')
-                bin_path = os.path.join(DUMP_DIR, bf)
-            # Send metadata json to memory_dumps/ subdir (same as binary)
-            print(f"Uploading {jf}...")
-            with open(json_path, 'rb') as f:
-                resp = requests.post(f'{SERVER_URL}/upload-dump',
-                                     data=f,
-                                     headers={'X-Filename': jf,
-                                              'Content-Type': 'application/octet-stream'},
-                                     timeout=30)
-            print(resp.json())
-            # Send binary dump
-            if os.path.exists(bin_path):
-                send_dump(bin_path)
-            else:
-                print(f"  Missing binary for {jf}, skipping")
-    elif send_dumps:
-        print("No memory_dumps/ folder found")
+    # Sync logs
+    print("--- Session Logs ---")
+    log_up, log_skip = sync_logs(server_logs)
+    print()
+
+    # Sync dumps
+    print("--- Memory Dumps ---")
+    dump_up, dump_skip = sync_dumps(server_dumps)
+    print()
+
+    # Summary
+    total_up = log_up + dump_up
+    total_skip = log_skip + dump_skip
+    if total_up == 0:
+        print(f"Everything in sync! ({total_skip} files already on server)")
     else:
-        # Show hint if dumps exist
-        if os.path.isdir(DUMP_DIR) and any(f.endswith('.bin') for f in os.listdir(DUMP_DIR)):
-            n = sum(1 for f in os.listdir(DUMP_DIR) if f.endswith('.bin'))
-            print(f"\n{n} memory dump(s) found. Use --dumps to upload them too.")
+        print(f"Done! Uploaded {total_up} file(s), {total_skip} already synced.")
