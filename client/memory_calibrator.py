@@ -165,13 +165,14 @@ def save_dump(timestamp=None):
     os.makedirs(DUMP_DIR, exist_ok=True)
     ts = timestamp or datetime.now().strftime('%Y%m%d_%H%M%S')
     dump_id = f'dump_{ts}'
-    bin_path = os.path.join(DUMP_DIR, f'{dump_id}.bin')
+    bin_path = os.path.join(DUMP_DIR, f'{dump_id}.bin.gz')
     meta_path = os.path.join(DUMP_DIR, f'{dump_id}.json')
 
+    import gzip
     log(f"Dumping memory to {dump_id}...")
     regions = []
     file_offset = 0
-    with open(bin_path, 'wb') as f:
+    with gzip.open(bin_path, 'wb', compresslevel=1) as f:
         for base, size in _reader.iter_regions():
             if size > 100 * 1024 * 1024:
                 continue
@@ -181,6 +182,7 @@ def save_dump(timestamp=None):
                 regions.append({'base': base, 'size': len(data), 'file_offset': file_offset})
                 file_offset += len(data)
 
+    gz_mb = os.path.getsize(bin_path) / 1024 / 1024
     meta = {
         'dump_id': dump_id,
         'timestamp': ts,
@@ -188,11 +190,12 @@ def save_dump(timestamp=None):
         'module_base': _reader.module_base,
         'regions': regions,
         'bytes_total': file_offset,
+        'compressed': True,
     }
     with open(meta_path, 'w') as f:
         json.dump(meta, f)
 
-    log(f"Dump saved: {len(regions)} regions, {file_offset / 1024 / 1024:.1f} MB")
+    log(f"Dump saved: {len(regions)} regions, {file_offset / 1024 / 1024:.1f} MB raw, {gz_mb:.1f} MB compressed")
     return dump_id
 
 
@@ -232,7 +235,11 @@ def _load_tagged_dumps():
         if not fname.endswith('.json'):
             continue
         meta_path = os.path.join(DUMP_DIR, fname)
-        bin_path = meta_path.replace('.json', '.bin')
+        # Support both .bin and .bin.gz
+        base = meta_path.replace('.json', '')
+        bin_path = base + '.bin.gz'
+        if not os.path.exists(bin_path):
+            bin_path = base + '.bin'
         if not os.path.exists(bin_path):
             continue
         with open(meta_path) as f:
@@ -244,10 +251,30 @@ def _load_tagged_dumps():
     return dumps
 
 
+def _decompress_if_needed(bin_path):
+    """If .gz, decompress to .bin for random access. Returns plain path."""
+    if not bin_path.endswith('.gz'):
+        return bin_path
+    plain_path = bin_path[:-3]
+    if os.path.exists(plain_path):
+        return plain_path
+    import gzip
+    log(f"Decompressing {os.path.basename(bin_path)}...")
+    with gzip.open(bin_path, 'rb') as f_in, open(plain_path, 'wb') as f_out:
+        while True:
+            chunk = f_in.read(4 * 1024 * 1024)
+            if not chunk:
+                break
+            f_out.write(chunk)
+    log(f"Decompressed: {os.path.getsize(plain_path) / 1024 / 1024:.1f} MB")
+    return plain_path
+
+
 def _search_dump(bin_path, regions, pattern):
     """Search for byte pattern in dump file. Returns real memory addresses."""
+    path = _decompress_if_needed(bin_path)
     matches = []
-    with open(bin_path, 'rb') as f:
+    with open(path, 'rb') as f:
         for r in regions:
             f.seek(r['file_offset'])
             data = f.read(r['size'])
@@ -263,11 +290,12 @@ def _search_dump(bin_path, regions, pattern):
 
 def _read_dump_at(bin_path, regions, addr, size):
     """Read bytes from dump at a real memory address."""
+    path = _decompress_if_needed(bin_path)
     for r in regions:
         if r['base'] <= addr < r['base'] + r['size']:
             off = addr - r['base']
             avail = min(size, r['size'] - off)
-            with open(bin_path, 'rb') as f:
+            with open(path, 'rb') as f:
                 f.seek(r['file_offset'] + off)
                 return f.read(avail)
     return None

@@ -22,16 +22,33 @@ def send_log(path):
 
 
 def send_dump(path):
-    """Stream binary dump file to server."""
+    """Compress (if needed) and upload binary dump file to server."""
+    import gzip
     name = os.path.basename(path)
     size_mb = os.path.getsize(path) / 1024 / 1024
+
+    # Compress if not already gzipped
+    if not path.endswith('.gz'):
+        gz_path = path + '.gz'
+        if not os.path.exists(gz_path):
+            print(f"Compressing {name} ({size_mb:.1f} MB)...")
+            with open(path, 'rb') as f_in, gzip.open(gz_path, 'wb', compresslevel=1) as f_out:
+                while True:
+                    chunk = f_in.read(4 * 1024 * 1024)
+                    if not chunk:
+                        break
+                    f_out.write(chunk)
+        path = gz_path
+        name = os.path.basename(gz_path)
+        size_mb = os.path.getsize(path) / 1024 / 1024
+
     print(f"Uploading {name} ({size_mb:.1f} MB)...")
     with open(path, 'rb') as f:
         resp = requests.post(f'{SERVER_URL}/upload-dump',
                              data=f,
                              headers={'X-Filename': name,
                                       'Content-Type': 'application/octet-stream'},
-                             timeout=300)
+                             timeout=600)
     print(resp.json())
 
 
@@ -58,16 +75,20 @@ if __name__ == '__main__':
         if not dumps:
             print("No memory dumps found")
         for jf in dumps:
-            bf = jf.replace('.json', '.bin')
+            bf = jf.replace('.json', '.bin.gz')
             json_path = os.path.join(DUMP_DIR, jf)
             bin_path = os.path.join(DUMP_DIR, bf)
+            # Fall back to uncompressed
+            if not os.path.exists(bin_path):
+                bf = jf.replace('.json', '.bin')
+                bin_path = os.path.join(DUMP_DIR, bf)
             # Send metadata json as a log
             send_log(json_path)
             # Send binary dump
             if os.path.exists(bin_path):
                 send_dump(bin_path)
             else:
-                print(f"  Missing {bf}, skipping binary")
+                print(f"  Missing binary for {jf}, skipping")
     elif send_dumps:
         print("No memory_dumps/ folder found")
     else:
