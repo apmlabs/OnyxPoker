@@ -727,9 +727,13 @@ class HelperBar:
     def _reeval_with_memory(self, hd):
         """Re-run strategy engine using memory data. Returns decision dict or None."""
         mc = hd.get('hero_cards', '')
-        if not mc or len(mc) != 4:
+        lr = self._last_result or {}
+        if mc and len(mc) == 4:
+            cards = [mc[0:2], mc[2:4]]
+        elif lr.get('hero_cards'):
+            cards = lr['hero_cards']
+        else:
             return None
-        cards = [mc[0:2], mc[2:4]]
         cc = hd.get('community_cards', [])
         board = cc if cc else []
 
@@ -764,7 +768,6 @@ class HelperBar:
             to_call = last_villain_bet - hero_invested
 
         # Determine aggressor: did hero raise/bet preflop?
-        lr = self._last_result or {}
         is_aggressor = lr.get('is_aggressor', True)
         # If we have memory actions, check if hero raised preflop
         for name, act, amt in actions:
