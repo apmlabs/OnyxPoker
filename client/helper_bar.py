@@ -387,6 +387,17 @@ class HelperBar:
                 img.save(saved_path)
                 self.root.after(0, lambda p=saved_path: self.log(f"Saved: {os.path.basename(p)}", "DEBUG"))
 
+                # Memory dump at same instant as screenshot
+                dump_id = None
+                if CALIBRATE_MODE:
+                    try:
+                        from memory_calibrator import save_dump
+                        dump_id = save_dump(timestamp)
+                        if dump_id:
+                            self.root.after(0, lambda d=dump_id: self.log(f"Memory dump: {d}", "DEBUG"))
+                    except Exception as e:
+                        self.root.after(0, lambda e=e: self.log(f"Dump failed: {e}", "ERROR"))
+
                 # Also save temp for API
                 with tempfile.NamedTemporaryFile(suffix='.png', delete=False) as f:
                     img.save(f.name)
@@ -492,24 +503,14 @@ class HelperBar:
                         result['all_positions'] = all_position_results
                     result['api_time'] = api_time
 
-                # CALIBRATION: Use hand_id to find card memory location
-                if CALIBRATE_MODE:
-                    hand_id = result.get('hand_id')
-                    hero_cards = result.get('hero_cards', [])
-                    if hand_id and hero_cards and len(hero_cards) == 2:
-                        self.root.after(0, lambda: self.log(f"Scanning for hand_id {hand_id}...", "DEBUG"))
-                        try:
-                            from memory_calibrator import calibrate_after_gpt, is_calibrated
-                            calibrate_after_gpt(result)
-                            if is_calibrated():
-                                self.root.after(0, lambda: self.log("Memory CALIBRATED!", "INFO"))
-                                result['memory_status'] = 'calibrated'
-                        except Exception as e:
-                            result['memory_error'] = str(e)
-                            self.root.after(0, lambda e=e: self.log(f"Calibration: {e}", "ERROR"))
-                
-                elapsed = time.time() - start
-                self.root.after(0, lambda t=api_time: self.log(f"API done: {t:.1f}s", "DEBUG"))
+                # CALIBRATION: Tag the memory dump with GPT results
+                if CALIBRATE_MODE and dump_id:
+                    try:
+                        from memory_calibrator import tag_dump
+                        tag_dump(dump_id, result)
+                        self.root.after(0, lambda: self.log(f"Dump tagged: {result.get('hand_id')}", "DEBUG"))
+                    except Exception as e:
+                        self.root.after(0, lambda e=e: self.log(f"Tag failed: {e}", "ERROR"))
                 
                 elapsed = time.time() - start
                 self.root.after(0, lambda t=api_time: self.log(f"API done: {t:.1f}s", "DEBUG"))
