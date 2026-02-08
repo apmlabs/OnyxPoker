@@ -52,7 +52,10 @@ PokerStars/Simulator Window
      ├── hand_analysis.py   - analyze_hand(), check_draws() (single source of truth)
      ├── preflop.py         - expand_range(), STRATEGIES, preflop_action()
      ├── postflop_base.py   - Config-driven postflop (kiro/kiro_lord/sonnet)
-     └── _monolith.py       - postflop_action() dispatcher + 6 strategy functions
+     ├── postflop_value_lord.py  - Active base strategy (value_lord)
+     ├── postflop_the_lord.py    - Active default (wraps value_lord + opponent-aware)
+     ├── postflop_inactive.py    - 4 inactive strategies (optimal_stats/value_max/gpt/sonnet_max)
+     └── _monolith.py       - postflop_action() dispatcher + archetype simulation handlers
          ├── the_lord: Opponent-aware (default) - adjusts by villain archetype
          ├── value_lord: Conservative c-bet, aggressive value betting
          └── 4 inactive: gpt, sonnet_max, optimal_stats, value_max
@@ -220,32 +223,35 @@ onyxpoker/                    # Main repo (GitHub: apmlabs/OnyxPoker)
 ├── AGENTS.md                 # Permanent knowledge (NEVER DELETE)
 ├── AmazonQ.md                # Current state + history (NEVER DELETE)
 ├── README.md                 # Quick start (NEVER DELETE)
-├── idealistslp_extracted/    # Real PokerStars hand histories (~2300 hands)
+├── idealistslp_extracted/    # Real PokerStars hand histories (~2300 hands, 47 files)
 │   └── HH*.txt               # Raw hand history files from live play
 │
 ├── client/
 │   │ # === CORE (live play) ===
 │   ├── helper_bar.py         # Main UI (F9=advice, F10=bot, F11=stop, F12=hide)
-│   ├── poker_logic/          # Refactored package (was poker_logic.py)
+│   ├── poker_logic/          # Refactored package (Session 73-74)
 │   │   ├── __init__.py       # Re-exports everything (existing imports unchanged)
 │   │   ├── card_utils.py     # RANKS, SUITS, RANK_VAL, parse_card, equity, outs
 │   │   ├── hand_analysis.py  # analyze_hand(), check_draws() (single source of truth)
 │   │   ├── preflop.py        # expand_range(), 19 STRATEGIES, preflop_action()
 │   │   ├── postflop_base.py  # Config-driven postflop (kiro/kiro_lord/sonnet)
-│   │   └── _monolith.py      # postflop_action() dispatcher + 6 strategy functions
+│   │   ├── postflop_value_lord.py  # Active base strategy (value_lord)
+│   │   ├── postflop_the_lord.py    # Active default strategy (wraps value_lord + opponent-aware)
+│   │   ├── postflop_inactive.py    # 4 inactive strategies (optimal_stats/value_max/gpt/sonnet_max)
+│   │   └── _monolith.py      # postflop_action() dispatcher + archetype simulation handlers
 │   ├── strategy_engine.py    # Applies strategy (default: the_lord)
 │   ├── vision_detector.py    # AI-only mode: gpt-5.2 for vision + decisions
 │   ├── vision_detector_lite.py # V1 vision: gpt-5.2 for vision only (~3.9s)
 │   ├── vision_detector_v2.py # V2 vision: + opponent detection + hand_id (default, ~5.5s)
 │   │
-│   │ # === MEMORY CALIBRATION ===
+│   │ # === MEMORY CALIBRATION (Windows only) ===
 │   ├── memory_calibrator.py  # Auto-find card address using hand_id anchor
 │   │
 │   │ # === SIMULATION ===
 │   ├── poker_sim.py          # Monte Carlo simulator (200k+ hands)
 │   ├── pokerkit_adapter.py   # PokerKit simulation with external engine
 │   │
-│   │ # === ANALYSIS (on hand histories: idealistslp_extracted/*.txt) ===
+│   │ # === HH ANALYSIS (on hand histories: idealistslp_extracted/*.txt) ===
 │   ├── analyse_real_logs.py  # Main HH analysis (--postflop-only is primary mode)
 │   ├── analyze_table_composition.py  # Player archetype distribution (calibration)
 │   ├── analyze_archetype_behavior.py # Real vs sim postflop behavior (calibration)
@@ -253,34 +259,36 @@ onyxpoker/                    # Main repo (GitHub: apmlabs/OnyxPoker)
 │   ├── analyze_betting_strategy.py   # Bet/call win rates by hand strength (calibration)
 │   ├── analyze_hole_cards.py         # Hole card BB analysis (calibration)
 │   │
-│   │ # === EVALUATION (on session logs: server/uploads/*.jsonl) ===
+│   │ # === SESSION EVALUATION (on session logs: server/uploads/*.jsonl) ===
 │   ├── eval_session_logs.py  # VPIP/PFR/CBet stats, replay, compare (consolidated)
 │   ├── eval_deep.py          # Simulated benchmark stats vs industry standards
 │   │
 │   │ # === PLAYER DATABASE ===
 │   ├── build_player_stats.py # Creates player_stats.json (single source of truth)
 │   ├── opponent_lookup.py    # Lookup opponent stats
+│   ├── player_stats.json     # 613 players with archetypes + advice
 │   │
 │   │ # === TESTS ===
-│   ├── audit_strategies.py   # Strategy file vs code (30 tests) - run before commits
-│   ├── test_strategy_engine.py # Live code path (55 tests) - run before commits
-│   ├── test_postflop.py      # Edge cases (67 tests) - run before commits
-│   ├── test_poker_rules.py   # Poker rules (24 tests) - run before commits
-│   ├── test_screenshots.py   # V1 vs V2 vision comparison
+│   ├── run_tests.py          # Test runner (--quick, --all modes)
+│   ├── audit_strategies.py   # Strategy file vs code (30 tests)
+│   ├── test_strategy_engine.py # Live code path (55 tests)
+│   ├── test_postflop.py      # Edge cases (67 tests)
+│   ├── test_poker_rules.py   # Poker rules + poker_sim mechanics (24 tests)
+│   ├── test_screenshots.py   # V1 vs V2 vision comparison (Windows only)
 │   │
 │   │ # === UTILITIES ===
 │   ├── send_logs.py          # Upload logs to server
 │   ├── send_to_kiro.py       # Send to Kiro server
 │   │
-│   │ # === MEMORY CALIBRATION (Session 71) ===
-│   ├── memory_calibrator.py  # Auto-find memory offsets using GPT as oracle
-│   │
-│   └── pokerstrategy_*       # Strategy definition files
+│   └── pokerstrategy_*       # 19 strategy definition files
 │
 ├── server/
 │   ├── kiro_analyze.py       # Flask server on port 5001
-│   ├── app.py                # Alternative Flask app
-│   └── uploads/              # Session logs + screenshots
+│   ├── app.py                # Alternative Flask app (imports poker_strategy.py)
+│   ├── poker_strategy.py     # Poker strategy via Kiro CLI subprocess
+│   ├── analyze_session.py    # Session log + screenshot correlation
+│   └── uploads/              # 71 session logs (.jsonl) + 3018 screenshots (.png)
+│       └── compare_with_ground_truth.py  # One-off GPT accuracy comparison
 │
 └── docs/
     └── DEPLOYMENT.md         # Setup guide
@@ -288,128 +296,82 @@ onyxpoker/                    # Main repo (GitHub: apmlabs/OnyxPoker)
 
 ### Two Data Sources
 
-| Source | Location | Scripts | Purpose |
-|--------|----------|---------|---------|
-| Hand Histories | idealistslp_extracted/*.txt | analyse_real_logs.py, analyze_*.py | Strategy optimization |
-| Session Logs | server/uploads/*.jsonl | eval_session_logs.py, eval_deep.py | Live play evaluation |
+| Source | Location | Files | Scripts | Purpose |
+|--------|----------|-------|---------|---------|
+| Hand Histories | idealistslp_extracted/*.txt | 47 HH files (~2300 hands) | analyse_real_logs.py, analyze_*.py | Strategy optimization |
+| Session Logs | server/uploads/*.jsonl | 71 sessions + 3018 screenshots | eval_session_logs.py, eval_deep.py | Live play evaluation |
 
 ### Script Categories
 
 **Calibration scripts** (run when new HH data arrives):
-- analyze_table_composition.py - Update archetype distribution
-- analyze_archetype_behavior.py - Update postflop behavior
-- analyze_bet_sizes.py - Update bet sizing
-- analyze_betting_strategy.py - Update win rates
+- analyze_table_composition.py — Update archetype distribution
+- analyze_archetype_behavior.py — Update postflop behavior
+- analyze_bet_sizes.py — Update bet sizing
+- analyze_betting_strategy.py — Update win rates by hand strength
+- analyze_hole_cards.py — Hole card BB analysis
 
 **Analysis scripts** (run for strategy development):
-- analyse_real_logs.py --postflop-only - Primary analysis tool
-- eval_session_logs.py - Session log analysis
+- analyse_real_logs.py --postflop-only — Primary analysis tool (the_lord vs hero)
+- eval_session_logs.py — Session log analysis (VPIP/PFR/CBet)
+- eval_deep.py — Simulated benchmark stats vs industry standards
+
+**Simulation scripts** (run for strategy validation):
+- poker_sim.py — Monte Carlo (200k+ hands, internal engine)
+- pokerkit_adapter.py — PokerKit simulation (external engine, calibrated archetypes)
 
 ---
 
 ## 🧪 TESTING FRAMEWORK
 
-### 1. Strategy Audit (`audit_strategies.py`)
-Verifies code matches strategy file descriptions.
+### Test Runner (`run_tests.py`)
 
 ```bash
-cd client && python3 audit_strategies.py
+cd client && python3 run_tests.py          # Core tests (rules + audit + strategy_engine)
+cd client && python3 run_tests.py --quick  # Just rules + audit (fastest)
+cd client && python3 run_tests.py --all    # Core + extended (includes postflop)
 ```
 
-**Tests 30 scenarios:**
-- Preflop ranges (open, 3bet, 4bet)
-- Postflop value betting
-- Paired board handling (KK on JJ vs 66 on JJ)
-- Two pair strength detection
-- gpt4/sonnet specific behaviors
+### Automated Tests (run before every commit)
 
-**Target: 30/30 PASS**
+| # | Test | File | Count | What It Tests |
+|---|------|------|-------|---------------|
+| 1 | Poker Rules | test_poker_rules.py | 24 | Hand rankings, kickers, straights, betting mechanics, showdown. Also tests poker_sim.py mechanics. |
+| 2 | Strategy Audit | audit_strategies.py | 30 | Code matches pokerstrategy_* files: preflop ranges, postflop value betting, paired boards, two pair detection |
+| 3 | Strategy Engine | test_strategy_engine.py | 55 | Live code path (vision → strategy_engine → poker_logic): facing detection, position ranges, postflop actions, edge cases |
+| 4 | Postflop Edge Cases | test_postflop.py | 67 | Per-strategy postflop scenarios: value_lord, the_lord |
 
-### 2. Live Code Path Testing (`test_strategy_engine.py`)
-Tests the ACTUAL code path used in live play (helper_bar.py).
+**Target: All pass. Run `python3 run_tests.py --all` before commits.**
 
-```bash
-cd client && python3 test_strategy_engine.py
-```
+### Manual Validation (not automated — run as needed)
 
-**Why this matters:**
-- poker_sim.py and eval_session_logs.py call poker_logic.py DIRECTLY
-- Live play goes: vision → strategy_engine.py → poker_logic.py
-- Bugs in strategy_engine.py are INVISIBLE to simulations!
+| Tool | Command | What It Does |
+|------|---------|--------------|
+| HH Analysis | `python3 analyse_real_logs.py --postflop-only` | Replays all ~2300 real hands through strategy, shows saves/misses vs hero |
+| Session Replay | `python3 eval_session_logs.py --replay` | Shows disagreements between strategy and actual live play |
+| Strategy Compare | `python3 eval_session_logs.py --compare` | Compares multiple strategies on same session hands |
+| Monte Carlo Sim | `python3 poker_sim.py 200000` | 200k hands vs realistic 2NL opponents (internal engine) |
+| PokerKit Sim | `python3 pokerkit_adapter.py` | External engine simulation with calibrated archetypes |
+| Vision Test | `python3 test_screenshots.py` | V1 vs V2 vision comparison (Windows only) |
 
-**Tests 55 scenarios:**
-- Preflop facing detection (none/open/3bet/4bet)
-- Buggy vision handling (to_call=0 edge cases)
-- Position-specific ranges
-- Postflop action selection
-- Edge cases (None values, invalid positions)
+### What Has NO Automated Tests (and why)
 
-**MUST PASS before live play!**
-
-### 3. Poker Rules Verification (`test_poker_rules.py`)
-Verifies simulation follows actual Texas Hold'em rules.
-
-```bash
-cd client && python3 test_poker_rules.py
-```
-
-**Tests 24 scenarios:**
-- Hand rankings (Royal→High Card)
-- Hand comparison (higher beats lower)
-- Kicker comparison
-- Special straights (wheel, broadway)
-- Flush/full house detection
-- Position order (preflop & postflop)
-- Betting mechanics (caps, all-in)
-- Showdown (best hand wins, split pots)
-
-### 4. Postflop Edge Cases (`test_postflop.py`)
-Tests 67 postflop scenarios for each strategy.
-
-```bash
-cd client && python3 test_postflop.py [strategy_name]
-```
-
-### 5. Session Log Evaluation (`eval_session_logs.py`)
-Evaluates strategies on session logs from live play.
-
-```bash
-cd client && python3 eval_session_logs.py           # Full stats + replay
-cd client && python3 eval_session_logs.py --stats   # VPIP/PFR/CBet only
-cd client && python3 eval_session_logs.py --replay  # Disagreements only
-cd client && python3 eval_session_logs.py --compare # Compare strategies
-```
-
-**Quality metrics (hand strength based, NOT equity):**
-- **Good Folds**: Folding weak hands
-- **Bad Folds**: Folding strong hands to small bets
-- **Good Calls**: Calling when equity > pot odds
-- **Bad Calls**: Calling when equity < pot odds
-
-**Target: BadFolds = 0, BadCalls = 0**
-
-### 6. Monte Carlo Simulation (`poker_sim.py`)
-Simulates 200k+ hands against realistic opponent archetypes.
-
-```bash
-cd client && python3 poker_sim.py 200000
-```
-
-**Table composition** (realistic 2NL, updated Jan 17 2026):
-- 12% fish (loose passive)
-- 25% nit (ultra tight)
-- 39% tag (tight aggressive)
-- 23% lag (loose aggressive)
-- 1% maniac
+| Script | Why No Tests |
+|--------|-------------|
+| analyse_real_logs.py | Analysis tool — output is human-reviewed, not pass/fail |
+| pokerkit_adapter.py | Simulation — validated by BB/100 results, not unit tests |
+| poker_sim.py | Tested indirectly via test_poker_rules.py (imports simulate_hand, Player, POSITIONS) |
+| eval_session_logs.py / eval_deep.py | Evaluation tools — output is stats for human review |
+| analyze_*.py (5 calibration scripts) | One-off calibration — run when new HH data arrives, results feed into code changes |
+| build_player_stats.py | DB builder — validated by checking player_stats.json output |
+| helper_bar.py / vision_detector*.py | Windows-only GUI + GPT API — can't unit test on Linux |
+| memory_calibrator.py | Windows-only — requires PokerStars process |
 
 ### Testing Workflow
 1. Make strategy change in `poker_logic/`
-2. Run `audit_strategies.py` → **MUST PASS**
-3. Run `test_strategy_engine.py` → **MUST PASS**
-4. Run `test_postflop.py` → fix any issues
-5. Run `analyse_real_logs.py --postflop-only` → check HH performance
-6. Run `poker_sim.py 200000` → verify simulation results
-7. If all pass, commit changes
+2. Run `python3 run_tests.py --all` → **ALL MUST PASS**
+3. Run `analyse_real_logs.py --postflop-only` → check HH performance
+4. Run `poker_sim.py 200000` → verify simulation results
+5. If all pass, commit changes
 
 ---
 
