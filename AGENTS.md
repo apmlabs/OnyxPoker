@@ -39,31 +39,54 @@ The system analyzes poker tables using GPT vision API and provides strategic adv
 
 ## 🏗️ ARCHITECTURE
 
-### System Flow
+### Full Call Chain (verified Session 74)
 ```
-PokerStars/Simulator Window
-         ↓ F9 (screenshot active window)
-    GPT-5.2 Vision (vision_detector_v2.py default)
-         ↓
-   Strategy Engine (strategy_engine.py)
-         ↓
-   poker_logic/              # Refactored package
-     ├── card_utils.py      - Constants, parsing, equity calculation
-     ├── hand_analysis.py   - analyze_hand(), check_draws() (single source of truth)
-     ├── preflop.py         - expand_range(), STRATEGIES, preflop_action()
-     ├── postflop_base.py   - Config-driven postflop (kiro/kiro_lord/sonnet)
-     ├── postflop_value_lord.py  - Active base strategy (value_lord)
-     ├── postflop_the_lord.py    - Active default (wraps value_lord + opponent-aware)
-     ├── postflop_inactive.py    - 4 inactive strategies (optimal_stats/value_max/gpt/sonnet_max)
-     └── _monolith.py       - postflop_action() dispatcher + archetype simulation handlers
-         ├── the_lord: Opponent-aware (default) - adjusts by villain archetype
-         ├── value_lord: Conservative c-bet, aggressive value betting
-         └── 4 inactive: gpt, sonnet_max, optimal_stats, value_max
-         ↓
-   Decision + Reasoning
-         ↓
-    Helper Bar UI (advice display + opponent stats in V2 mode)
+F9 pressed (helper_bar.py)
+  │
+  ├─ Screenshot active window (pyautogui)
+  │
+  ├─ VisionDetectorV2.detect_table()        → GPT-5.2 reads cards/pot/opponents (~5.5s)
+  │
+  ├─ _merge_opponents()                     → Tracks real names across screenshots
+  ├─ _lookup_opponent_stats()               → Looks up archetypes from player_stats.json
+  │                                           Returns: [{name, archetype, advice}, ...]
+  │
+  ├─ StrategyEngine('the_lord').get_action(table_data)
+  │     │
+  │     ├─ PREFLOP (no community cards):
+  │     │     loop all 6 positions with to_call=0
+  │     │     └─ preflop_action()            ← poker_logic/preflop.py
+  │     │          Uses STRATEGIES dict + THE_LORD_VS_RAISE for opponent-aware ranges
+  │     │
+  │     └─ POSTFLOP (community cards present):
+  │           ├─ _get_villain_archetype()     → picks tightest active opponent
+  │           └─ postflop_action()            ← poker_logic/_monolith.py (dispatcher)
+  │                 │
+  │                 ├─ analyze_hand()         ← poker_logic/hand_analysis.py
+  │                 ├─ check_draws()          ← poker_logic/hand_analysis.py
+  │                 │
+  │                 └─ strategy == 'the_lord'?
+  │                       → _postflop_the_lord()   ← poker_logic/postflop_the_lord.py
+  │                            └─ wraps _postflop_value_lord() ← poker_logic/postflop_value_lord.py
+  │                                 + opponent-aware adjustments by archetype
+  │
+  └─ Display in Helper Bar UI (advice + opponent stats sidebar)
 ```
+
+**Key files in the chain:**
+| Step | File | Function |
+|------|------|----------|
+| Vision | vision_detector_v2.py | detect_table() |
+| Opponent DB | helper_bar.py | _lookup_opponent_stats() → player_stats.json |
+| Router | strategy_engine.py | get_action() → preflop or postflop path |
+| Preflop | poker_logic/preflop.py | preflop_action() |
+| Postflop dispatch | poker_logic/_monolith.py | postflop_action() |
+| Hand eval | poker_logic/hand_analysis.py | analyze_hand(), check_draws() |
+| the_lord | poker_logic/postflop_the_lord.py | _postflop_the_lord() |
+| value_lord | poker_logic/postflop_value_lord.py | _postflop_value_lord() |
+| Inactive | poker_logic/postflop_inactive.py | optimal_stats/value_max/gpt/sonnet_max |
+| Config-driven | poker_logic/postflop_base.py | kiro/kiro_lord/sonnet |
+| Constants | poker_logic/card_utils.py | RANKS, SUITS, parse_card, equity |
 
 ### V2 Vision Mode (Default since Session 60)
 ```bash
