@@ -47,15 +47,15 @@ PokerStars/Simulator Window
          ↓
    Strategy Engine (strategy_engine.py)
          ↓
-   poker_logic.py
-     ├── analyze_hand() - Card-based hand analysis (strength, desc, all flags)
-     ├── preflop_action() - Position-based ranges
-     └── postflop_action() - Strategy-specific logic
+   poker_logic/              # Refactored package
+     ├── card_utils.py      - Constants, parsing, equity calculation
+     ├── hand_analysis.py   - analyze_hand(), check_draws() (single source of truth)
+     ├── preflop.py         - expand_range(), STRATEGIES, preflop_action()
+     ├── postflop_base.py   - Config-driven postflop (kiro/kiro_lord/sonnet)
+     └── _monolith.py       - postflop_action() dispatcher + 6 strategy functions
          ├── the_lord: Opponent-aware (default) - adjusts by villain archetype
          ├── value_lord: Conservative c-bet, aggressive value betting
-         ├── kiro_lord: Combined kiro_optimal preflop + postflop improvements
-         ├── kiro_optimal: Tight preflop, solid postflop
-         └── sonnet: Big value bets
+         └── 4 inactive: gpt, sonnet_max, optimal_stats, value_max
          ↓
    Decision + Reasoning
          ↓
@@ -226,7 +226,13 @@ onyxpoker/                    # Main repo (GitHub: apmlabs/OnyxPoker)
 ├── client/
 │   │ # === CORE (live play) ===
 │   ├── helper_bar.py         # Main UI (F9=advice, F10=bot, F11=stop, F12=hide)
-│   ├── poker_logic.py        # Hand eval, preflop/postflop logic, all strategies
+│   ├── poker_logic/          # Refactored package (was poker_logic.py)
+│   │   ├── __init__.py       # Re-exports everything (existing imports unchanged)
+│   │   ├── card_utils.py     # RANKS, SUITS, RANK_VAL, parse_card, equity, outs
+│   │   ├── hand_analysis.py  # analyze_hand(), check_draws() (single source of truth)
+│   │   ├── preflop.py        # expand_range(), 19 STRATEGIES, preflop_action()
+│   │   ├── postflop_base.py  # Config-driven postflop (kiro/kiro_lord/sonnet)
+│   │   └── _monolith.py      # postflop_action() dispatcher + 6 strategy functions
 │   ├── strategy_engine.py    # Applies strategy (default: the_lord)
 │   ├── vision_detector.py    # AI-only mode: gpt-5.2 for vision + decisions
 │   ├── vision_detector_lite.py # V1 vision: gpt-5.2 for vision only (~3.9s)
@@ -397,7 +403,7 @@ cd client && python3 poker_sim.py 200000
 - 1% maniac
 
 ### Testing Workflow
-1. Make strategy change in `poker_logic.py`
+1. Make strategy change in `poker_logic/`
 2. Run `audit_strategies.py` → **MUST PASS**
 3. Run `test_strategy_engine.py` → **MUST PASS**
 4. Run `test_postflop.py` → fix any issues

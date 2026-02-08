@@ -1,6 +1,6 @@
 # OnyxPoker - Status Tracking
 
-**Last Updated**: February 2, 2026 20:13 UTC
+**Last Updated**: February 8, 2026 14:27 UTC
 
 ---
 
@@ -18,7 +18,7 @@
 | vision_detector_v2.py | ✅ | GPT-5.2 + opponent detection (V2) ~5.5s |
 | build_player_stats.py | ✅ | Single source of truth for player archetypes |
 | strategy_engine.py | ✅ | 3-bet/4-bet ranges + BB defense + villain archetype |
-| poker_logic.py | ✅ | Data-driven value_lord + opponent-aware the_lord |
+| poker_logic/ | ✅ | Refactored into package: card_utils, hand_analysis, preflop, postflop_base, _monolith |
 | poker_sim.py | ✅ | Full postflop simulation |
 | pokerkit_adapter.py | ✅ | Calibrated archetype behavior (matches real data) |
 | analyse_real_logs.py | ✅ | the_lord vs hero postflop analysis |
@@ -53,6 +53,49 @@
 ---
 
 ## Session History
+
+### Session 74: Monolith Refactoring - Full Package Extraction (February 8, 2026)
+
+**Continued Session 73's extraction work. Broke `_monolith.py` from 3007 → 1607 lines (47% reduction).**
+
+**Session 73 (committed this session):**
+- Created `postflop_base.py` (200 lines) - config-driven postflop for kiro/kiro_lord/sonnet
+- Removed 3 duplicate functions (-420 lines)
+- Verified 0/6000 random scenario mismatches
+
+**Session 74 extractions:**
+
+1. **hand_analysis.py** (346 lines) - `check_draws()` + `analyze_hand()`
+   - Single source of truth for hand evaluation
+   - Depends only on card_utils constants
+
+2. **preflop.py** (509 lines) - `expand_range()`, 19 `STRATEGIES`, `THE_LORD_VS_RAISE`, `preflop_action()`
+   - All preflop range definitions and decision logic
+   - Largest single extraction (497 lines removed from monolith)
+
+3. **card_utils.py** (121 lines) - wired existing file + added equity utilities
+   - `RANKS`, `SUITS`, `RANK_VAL`, `parse_card`, `hand_to_str`
+   - `calculate_equity`, `count_outs`, `get_hand_info`
+
+4. **__init__.py** (18 lines) - re-exports from all submodules
+   - All existing `from poker_logic import X` imports unchanged
+
+**Final package structure:**
+| Module | Lines | Contents |
+|--------|-------|----------|
+| `_monolith.py` | 1607 | postflop_action dispatcher + 6 strategy functions |
+| `preflop.py` | 509 | expand_range, STRATEGIES, THE_LORD_VS_RAISE, preflop_action |
+| `hand_analysis.py` | 346 | check_draws, analyze_hand |
+| `postflop_base.py` | 200 | Config-driven postflop (kiro/kiro_lord/sonnet) |
+| `card_utils.py` | 121 | Constants, parsing, equity, count_outs, get_hand_info |
+| `__init__.py` | 18 | Re-exports everything |
+
+**What remains in monolith (pure postflop):**
+- `postflop_action` dispatcher (399 lines)
+- `_postflop_value_lord` + `_postflop_the_lord` (593 lines) - active strategies
+- `_postflop_optimal_stats/value_max/gpt/sonnet_max` (600 lines) - inactive strategies
+
+**Test results:** All 54 tests pass (24 rules + 30 audit), all 11 strategies verified, all external imports work.
 
 ### Session 72: Memory Calibration v2 - Hand ID Approach (February 2, 2026)
 
