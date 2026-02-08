@@ -6,7 +6,8 @@ Strategies with unique logic remain in _monolith.py:
   value_lord, the_lord (active), gpt3/gpt4, sonnet_max, optimal_stats, value_max.
 """
 import random
-from poker_logic._monolith import analyze_hand, RANK_VAL
+from poker_logic.hand_analysis import analyze_hand
+from poker_logic.card_utils import RANK_VAL
 
 
 # ── Sizing tables ────────────────────────────────────────────────────────────
