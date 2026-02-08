@@ -523,8 +523,8 @@ def cmd_analyze():
 def scan_live():
     """Scan live PS memory for current hand data using 0x88 signature.
 
-    Returns dict with hand_id, hero_cards, players, actions, scan_time
-    or None on failure.
+    Returns dict with hand_id, hero_cards, players, actions, scan_time,
+    buf_addr, or None on failure.
     """
     global _reader
     if _reader is None:
@@ -564,9 +564,31 @@ def scan_live():
         hand_data = extract_hand_data(entries)
         if hand_data and hand_data['hero_cards']:
             hand_data['scan_time'] = round(time.time() - t0, 2)
+            hand_data['buf_addr'] = buf_addr
+            hand_data['entry_count'] = len(entries)
             return hand_data
 
     return None
+
+
+def rescan_buffer(buf_addr, expected_hand_id=None):
+    """Re-read a known buffer address. <1ms. Returns hand_data or None."""
+    global _reader
+    if _reader is None or not _reader.handle:
+        return None
+    # Quick validate: read first 16 bytes to check hand_id still matches
+    header = _reader.read(buf_addr, 16)
+    if not header or len(header) < 16:
+        return None
+    hid = struct.unpack('<Q', header[0:8])[0]
+    if expected_hand_id and hid != expected_hand_id:
+        return None  # New hand started or buffer moved
+    entries = decode_buffer(buf_addr, _reader.read, _reader.read_str)
+    hand_data = extract_hand_data(entries)
+    if hand_data:
+        hand_data['buf_addr'] = buf_addr
+        hand_data['entry_count'] = len(entries)
+    return hand_data
 
 
 def read_cards_fast():

@@ -93,6 +93,12 @@ class HelperBar:
         self.last_hero_cards = None  # Track hero cards to detect new hand
         self.last_opponents = []  # Track opponents across screenshots
         
+        # Memory polling state
+        self._mem_buf_addr = None  # Known buffer address for fast rescan
+        self._mem_hand_id = None   # Current hand_id being tracked
+        self._mem_polling = False  # Whether polling loop is active
+        self._mem_last_entries = 0 # Last known entry count (detect updates)
+        
         # Drag state
         self._drag_start_x = 0
         self._drag_start_y = 0
@@ -183,6 +189,8 @@ class HelperBar:
         self.stats_text.tag_configure('DANGER', foreground='#ff8800', font=('Courier', 9))
         self.stats_text.tag_configure('OPPONENT', foreground='#ff66ff', font=('Courier', 10, 'bold'))
         self.stats_text.tag_configure('ADVICE', foreground='#ffcc00', font=('Courier', 9))
+        self.stats_text.tag_configure('MEM', foreground='#00ff88', font=('Courier', 9, 'bold'))
+        self.stats_text.tag_configure('MEMDATA', foreground='#88ffcc', font=('Courier', 9))
 
         # Time
         self.time_label = tk.Label(right, text="", font=('Arial', 9),
@@ -343,6 +351,9 @@ class HelperBar:
         if self._analyzing:
             self.log("Already analyzing...", "DEBUG")
             return
+
+        # Stop any active memory polling from previous hand
+        self._mem_polling = False
 
         self._analyzing = True
         #self.status_label.config(text="Analyzing...", fg='#ffff00')
@@ -559,6 +570,9 @@ class HelperBar:
                         st = mr.get('scan_time', '?')
                         self.root.after(0, lambda s=st, c=mr.get('hero_cards'):
                             self.log(f"[MEM] {c} hand={mr.get('hand_id')} ({s}s)", "INFO"))
+                        # Start live memory polling from known buffer address
+                        if mr.get('buf_addr') and mr.get('hand_id'):
+                            self._start_mem_poll(mr['buf_addr'], mr['hand_id'])
                     elif mr and mr.get('error'):
                         result['memory_error'] = mr['error']
                         self.root.after(0, lambda e=mr['error']:
@@ -581,6 +595,70 @@ class HelperBar:
         finally:
             self._analyzing = False
             self.root.after(0, lambda: None)  # status update removed
+
+    def _start_mem_poll(self, buf_addr, hand_id):
+        """Start polling the known buffer address for live updates."""
+        self._mem_buf_addr = buf_addr
+        self._mem_hand_id = hand_id
+        self._mem_last_entries = 0
+        if not self._mem_polling:
+            self._mem_polling = True
+            threading.Thread(target=self._mem_poll_loop, daemon=True).start()
+
+    def _mem_poll_loop(self):
+        """Background thread: rescan buffer every 200ms, push UI updates."""
+        from memory_calibrator import rescan_buffer, ACTION_NAMES
+        while self._mem_polling:
+            try:
+                hd = rescan_buffer(self._mem_buf_addr, self._mem_hand_id)
+                if hd is None:
+                    # Buffer gone (new hand or GC) — stop polling
+                    self._mem_polling = False
+                    break
+                n = hd.get('entry_count', 0)
+                if n != self._mem_last_entries:
+                    self._mem_last_entries = n
+                    self.root.after(0, lambda d=hd: self._update_mem_display(d))
+            except Exception:
+                self._mem_polling = False
+                break
+            time.sleep(0.2)
+
+    def _update_mem_display(self, hd):
+        """Update the right panel with live memory data."""
+        self.stats_text.delete('1.0', 'end')
+        # Cards
+        mc = hd.get('hero_cards', '')
+        cards_str = f"{mc[0:2]} {mc[2:4]}" if mc and len(mc) == 4 else '??'
+        self.stats_text.insert('end', f"[MEM] {cards_str}\n", 'MEM')
+        # Community
+        cc = hd.get('community_cards', [])
+        if cc:
+            self.stats_text.insert('end', f"Board: {' '.join(cc)}\n", 'MEM')
+        # Street
+        nc = len(cc)
+        street = 'preflop' if nc == 0 else ('flop' if nc == 3 else ('turn' if nc == 4 else 'river'))
+        self.stats_text.insert('end', f"Street: {street}\n", 'MEMDATA')
+        # Players
+        players = hd.get('players', {})
+        hero_seat = None
+        for s, n in players.items():
+            if n == 'idealistslp':
+                hero_seat = s
+        # Actions — show as compact list
+        self.stats_text.insert('end', '---\n', 'MEMDATA')
+        for name, act, amt in hd.get('actions', []):
+            if not name:
+                name = '?'
+            line = f"{name}: {act}"
+            if amt > 0:
+                line += f" {amt/100:.2f}"
+            tag = 'MEM' if name == 'idealistslp' else 'MEMDATA'
+            self.stats_text.insert('end', line + '\n', tag)
+        # Pot from actions
+        pot = sum(a[2] for a in hd.get('actions', []))
+        if pot > 0:
+            self.stats_text.insert('end', f"---\nPot: {pot/100:.2f}\n", 'MEM')
 
     def _display_result(self, result, elapsed, screenshot, screenshot_name=None):
         """Display analysis result"""
@@ -792,6 +870,32 @@ class HelperBar:
     def _update_stats_display(self, result):
         """Update the decision stats panel - clean, minimal display"""
         self.stats_text.delete('1.0', 'end')
+        
+        # Memory data header — show source clearly
+        mem_status = result.get('memory_status', '')
+        if mem_status and mem_status != 'NO_BUFFER':
+            mc = result.get('memory_cards', '')
+            cards_str = f"{mc[0:2]} {mc[2:4]}" if mc and len(mc) == 4 else ''
+            self.stats_text.insert('end', f"[MEM] {cards_str}", 'MEM')
+            cc = result.get('memory_community', [])
+            if cc:
+                self.stats_text.insert('end', f" | {' '.join(cc)}", 'MEM')
+            st = result.get('memory_scan_time', '')
+            tag = 'MEM' if 'CONFIRMED' in mem_status else 'DANGER'
+            label = 'OK' if 'CONFIRMED' in mem_status else 'OVERRIDE'
+            self.stats_text.insert('end', f" ({label} {st}s)\n", tag)
+            # Show actions from memory
+            mem_actions = result.get('memory_actions', [])
+            if mem_actions:
+                for name, act, amt in mem_actions:
+                    if act in ('POST_SB', 'POST_BB'):
+                        continue
+                    line = f"  {name or '?'}: {act}"
+                    if amt > 0:
+                        line += f" {amt/100:.2f}"
+                    atag = 'MEM' if name == 'idealistslp' else 'MEMDATA'
+                    self.stats_text.insert('end', line + '\n', atag)
+            self.stats_text.insert('end', '---\n', 'MEMDATA')
         
         hand = result.get('hand_analysis', {})
         
