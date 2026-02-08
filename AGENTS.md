@@ -39,7 +39,7 @@ The system analyzes poker tables using GPT vision API and provides strategic adv
 
 ## 🏗️ ARCHITECTURE
 
-### Full Call Chain (verified Session 82)
+### Full Call Chain (verified Session 83)
 ```
 F9 pressed (helper_bar.py)
   │
@@ -51,8 +51,7 @@ F9 pressed (helper_bar.py)
   ├─ VisionDetectorV2.detect_table()        → GPT-5.2 reads cards/pot/opponents (~5.5s)
   │
   ├─ [Windows] Merge memory results: cards override GPT, fill hand_id, player names
-  ├─ [Windows] Start _mem_poll_loop: rescan_buffer() every 200ms (<1ms each)
-  │     └─ Right panel updates live with [MEM] data as actions happen
+  ├─ [Windows] Save _pending_mem_poll = (buf_addr, hand_id)
   │
   ├─ _merge_opponents()                     → Tracks real names across screenshots
   ├─ _lookup_opponent_stats()               → Looks up archetypes from player_stats.json
@@ -77,7 +76,12 @@ F9 pressed (helper_bar.py)
   │                            └─ wraps _postflop_value_lord() ← poker_logic/postflop_value_lord.py
   │                                 + opponent-aware adjustments by archetype
   │
-  └─ Display in Helper Bar UI (advice + opponent stats sidebar)
+  └─ _display_result() → updates right panel with advice + stats
+        └─ [Windows] Start _mem_poll_loop from _pending_mem_poll
+              └─ rescan_buffer() every 200ms (<1ms each)
+              └─ _update_mem_display() → right panel updates live
+              └─ Falls back to GPT cards if memory_cards is None
+              └─ Time label shows LIVE (N) during polling
 ```
 
 **Key files in the chain:**
@@ -218,20 +222,23 @@ The poker-supernova repo assumed cards as int32 rank/suit at seat+0x9C with 0x08
 - `rescan_buffer(buf_addr, hand_id)` — re-read known buffer in <1ms (30 entries x 64B = ~2KB)
 - Action code table: CALL=0x43, RAISE=0x45, FOLD=0x46, POST_BB=0x50, POST_SB=0x70, BET=0x42, CHECK=0x63
 
-**Runtime flow (Session 82 — memory polling + GPT parallel):**
+**Runtime flow (Session 83 — memory polling + GPT parallel):**
 ```
 F9 pressed (helper_bar.py)
   ├─ screenshot + start mem_thread (parallel)
   │     └─ scan_live() (2-4s) → {hero_cards, hand_id, players, actions, buf_addr}
-  ├─ Buffer found → start _mem_poll_loop (every 200ms, <1ms each)
-  │     └─ rescan_buffer(buf_addr) → right panel updates live
   ├─ GPT V2 call (5.5s) → board, pot, to_call, opponents
-  └─ merge:
-        memory cards override GPT (ground truth)
-        hand_id from memory if GPT missed it
-        player names from memory (no action-word confusion)
-        UI: [MEM] 8h5d hand=259644772106 (2.3s)
-        Log: memory_cards, memory_hand_id, memory_players, memory_scan_time, memory_status
+  ├─ merge:
+  │     memory cards override GPT (ground truth)
+  │     hand_id from memory if GPT missed it
+  │     player names from memory (no action-word confusion)
+  │     UI: [MEM] 8h5d hand=259644772106 (2.3s)
+  │     Log: memory_cards, memory_hand_id, memory_players, memory_scan_time, memory_status
+  ├─ _display_result() → draw right panel with advice + stats
+  └─ _start_mem_poll(buf_addr, hand_id) → starts AFTER display
+        └─ rescan_buffer() every 200ms (<1ms each)
+        └─ Falls back to GPT cards if memory_cards is None
+        └─ Time label: LIVE (N), left panel: [MEM LIVE]
 ```
 
 **memory_status values:** CONFIRMED (GPT matches), OVERRIDE (GPT wrong, memory corrected), NO_BUFFER (scan failed)
@@ -663,6 +670,8 @@ User said "single monitor" multiple times while I kept designing for dual monito
 | Testing poker_logic only | 34 | Misses strategy_engine bugs | Test live path |
 | Hardcoding to_call=0 | 43.13 | Breaks postflop facing | Separate preflop/postflop |
 | C-bets = bluffs | 70 | C-bets win when villain folds | Allow c-bets even vs fish |
+| Start poll before display | 83 | Display overwrites poll output | Start poll AFTER _display_result |
+| Raw file size on Windows | 83 | \r\n vs \n size mismatch | Compare content.encode() size |
 
 ### Common Gotchas
 

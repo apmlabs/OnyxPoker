@@ -1,6 +1,6 @@
 # OnyxPoker - Status Tracking
 
-**Last Updated**: February 8, 2026 22:40 UTC
+**Last Updated**: February 8, 2026 23:48 UTC
 
 ---
 
@@ -54,6 +54,30 @@
 ---
 
 ## Session History
+
+### Session 83: Fix Live Polling Visibility + Incremental Upload Bug (February 9, 2026)
+
+**Fixed 3 bugs preventing live memory polling from being visible to the user. Verified with 37-entry session log (14 F9 + 23 mem_poll entries).**
+
+**What changed:**
+
+1. **Poll-vs-display race condition (main bug)**: `_start_mem_poll()` was called BEFORE `_display_result()`. Both queued on Tk main loop — poll wrote to right panel, then `_display_result` immediately overwrote it with `stats_text.delete('1.0', 'end')`. Every poll update was invisible. Fix: poll now starts at the END of `_display_result`, after stats panel is fully drawn.
+
+2. **GPT card fallback during polling**: When memory buffer couldn't find `hero_cards` (happens during hand transitions), `_reeval_with_memory` returned None instead of using GPT cards from `self._last_result`. Fix: falls back to GPT cards → always produces advice.
+
+3. **send_logs.py re-appending old files**: On Windows, `os.path.getsize()` returns raw byte count (with `\r\n`), but server stores with `\n`. Every file appeared "larger" locally, triggering tiny appends (+2B to +245B) on every sync. Fix: compare `len(content.encode('utf-8'))` after text-mode read.
+
+4. **LIVE indicator**: Time label shows `LIVE (15)` → `LIVE (16)` during polling. Left panel always logs `[MEM LIVE]` on every update.
+
+**Session log analysis (session_20260209_003333.jsonl, 37 entries):**
+- 14 F9 presses, 23 mem_poll entries
+- Memory scan: 12/14 found buffer (1.4-3.8s), 1 NO_BUFFER, 1 OVERRIDE
+- Poll updates tracked entry_count changes: 15→16→19 (new actions appearing)
+- GPT caught 6 card order overrides (e.g., `['8c','6d']` → `['6d','8c']`)
+
+**Files changed:**
+- helper_bar.py: Deferred poll start, GPT card fallback, LIVE indicator
+- send_logs.py: Content-size comparison (handles \r\n vs \n)
 
 ### Session 82: Live Memory Polling + Full Verification (February 8, 2026)
 
