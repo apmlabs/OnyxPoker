@@ -396,6 +396,7 @@ class HelperBar:
                         if dump_id:
                             self.root.after(0, lambda d=dump_id: self.log(f"Memory dump: {d}", "DEBUG"))
                     except Exception as e:
+                        print(f"[CALIBRATE] Dump error: {e}")
                         self.root.after(0, lambda e=e: self.log(f"Dump failed: {e}", "ERROR"))
 
                 # Also save temp for API
@@ -508,9 +509,9 @@ class HelperBar:
                     try:
                         from memory_calibrator import tag_dump
                         tag_dump(dump_id, result)
-                        self.root.after(0, lambda: self.log(f"Dump tagged: {result.get('hand_id')}", "DEBUG"))
+                        print(f"[CALIBRATE] Tagged {dump_id}: hand={result.get('hand_id')} cards={result.get('hero_cards')}")
                     except Exception as e:
-                        self.root.after(0, lambda e=e: self.log(f"Tag failed: {e}", "ERROR"))
+                        print(f"[CALIBRATE] Tag error: {e}")
                 
                 elapsed = time.time() - start
                 self.root.after(0, lambda t=api_time: self.log(f"API done: {t:.1f}s", "DEBUG"))

@@ -84,15 +84,17 @@ class ProcessReader:
 
     def attach(self):
         if not IS_WINDOWS:
-            return False
+            log("Not Windows"); return False
         self.pid = self._find_pid()
         if not self.pid:
-            return False
+            log("PokerStars.exe not found in tasklist"); return False
+        log(f"Found PID {self.pid}")
         self.handle = ctypes.windll.kernel32.OpenProcess(
             PROCESS_VM_READ | PROCESS_QUERY_INFORMATION, False, self.pid)
         if not self.handle:
-            return False
+            log(f"OpenProcess failed (run as admin?)"); return False
         self.module_base = self._get_module_base()
+        log(f"Attached: PID={self.pid} module_base={hex(self.module_base or 0)}")
         return True
 
     def _find_pid(self):
@@ -101,10 +103,15 @@ class ProcessReader:
             out = subprocess.check_output(
                 'tasklist /FI "IMAGENAME eq PokerStars.exe" /FO CSV',
                 shell=True, stderr=subprocess.DEVNULL)
-            for line in out.decode().strip().split('\n')[1:]:
-                return int(line.split(',')[1].strip('"'))
-        except:
-            return None
+            lines = out.decode().strip().split('\n')
+            log(f"tasklist returned {len(lines)} lines")
+            for line in lines[1:]:
+                parts = line.split(',')
+                if len(parts) >= 2:
+                    return int(parts[1].strip('"'))
+        except Exception as e:
+            log(f"tasklist error: {e}")
+        return None
 
     def _get_module_base(self):
         try:
@@ -148,12 +155,12 @@ def save_dump(timestamp=None):
     """Called on F9 press. Dumps PS memory to disk. Returns dump_id or None."""
     global _reader
     if not IS_WINDOWS:
-        return None
+        log("save_dump: not Windows"); return None
     if _reader is None:
         _reader = ProcessReader()
     if not _reader.handle:
         if not _reader.attach():
-            return None
+            log("save_dump: could not attach to PokerStars"); return None
 
     os.makedirs(DUMP_DIR, exist_ok=True)
     ts = timestamp or datetime.now().strftime('%Y%m%d_%H%M%S')
@@ -161,6 +168,7 @@ def save_dump(timestamp=None):
     bin_path = os.path.join(DUMP_DIR, f'{dump_id}.bin')
     meta_path = os.path.join(DUMP_DIR, f'{dump_id}.json')
 
+    log(f"Dumping memory to {dump_id}...")
     regions = []
     file_offset = 0
     with open(bin_path, 'wb') as f:
@@ -184,6 +192,7 @@ def save_dump(timestamp=None):
     with open(meta_path, 'w') as f:
         json.dump(meta, f)
 
+    log(f"Dump saved: {len(regions)} regions, {file_offset / 1024 / 1024:.1f} MB")
     return dump_id
 
 
