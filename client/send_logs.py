@@ -54,6 +54,10 @@ def send_dump(path):
 
 if __name__ == '__main__':
     send_dumps = '--dumps' in sys.argv
+    print(f"Server: {SERVER_URL}")
+    print(f"Log dir: {LOG_DIR} (exists: {os.path.isdir(LOG_DIR)})")
+    if send_dumps:
+        print(f"Dump dir: {DUMP_DIR} (exists: {os.path.isdir(DUMP_DIR)})")
 
     # Send memory_scan.log if exists
     mem_log = os.path.join(LOG_DIR, 'memory_scan.log')
