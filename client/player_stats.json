@@ -17,6 +17,15 @@
     "archetype": "fish",
     "advice": "Isolate wide | Value bet | Calls too much | Never bluff"
   },
+  "Suave1984": {
+    "hands": 152,
+    "vpip": 18.4,
+    "pfr": 11.8,
+    "3bet": 6.1,
+    "af": 0.33,
+    "archetype": "rock",
+    "advice": "Steal more | Bet = nuts | Raises monsters | Raise IP, fold vs bet"
+  },
   "NEMOXYX": {
     "hands": 138,
     "vpip": 16.7,
@@ -26,14 +35,14 @@
     "archetype": "nit",
     "advice": "Steal blinds | Fold to bets | Too tight | Raise IP, fold to 3bet"
   },
-  "Suave1984": {
-    "hands": 130,
-    "vpip": 19.2,
-    "pfr": 11.5,
-    "3bet": 7.3,
-    "af": 0.33,
-    "archetype": "rock",
-    "advice": "Steal more | Bet = nuts | Raises monsters | Raise IP, fold vs bet"
+  "Cathaysanauz": {
+    "hands": 134,
+    "vpip": 27.6,
+    "pfr": 20.9,
+    "3bet": 8.3,
+    "af": 1.0,
+    "archetype": "lag",
+    "advice": "Tighten up | Call down | Over-aggro | vs raise: 99+/AQ+, call down"
   },
   "crmLL": {
     "hands": 127,
@@ -43,15 +52,6 @@
     "af": 0.93,
     "archetype": "fish",
     "advice": "Isolate wide | Value bet | Calls too much | Never bluff"
-  },
-  "Cathaysanauz": {
-    "hands": 123,
-    "vpip": 29.3,
-    "pfr": 22.0,
-    "3bet": 8.6,
-    "af": 1.0,
-    "archetype": "lag",
-    "advice": "Tighten up | Call down | Over-aggro | vs raise: 99+/AQ+, call down"
   },
   "ATOJ5": {
     "hands": 121,
@@ -63,40 +63,49 @@
     "advice": "Isolate wide | Value bet | Calls too much | Never bluff"
   },
   "MakesMeRich": {
-    "hands": 109,
-    "vpip": 22.0,
-    "pfr": 20.2,
-    "3bet": 6.2,
+    "hands": 119,
+    "vpip": 20.2,
+    "pfr": 18.5,
+    "3bet": 6.1,
     "af": 1.0,
     "archetype": "tag",
     "advice": "Respect raises | Play solid | Avoid | vs raise: TT+/AK"
   },
   "CondeVnCount": {
-    "hands": 100,
-    "vpip": 14.0,
-    "pfr": 9.0,
-    "3bet": 3.8,
+    "hands": 118,
+    "vpip": 12.7,
+    "pfr": 7.6,
+    "3bet": 3.3,
     "af": 3.0,
     "archetype": "nit",
     "advice": "Steal blinds | Fold to bets | Too tight | Raise IP, fold to 3bet"
   },
   "Markpartebragas": {
-    "hands": 97,
-    "vpip": 24.7,
-    "pfr": 17.5,
-    "3bet": 10.0,
-    "af": 4.25,
-    "archetype": "fish",
-    "advice": "Isolate wide | Value bet | Calls too much | Never bluff"
+    "hands": 108,
+    "vpip": 25.9,
+    "pfr": 19.4,
+    "3bet": 11.4,
+    "af": 4.5,
+    "archetype": "lag",
+    "advice": "Tighten up | Call down | Over-aggro | vs raise: 99+/AQ+, call down"
   },
   "Fuckhazar": {
-    "hands": 97,
-    "vpip": 21.6,
-    "pfr": 13.4,
-    "3bet": 6.5,
+    "hands": 100,
+    "vpip": 21.0,
+    "pfr": 13.0,
+    "3bet": 6.1,
     "af": 4.0,
     "archetype": "rock",
     "advice": "Steal more | Bet = nuts | Raises monsters | Raise IP, fold vs bet"
+  },
+  "kastlemoney": {
+    "hands": 94,
+    "vpip": 19.1,
+    "pfr": 17.0,
+    "3bet": 4.8,
+    "af": 8.0,
+    "archetype": "tag",
+    "advice": "Respect raises | Play solid | Avoid | vs raise: TT+/AK"
   },
   "dragonfly2467": {
     "hands": 88,
@@ -116,6 +125,15 @@
     "archetype": "nit",
     "advice": "Steal blinds | Fold to bets | Too tight | Raise IP, fold to 3bet"
   },
+  "Foulekparo94400": {
+    "hands": 84,
+    "vpip": 33.3,
+    "pfr": 19.0,
+    "3bet": 20.0,
+    "af": 2.75,
+    "archetype": "fish",
+    "advice": "Isolate wide | Value bet | Calls too much | Never bluff"
+  },
   "saharkesler": {
     "hands": 83,
     "vpip": 22.9,
@@ -125,12 +143,21 @@
     "archetype": "fish",
     "advice": "Isolate wide | Value bet | Calls too much | Never bluff"
   },
-  "kastlemoney": {
-    "hands": 82,
-    "vpip": 14.6,
-    "pfr": 13.4,
+  "mest1708": {
+    "hands": 83,
+    "vpip": 14.5,
+    "pfr": 13.3,
+    "3bet": 16.0,
+    "af": 1.5,
+    "archetype": "nit",
+    "advice": "Steal blinds | Fold to bets | Too tight | Raise IP, fold to 3bet"
+  },
+  "rafale032": {
+    "hands": 80,
+    "vpip": 8.8,
+    "pfr": 8.8,
     "3bet": 0.0,
-    "af": 6.0,
+    "af": 0.2,
     "archetype": "nit",
     "advice": "Steal blinds | Fold to bets | Too tight | Raise IP, fold to 3bet"
   },
@@ -179,6 +206,15 @@
     "archetype": "fish",
     "advice": "Isolate wide | Value bet | Calls too much | Never bluff"
   },
+  "MaxisZeus": {
+    "hands": 65,
+    "vpip": 6.2,
+    "pfr": 4.6,
+    "3bet": 0.0,
+    "af": 0.0,
+    "archetype": "nit",
+    "advice": "Steal blinds | Fold to bets | Too tight | Raise IP, fold to 3bet"
+  },
   "SirButterman": {
     "hands": 65,
     "vpip": 24.6,
@@ -197,15 +233,6 @@
     "archetype": "nit",
     "advice": "Steal blinds | Fold to bets | Too tight | Raise IP, fold to 3bet"
   },
-  "MaxisZeus": {
-    "hands": 63,
-    "vpip": 6.3,
-    "pfr": 4.8,
-    "3bet": 0.0,
-    "af": 0.0,
-    "archetype": "nit",
-    "advice": "Steal blinds | Fold to bets | Too tight | Raise IP, fold to 3bet"
-  },
   "born2tiltyall": {
     "hands": 63,
     "vpip": 30.2,
@@ -215,14 +242,41 @@
     "archetype": "lag",
     "advice": "Tighten up | Call down | Over-aggro | vs raise: 99+/AQ+, call down"
   },
-  "Foulekparo94400": {
-    "hands": 61,
-    "vpip": 36.1,
-    "pfr": 19.7,
-    "3bet": 20.0,
+  "titus&mus": {
+    "hands": 63,
+    "vpip": 12.7,
+    "pfr": 7.9,
+    "3bet": 0.0,
     "af": 3.0,
+    "archetype": "nit",
+    "advice": "Steal blinds | Fold to bets | Too tight | Raise IP, fold to 3bet"
+  },
+  "Bestiote": {
+    "hands": 60,
+    "vpip": 23.3,
+    "pfr": 21.7,
+    "3bet": 5.3,
+    "af": 3.0,
+    "archetype": "tag",
+    "advice": "Respect raises | Play solid | Avoid | vs raise: TT+/AK"
+  },
+  "calopoker_10": {
+    "hands": 60,
+    "vpip": 36.7,
+    "pfr": 23.3,
+    "3bet": 31.8,
+    "af": 1.29,
     "archetype": "fish",
     "advice": "Isolate wide | Value bet | Calls too much | Never bluff"
+  },
+  "TiraFinos94": {
+    "hands": 60,
+    "vpip": 30.0,
+    "pfr": 26.7,
+    "3bet": 0.0,
+    "af": 1.4,
+    "archetype": "lag",
+    "advice": "Tighten up | Call down | Over-aggro | vs raise: 99+/AQ+, call down"
   },
   "rusosky1000": {
     "hands": 60,
@@ -251,6 +305,24 @@
     "archetype": "nit",
     "advice": "Steal blinds | Fold to bets | Too tight | Raise IP, fold to 3bet"
   },
+  "P-BRUTUS": {
+    "hands": 59,
+    "vpip": 39.0,
+    "pfr": 0.0,
+    "3bet": 0.0,
+    "af": 2.5,
+    "archetype": "fish",
+    "advice": "Isolate wide | Value bet | Calls too much | Never bluff"
+  },
+  "5sebas": {
+    "hands": 59,
+    "vpip": 22.0,
+    "pfr": 18.6,
+    "3bet": 11.8,
+    "af": 3.5,
+    "archetype": "tag",
+    "advice": "Respect raises | Play solid | Avoid | vs raise: TT+/AK"
+  },
   "pingu_771": {
     "hands": 59,
     "vpip": 16.9,
@@ -260,12 +332,12 @@
     "archetype": "nit",
     "advice": "Steal blinds | Fold to bets | Too tight | Raise IP, fold to 3bet"
   },
-  "titus&mus": {
+  "wouziwouza": {
     "hands": 58,
-    "vpip": 13.8,
-    "pfr": 8.6,
-    "3bet": 0.0,
-    "af": 3.0,
+    "vpip": 10.3,
+    "pfr": 10.3,
+    "3bet": 6.2,
+    "af": 3,
     "archetype": "nit",
     "advice": "Steal blinds | Fold to bets | Too tight | Raise IP, fold to 3bet"
   },
@@ -287,12 +359,12 @@
     "archetype": "rock",
     "advice": "Steal more | Bet = nuts | Raises monsters | Raise IP, fold vs bet"
   },
-  "P-BRUTUS": {
+  "trumoan": {
     "hands": 57,
-    "vpip": 40.4,
-    "pfr": 0.0,
-    "3bet": 0.0,
-    "af": 2.5,
+    "vpip": 28.1,
+    "pfr": 17.5,
+    "3bet": 3.7,
+    "af": 0.5,
     "archetype": "fish",
     "advice": "Isolate wide | Value bet | Calls too much | Never bluff"
   },
@@ -305,6 +377,15 @@
     "archetype": "nit",
     "advice": "Steal blinds | Fold to bets | Too tight | Raise IP, fold to 3bet"
   },
+  "el_heniek": {
+    "hands": 57,
+    "vpip": 28.1,
+    "pfr": 12.3,
+    "3bet": 5.9,
+    "af": 2.0,
+    "archetype": "fish",
+    "advice": "Isolate wide | Value bet | Calls too much | Never bluff"
+  },
   "MelucheLeVieux": {
     "hands": 57,
     "vpip": 21.1,
@@ -313,15 +394,6 @@
     "af": 2.67,
     "archetype": "fish",
     "advice": "Isolate wide | Value bet | Calls too much | Never bluff"
-  },
-  "mest1708": {
-    "hands": 57,
-    "vpip": 17.5,
-    "pfr": 15.8,
-    "3bet": 16.7,
-    "af": 1.67,
-    "archetype": "nit",
-    "advice": "Steal blinds | Fold to bets | Too tight | Raise IP, fold to 3bet"
   },
   "flaviopsc": {
     "hands": 56,
@@ -332,15 +404,6 @@
     "archetype": "fish",
     "advice": "Isolate wide | Value bet | Calls too much | Never bluff"
   },
-  "rafale032": {
-    "hands": 56,
-    "vpip": 10.7,
-    "pfr": 10.7,
-    "3bet": 0.0,
-    "af": 0.2,
-    "archetype": "nit",
-    "advice": "Steal blinds | Fold to bets | Too tight | Raise IP, fold to 3bet"
-  },
   "fAAQQndo17": {
     "hands": 54,
     "vpip": 18.5,
@@ -350,14 +413,23 @@
     "archetype": "rock",
     "advice": "Steal more | Bet = nuts | Raises monsters | Raise IP, fold vs bet"
   },
-  "el_heniek": {
+  "ElThepo": {
     "hands": 54,
-    "vpip": 29.6,
+    "vpip": 18.5,
     "pfr": 13.0,
-    "3bet": 6.2,
-    "af": 2.0,
-    "archetype": "fish",
-    "advice": "Isolate wide | Value bet | Calls too much | Never bluff"
+    "3bet": 5.9,
+    "af": 3.0,
+    "archetype": "rock",
+    "advice": "Steal more | Bet = nuts | Raises monsters | Raise IP, fold vs bet"
+  },
+  "cirsa888": {
+    "hands": 53,
+    "vpip": 32.1,
+    "pfr": 24.5,
+    "3bet": 14.3,
+    "af": 1.8,
+    "archetype": "lag",
+    "advice": "Tighten up | Call down | Over-aggro | vs raise: 99+/AQ+, call down"
   },
   "N3xtTIm35": {
     "hands": 53,
@@ -377,15 +449,6 @@
     "archetype": "tag",
     "advice": "Respect raises | Play solid | Avoid | vs raise: TT+/AK"
   },
-  "wouziwouza": {
-    "hands": 52,
-    "vpip": 11.5,
-    "pfr": 11.5,
-    "3bet": 8.3,
-    "af": 3,
-    "archetype": "nit",
-    "advice": "Steal blinds | Fold to bets | Too tight | Raise IP, fold to 3bet"
-  },
   "filology5": {
     "hands": 52,
     "vpip": 19.2,
@@ -404,48 +467,21 @@
     "archetype": "nit",
     "advice": "Steal blinds | Fold to bets | Too tight | Raise IP, fold to 3bet"
   },
-  "trumoan": {
-    "hands": 51,
-    "vpip": 29.4,
-    "pfr": 17.6,
-    "3bet": 4.2,
-    "af": 0.5,
-    "archetype": "fish",
-    "advice": "Isolate wide | Value bet | Calls too much | Never bluff"
-  },
-  "5sebas": {
-    "hands": 51,
-    "vpip": 25.5,
-    "pfr": 21.6,
-    "3bet": 15.4,
-    "af": 3.5,
-    "archetype": "lag",
-    "advice": "Tighten up | Call down | Over-aggro | vs raise: 99+/AQ+, call down"
-  },
-  "Bestiote": {
-    "hands": 50,
-    "vpip": 22.0,
-    "pfr": 20.0,
-    "3bet": 6.2,
-    "af": 3.0,
-    "archetype": "tag",
-    "advice": "Respect raises | Play solid | Avoid | vs raise: TT+/AK"
-  },
-  "calopoker_10": {
-    "hands": 50,
-    "vpip": 36.0,
-    "pfr": 26.0,
-    "3bet": 36.8,
-    "af": 1.33,
-    "archetype": "lag",
-    "advice": "Tighten up | Call down | Over-aggro | vs raise: 99+/AQ+, call down"
-  },
   "XWALLA77": {
     "hands": 49,
     "vpip": 26.5,
     "pfr": 16.3,
     "3bet": 6.2,
     "af": 0.67,
+    "archetype": "fish",
+    "advice": "Isolate wide | Value bet | Calls too much | Never bluff"
+  },
+  "mentalist1479": {
+    "hands": 47,
+    "vpip": 29.8,
+    "pfr": 12.8,
+    "3bet": 0.0,
+    "af": 3.67,
     "archetype": "fish",
     "advice": "Isolate wide | Value bet | Calls too much | Never bluff"
   },
@@ -458,6 +494,15 @@
     "archetype": "nit",
     "advice": "Steal blinds | Fold to bets | Too tight | Raise IP, fold to 3bet"
   },
+  "xaval01": {
+    "hands": 47,
+    "vpip": 25.5,
+    "pfr": 25.5,
+    "3bet": 10.0,
+    "af": 3.0,
+    "archetype": "lag",
+    "advice": "Tighten up | Call down | Over-aggro | vs raise: 99+/AQ+, call down"
+  },
   "MDKristian": {
     "hands": 47,
     "vpip": 19.1,
@@ -467,23 +512,14 @@
     "archetype": "rock",
     "advice": "Steal more | Bet = nuts | Raises monsters | Raise IP, fold vs bet"
   },
-  "TiraFinos94": {
+  "Munia14": {
     "hands": 46,
-    "vpip": 28.3,
-    "pfr": 26.1,
-    "3bet": 0.0,
-    "af": 1.5,
-    "archetype": "lag",
-    "advice": "Tighten up | Call down | Over-aggro | vs raise: 99+/AQ+, call down"
-  },
-  "xaval01": {
-    "hands": 46,
-    "vpip": 26.1,
-    "pfr": 26.1,
-    "3bet": 10.0,
+    "vpip": 15.2,
+    "pfr": 15.2,
+    "3bet": 12.5,
     "af": 3.0,
-    "archetype": "lag",
-    "advice": "Tighten up | Call down | Over-aggro | vs raise: 99+/AQ+, call down"
+    "archetype": "nit",
+    "advice": "Steal blinds | Fold to bets | Too tight | Raise IP, fold to 3bet"
   },
   "llodio": {
     "hands": 45,
@@ -494,14 +530,32 @@
     "archetype": "tag",
     "advice": "Respect raises | Play solid | Avoid | vs raise: TT+/AK"
   },
-  "mentalist1479": {
-    "hands": 45,
-    "vpip": 28.9,
-    "pfr": 13.3,
-    "3bet": 0.0,
-    "af": 3.67,
+  "Megiusftv": {
+    "hands": 44,
+    "vpip": 29.5,
+    "pfr": 15.9,
+    "3bet": 8.3,
+    "af": 5.0,
     "archetype": "fish",
     "advice": "Isolate wide | Value bet | Calls too much | Never bluff"
+  },
+  "datkeire01": {
+    "hands": 44,
+    "vpip": 22.7,
+    "pfr": 15.9,
+    "3bet": 14.3,
+    "af": 0.5,
+    "archetype": "fish",
+    "advice": "Isolate wide | Value bet | Calls too much | Never bluff"
+  },
+  "Portugalkin2025": {
+    "hands": 43,
+    "vpip": 16.3,
+    "pfr": 14.0,
+    "3bet": 6.2,
+    "af": 8,
+    "archetype": "nit",
+    "advice": "Steal blinds | Fold to bets | Too tight | Raise IP, fold to 3bet"
   },
   "chumy8": {
     "hands": 43,
@@ -530,6 +584,15 @@
     "archetype": "fish",
     "advice": "Isolate wide | Value bet | Calls too much | Never bluff"
   },
+  "gregoss054": {
+    "hands": 41,
+    "vpip": 17.1,
+    "pfr": 12.2,
+    "3bet": 8.3,
+    "af": 3,
+    "archetype": "nit",
+    "advice": "Steal blinds | Fold to bets | Too tight | Raise IP, fold to 3bet"
+  },
   "DrTrinityy": {
     "hands": 41,
     "vpip": 29.3,
@@ -539,41 +602,14 @@
     "archetype": "lag",
     "advice": "Tighten up | Call down | Over-aggro | vs raise: 99+/AQ+, call down"
   },
-  "Munia14": {
-    "hands": 41,
-    "vpip": 17.1,
-    "pfr": 17.1,
-    "3bet": 14.3,
-    "af": 3.0,
-    "archetype": "nit",
-    "advice": "Steal blinds | Fold to bets | Too tight | Raise IP, fold to 3bet"
-  },
-  "cirsa888": {
+  "rare12345": {
     "hands": 40,
-    "vpip": 32.5,
-    "pfr": 22.5,
-    "3bet": 15.4,
-    "af": 1.2,
+    "vpip": 30.0,
+    "pfr": 25.0,
+    "3bet": 0.0,
+    "af": 5.0,
     "archetype": "lag",
     "advice": "Tighten up | Call down | Over-aggro | vs raise: 99+/AQ+, call down"
-  },
-  "ElThepo": {
-    "hands": 40,
-    "vpip": 20.0,
-    "pfr": 17.5,
-    "3bet": 8.3,
-    "af": 2,
-    "archetype": "tag",
-    "advice": "Respect raises | Play solid | Avoid | vs raise: TT+/AK"
-  },
-  "Megiusftv": {
-    "hands": 40,
-    "vpip": 32.5,
-    "pfr": 17.5,
-    "3bet": 10.0,
-    "af": 5.0,
-    "archetype": "fish",
-    "advice": "Isolate wide | Value bet | Calls too much | Never bluff"
   },
   "lorocontento": {
     "hands": 39,
@@ -584,6 +620,15 @@
     "archetype": "nit",
     "advice": "Steal blinds | Fold to bets | Too tight | Raise IP, fold to 3bet"
   },
+  "seriomarkos": {
+    "hands": 38,
+    "vpip": 36.8,
+    "pfr": 23.7,
+    "3bet": 20.0,
+    "af": 1.17,
+    "archetype": "fish",
+    "advice": "Isolate wide | Value bet | Calls too much | Never bluff"
+  },
   "saint-imier": {
     "hands": 38,
     "vpip": 15.8,
@@ -592,6 +637,24 @@
     "af": 2.0,
     "archetype": "nit",
     "advice": "Steal blinds | Fold to bets | Too tight | Raise IP, fold to 3bet"
+  },
+  "Ischadia": {
+    "hands": 37,
+    "vpip": 27.0,
+    "pfr": 18.9,
+    "3bet": 9.1,
+    "af": 1.5,
+    "archetype": "lag",
+    "advice": "Tighten up | Call down | Over-aggro | vs raise: 99+/AQ+, call down"
+  },
+  "SOYPACO11": {
+    "hands": 37,
+    "vpip": 18.9,
+    "pfr": 8.1,
+    "3bet": 0.0,
+    "af": 0.33,
+    "archetype": "rock",
+    "advice": "Steal more | Bet = nuts | Raises monsters | Raise IP, fold vs bet"
   },
   "technoboy72": {
     "hands": 37,
@@ -602,14 +665,23 @@
     "archetype": "fish",
     "advice": "Isolate wide | Value bet | Calls too much | Never bluff"
   },
-  "rare12345": {
+  "Nimed": {
     "hands": 37,
-    "vpip": 32.4,
-    "pfr": 27.0,
+    "vpip": 16.2,
+    "pfr": 13.5,
+    "3bet": 8.3,
+    "af": 1,
+    "archetype": "nit",
+    "advice": "Steal blinds | Fold to bets | Too tight | Raise IP, fold to 3bet"
+  },
+  "LuisGR90": {
+    "hands": 37,
+    "vpip": 18.9,
+    "pfr": 10.8,
     "3bet": 0.0,
-    "af": 5.0,
-    "archetype": "lag",
-    "advice": "Tighten up | Call down | Over-aggro | vs raise: 99+/AQ+, call down"
+    "af": 3,
+    "archetype": "rock",
+    "advice": "Steal more | Bet = nuts | Raises monsters | Raise IP, fold vs bet"
   },
   "zhouweiyi888": {
     "hands": 36,
@@ -617,6 +689,15 @@
     "pfr": 22.2,
     "3bet": 23.1,
     "af": 1.33,
+    "archetype": "fish",
+    "advice": "Isolate wide | Value bet | Calls too much | Never bluff"
+  },
+  "LEXTORMUR": {
+    "hands": 36,
+    "vpip": 25.0,
+    "pfr": 16.7,
+    "3bet": 0.0,
+    "af": 1.0,
     "archetype": "fish",
     "advice": "Isolate wide | Value bet | Calls too much | Never bluff"
   },
@@ -647,6 +728,15 @@
     "archetype": "fish",
     "advice": "Isolate wide | Value bet | Calls too much | Never bluff"
   },
+  "anar1312": {
+    "hands": 36,
+    "vpip": 19.4,
+    "pfr": 2.8,
+    "3bet": 0.0,
+    "af": 1.0,
+    "archetype": "rock",
+    "advice": "Steal more | Bet = nuts | Raises monsters | Raise IP, fold vs bet"
+  },
   "eGarriga": {
     "hands": 36,
     "vpip": 22.2,
@@ -665,14 +755,14 @@
     "archetype": "rock",
     "advice": "Steal more | Bet = nuts | Raises monsters | Raise IP, fold vs bet"
   },
-  "LEXTORMUR": {
+  "Ivangennaro": {
     "hands": 35,
-    "vpip": 25.7,
-    "pfr": 17.1,
+    "vpip": 11.4,
+    "pfr": 11.4,
     "3bet": 0.0,
     "af": 1.0,
-    "archetype": "fish",
-    "advice": "Isolate wide | Value bet | Calls too much | Never bluff"
+    "archetype": "nit",
+    "advice": "Steal blinds | Fold to bets | Too tight | Raise IP, fold to 3bet"
   },
   "tropa8": {
     "hands": 35,
@@ -701,6 +791,15 @@
     "archetype": "nit",
     "advice": "Steal blinds | Fold to bets | Too tight | Raise IP, fold to 3bet"
   },
+  "Sapsiase": {
+    "hands": 33,
+    "vpip": 30.3,
+    "pfr": 30.3,
+    "3bet": 30.0,
+    "af": 2,
+    "archetype": "lag",
+    "advice": "Tighten up | Call down | Over-aggro | vs raise: 99+/AQ+, call down"
+  },
   "losi10": {
     "hands": 33,
     "vpip": 39.4,
@@ -719,23 +818,14 @@
     "archetype": "tag",
     "advice": "Respect raises | Play solid | Avoid | vs raise: TT+/AK"
   },
-  "anar1312": {
+  "JCA311": {
     "hands": 33,
-    "vpip": 21.2,
+    "vpip": 33.3,
     "pfr": 3.0,
     "3bet": 0.0,
-    "af": 1.0,
-    "archetype": "rock",
-    "advice": "Steal more | Bet = nuts | Raises monsters | Raise IP, fold vs bet"
-  },
-  "Portugalkin2025": {
-    "hands": 32,
-    "vpip": 18.8,
-    "pfr": 15.6,
-    "3bet": 7.1,
-    "af": 7,
-    "archetype": "tag",
-    "advice": "Respect raises | Play solid | Avoid | vs raise: TT+/AK"
+    "af": 2.4,
+    "archetype": "fish",
+    "advice": "Isolate wide | Value bet | Calls too much | Never bluff"
   },
   "Penelopiano": {
     "hands": 32,
@@ -755,14 +845,14 @@
     "archetype": "maniac",
     "advice": "Only premiums | Call everything | Can't fold | vs raise: QQ+/AK, call down"
   },
-  "gregoss054": {
+  "vicen7010": {
     "hands": 31,
     "vpip": 16.1,
-    "pfr": 12.9,
-    "3bet": 9.1,
-    "af": 3,
-    "archetype": "nit",
-    "advice": "Steal blinds | Fold to bets | Too tight | Raise IP, fold to 3bet"
+    "pfr": 3.2,
+    "3bet": 0.0,
+    "af": 1.0,
+    "archetype": "rock",
+    "advice": "Steal more | Bet = nuts | Raises monsters | Raise IP, fold vs bet"
   },
   "Macicled": {
     "hands": 31,
@@ -773,6 +863,15 @@
     "archetype": "fish",
     "advice": "Isolate wide | Value bet | Calls too much | Never bluff"
   },
+  "jpvacas": {
+    "hands": 31,
+    "vpip": 16.1,
+    "pfr": 16.1,
+    "3bet": 12.5,
+    "af": 4,
+    "archetype": "nit",
+    "advice": "Steal blinds | Fold to bets | Too tight | Raise IP, fold to 3bet"
+  },
   "j.cerqueira": {
     "hands": 31,
     "vpip": 16.1,
@@ -781,42 +880,6 @@
     "af": 2,
     "archetype": "rock",
     "advice": "Steal more | Bet = nuts | Raises monsters | Raise IP, fold vs bet"
-  },
-  "LuisGR90": {
-    "hands": 31,
-    "vpip": 22.6,
-    "pfr": 12.9,
-    "3bet": 0.0,
-    "af": 3,
-    "archetype": "rock",
-    "advice": "Steal more | Bet = nuts | Raises monsters | Raise IP, fold vs bet"
-  },
-  "seriomarkos": {
-    "hands": 30,
-    "vpip": 33.3,
-    "pfr": 20.0,
-    "3bet": 12.5,
-    "af": 0.5,
-    "archetype": "fish",
-    "advice": "Isolate wide | Value bet | Calls too much | Never bluff"
-  },
-  "Ischadia": {
-    "hands": 30,
-    "vpip": 30.0,
-    "pfr": 20.0,
-    "3bet": 14.3,
-    "af": 1.5,
-    "archetype": "lag",
-    "advice": "Tighten up | Call down | Over-aggro | vs raise: 99+/AQ+, call down"
-  },
-  "Ivangennaro": {
-    "hands": 30,
-    "vpip": 10.0,
-    "pfr": 10.0,
-    "3bet": 0.0,
-    "af": 1.0,
-    "archetype": "nit",
-    "advice": "Steal blinds | Fold to bets | Too tight | Raise IP, fold to 3bet"
   },
   "marry24": {
     "hands": 30,
@@ -836,6 +899,15 @@
     "archetype": "nit",
     "advice": "Steal blinds | Fold to bets | Too tight | Raise IP, fold to 3bet"
   },
+  "ICrakYrHoles": {
+    "hands": 30,
+    "vpip": 20.0,
+    "pfr": 16.7,
+    "3bet": 66.7,
+    "af": 0,
+    "archetype": "tag",
+    "advice": "Respect raises | Play solid | Avoid | vs raise: TT+/AK"
+  },
   "PokerPowerMPF": {
     "hands": 30,
     "vpip": 3.3,
@@ -845,12 +917,12 @@
     "archetype": "nit",
     "advice": "Steal blinds | Fold to bets | Too tight | Raise IP, fold to 3bet"
   },
-  "vicen7010": {
+  "trinityandme": {
     "hands": 29,
-    "vpip": 17.2,
-    "pfr": 3.4,
+    "vpip": 13.8,
+    "pfr": 0.0,
     "3bet": 0.0,
-    "af": 1.0,
+    "af": 0.0,
     "archetype": "rock",
     "advice": "Steal more | Bet = nuts | Raises monsters | Raise IP, fold vs bet"
   },
@@ -863,23 +935,32 @@
     "archetype": "nit",
     "advice": "Steal blinds | Fold to bets | Too tight | Raise IP, fold to 3bet"
   },
-  "Sapsiase": {
+  "ehouiJedebute": {
     "hands": 29,
-    "vpip": 27.6,
-    "pfr": 27.6,
-    "3bet": 30.0,
+    "vpip": 6.9,
+    "pfr": 6.9,
+    "3bet": 10.0,
     "af": 2,
-    "archetype": "lag",
-    "advice": "Tighten up | Call down | Over-aggro | vs raise: 99+/AQ+, call down"
+    "archetype": "nit",
+    "advice": "Steal blinds | Fold to bets | Too tight | Raise IP, fold to 3bet"
   },
-  "datkeire01": {
+  "Tonypi27": {
     "hands": 29,
-    "vpip": 24.1,
-    "pfr": 17.2,
-    "3bet": 25.0,
-    "af": 0.29,
-    "archetype": "fish",
-    "advice": "Isolate wide | Value bet | Calls too much | Never bluff"
+    "vpip": 13.8,
+    "pfr": 6.9,
+    "3bet": 0.0,
+    "af": 6.0,
+    "archetype": "nit",
+    "advice": "Steal blinds | Fold to bets | Too tight | Raise IP, fold to 3bet"
+  },
+  "JENOFONTE73": {
+    "hands": 29,
+    "vpip": 17.2,
+    "pfr": 10.3,
+    "3bet": 0.0,
+    "af": 4,
+    "archetype": "nit",
+    "advice": "Steal blinds | Fold to bets | Too tight | Raise IP, fold to 3bet"
   },
   "vgc1902": {
     "hands": 29,
@@ -890,14 +971,14 @@
     "archetype": "nit",
     "advice": "Steal blinds | Fold to bets | Too tight | Raise IP, fold to 3bet"
   },
-  "Tonypi27": {
+  "DaniiRama": {
     "hands": 28,
-    "vpip": 14.3,
-    "pfr": 7.1,
-    "3bet": 0.0,
-    "af": 6.0,
-    "archetype": "nit",
-    "advice": "Steal blinds | Fold to bets | Too tight | Raise IP, fold to 3bet"
+    "vpip": 25.0,
+    "pfr": 17.9,
+    "3bet": 16.7,
+    "af": 4.0,
+    "archetype": "fish",
+    "advice": "Isolate wide | Value bet | Calls too much | Never bluff"
   },
   "toni290178": {
     "hands": 28,
@@ -908,15 +989,6 @@
     "archetype": "fish",
     "advice": "Isolate wide | Value bet | Calls too much | Never bluff"
   },
-  "ICrakYrHoles": {
-    "hands": 28,
-    "vpip": 21.4,
-    "pfr": 17.9,
-    "3bet": 66.7,
-    "af": 0,
-    "archetype": "tag",
-    "advice": "Respect raises | Play solid | Avoid | vs raise: TT+/AK"
-  },
   "pixussss": {
     "hands": 28,
     "vpip": 35.7,
@@ -926,32 +998,14 @@
     "archetype": "fish",
     "advice": "Isolate wide | Value bet | Calls too much | Never bluff"
   },
-  "trinityandme": {
+  "chelius869": {
     "hands": 27,
-    "vpip": 14.8,
-    "pfr": 0.0,
+    "vpip": 25.9,
+    "pfr": 11.1,
     "3bet": 0.0,
-    "af": 0.0,
-    "archetype": "rock",
-    "advice": "Steal more | Bet = nuts | Raises monsters | Raise IP, fold vs bet"
-  },
-  "ehouiJedebute": {
-    "hands": 27,
-    "vpip": 3.7,
-    "pfr": 3.7,
-    "3bet": 0.0,
-    "af": 2,
-    "archetype": "nit",
-    "advice": "Steal blinds | Fold to bets | Too tight | Raise IP, fold to 3bet"
-  },
-  "SOYPACO11": {
-    "hands": 27,
-    "vpip": 14.8,
-    "pfr": 7.4,
-    "3bet": 0.0,
-    "af": 0.0,
-    "archetype": "nit",
-    "advice": "Steal blinds | Fold to bets | Too tight | Raise IP, fold to 3bet"
+    "af": 2.33,
+    "archetype": "fish",
+    "advice": "Isolate wide | Value bet | Calls too much | Never bluff"
   },
   "rnb333": {
     "hands": 27,
@@ -961,6 +1015,15 @@
     "af": 1.0,
     "archetype": "rock",
     "advice": "Steal more | Bet = nuts | Raises monsters | Raise IP, fold vs bet"
+  },
+  "Raditz-Z84": {
+    "hands": 26,
+    "vpip": 30.8,
+    "pfr": 23.1,
+    "3bet": 10.0,
+    "af": 1.5,
+    "archetype": "lag",
+    "advice": "Tighten up | Call down | Over-aggro | vs raise: 99+/AQ+, call down"
   },
   "TerBett": {
     "hands": 26,
@@ -980,15 +1043,6 @@
     "archetype": "lag",
     "advice": "Tighten up | Call down | Over-aggro | vs raise: 99+/AQ+, call down"
   },
-  "JENOFONTE73": {
-    "hands": 26,
-    "vpip": 15.4,
-    "pfr": 11.5,
-    "3bet": 0.0,
-    "af": 4,
-    "archetype": "nit",
-    "advice": "Steal blinds | Fold to bets | Too tight | Raise IP, fold to 3bet"
-  },
   "terrydandres": {
     "hands": 26,
     "vpip": 50.0,
@@ -1007,14 +1061,14 @@
     "archetype": "lag",
     "advice": "Tighten up | Call down | Over-aggro | vs raise: 99+/AQ+, call down"
   },
-  "JCA311": {
-    "hands": 26,
-    "vpip": 34.6,
-    "pfr": 3.8,
-    "3bet": 0.0,
-    "af": 2.5,
-    "archetype": "fish",
-    "advice": "Isolate wide | Value bet | Calls too much | Never bluff"
+  "Tonchofitness": {
+    "hands": 25,
+    "vpip": 28.0,
+    "pfr": 24.0,
+    "3bet": 28.6,
+    "af": 1.0,
+    "archetype": "lag",
+    "advice": "Tighten up | Call down | Over-aggro | vs raise: 99+/AQ+, call down"
   },
   "juan@luis800": {
     "hands": 25,
@@ -1024,6 +1078,15 @@
     "af": 0,
     "archetype": "nit",
     "advice": "Steal blinds | Fold to bets | Too tight | Raise IP, fold to 3bet"
+  },
+  "Elrubik09": {
+    "hands": 25,
+    "vpip": 28.0,
+    "pfr": 20.0,
+    "3bet": 25.0,
+    "af": 7,
+    "archetype": "lag",
+    "advice": "Tighten up | Call down | Over-aggro | vs raise: 99+/AQ+, call down"
   },
   "nunofasousa2021": {
     "hands": 24,
@@ -1043,6 +1106,15 @@
     "archetype": "nit",
     "advice": "Steal blinds | Fold to bets | Too tight | Raise IP, fold to 3bet"
   },
+  "MaxiMick": {
+    "hands": 24,
+    "vpip": 37.5,
+    "pfr": 29.2,
+    "3bet": 0.0,
+    "af": 2.0,
+    "archetype": "lag",
+    "advice": "Tighten up | Call down | Over-aggro | vs raise: 99+/AQ+, call down"
+  },
   "2501990": {
     "hands": 24,
     "vpip": 16.7,
@@ -1061,23 +1133,23 @@
     "archetype": "nit",
     "advice": "Steal blinds | Fold to bets | Too tight | Raise IP, fold to 3bet"
   },
-  "chelius869": {
+  "STEAKssss": {
     "hands": 23,
-    "vpip": 21.7,
+    "vpip": 17.4,
     "pfr": 13.0,
     "3bet": 0.0,
-    "af": 2.5,
-    "archetype": "rock",
-    "advice": "Steal more | Bet = nuts | Raises monsters | Raise IP, fold vs bet"
+    "af": 1,
+    "archetype": "nit",
+    "advice": "Steal blinds | Fold to bets | Too tight | Raise IP, fold to 3bet"
   },
-  "DaniiRama": {
+  "Cacartiflette01": {
     "hands": 23,
-    "vpip": 21.7,
-    "pfr": 13.0,
-    "3bet": 16.7,
-    "af": 3.0,
-    "archetype": "rock",
-    "advice": "Steal more | Bet = nuts | Raises monsters | Raise IP, fold vs bet"
+    "vpip": 13.0,
+    "pfr": 8.7,
+    "3bet": 0.0,
+    "af": 0.5,
+    "archetype": "nit",
+    "advice": "Steal blinds | Fold to bets | Too tight | Raise IP, fold to 3bet"
   },
   "ibic22": {
     "hands": 23,
@@ -1115,6 +1187,60 @@
     "archetype": "lag",
     "advice": "Tighten up | Call down | Over-aggro | vs raise: 99+/AQ+, call down"
   },
+  "ManuyPablo": {
+    "hands": 23,
+    "vpip": 30.4,
+    "pfr": 13.0,
+    "3bet": 0.0,
+    "af": 0.0,
+    "archetype": "fish",
+    "advice": "Isolate wide | Value bet | Calls too much | Never bluff"
+  },
+  "andresrodr8": {
+    "hands": 23,
+    "vpip": 26.1,
+    "pfr": 13.0,
+    "3bet": 0.0,
+    "af": 0.0,
+    "archetype": "fish",
+    "advice": "Isolate wide | Value bet | Calls too much | Never bluff"
+  },
+  "Agonista": {
+    "hands": 23,
+    "vpip": 21.7,
+    "pfr": 4.3,
+    "3bet": 0.0,
+    "af": 2,
+    "archetype": "rock",
+    "advice": "Steal more | Bet = nuts | Raises monsters | Raise IP, fold vs bet"
+  },
+  "carloslova": {
+    "hands": 23,
+    "vpip": 26.1,
+    "pfr": 13.0,
+    "3bet": 0.0,
+    "af": 3.0,
+    "archetype": "fish",
+    "advice": "Isolate wide | Value bet | Calls too much | Never bluff"
+  },
+  "Penha17213": {
+    "hands": 23,
+    "vpip": 17.4,
+    "pfr": 17.4,
+    "3bet": 0.0,
+    "af": 0,
+    "archetype": "nit",
+    "advice": "Steal blinds | Fold to bets | Too tight | Raise IP, fold to 3bet"
+  },
+  "FERMINANDRES": {
+    "hands": 23,
+    "vpip": 13.0,
+    "pfr": 8.7,
+    "3bet": 0.0,
+    "af": 1.0,
+    "archetype": "nit",
+    "advice": "Steal blinds | Fold to bets | Too tight | Raise IP, fold to 3bet"
+  },
   "nickmajo": {
     "hands": 23,
     "vpip": 30.4,
@@ -1151,6 +1277,15 @@
     "archetype": "rock",
     "advice": "Steal more | Bet = nuts | Raises monsters | Raise IP, fold vs bet"
   },
+  "Bamm6": {
+    "hands": 22,
+    "vpip": 22.7,
+    "pfr": 18.2,
+    "3bet": 0.0,
+    "af": 2.0,
+    "archetype": "tag",
+    "advice": "Respect raises | Play solid | Avoid | vs raise: TT+/AK"
+  },
   "mattar212": {
     "hands": 22,
     "vpip": 27.3,
@@ -1168,15 +1303,6 @@
     "af": 1,
     "archetype": "nit",
     "advice": "Steal blinds | Fold to bets | Too tight | Raise IP, fold to 3bet"
-  },
-  "andresrodr8": {
-    "hands": 22,
-    "vpip": 27.3,
-    "pfr": 13.6,
-    "3bet": 0.0,
-    "af": 0.0,
-    "archetype": "fish",
-    "advice": "Isolate wide | Value bet | Calls too much | Never bluff"
   },
   "EktorKing": {
     "hands": 22,
@@ -1214,6 +1340,15 @@
     "archetype": "fish",
     "advice": "Isolate wide | Value bet | Calls too much | Never bluff"
   },
+  "Jumby34": {
+    "hands": 22,
+    "vpip": 9.1,
+    "pfr": 9.1,
+    "3bet": 25.0,
+    "af": 1,
+    "archetype": "nit",
+    "advice": "Steal blinds | Fold to bets | Too tight | Raise IP, fold to 3bet"
+  },
   "alexivan7": {
     "hands": 22,
     "vpip": 18.2,
@@ -1229,15 +1364,6 @@
     "pfr": 19.0,
     "3bet": 0.0,
     "af": 0,
-    "archetype": "tag",
-    "advice": "Respect raises | Play solid | Avoid | vs raise: TT+/AK"
-  },
-  "Bamm6": {
-    "hands": 21,
-    "vpip": 23.8,
-    "pfr": 19.0,
-    "3bet": 0.0,
-    "af": 2.0,
     "archetype": "tag",
     "advice": "Respect raises | Play solid | Avoid | vs raise: TT+/AK"
   },
@@ -1259,28 +1385,10 @@
     "archetype": "nit",
     "advice": "Steal blinds | Fold to bets | Too tight | Raise IP, fold to 3bet"
   },
-  "Agonista": {
-    "hands": 21,
-    "vpip": 19.0,
-    "pfr": 4.8,
-    "3bet": 0.0,
-    "af": 2,
-    "archetype": "rock",
-    "advice": "Steal more | Bet = nuts | Raises monsters | Raise IP, fold vs bet"
-  },
   "IgancioGB": {
     "hands": 21,
     "vpip": 23.8,
     "pfr": 23.8,
-    "3bet": 0.0,
-    "af": 1,
-    "archetype": "tag",
-    "advice": "Respect raises | Play solid | Avoid | vs raise: TT+/AK"
-  },
-  "Nimed": {
-    "hands": 21,
-    "vpip": 23.8,
-    "pfr": 19.0,
     "3bet": 0.0,
     "af": 1,
     "archetype": "tag",
@@ -1294,33 +1402,6 @@
     "af": 0,
     "archetype": "tag",
     "advice": "Respect raises | Play solid | Avoid | vs raise: TT+/AK"
-  },
-  "Tonchofitness": {
-    "hands": 20,
-    "vpip": 30.0,
-    "pfr": 25.0,
-    "3bet": 40.0,
-    "af": 1.0,
-    "archetype": "lag",
-    "advice": "Tighten up | Call down | Over-aggro | vs raise: 99+/AQ+, call down"
-  },
-  "Elrubik09": {
-    "hands": 20,
-    "vpip": 25.0,
-    "pfr": 15.0,
-    "3bet": 16.7,
-    "af": 6,
-    "archetype": "fish",
-    "advice": "Isolate wide | Value bet | Calls too much | Never bluff"
-  },
-  "ManuyPablo": {
-    "hands": 20,
-    "vpip": 35.0,
-    "pfr": 15.0,
-    "3bet": 0.0,
-    "af": 0.0,
-    "archetype": "fish",
-    "advice": "Isolate wide | Value bet | Calls too much | Never bluff"
   },
   "anonimo337": {
     "hands": 20,
@@ -1349,6 +1430,24 @@
     "archetype": "fish",
     "advice": "Isolate wide | Value bet | Calls too much | Never bluff"
   },
+  "galzu369": {
+    "hands": 20,
+    "vpip": 25.0,
+    "pfr": 10.0,
+    "3bet": 14.3,
+    "af": 1.0,
+    "archetype": "fish",
+    "advice": "Isolate wide | Value bet | Calls too much | Never bluff"
+  },
+  "markos319": {
+    "hands": 20,
+    "vpip": 10.0,
+    "pfr": 5.0,
+    "3bet": 0.0,
+    "af": 0.5,
+    "archetype": "nit",
+    "advice": "Steal blinds | Fold to bets | Too tight | Raise IP, fold to 3bet"
+  },
   "juantiogot": {
     "hands": 20,
     "vpip": 30.0,
@@ -1358,6 +1457,24 @@
     "archetype": "lag",
     "advice": "Tighten up | Call down | Over-aggro | vs raise: 99+/AQ+, call down"
   },
+  "Darkat79": {
+    "hands": 20,
+    "vpip": 45.0,
+    "pfr": 40.0,
+    "3bet": 25.0,
+    "af": 1.0,
+    "archetype": "maniac",
+    "advice": "Only premiums | Call everything | Can't fold | vs raise: QQ+/AK, call down"
+  },
+  "NotClaudio1": {
+    "hands": 20,
+    "vpip": 10.0,
+    "pfr": 0.0,
+    "3bet": 0.0,
+    "af": 2,
+    "archetype": "nit",
+    "advice": "Steal blinds | Fold to bets | Too tight | Raise IP, fold to 3bet"
+  },
   "leobcn9": {
     "hands": 19,
     "vpip": 31.6,
@@ -1366,6 +1483,15 @@
     "af": 7,
     "archetype": "fish",
     "advice": "Isolate wide | Value bet | Calls too much | Never bluff"
+  },
+  "jafonsso": {
+    "hands": 19,
+    "vpip": 21.1,
+    "pfr": 10.5,
+    "3bet": 14.3,
+    "af": 3,
+    "archetype": "rock",
+    "advice": "Steal more | Bet = nuts | Raises monsters | Raise IP, fold vs bet"
   },
   "javoallin": {
     "hands": 19,
@@ -1412,15 +1538,6 @@
     "archetype": "nit",
     "advice": "Steal blinds | Fold to bets | Too tight | Raise IP, fold to 3bet"
   },
-  "Penha17213": {
-    "hands": 19,
-    "vpip": 21.1,
-    "pfr": 21.1,
-    "3bet": 0.0,
-    "af": 0,
-    "archetype": "tag",
-    "advice": "Respect raises | Play solid | Avoid | vs raise: TT+/AK"
-  },
   "LK5574": {
     "hands": 19,
     "vpip": 21.1,
@@ -1466,12 +1583,21 @@
     "archetype": "nit",
     "advice": "Steal blinds | Fold to bets | Too tight | Raise IP, fold to 3bet"
   },
-  "Cacartiflette01": {
+  "Zz8crackS": {
     "hands": 18,
     "vpip": 16.7,
-    "pfr": 11.1,
+    "pfr": 5.6,
     "3bet": 0.0,
-    "af": 0.5,
+    "af": 2,
+    "archetype": "nit",
+    "advice": "Steal blinds | Fold to bets | Too tight | Raise IP, fold to 3bet"
+  },
+  "Jorc@n": {
+    "hands": 18,
+    "vpip": 0.0,
+    "pfr": 0.0,
+    "3bet": 0.0,
+    "af": 0,
     "archetype": "nit",
     "advice": "Steal blinds | Fold to bets | Too tight | Raise IP, fold to 3bet"
   },
@@ -1538,12 +1664,30 @@
     "archetype": "nit",
     "advice": "Steal blinds | Fold to bets | Too tight | Raise IP, fold to 3bet"
   },
+  "affranchi38": {
+    "hands": 18,
+    "vpip": 27.8,
+    "pfr": 22.2,
+    "3bet": 0.0,
+    "af": 1.0,
+    "archetype": "lag",
+    "advice": "Tighten up | Call down | Over-aggro | vs raise: 99+/AQ+, call down"
+  },
   "PauloATDias": {
     "hands": 17,
     "vpip": 17.6,
     "pfr": 5.9,
     "3bet": 0.0,
     "af": 1,
+    "archetype": "nit",
+    "advice": "Steal blinds | Fold to bets | Too tight | Raise IP, fold to 3bet"
+  },
+  "PetroniloPT": {
+    "hands": 17,
+    "vpip": 17.6,
+    "pfr": 17.6,
+    "3bet": 0.0,
+    "af": 1.5,
     "archetype": "nit",
     "advice": "Steal blinds | Fold to bets | Too tight | Raise IP, fold to 3bet"
   },
@@ -1565,27 +1709,18 @@
     "archetype": "fish",
     "advice": "Isolate wide | Value bet | Calls too much | Never bluff"
   },
-  "jpvacas": {
-    "hands": 17,
-    "vpip": 23.5,
-    "pfr": 23.5,
-    "3bet": 25.0,
-    "af": 4,
-    "archetype": "tag",
-    "advice": "Respect raises | Play solid | Avoid | vs raise: TT+/AK"
-  },
-  "galzu369": {
-    "hands": 17,
-    "vpip": 29.4,
-    "pfr": 11.8,
-    "3bet": 14.3,
-    "af": 1.0,
-    "archetype": "fish",
-    "advice": "Isolate wide | Value bet | Calls too much | Never bluff"
-  },
   "Nofcknidea888": {
     "hands": 17,
     "vpip": 35.3,
+    "pfr": 23.5,
+    "3bet": 0.0,
+    "af": 0.4,
+    "archetype": "fish",
+    "advice": "Isolate wide | Value bet | Calls too much | Never bluff"
+  },
+  "rdtorno": {
+    "hands": 17,
+    "vpip": 41.2,
     "pfr": 23.5,
     "3bet": 0.0,
     "af": 0.4,
@@ -1610,14 +1745,14 @@
     "archetype": "fish",
     "advice": "Isolate wide | Value bet | Calls too much | Never bluff"
   },
-  "Darkat79": {
+  "grenha1972": {
     "hands": 17,
-    "vpip": 41.2,
-    "pfr": 35.3,
-    "3bet": 33.3,
-    "af": 1.25,
-    "archetype": "maniac",
-    "advice": "Only premiums | Call everything | Can't fold | vs raise: QQ+/AK, call down"
+    "vpip": 29.4,
+    "pfr": 5.9,
+    "3bet": 0.0,
+    "af": 1.0,
+    "archetype": "fish",
+    "advice": "Isolate wide | Value bet | Calls too much | Never bluff"
   },
   "pokemon_006": {
     "hands": 17,
@@ -1655,14 +1790,14 @@
     "archetype": "fish",
     "advice": "Isolate wide | Value bet | Calls too much | Never bluff"
   },
-  "PetroniloPT": {
+  "Castillejo117": {
     "hands": 16,
-    "vpip": 18.8,
-    "pfr": 18.8,
+    "vpip": 6.2,
+    "pfr": 6.2,
     "3bet": 0.0,
-    "af": 1.5,
-    "archetype": "tag",
-    "advice": "Respect raises | Play solid | Avoid | vs raise: TT+/AK"
+    "af": 0,
+    "archetype": "nit",
+    "advice": "Steal blinds | Fold to bets | Too tight | Raise IP, fold to 3bet"
   },
   "barripoker3": {
     "hands": 16,
@@ -1673,12 +1808,12 @@
     "archetype": "nit",
     "advice": "Steal blinds | Fold to bets | Too tight | Raise IP, fold to 3bet"
   },
-  "Zz8crackS": {
+  "caroleli10": {
     "hands": 16,
-    "vpip": 18.8,
-    "pfr": 6.2,
-    "3bet": 0.0,
-    "af": 2,
+    "vpip": 25.0,
+    "pfr": 12.5,
+    "3bet": 25.0,
+    "af": 0.0,
     "archetype": "rock",
     "advice": "Steal more | Bet = nuts | Raises monsters | Raise IP, fold vs bet"
   },
@@ -1718,14 +1853,32 @@
     "archetype": "lag",
     "advice": "Tighten up | Call down | Over-aggro | vs raise: 99+/AQ+, call down"
   },
-  "affranchi38": {
+  "RiCorreia94": {
+    "hands": 16,
+    "vpip": 62.5,
+    "pfr": 37.5,
+    "3bet": 0.0,
+    "af": 1.33,
+    "archetype": "maniac",
+    "advice": "Only premiums | Call everything | Can't fold | vs raise: QQ+/AK, call down"
+  },
+  "loudydrix": {
     "hands": 16,
     "vpip": 31.2,
-    "pfr": 25.0,
+    "pfr": 12.5,
+    "3bet": 16.7,
+    "af": 0.5,
+    "archetype": "fish",
+    "advice": "Isolate wide | Value bet | Calls too much | Never bluff"
+  },
+  "Cruasan17": {
+    "hands": 16,
+    "vpip": 25.0,
+    "pfr": 12.5,
     "3bet": 0.0,
-    "af": 1.0,
-    "archetype": "lag",
-    "advice": "Tighten up | Call down | Over-aggro | vs raise: 99+/AQ+, call down"
+    "af": 1,
+    "archetype": "rock",
+    "advice": "Steal more | Bet = nuts | Raises monsters | Raise IP, fold vs bet"
   },
   "guillepipper": {
     "hands": 16,
@@ -1781,15 +1934,6 @@
     "archetype": "fish",
     "advice": "Isolate wide | Value bet | Calls too much | Never bluff"
   },
-  "caroleli10": {
-    "hands": 15,
-    "vpip": 26.7,
-    "pfr": 13.3,
-    "3bet": 25.0,
-    "af": 0.0,
-    "archetype": "fish",
-    "advice": "Isolate wide | Value bet | Calls too much | Never bluff"
-  },
   "ecuinas": {
     "hands": 15,
     "vpip": 46.7,
@@ -1799,14 +1943,14 @@
     "archetype": "fish",
     "advice": "Isolate wide | Value bet | Calls too much | Never bluff"
   },
-  "Jorc@n": {
+  "Darkmiau": {
     "hands": 15,
-    "vpip": 0.0,
-    "pfr": 0.0,
+    "vpip": 26.7,
+    "pfr": 6.7,
     "3bet": 0.0,
-    "af": 0,
-    "archetype": "nit",
-    "advice": "Steal blinds | Fold to bets | Too tight | Raise IP, fold to 3bet"
+    "af": 1.0,
+    "archetype": "fish",
+    "advice": "Isolate wide | Value bet | Calls too much | Never bluff"
   },
   "ZixZ596": {
     "hands": 15,
@@ -1862,6 +2006,15 @@
     "archetype": "fish",
     "advice": "Isolate wide | Value bet | Calls too much | Never bluff"
   },
+  "elcrack87": {
+    "hands": 15,
+    "vpip": 26.7,
+    "pfr": 0.0,
+    "3bet": 0.0,
+    "af": 0.5,
+    "archetype": "fish",
+    "advice": "Isolate wide | Value bet | Calls too much | Never bluff"
+  },
   "hernandS&G": {
     "hands": 15,
     "vpip": 20.0,
@@ -1889,6 +2042,24 @@
     "archetype": "rock",
     "advice": "Steal more | Bet = nuts | Raises monsters | Raise IP, fold vs bet"
   },
+  "sanpistakio": {
+    "hands": 15,
+    "vpip": 26.7,
+    "pfr": 0.0,
+    "3bet": 0.0,
+    "af": 2.0,
+    "archetype": "fish",
+    "advice": "Isolate wide | Value bet | Calls too much | Never bluff"
+  },
+  "lorena2720": {
+    "hands": 15,
+    "vpip": 26.7,
+    "pfr": 6.7,
+    "3bet": 12.5,
+    "af": 0.0,
+    "archetype": "fish",
+    "advice": "Isolate wide | Value bet | Calls too much | Never bluff"
+  },
   "vexochas": {
     "hands": 15,
     "vpip": 0.0,
@@ -1904,6 +2075,15 @@
     "pfr": 13.3,
     "3bet": 0.0,
     "af": 0.5,
+    "archetype": "fish",
+    "advice": "Isolate wide | Value bet | Calls too much | Never bluff"
+  },
+  "Aiden26G": {
+    "hands": 15,
+    "vpip": 33.3,
+    "pfr": 20.0,
+    "3bet": 0.0,
+    "af": 4,
     "archetype": "fish",
     "advice": "Isolate wide | Value bet | Calls too much | Never bluff"
   },
@@ -1961,24 +2141,6 @@
     "archetype": "fish",
     "advice": "Isolate wide | Value bet | Calls too much | Never bluff"
   },
-  "Castillejo117": {
-    "hands": 14,
-    "vpip": 7.1,
-    "pfr": 7.1,
-    "3bet": 0.0,
-    "af": 0,
-    "archetype": "nit",
-    "advice": "Steal blinds | Fold to bets | Too tight | Raise IP, fold to 3bet"
-  },
-  "Raditz-Z84": {
-    "hands": 14,
-    "vpip": 28.6,
-    "pfr": 14.3,
-    "3bet": 0.0,
-    "af": 0.75,
-    "archetype": "fish",
-    "advice": "Isolate wide | Value bet | Calls too much | Never bluff"
-  },
   "monsieur881": {
     "hands": 14,
     "vpip": 28.6,
@@ -1987,6 +2149,15 @@
     "af": 3,
     "archetype": "lag",
     "advice": "Tighten up | Call down | Over-aggro | vs raise: 99+/AQ+, call down"
+  },
+  "prouchte": {
+    "hands": 14,
+    "vpip": 35.7,
+    "pfr": 7.1,
+    "3bet": 0.0,
+    "af": 3.0,
+    "archetype": "fish",
+    "advice": "Isolate wide | Value bet | Calls too much | Never bluff"
   },
   "pablow0804": {
     "hands": 14,
@@ -2060,6 +2231,15 @@
     "archetype": "fish",
     "advice": "Isolate wide | Value bet | Calls too much | Never bluff"
   },
+  "joaobrito710": {
+    "hands": 14,
+    "vpip": 28.6,
+    "pfr": 7.1,
+    "3bet": 0.0,
+    "af": 0.0,
+    "archetype": "fish",
+    "advice": "Isolate wide | Value bet | Calls too much | Never bluff"
+  },
   "BEN7379": {
     "hands": 14,
     "vpip": 0.0,
@@ -2068,6 +2248,15 @@
     "af": 0,
     "archetype": "nit",
     "advice": "Steal blinds | Fold to bets | Too tight | Raise IP, fold to 3bet"
+  },
+  "defbal": {
+    "hands": 14,
+    "vpip": 35.7,
+    "pfr": 21.4,
+    "3bet": 0.0,
+    "af": 4,
+    "archetype": "fish",
+    "advice": "Isolate wide | Value bet | Calls too much | Never bluff"
   },
   "aixosi": {
     "hands": 14,
@@ -2078,16 +2267,34 @@
     "archetype": "fish",
     "advice": "Isolate wide | Value bet | Calls too much | Never bluff"
   },
-  "ciceron0077": {
+  "elcabo360": {
     "hands": 14,
-    "vpip": 14.3,
-    "pfr": 14.3,
+    "vpip": 21.4,
+    "pfr": 21.4,
+    "3bet": 0.0,
+    "af": 0,
+    "archetype": "tag",
+    "advice": "Respect raises | Play solid | Avoid | vs raise: TT+/AK"
+  },
+  "danileira1": {
+    "hands": 14,
+    "vpip": 7.1,
+    "pfr": 7.1,
     "3bet": 0.0,
     "af": 1,
     "archetype": "nit",
     "advice": "Steal blinds | Fold to bets | Too tight | Raise IP, fold to 3bet"
   },
-  "FERMINANDRES": {
+  "DeividBox980": {
+    "hands": 14,
+    "vpip": 7.1,
+    "pfr": 7.1,
+    "3bet": 0.0,
+    "af": 3,
+    "archetype": "nit",
+    "advice": "Steal blinds | Fold to bets | Too tight | Raise IP, fold to 3bet"
+  },
+  "ciceron0077": {
     "hands": 14,
     "vpip": 14.3,
     "pfr": 14.3,
@@ -2114,15 +2321,6 @@
     "archetype": "nit",
     "advice": "Steal blinds | Fold to bets | Too tight | Raise IP, fold to 3bet"
   },
-  "Cruasan17": {
-    "hands": 14,
-    "vpip": 21.4,
-    "pfr": 7.1,
-    "3bet": 0.0,
-    "af": 0,
-    "archetype": "rock",
-    "advice": "Steal more | Bet = nuts | Raises monsters | Raise IP, fold vs bet"
-  },
   "RuiBorgesTasca": {
     "hands": 13,
     "vpip": 15.4,
@@ -2132,6 +2330,24 @@
     "archetype": "nit",
     "advice": "Steal blinds | Fold to bets | Too tight | Raise IP, fold to 3bet"
   },
+  "felgas1968": {
+    "hands": 13,
+    "vpip": 46.2,
+    "pfr": 30.8,
+    "3bet": 0.0,
+    "af": 0.0,
+    "archetype": "maniac",
+    "advice": "Only premiums | Call everything | Can't fold | vs raise: QQ+/AK, call down"
+  },
+  "jockosssssss": {
+    "hands": 13,
+    "vpip": 53.8,
+    "pfr": 0.0,
+    "3bet": 0.0,
+    "af": 0.33,
+    "archetype": "fish",
+    "advice": "Isolate wide | Value bet | Calls too much | Never bluff"
+  },
   "saintblair": {
     "hands": 13,
     "vpip": 23.1,
@@ -2140,6 +2356,15 @@
     "af": 1,
     "archetype": "tag",
     "advice": "Respect raises | Play solid | Avoid | vs raise: TT+/AK"
+  },
+  "SGB36": {
+    "hands": 13,
+    "vpip": 15.4,
+    "pfr": 7.7,
+    "3bet": 0.0,
+    "af": 2.0,
+    "archetype": "nit",
+    "advice": "Steal blinds | Fold to bets | Too tight | Raise IP, fold to 3bet"
   },
   "big_vvhaIe": {
     "hands": 13,
@@ -2156,6 +2381,15 @@
     "pfr": 15.4,
     "3bet": 0.0,
     "af": 1.0,
+    "archetype": "fish",
+    "advice": "Isolate wide | Value bet | Calls too much | Never bluff"
+  },
+  "Xoseanro510": {
+    "hands": 13,
+    "vpip": 30.8,
+    "pfr": 15.4,
+    "3bet": 33.3,
+    "af": 2,
     "archetype": "fish",
     "advice": "Isolate wide | Value bet | Calls too much | Never bluff"
   },
@@ -2204,6 +2438,15 @@
     "archetype": "rock",
     "advice": "Steal more | Bet = nuts | Raises monsters | Raise IP, fold vs bet"
   },
+  "LLinusLLovefan": {
+    "hands": 13,
+    "vpip": 23.1,
+    "pfr": 7.7,
+    "3bet": 0.0,
+    "af": 1.0,
+    "archetype": "rock",
+    "advice": "Steal more | Bet = nuts | Raises monsters | Raise IP, fold vs bet"
+  },
   "fiku1": {
     "hands": 13,
     "vpip": 15.4,
@@ -2249,14 +2492,41 @@
     "archetype": "nit",
     "advice": "Steal blinds | Fold to bets | Too tight | Raise IP, fold to 3bet"
   },
-  "defbal": {
+  "Amiralles01": {
     "hands": 13,
-    "vpip": 38.5,
+    "vpip": 23.1,
+    "pfr": 23.1,
+    "3bet": 33.3,
+    "af": 7,
+    "archetype": "tag",
+    "advice": "Respect raises | Play solid | Avoid | vs raise: TT+/AK"
+  },
+  "evmiso": {
+    "hands": 13,
+    "vpip": 23.1,
     "pfr": 23.1,
     "3bet": 0.0,
-    "af": 4,
-    "archetype": "fish",
-    "advice": "Isolate wide | Value bet | Calls too much | Never bluff"
+    "af": 1.0,
+    "archetype": "tag",
+    "advice": "Respect raises | Play solid | Avoid | vs raise: TT+/AK"
+  },
+  "N0t4-": {
+    "hands": 13,
+    "vpip": 7.7,
+    "pfr": 7.7,
+    "3bet": 0.0,
+    "af": 0,
+    "archetype": "nit",
+    "advice": "Steal blinds | Fold to bets | Too tight | Raise IP, fold to 3bet"
+  },
+  "99rtz": {
+    "hands": 13,
+    "vpip": 38.5,
+    "pfr": 30.8,
+    "3bet": 0.0,
+    "af": 0.33,
+    "archetype": "lag",
+    "advice": "Tighten up | Call down | Over-aggro | vs raise: 99+/AQ+, call down"
   },
   "anonio9": {
     "hands": 13,
@@ -2276,23 +2546,14 @@
     "archetype": "lag",
     "advice": "Tighten up | Call down | Over-aggro | vs raise: 99+/AQ+, call down"
   },
-  "DeividBox980": {
+  "ShivasWisdom": {
     "hands": 13,
-    "vpip": 7.7,
-    "pfr": 7.7,
-    "3bet": 0.0,
-    "af": 3,
+    "vpip": 15.4,
+    "pfr": 15.4,
+    "3bet": 0,
+    "af": 1,
     "archetype": "nit",
     "advice": "Steal blinds | Fold to bets | Too tight | Raise IP, fold to 3bet"
-  },
-  "carloslova": {
-    "hands": 13,
-    "vpip": 30.8,
-    "pfr": 15.4,
-    "3bet": 0.0,
-    "af": 3.0,
-    "archetype": "fish",
-    "advice": "Isolate wide | Value bet | Calls too much | Never bluff"
   },
   "sarringa": {
     "hands": 13,
@@ -2321,6 +2582,15 @@
     "archetype": "rock",
     "advice": "Steal more | Bet = nuts | Raises monsters | Raise IP, fold vs bet"
   },
+  "esysteph": {
+    "hands": 12,
+    "vpip": 8.3,
+    "pfr": 0.0,
+    "3bet": 0.0,
+    "af": 0,
+    "archetype": "nit",
+    "advice": "Steal blinds | Fold to bets | Too tight | Raise IP, fold to 3bet"
+  },
   "paul20025": {
     "hands": 12,
     "vpip": 25.0,
@@ -2329,6 +2599,15 @@
     "af": 6.0,
     "archetype": "rock",
     "advice": "Steal more | Bet = nuts | Raises monsters | Raise IP, fold vs bet"
+  },
+  "nonoficial": {
+    "hands": 12,
+    "vpip": 8.3,
+    "pfr": 0.0,
+    "3bet": 0.0,
+    "af": 0,
+    "archetype": "nit",
+    "advice": "Steal blinds | Fold to bets | Too tight | Raise IP, fold to 3bet"
   },
   "pisuleto": {
     "hands": 12,
@@ -2356,6 +2635,15 @@
     "af": 4.0,
     "archetype": "maniac",
     "advice": "Only premiums | Call everything | Can't fold | vs raise: QQ+/AK, call down"
+  },
+  "mucholejo": {
+    "hands": 12,
+    "vpip": 41.7,
+    "pfr": 16.7,
+    "3bet": 0.0,
+    "af": 5,
+    "archetype": "fish",
+    "advice": "Isolate wide | Value bet | Calls too much | Never bluff"
   },
   "Tir0Lir01904": {
     "hands": 12,
@@ -2420,23 +2708,23 @@
     "archetype": "fish",
     "advice": "Isolate wide | Value bet | Calls too much | Never bluff"
   },
-  "LLinusLLovefan": {
+  "papuchi957": {
     "hands": 12,
-    "vpip": 25.0,
-    "pfr": 8.3,
-    "3bet": 0.0,
-    "af": 1.0,
-    "archetype": "fish",
-    "advice": "Isolate wide | Value bet | Calls too much | Never bluff"
+    "vpip": 33.3,
+    "pfr": 25.0,
+    "3bet": 20.0,
+    "af": 1,
+    "archetype": "lag",
+    "advice": "Tighten up | Call down | Over-aggro | vs raise: 99+/AQ+, call down"
   },
-  "elcrack87": {
+  "ivansalgueiro": {
     "hands": 12,
     "vpip": 16.7,
-    "pfr": 0.0,
+    "pfr": 8.3,
     "3bet": 0.0,
-    "af": 1.0,
-    "archetype": "rock",
-    "advice": "Steal more | Bet = nuts | Raises monsters | Raise IP, fold vs bet"
+    "af": 1,
+    "archetype": "nit",
+    "advice": "Steal blinds | Fold to bets | Too tight | Raise IP, fold to 3bet"
   },
   "SOSCHI007": {
     "hands": 12,
@@ -2455,6 +2743,15 @@
     "af": 1,
     "archetype": "tag",
     "advice": "Respect raises | Play solid | Avoid | vs raise: TT+/AK"
+  },
+  "bfg0007": {
+    "hands": 12,
+    "vpip": 16.7,
+    "pfr": 0.0,
+    "3bet": 0.0,
+    "af": 0.5,
+    "archetype": "rock",
+    "advice": "Steal more | Bet = nuts | Raises monsters | Raise IP, fold vs bet"
   },
   "colman30": {
     "hands": 12,
@@ -2519,14 +2816,14 @@
     "archetype": "fish",
     "advice": "Isolate wide | Value bet | Calls too much | Never bluff"
   },
-  "jockosssssss": {
+  "lobitillo": {
     "hands": 11,
-    "vpip": 63.6,
-    "pfr": 0.0,
+    "vpip": 27.3,
+    "pfr": 18.2,
     "3bet": 0.0,
-    "af": 0.33,
-    "archetype": "fish",
-    "advice": "Isolate wide | Value bet | Calls too much | Never bluff"
+    "af": 1,
+    "archetype": "lag",
+    "advice": "Tighten up | Call down | Over-aggro | vs raise: 99+/AQ+, call down"
   },
   "txone73": {
     "hands": 11,
@@ -2543,24 +2840,6 @@
     "pfr": 0.0,
     "3bet": 0.0,
     "af": 0.0,
-    "archetype": "fish",
-    "advice": "Isolate wide | Value bet | Calls too much | Never bluff"
-  },
-  "prouchte": {
-    "hands": 11,
-    "vpip": 18.2,
-    "pfr": 9.1,
-    "3bet": 0.0,
-    "af": 2,
-    "archetype": "rock",
-    "advice": "Steal more | Bet = nuts | Raises monsters | Raise IP, fold vs bet"
-  },
-  "jafonsso": {
-    "hands": 11,
-    "vpip": 27.3,
-    "pfr": 9.1,
-    "3bet": 0.0,
-    "af": 2,
     "archetype": "fish",
     "advice": "Isolate wide | Value bet | Calls too much | Never bluff"
   },
@@ -2627,6 +2906,15 @@
     "archetype": "maniac",
     "advice": "Only premiums | Call everything | Can't fold | vs raise: QQ+/AK, call down"
   },
+  "Desdjepu": {
+    "hands": 11,
+    "vpip": 18.2,
+    "pfr": 18.2,
+    "3bet": 0.0,
+    "af": 0.0,
+    "archetype": "tag",
+    "advice": "Respect raises | Play solid | Avoid | vs raise: TT+/AK"
+  },
   "Uyquetardeee": {
     "hands": 11,
     "vpip": 36.4,
@@ -2671,6 +2959,24 @@
     "af": 1,
     "archetype": "nit",
     "advice": "Steal blinds | Fold to bets | Too tight | Raise IP, fold to 3bet"
+  },
+  "NeoBlaze7": {
+    "hands": 11,
+    "vpip": 18.2,
+    "pfr": 18.2,
+    "3bet": 16.7,
+    "af": 2,
+    "archetype": "tag",
+    "advice": "Respect raises | Play solid | Avoid | vs raise: TT+/AK"
+  },
+  "OMaisPesado1": {
+    "hands": 11,
+    "vpip": 18.2,
+    "pfr": 18.2,
+    "3bet": 25.0,
+    "af": 0,
+    "archetype": "tag",
+    "advice": "Respect raises | Play solid | Avoid | vs raise: TT+/AK"
   },
   "Rucostaa": {
     "hands": 11,
@@ -2879,15 +3185,6 @@
     "archetype": "maniac",
     "advice": "Only premiums | Call everything | Can't fold | vs raise: QQ+/AK, call down"
   },
-  "Darkmiau": {
-    "hands": 10,
-    "vpip": 20.0,
-    "pfr": 0.0,
-    "3bet": 0.0,
-    "af": 0,
-    "archetype": "rock",
-    "advice": "Steal more | Bet = nuts | Raises monsters | Raise IP, fold vs bet"
-  },
   "2tortosa": {
     "hands": 10,
     "vpip": 50.0,
@@ -2978,6 +3275,15 @@
     "archetype": "nit",
     "advice": "Steal blinds | Fold to bets | Too tight | Raise IP, fold to 3bet"
   },
+  "xminix23": {
+    "hands": 10,
+    "vpip": 30.0,
+    "pfr": 30.0,
+    "3bet": 33.3,
+    "af": 1.5,
+    "archetype": "lag",
+    "advice": "Tighten up | Call down | Over-aggro | vs raise: 99+/AQ+, call down"
+  },
   "alielg95": {
     "hands": 10,
     "vpip": 60.0,
@@ -2987,14 +3293,14 @@
     "archetype": "maniac",
     "advice": "Only premiums | Call everything | Can't fold | vs raise: QQ+/AK, call down"
   },
-  "evmiso": {
+  "Lim1tl4ss": {
     "hands": 10,
-    "vpip": 20.0,
-    "pfr": 20.0,
+    "vpip": 0.0,
+    "pfr": 0.0,
     "3bet": 0.0,
-    "af": 1,
-    "archetype": "tag",
-    "advice": "Respect raises | Play solid | Avoid | vs raise: TT+/AK"
+    "af": 0,
+    "archetype": "nit",
+    "advice": "Steal blinds | Fold to bets | Too tight | Raise IP, fold to 3bet"
   },
   "riomagico": {
     "hands": 10,
@@ -3004,6 +3310,24 @@
     "af": 0,
     "archetype": "maniac",
     "advice": "Only premiums | Call everything | Can't fold | vs raise: QQ+/AK, call down"
+  },
+  "Ataskador": {
+    "hands": 10,
+    "vpip": 40.0,
+    "pfr": 10.0,
+    "3bet": 0.0,
+    "af": 2.0,
+    "archetype": "fish",
+    "advice": "Isolate wide | Value bet | Calls too much | Never bluff"
+  },
+  "mumtazz81": {
+    "hands": 10,
+    "vpip": 10.0,
+    "pfr": 0.0,
+    "3bet": 0.0,
+    "af": 0.0,
+    "archetype": "nit",
+    "advice": "Steal blinds | Fold to bets | Too tight | Raise IP, fold to 3bet"
   },
   "zobryst": {
     "hands": 10,
@@ -3050,15 +3374,6 @@
     "archetype": "maniac",
     "advice": "Only premiums | Call everything | Can't fold | vs raise: QQ+/AK, call down"
   },
-  "elcabo360": {
-    "hands": 10,
-    "vpip": 20.0,
-    "pfr": 20.0,
-    "3bet": 0.0,
-    "af": 0,
-    "archetype": "tag",
-    "advice": "Respect raises | Play solid | Avoid | vs raise: TT+/AK"
-  },
   "Poggo76": {
     "hands": 10,
     "vpip": 20.0,
@@ -3103,15 +3418,6 @@
     "af": 0,
     "archetype": "nit",
     "advice": "Steal blinds | Fold to bets | Too tight | Raise IP, fold to 3bet"
-  },
-  "felgas1968": {
-    "hands": 9,
-    "vpip": 55.6,
-    "pfr": 33.3,
-    "3bet": 0.0,
-    "af": 0.0,
-    "archetype": "maniac",
-    "advice": "Only premiums | Call everything | Can't fold | vs raise: QQ+/AK, call down"
   },
   "Sophist\u00eas": {
     "hands": 9,
@@ -3203,24 +3509,6 @@
     "archetype": "tag",
     "advice": "Respect raises | Play solid | Avoid | vs raise: TT+/AK"
   },
-  "MaxiMick": {
-    "hands": 9,
-    "vpip": 33.3,
-    "pfr": 22.2,
-    "3bet": 0.0,
-    "af": 4,
-    "archetype": "fish",
-    "advice": "Isolate wide | Value bet | Calls too much | Never bluff"
-  },
-  "papuchi957": {
-    "hands": 9,
-    "vpip": 44.4,
-    "pfr": 33.3,
-    "3bet": 20.0,
-    "af": 1,
-    "archetype": "maniac",
-    "advice": "Only premiums | Call everything | Can't fold | vs raise: QQ+/AK, call down"
-  },
   "manolo1953": {
     "hands": 9,
     "vpip": 0.0,
@@ -3275,6 +3563,15 @@
     "archetype": "lag",
     "advice": "Tighten up | Call down | Over-aggro | vs raise: 99+/AQ+, call down"
   },
+  "liu0508": {
+    "hands": 9,
+    "vpip": 88.9,
+    "pfr": 22.2,
+    "3bet": 50.0,
+    "af": 3.0,
+    "archetype": "fish",
+    "advice": "Isolate wide | Value bet | Calls too much | Never bluff"
+  },
   "josepoker195": {
     "hands": 9,
     "vpip": 33.3,
@@ -3302,6 +3599,15 @@
     "archetype": "rock",
     "advice": "Steal more | Bet = nuts | Raises monsters | Raise IP, fold vs bet"
   },
+  "Crossnar": {
+    "hands": 9,
+    "vpip": 22.2,
+    "pfr": 11.1,
+    "3bet": 0.0,
+    "af": 1.0,
+    "archetype": "rock",
+    "advice": "Steal more | Bet = nuts | Raises monsters | Raise IP, fold vs bet"
+  },
   "carlosbrugal": {
     "hands": 9,
     "vpip": 11.1,
@@ -3310,6 +3616,15 @@
     "af": 0,
     "archetype": "nit",
     "advice": "Steal blinds | Fold to bets | Too tight | Raise IP, fold to 3bet"
+  },
+  "CHIN_AS_87": {
+    "hands": 9,
+    "vpip": 33.3,
+    "pfr": 33.3,
+    "3bet": 0.0,
+    "af": 0,
+    "archetype": "lag",
+    "advice": "Tighten up | Call down | Over-aggro | vs raise: 99+/AQ+, call down"
   },
   "eyeeel": {
     "hands": 9,
@@ -3356,6 +3671,24 @@
     "archetype": "nit",
     "advice": "Steal blinds | Fold to bets | Too tight | Raise IP, fold to 3bet"
   },
+  "TeKiHero": {
+    "hands": 9,
+    "vpip": 22.2,
+    "pfr": 11.1,
+    "3bet": 0.0,
+    "af": 1,
+    "archetype": "rock",
+    "advice": "Steal more | Bet = nuts | Raises monsters | Raise IP, fold vs bet"
+  },
+  "plural21": {
+    "hands": 9,
+    "vpip": 22.2,
+    "pfr": 22.2,
+    "3bet": 0.0,
+    "af": 0.0,
+    "archetype": "tag",
+    "advice": "Respect raises | Play solid | Avoid | vs raise: TT+/AK"
+  },
   "estrellabea": {
     "hands": 9,
     "vpip": 22.2,
@@ -3398,6 +3731,15 @@
     "pfr": 0.0,
     "3bet": 0.0,
     "af": 0,
+    "archetype": "nit",
+    "advice": "Steal blinds | Fold to bets | Too tight | Raise IP, fold to 3bet"
+  },
+  "HasteFR1": {
+    "hands": 9,
+    "vpip": 11.1,
+    "pfr": 11.1,
+    "3bet": 0.0,
+    "af": 3,
     "archetype": "nit",
     "advice": "Steal blinds | Fold to bets | Too tight | Raise IP, fold to 3bet"
   },
@@ -3455,24 +3797,6 @@
     "archetype": "nit",
     "advice": "Steal blinds | Fold to bets | Too tight | Raise IP, fold to 3bet"
   },
-  "STEAKssss": {
-    "hands": 8,
-    "vpip": 37.5,
-    "pfr": 25.0,
-    "3bet": 0.0,
-    "af": 1,
-    "archetype": "fish",
-    "advice": "Isolate wide | Value bet | Calls too much | Never bluff"
-  },
-  "nonoficial": {
-    "hands": 8,
-    "vpip": 0.0,
-    "pfr": 0.0,
-    "3bet": 0.0,
-    "af": 0,
-    "archetype": "nit",
-    "advice": "Steal blinds | Fold to bets | Too tight | Raise IP, fold to 3bet"
-  },
   "geovannyhanna": {
     "hands": 8,
     "vpip": 25.0,
@@ -3518,15 +3842,6 @@
     "archetype": "nit",
     "advice": "Steal blinds | Fold to bets | Too tight | Raise IP, fold to 3bet"
   },
-  "SGB36": {
-    "hands": 8,
-    "vpip": 25.0,
-    "pfr": 12.5,
-    "3bet": 0.0,
-    "af": 2.0,
-    "archetype": "rock",
-    "advice": "Steal more | Bet = nuts | Raises monsters | Raise IP, fold vs bet"
-  },
   "laetigreg05": {
     "hands": 8,
     "vpip": 37.5,
@@ -3553,15 +3868,6 @@
     "af": 0.0,
     "archetype": "fish",
     "advice": "Isolate wide | Value bet | Calls too much | Never bluff"
-  },
-  "Xoseanro510": {
-    "hands": 8,
-    "vpip": 25.0,
-    "pfr": 12.5,
-    "3bet": 50.0,
-    "af": 1,
-    "archetype": "rock",
-    "advice": "Steal more | Bet = nuts | Raises monsters | Raise IP, fold vs bet"
   },
   "MORENODCADI": {
     "hands": 8,
@@ -3590,15 +3896,6 @@
     "archetype": "lag",
     "advice": "Tighten up | Call down | Over-aggro | vs raise: 99+/AQ+, call down"
   },
-  "Desdjepu": {
-    "hands": 8,
-    "vpip": 12.5,
-    "pfr": 12.5,
-    "3bet": 0.0,
-    "af": 0.0,
-    "archetype": "nit",
-    "advice": "Steal blinds | Fold to bets | Too tight | Raise IP, fold to 3bet"
-  },
   "gago537": {
     "hands": 8,
     "vpip": 50.0,
@@ -3616,15 +3913,6 @@
     "af": 0.0,
     "archetype": "rock",
     "advice": "Steal more | Bet = nuts | Raises monsters | Raise IP, fold vs bet"
-  },
-  "liu0508": {
-    "hands": 8,
-    "vpip": 87.5,
-    "pfr": 12.5,
-    "3bet": 50.0,
-    "af": 2.5,
-    "archetype": "fish",
-    "advice": "Isolate wide | Value bet | Calls too much | Never bluff"
   },
   "neirdanaej": {
     "hands": 8,
@@ -3653,15 +3941,6 @@
     "archetype": "maniac",
     "advice": "Only premiums | Call everything | Can't fold | vs raise: QQ+/AK, call down"
   },
-  "bfg0007": {
-    "hands": 8,
-    "vpip": 12.5,
-    "pfr": 0.0,
-    "3bet": 0.0,
-    "af": 0,
-    "archetype": "rock",
-    "advice": "Steal more | Bet = nuts | Raises monsters | Raise IP, fold vs bet"
-  },
   "lemur119": {
     "hands": 8,
     "vpip": 50.0,
@@ -3670,15 +3949,6 @@
     "af": 1.0,
     "archetype": "fish",
     "advice": "Isolate wide | Value bet | Calls too much | Never bluff"
-  },
-  "xminix23": {
-    "hands": 8,
-    "vpip": 37.5,
-    "pfr": 37.5,
-    "3bet": 33.3,
-    "af": 1.5,
-    "archetype": "lag",
-    "advice": "Tighten up | Call down | Over-aggro | vs raise: 99+/AQ+, call down"
   },
   "QuinteFul377": {
     "hands": 8,
@@ -3695,15 +3965,6 @@
     "pfr": 12.5,
     "3bet": 0.0,
     "af": 0,
-    "archetype": "rock",
-    "advice": "Steal more | Bet = nuts | Raises monsters | Raise IP, fold vs bet"
-  },
-  "lorena2720": {
-    "hands": 8,
-    "vpip": 25.0,
-    "pfr": 12.5,
-    "3bet": 16.7,
-    "af": 0.0,
     "archetype": "rock",
     "advice": "Steal more | Bet = nuts | Raises monsters | Raise IP, fold vs bet"
   },
@@ -3735,6 +3996,15 @@
     "advice": "Only premiums | Call everything | Can't fold | vs raise: QQ+/AK, call down"
   },
   "vasili1111": {
+    "hands": 8,
+    "vpip": 37.5,
+    "pfr": 25.0,
+    "3bet": 0.0,
+    "af": 0.0,
+    "archetype": "fish",
+    "advice": "Isolate wide | Value bet | Calls too much | Never bluff"
+  },
+  "romafel85": {
     "hands": 8,
     "vpip": 37.5,
     "pfr": 25.0,
@@ -3824,15 +4094,6 @@
     "archetype": "rock",
     "advice": "Steal more | Bet = nuts | Raises monsters | Raise IP, fold vs bet"
   },
-  "Jumby34": {
-    "hands": 8,
-    "vpip": 0.0,
-    "pfr": 0.0,
-    "3bet": 0.0,
-    "af": 0,
-    "archetype": "nit",
-    "advice": "Steal blinds | Fold to bets | Too tight | Raise IP, fold to 3bet"
-  },
   "Nassw12": {
     "hands": 8,
     "vpip": 37.5,
@@ -3904,15 +4165,6 @@
     "af": 3,
     "archetype": "fish",
     "advice": "Isolate wide | Value bet | Calls too much | Never bluff"
-  },
-  "lobitillo": {
-    "hands": 7,
-    "vpip": 14.3,
-    "pfr": 14.3,
-    "3bet": 0.0,
-    "af": 0,
-    "archetype": "nit",
-    "advice": "Steal blinds | Fold to bets | Too tight | Raise IP, fold to 3bet"
   },
   "jgrodriguez061": {
     "hands": 7,
@@ -4049,6 +4301,15 @@
     "archetype": "nit",
     "advice": "Steal blinds | Fold to bets | Too tight | Raise IP, fold to 3bet"
   },
+  "Noray123": {
+    "hands": 7,
+    "vpip": 0.0,
+    "pfr": 0.0,
+    "3bet": 0.0,
+    "af": 0,
+    "archetype": "nit",
+    "advice": "Steal blinds | Fold to bets | Too tight | Raise IP, fold to 3bet"
+  },
   "F4N\u00e17ic0": {
     "hands": 7,
     "vpip": 71.4,
@@ -4112,6 +4373,24 @@
     "archetype": "nit",
     "advice": "Steal blinds | Fold to bets | Too tight | Raise IP, fold to 3bet"
   },
+  "ze4939": {
+    "hands": 7,
+    "vpip": 57.1,
+    "pfr": 0.0,
+    "3bet": 0.0,
+    "af": 2.0,
+    "archetype": "fish",
+    "advice": "Isolate wide | Value bet | Calls too much | Never bluff"
+  },
+  "xmylersx": {
+    "hands": 7,
+    "vpip": 42.9,
+    "pfr": 0.0,
+    "3bet": 0.0,
+    "af": 3.0,
+    "archetype": "fish",
+    "advice": "Isolate wide | Value bet | Calls too much | Never bluff"
+  },
   "pimpflo4545": {
     "hands": 7,
     "vpip": 0.0,
@@ -4139,6 +4418,15 @@
     "archetype": "fish",
     "advice": "Isolate wide | Value bet | Calls too much | Never bluff"
   },
+  "Dovene11": {
+    "hands": 7,
+    "vpip": 0.0,
+    "pfr": 0.0,
+    "3bet": 0.0,
+    "af": 0,
+    "archetype": "nit",
+    "advice": "Steal blinds | Fold to bets | Too tight | Raise IP, fold to 3bet"
+  },
   "javlex3": {
     "hands": 7,
     "vpip": 14.3,
@@ -4157,14 +4445,14 @@
     "archetype": "nit",
     "advice": "Steal blinds | Fold to bets | Too tight | Raise IP, fold to 3bet"
   },
-  "CHIN_AS_87": {
+  "kastor59": {
     "hands": 7,
-    "vpip": 14.3,
-    "pfr": 14.3,
-    "3bet": 0.0,
-    "af": 0,
-    "archetype": "nit",
-    "advice": "Steal blinds | Fold to bets | Too tight | Raise IP, fold to 3bet"
+    "vpip": 28.6,
+    "pfr": 28.6,
+    "3bet": 0,
+    "af": 2,
+    "archetype": "lag",
+    "advice": "Tighten up | Call down | Over-aggro | vs raise: 99+/AQ+, call down"
   },
   "iveyruizao": {
     "hands": 7,
@@ -4199,6 +4487,24 @@
     "pfr": 0.0,
     "3bet": 0.0,
     "af": 6.0,
+    "archetype": "fish",
+    "advice": "Isolate wide | Value bet | Calls too much | Never bluff"
+  },
+  "Tomigcharle": {
+    "hands": 7,
+    "vpip": 28.6,
+    "pfr": 14.3,
+    "3bet": 33.3,
+    "af": 4,
+    "archetype": "fish",
+    "advice": "Isolate wide | Value bet | Calls too much | Never bluff"
+  },
+  "lmsBrandao": {
+    "hands": 7,
+    "vpip": 42.9,
+    "pfr": 14.3,
+    "3bet": 0.0,
+    "af": 4,
     "archetype": "fish",
     "advice": "Isolate wide | Value bet | Calls too much | Never bluff"
   },
@@ -4274,21 +4580,21 @@
     "archetype": "fish",
     "advice": "Isolate wide | Value bet | Calls too much | Never bluff"
   },
-  "plural21": {
-    "hands": 7,
-    "vpip": 28.6,
-    "pfr": 28.6,
-    "3bet": 0.0,
-    "af": 0.0,
-    "archetype": "lag",
-    "advice": "Tighten up | Call down | Over-aggro | vs raise: 99+/AQ+, call down"
-  },
   "indiiiopraiiia": {
     "hands": 7,
     "vpip": 28.6,
     "pfr": 14.3,
     "3bet": 0,
     "af": 0,
+    "archetype": "fish",
+    "advice": "Isolate wide | Value bet | Calls too much | Never bluff"
+  },
+  "Abaddon2808": {
+    "hands": 7,
+    "vpip": 42.9,
+    "pfr": 28.6,
+    "3bet": 0.0,
+    "af": 3,
     "archetype": "fish",
     "advice": "Isolate wide | Value bet | Calls too much | Never bluff"
   },
@@ -4418,6 +4724,15 @@
     "archetype": "nit",
     "advice": "Steal blinds | Fold to bets | Too tight | Raise IP, fold to 3bet"
   },
+  "pedrakio": {
+    "hands": 6,
+    "vpip": 16.7,
+    "pfr": 0.0,
+    "3bet": 0.0,
+    "af": 0.0,
+    "archetype": "rock",
+    "advice": "Steal more | Bet = nuts | Raises monsters | Raise IP, fold vs bet"
+  },
   "NELSONRIO75": {
     "hands": 6,
     "vpip": 16.7,
@@ -4471,15 +4786,6 @@
     "af": 1,
     "archetype": "fish",
     "advice": "Isolate wide | Value bet | Calls too much | Never bluff"
-  },
-  "Noray123": {
-    "hands": 6,
-    "vpip": 0.0,
-    "pfr": 0.0,
-    "3bet": 0.0,
-    "af": 0,
-    "archetype": "nit",
-    "advice": "Steal blinds | Fold to bets | Too tight | Raise IP, fold to 3bet"
   },
   "Evita.evit": {
     "hands": 6,
@@ -4535,15 +4841,6 @@
     "archetype": "fish",
     "advice": "Isolate wide | Value bet | Calls too much | Never bluff"
   },
-  "sanpistakio": {
-    "hands": 6,
-    "vpip": 0.0,
-    "pfr": 0.0,
-    "3bet": 0.0,
-    "af": 0,
-    "archetype": "nit",
-    "advice": "Steal blinds | Fold to bets | Too tight | Raise IP, fold to 3bet"
-  },
   "aleexv07": {
     "hands": 6,
     "vpip": 66.7,
@@ -4552,6 +4849,15 @@
     "af": 1,
     "archetype": "maniac",
     "advice": "Only premiums | Call everything | Can't fold | vs raise: QQ+/AK, call down"
+  },
+  "jolkagmr13": {
+    "hands": 6,
+    "vpip": 50.0,
+    "pfr": 0.0,
+    "3bet": 0,
+    "af": 0,
+    "archetype": "fish",
+    "advice": "Isolate wide | Value bet | Calls too much | Never bluff"
   },
   "toriko94": {
     "hands": 6,
@@ -4562,6 +4868,15 @@
     "archetype": "fish",
     "advice": "Isolate wide | Value bet | Calls too much | Never bluff"
   },
+  "richh74": {
+    "hands": 6,
+    "vpip": 50.0,
+    "pfr": 50.0,
+    "3bet": 0.0,
+    "af": 1.0,
+    "archetype": "maniac",
+    "advice": "Only premiums | Call everything | Can't fold | vs raise: QQ+/AK, call down"
+  },
   "MDFARHA72": {
     "hands": 6,
     "vpip": 0.0,
@@ -4571,12 +4886,12 @@
     "archetype": "nit",
     "advice": "Steal blinds | Fold to bets | Too tight | Raise IP, fold to 3bet"
   },
-  "Crossnar": {
+  "Muix": {
     "hands": 6,
     "vpip": 33.3,
     "pfr": 16.7,
     "3bet": 0.0,
-    "af": 1.0,
+    "af": 1,
     "archetype": "fish",
     "advice": "Isolate wide | Value bet | Calls too much | Never bluff"
   },
@@ -4607,14 +4922,23 @@
     "archetype": "maniac",
     "advice": "Only premiums | Call everything | Can't fold | vs raise: QQ+/AK, call down"
   },
-  "Dovene11": {
+  "PerraTragas": {
     "hands": 6,
-    "vpip": 0.0,
-    "pfr": 0.0,
-    "3bet": 0.0,
-    "af": 0,
-    "archetype": "nit",
-    "advice": "Steal blinds | Fold to bets | Too tight | Raise IP, fold to 3bet"
+    "vpip": 83.3,
+    "pfr": 66.7,
+    "3bet": 100.0,
+    "af": 4,
+    "archetype": "maniac",
+    "advice": "Only premiums | Call everything | Can't fold | vs raise: QQ+/AK, call down"
+  },
+  "pokerikb": {
+    "hands": 6,
+    "vpip": 33.3,
+    "pfr": 33.3,
+    "3bet": 0,
+    "af": 0.5,
+    "archetype": "lag",
+    "advice": "Tighten up | Call down | Over-aggro | vs raise: 99+/AQ+, call down"
   },
   "350ZJHN": {
     "hands": 6,
@@ -4633,6 +4957,42 @@
     "af": 0.0,
     "archetype": "fish",
     "advice": "Isolate wide | Value bet | Calls too much | Never bluff"
+  },
+  "marcmac": {
+    "hands": 6,
+    "vpip": 33.3,
+    "pfr": 16.7,
+    "3bet": 0.0,
+    "af": 0,
+    "archetype": "fish",
+    "advice": "Isolate wide | Value bet | Calls too much | Never bluff"
+  },
+  "emiliogts": {
+    "hands": 6,
+    "vpip": 66.7,
+    "pfr": 0.0,
+    "3bet": 0.0,
+    "af": 1.0,
+    "archetype": "fish",
+    "advice": "Isolate wide | Value bet | Calls too much | Never bluff"
+  },
+  "LeX_SM21": {
+    "hands": 6,
+    "vpip": 16.7,
+    "pfr": 16.7,
+    "3bet": 0.0,
+    "af": 0,
+    "archetype": "nit",
+    "advice": "Steal blinds | Fold to bets | Too tight | Raise IP, fold to 3bet"
+  },
+  "Dragusin": {
+    "hands": 6,
+    "vpip": 83.3,
+    "pfr": 66.7,
+    "3bet": 66.7,
+    "af": 0.0,
+    "archetype": "maniac",
+    "advice": "Only premiums | Call everything | Can't fold | vs raise: QQ+/AK, call down"
   },
   "Tiburzi0": {
     "hands": 6,
@@ -4688,6 +5048,15 @@
     "archetype": "fish",
     "advice": "Isolate wide | Value bet | Calls too much | Never bluff"
   },
+  "yogo0707": {
+    "hands": 6,
+    "vpip": 50.0,
+    "pfr": 33.3,
+    "3bet": 0,
+    "af": 2.0,
+    "archetype": "maniac",
+    "advice": "Only premiums | Call everything | Can't fold | vs raise: QQ+/AK, call down"
+  },
   "hyperion570": {
     "hands": 6,
     "vpip": 0.0,
@@ -4742,14 +5111,32 @@
     "archetype": "fish",
     "advice": "Isolate wide | Value bet | Calls too much | Never bluff"
   },
-  "mumtazz81": {
+  "Jal_CRZ": {
     "hands": 6,
-    "vpip": 16.7,
+    "vpip": 0.0,
     "pfr": 0.0,
     "3bet": 0.0,
+    "af": 0,
+    "archetype": "nit",
+    "advice": "Steal blinds | Fold to bets | Too tight | Raise IP, fold to 3bet"
+  },
+  "Rafinha_2032": {
+    "hands": 6,
+    "vpip": 50.0,
+    "pfr": 33.3,
+    "3bet": 0.0,
+    "af": 3,
+    "archetype": "maniac",
+    "advice": "Only premiums | Call everything | Can't fold | vs raise: QQ+/AK, call down"
+  },
+  "fernimongui": {
+    "hands": 6,
+    "vpip": 33.3,
+    "pfr": 16.7,
+    "3bet": 0.0,
     "af": 0.0,
-    "archetype": "rock",
-    "advice": "Steal more | Bet = nuts | Raises monsters | Raise IP, fold vs bet"
+    "archetype": "fish",
+    "advice": "Isolate wide | Value bet | Calls too much | Never bluff"
   },
   "guybrushD": {
     "hands": 6,
@@ -4886,6 +5273,15 @@
     "archetype": "fish",
     "advice": "Isolate wide | Value bet | Calls too much | Never bluff"
   },
+  "djtour59": {
+    "hands": 5,
+    "vpip": 0.0,
+    "pfr": 0.0,
+    "3bet": 0.0,
+    "af": 0,
+    "archetype": "nit",
+    "advice": "Steal blinds | Fold to bets | Too tight | Raise IP, fold to 3bet"
+  },
   "SlymJx": {
     "hands": 5,
     "vpip": 20.0,
@@ -5003,6 +5399,15 @@
     "archetype": "nit",
     "advice": "Steal blinds | Fold to bets | Too tight | Raise IP, fold to 3bet"
   },
+  "pikito86": {
+    "hands": 5,
+    "vpip": 20.0,
+    "pfr": 0.0,
+    "3bet": 0.0,
+    "af": 0,
+    "archetype": "rock",
+    "advice": "Steal more | Bet = nuts | Raises monsters | Raise IP, fold vs bet"
+  },
   "jpachelbel": {
     "hands": 5,
     "vpip": 60.0,
@@ -5048,6 +5453,15 @@
     "archetype": "tag",
     "advice": "Respect raises | Play solid | Avoid | vs raise: TT+/AK"
   },
+  "ouilamusique": {
+    "hands": 5,
+    "vpip": 20.0,
+    "pfr": 0.0,
+    "3bet": 0.0,
+    "af": 0.0,
+    "archetype": "rock",
+    "advice": "Steal more | Bet = nuts | Raises monsters | Raise IP, fold vs bet"
+  },
   "babybouchettes": {
     "hands": 5,
     "vpip": 0.0,
@@ -5056,15 +5470,6 @@
     "af": 0,
     "archetype": "nit",
     "advice": "Steal blinds | Fold to bets | Too tight | Raise IP, fold to 3bet"
-  },
-  "ivansalgueiro": {
-    "hands": 5,
-    "vpip": 20.0,
-    "pfr": 20.0,
-    "3bet": 0,
-    "af": 0,
-    "archetype": "tag",
-    "advice": "Respect raises | Play solid | Avoid | vs raise: TT+/AK"
   },
   "gates1960": {
     "hands": 5,
@@ -5093,6 +5498,15 @@
     "archetype": "fish",
     "advice": "Isolate wide | Value bet | Calls too much | Never bluff"
   },
+  "titipro1905": {
+    "hands": 5,
+    "vpip": 40.0,
+    "pfr": 40.0,
+    "3bet": 0.0,
+    "af": 0,
+    "archetype": "maniac",
+    "advice": "Only premiums | Call everything | Can't fold | vs raise: QQ+/AK, call down"
+  },
   "JuanSoto22": {
     "hands": 5,
     "vpip": 60.0,
@@ -5117,15 +5531,6 @@
     "pfr": 0.0,
     "3bet": 0,
     "af": 1,
-    "archetype": "fish",
-    "advice": "Isolate wide | Value bet | Calls too much | Never bluff"
-  },
-  "jolkagmr13": {
-    "hands": 5,
-    "vpip": 40.0,
-    "pfr": 0.0,
-    "3bet": 0,
-    "af": 0,
     "archetype": "fish",
     "advice": "Isolate wide | Value bet | Calls too much | Never bluff"
   },
@@ -5165,15 +5570,6 @@
     "archetype": "maniac",
     "advice": "Only premiums | Call everything | Can't fold | vs raise: QQ+/AK, call down"
   },
-  "richh74": {
-    "hands": 5,
-    "vpip": 60.0,
-    "pfr": 60.0,
-    "3bet": 0.0,
-    "af": 1.0,
-    "archetype": "maniac",
-    "advice": "Only premiums | Call everything | Can't fold | vs raise: QQ+/AK, call down"
-  },
   "terevila.pt": {
     "hands": 5,
     "vpip": 0.0,
@@ -5191,6 +5587,24 @@
     "af": 0,
     "archetype": "maniac",
     "advice": "Only premiums | Call everything | Can't fold | vs raise: QQ+/AK, call down"
+  },
+  "fanfan81648": {
+    "hands": 5,
+    "vpip": 40.0,
+    "pfr": 20.0,
+    "3bet": 0.0,
+    "af": 0,
+    "archetype": "fish",
+    "advice": "Isolate wide | Value bet | Calls too much | Never bluff"
+  },
+  "darfrais": {
+    "hands": 5,
+    "vpip": 20.0,
+    "pfr": 20.0,
+    "3bet": 0.0,
+    "af": 0,
+    "archetype": "tag",
+    "advice": "Respect raises | Play solid | Avoid | vs raise: TT+/AK"
   },
   "Josskijano": {
     "hands": 5,
@@ -5210,6 +5624,15 @@
     "archetype": "maniac",
     "advice": "Only premiums | Call everything | Can't fold | vs raise: QQ+/AK, call down"
   },
+  "Maeva296891": {
+    "hands": 5,
+    "vpip": 20.0,
+    "pfr": 0.0,
+    "3bet": 0.0,
+    "af": 0,
+    "archetype": "rock",
+    "advice": "Steal more | Bet = nuts | Raises monsters | Raise IP, fold vs bet"
+  },
   "itimao": {
     "hands": 5,
     "vpip": 20.0,
@@ -5225,6 +5648,24 @@
     "pfr": 40.0,
     "3bet": 0.0,
     "af": 1,
+    "archetype": "maniac",
+    "advice": "Only premiums | Call everything | Can't fold | vs raise: QQ+/AK, call down"
+  },
+  "manrik_1": {
+    "hands": 5,
+    "vpip": 0.0,
+    "pfr": 0.0,
+    "3bet": 0.0,
+    "af": 0,
+    "archetype": "nit",
+    "advice": "Steal blinds | Fold to bets | Too tight | Raise IP, fold to 3bet"
+  },
+  "Alekksinho": {
+    "hands": 5,
+    "vpip": 40.0,
+    "pfr": 40.0,
+    "3bet": 0,
+    "af": 0,
     "archetype": "maniac",
     "advice": "Only premiums | Call everything | Can't fold | vs raise: QQ+/AK, call down"
   },
@@ -5276,6 +5717,24 @@
   "Navi_pkr": {
     "hands": 5,
     "vpip": 40.0,
+    "pfr": 20.0,
+    "3bet": 0.0,
+    "af": 0.0,
+    "archetype": "fish",
+    "advice": "Isolate wide | Value bet | Calls too much | Never bluff"
+  },
+  "PausGood": {
+    "hands": 5,
+    "vpip": 40.0,
+    "pfr": 20.0,
+    "3bet": 0.0,
+    "af": 0,
+    "archetype": "fish",
+    "advice": "Isolate wide | Value bet | Calls too much | Never bluff"
+  },
+  "focuz07": {
+    "hands": 5,
+    "vpip": 60.0,
     "pfr": 20.0,
     "3bet": 0.0,
     "af": 0.0,
@@ -5450,15 +5909,6 @@
     "pfr": 20.0,
     "3bet": 0.0,
     "af": 0.0,
-    "archetype": "fish",
-    "advice": "Isolate wide | Value bet | Calls too much | Never bluff"
-  },
-  "Muix": {
-    "hands": 5,
-    "vpip": 40.0,
-    "pfr": 20.0,
-    "3bet": 0.0,
-    "af": 1,
     "archetype": "fish",
     "advice": "Isolate wide | Value bet | Calls too much | Never bluff"
   },

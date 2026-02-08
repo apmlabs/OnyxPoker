@@ -499,18 +499,11 @@ class HelperBar:
                     if hand_id and hero_cards and len(hero_cards) == 2:
                         self.root.after(0, lambda: self.log(f"Scanning for hand_id {hand_id}...", "DEBUG"))
                         try:
-                            from memory_calibrator import calibrate_after_gpt, is_calibrated, load_tracking
+                            from memory_calibrator import calibrate_after_gpt, is_calibrated
                             calibrate_after_gpt(result)
                             if is_calibrated():
-                                self.root.after(0, lambda: self.log("CALIBRATED!", "INFO"))
+                                self.root.after(0, lambda: self.log("Memory CALIBRATED!", "INFO"))
                                 result['memory_status'] = 'calibrated'
-                            else:
-                                tracking = load_tracking()
-                                hands = tracking.get('hands', 0)
-                                cands = len(tracking.get('candidates', []))
-                                if hands > 0:
-                                    self.root.after(0, lambda h=hands, c=cands: self.log(f"Hand {h}: {c} candidates", "INFO"))
-                                    result['memory_status'] = f'tracking_{hands}_{cands}'
                         except Exception as e:
                             result['memory_error'] = str(e)
                             self.root.after(0, lambda e=e: self.log(f"Calibration: {e}", "ERROR"))

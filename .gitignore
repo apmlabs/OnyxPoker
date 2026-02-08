@@ -67,3 +67,5 @@ window_geometry.txt
 # Hand history files
 idealistslp.7z
 idealistslp_extracted/
+idealistslp.7z
+client/memory_dumps/
