@@ -759,23 +759,24 @@ class HelperBar:
                 hero_invested = 0
                 continue
             if name == 'idealistslp':
-                if act in ('BET', 'RAISE', 'CALL'):
-                    hero_invested = amt / 100.0  # RAISE amount is total, not incremental
+                if act in ('BET', 'RAISE', 'CALL', 'POST_BB', 'POST_SB'):
+                    hero_invested = amt / 100.0
             else:
                 if act in ('BET', 'RAISE'):
                     last_villain_bet = amt / 100.0
         if last_villain_bet > hero_invested:
             to_call = last_villain_bet - hero_invested
 
-        # Determine aggressor: did hero raise/bet preflop?
+        # Determine aggressor: who was the last raiser preflop?
         is_aggressor = lr.get('is_aggressor', True)
-        # If we have memory actions, check if hero raised preflop
+        last_raiser = None
         for name, act, amt in actions:
             if act == 'DEAL':
-                break  # stop at first deal = end of preflop
-            if name == 'idealistslp' and act == 'RAISE':
-                is_aggressor = True
                 break
+            if act == 'RAISE':
+                last_raiser = name
+        if last_raiser is not None:
+            is_aggressor = (last_raiser == 'idealistslp')
 
         table_data = {
             'hero_cards': cards,

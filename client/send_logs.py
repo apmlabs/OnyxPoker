@@ -106,7 +106,7 @@ def sync_logs(server_files):
     uploaded = 0
     for name, path, size, skip_bytes, content in to_upload:
         if skip_bytes > 0:
-            new_content = content[skip_bytes:]
+            new_content = content.encode('utf-8')[skip_bytes:].decode('utf-8')
             new_lines = len(new_content.strip().split('\n')) if new_content.strip() else 0
             print(f"  Appending {name} (+{fmt_size(len(new_content.encode('utf-8')))}, {new_lines} new lines)...", end=' ', flush=True)
             resp = requests.post(f'{SERVER_URL}/logs', json={
