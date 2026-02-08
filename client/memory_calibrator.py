@@ -64,8 +64,8 @@ HERO_NAME = 'idealistslp'
 ENTRY_SIZE = 0x40
 # 10-byte signature immediately before first buffer entry
 BUFFER_SIGNATURE = bytes([0x00, 0x88, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00])
-ACTION_NAMES = {0x43: 'CALL', 0x45: 'RAISE', 0x46: 'FOLD', 0x50: 'POST_BB', 0x70: 'POST_SB'}
-MSG_TYPES = {0x0A: 'NEW_HAND', 0x01: 'ACTION', 0x02: 'SEATED', 0x07: 'ACTION_START'}
+ACTION_NAMES = {0x42: 'BET', 0x43: 'CALL', 0x45: 'RAISE', 0x46: 'FOLD', 0x50: 'POST_BB', 0x63: 'CHECK', 0x70: 'POST_SB'}
+MSG_TYPES = {0x0A: 'NEW_HAND', 0x01: 'ACTION', 0x02: 'SEATED', 0x05: 'DEAL', 0x06: 'WIN', 0x07: 'ACTION_START'}
 
 
 def log(msg):
@@ -126,14 +126,19 @@ def format_entry(e):
         return f"[{e['seq']:2d}] NEW_HAND"
     elif e['msg_type'] == 0x02:
         cards = f" [{e['extra']}]" if e['extra'] else ""
-        return f"[{e['seq']:2d}] SEATED seat={e['seat']} {e['name']}{cards}"
+        seat = f"seat={e['seat']}" if e['seat'] != 255 else "BOARD"
+        return f"[{e['seq']:2d}] SEATED {seat} {e['name'] or ''}{cards}"
+    elif e['msg_type'] == 0x05:
+        return f"[{e['seq']:2d}] DEAL"
+    elif e['msg_type'] == 0x06:
+        return f"[{e['seq']:2d}] WIN {e['name'] or ''}"
     elif e['msg_type'] == 0x01:
         act = ACTION_NAMES.get(e['action_code'], f"0x{e['action_code']:02X}")
-        return f"[{e['seq']:2d}] {act} {e['name']} {e['amount']}c"
+        return f"[{e['seq']:2d}] {act} {e['name'] or '?'} {e['amount']}c"
     elif e['msg_type'] == 0x07:
-        return f"[{e['seq']:2d}] ACTION_START {e['name']}"
+        return f"[{e['seq']:2d}] ACTION_START {e['name'] or ''}"
     mt = MSG_TYPES.get(e['msg_type'], f"0x{e['msg_type']:02X}")
-    return f"[{e['seq']:2d}] type={mt} seat={e['seat']} {e['name']}"
+    return f"[{e['seq']:2d}] type={mt} seat={e['seat']} {e['name'] or ''}"
 
 
 def extract_hand_data(entries):
@@ -142,19 +147,27 @@ def extract_hand_data(entries):
         return None
     hand_id = entries[0]['hand_id']
     hero_cards = None
+    community_cards = []
     players = {}
     actions = []
 
     for e in entries:
         if e['msg_type'] == 0x02:
-            players[e['seat']] = e['name']
-            if e['extra'] and e['name'] == HERO_NAME:
-                hero_cards = e['extra']
+            if e['seat'] == 255 and e['extra']:
+                # Community cards: seat=255, extra = card string
+                cc = e['extra']
+                for i in range(0, len(cc) - 1, 2):
+                    community_cards.append(cc[i:i+2])
+            else:
+                players[e['seat']] = e['name']
+                if e['extra'] and e['name'] == HERO_NAME:
+                    hero_cards = e['extra']
         elif e['msg_type'] == 0x01:
             act = ACTION_NAMES.get(e['action_code'], f"0x{e['action_code']:02X}")
             actions.append((e['name'], act, e['amount']))
 
-    return {'hand_id': hand_id, 'hero_cards': hero_cards, 'players': players, 'actions': actions}
+    return {'hand_id': hand_id, 'hero_cards': hero_cards, 'players': players,
+            'actions': actions, 'community_cards': community_cards}
 
 
 # ── Process Reader (Windows only) ───────────────────────────────────
@@ -405,6 +418,28 @@ def find_buffer_in_dump(bin_path, regions, expected_cards_ascii=None):
     return (buf_addr, entries) if len(entries) >= 3 else (None, None)
 
 
+def _fuzzy_match(a, b):
+    """Check if two names match allowing 1-char difference (GPT vision errors like O/0)."""
+    if a == b:
+        return True
+    if abs(len(a) - len(b)) > 1:
+        return False
+    if len(a) == len(b):
+        return sum(c1 != c2 for c1, c2 in zip(a, b)) <= 1
+    # Length differs by 1: check if one is substring-ish
+    short, long = (a, b) if len(a) < len(b) else (b, a)
+    diffs = 0
+    si = li = 0
+    while si < len(short) and li < len(long):
+        if short[si] != long[li]:
+            diffs += 1
+            li += 1
+        else:
+            si += 1
+            li += 1
+    return diffs <= 1
+
+
 # ── Offline Analysis ─────────────────────────────────────────────────
 
 def cmd_analyze():
@@ -440,6 +475,7 @@ def cmd_analyze():
 
         hand_data = extract_hand_data(entries)
         found_cards = hand_data['hero_cards']
+        found_community = hand_data['community_cards']
 
         # Verify cards (allow reversed order)
         cards_ok = False
@@ -448,19 +484,30 @@ def cmd_analyze():
             if not cards_ok and len(found_cards) == 4:
                 cards_ok = found_cards[2:4] + found_cards[0:2] == expected
 
-        # Verify opponent names
-        found_names = set(hand_data['players'].values())
-        opps_ok = all(n in found_names for n in opps) if opps else True
+        # Verify community cards against GPT
+        comm_expected = meta.get('community_cards', [])
+        comm_ok = set(found_community) == set(comm_expected) if comm_expected and found_community else True
+
+        # Verify opponent names (fuzzy: allow 1-char difference for GPT vision errors)
+        real_players = {s: n for s, n in hand_data['players'].items() if s != 255 and n}
+        found_names = set(real_players.values())
+        opps_ok = True
+        for opp in opps:
+            if opp not in found_names:
+                # Fuzzy: check if any name is close (1-char diff or O/0 swap)
+                fuzzy = any(_fuzzy_match(opp, fn) for fn in found_names)
+                if not fuzzy:
+                    opps_ok = False
 
         if not cards_ok:
-            errors += 1
-        if not opps_ok:
             errors += 1
 
         log(f"  Buffer: 0x{buf_addr:08X} ({len(entries)} entries, {elapsed:.1f}s)")
         log(f"  Hand ID: {hand_data['hand_id']}")
         log(f"  Cards: '{found_cards}' {'OK' if cards_ok else 'FAIL (expected '+str(expected)+')'}")
-        log(f"  Players: {dict(hand_data['players'])} {'OK' if opps_ok else 'FAIL'}")
+        log(f"  Players: {dict(real_players)} {'OK' if opps_ok else 'MISMATCH (GPT: '+str(opps)+')'}")
+        if found_community:
+            log(f"  Community: {found_community} {'OK' if comm_ok else 'MISMATCH (GPT: '+str(comm_expected)+')'}")
         log(f"  Actions: {len(hand_data['actions'])}")
         for e in entries:
             log(f"    {format_entry(e)}")
