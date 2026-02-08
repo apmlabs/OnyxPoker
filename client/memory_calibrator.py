@@ -237,7 +237,7 @@ def _load_tagged_dumps():
             continue
         with open(meta_path) as f:
             meta = json.load(f)
-        if not meta.get('hand_id') or not meta.get('hero_cards'):
+        if not meta.get('hero_cards'):
             continue  # not tagged yet
         meta['_bin_path'] = bin_path
         dumps.append(meta)

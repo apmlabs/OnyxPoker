@@ -82,6 +82,25 @@ def receive_logs():
     
     return jsonify({'status': 'ok', 'path': log_path, 'lines': len(content.strip().split('\n'))})
 
+
+@app.route('/upload-dump', methods=['POST'])
+def upload_dump():
+    """Receive binary memory dump via streaming upload"""
+    filename = request.headers.get('X-Filename', 'unknown.bin')
+    dump_dir = os.path.join(UPLOAD_DIR, 'memory_dumps')
+    os.makedirs(dump_dir, exist_ok=True)
+    out_path = os.path.join(dump_dir, filename)
+
+    with open(out_path, 'wb') as f:
+        while True:
+            chunk = request.stream.read(1024 * 1024)
+            if not chunk:
+                break
+            f.write(chunk)
+
+    size_mb = os.path.getsize(out_path) / 1024 / 1024
+    return jsonify({'status': 'ok', 'path': out_path, 'size_mb': round(size_mb, 1)})
+
 @app.route('/health', methods=['GET'])
 def health():
     return jsonify({'status': 'ok', 'uploads_dir': UPLOAD_DIR})
