@@ -99,6 +99,7 @@ class HelperBar:
         self._mem_polling = False  # Whether polling loop is active
         self._mem_last_entries = 0 # Last known entry count (detect updates)
         self._last_result = None   # Last GPT result for re-evaluation during polling
+        self._pending_mem_poll = None  # (buf_addr, hand_id) to start after display
         
         # Drag state
         self._drag_start_x = 0
@@ -572,9 +573,9 @@ class HelperBar:
                         st = mr.get('scan_time', '?')
                         self.root.after(0, lambda s=st, c=mr.get('hero_cards'):
                             self.log(f"[MEM] {c} hand={mr.get('hand_id')} ({s}s)", "INFO"))
-                        # Start live memory polling from known buffer address
+                        # Save poll params — polling starts AFTER _display_result
                         if mr.get('buf_addr') and mr.get('hand_id'):
-                            self._start_mem_poll(mr['buf_addr'], mr['hand_id'])
+                            self._pending_mem_poll = (mr['buf_addr'], mr['hand_id'])
                     elif mr and mr.get('error'):
                         result['memory_error'] = mr['error']
                         self.root.after(0, lambda e=mr['error']:
@@ -694,6 +695,11 @@ class HelperBar:
         # Log the live update to left panel
         if act_str:
             self.log(f"[MEM LIVE] => {act_str} | {reason_str}", "DECISION")
+        else:
+            self.log(f"[MEM LIVE] entries={entry_count}", "DEBUG")
+        
+        # Update time label to show polling is active
+        self.time_label.config(text=f"LIVE ({entry_count})")
 
         # Log to session file so we capture live re-evaluations
         self._log_mem_update(hd, advice)
@@ -1016,6 +1022,12 @@ class HelperBar:
         self._update_stats_display(result)
         
         self.time_label.config(text=f"{elapsed:.1f}s")
+
+        # Start memory polling NOW (after stats panel is drawn)
+        if self._pending_mem_poll:
+            buf_addr, hand_id = self._pending_mem_poll
+            self._pending_mem_poll = None
+            self._start_mem_poll(buf_addr, hand_id)
 
     def _update_stats_display(self, result):
         """Update the right panel — advice first, data second."""

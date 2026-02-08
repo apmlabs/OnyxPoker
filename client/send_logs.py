@@ -86,34 +86,37 @@ def sync_logs(server_files):
         server_size = server_files.get(name, -1)
         if server_size == local_size:
             continue  # already synced
-        if server_size > 0 and local_size > server_size:
-            # Server has older version — send only new lines (append)
-            to_upload.append((name, path, local_size, server_size))
+        # Read content to get true size (handles \r\n vs \n differences)
+        with open(path, 'r') as f:
+            content = f.read()
+        content_size = len(content.encode('utf-8'))
+        if server_size == content_size:
+            continue  # synced (line ending difference only)
+        if server_size > 0 and content_size > server_size:
+            # Server has older version — send only new content (append)
+            to_upload.append((name, path, content_size, server_size, content))
         else:
             # New file or server has nothing
-            to_upload.append((name, path, local_size, 0))
+            to_upload.append((name, path, content_size, 0, content))
 
     skipped = len(local_files) - len(to_upload)
     if skipped:
         print(f"  {skipped} log(s) already on server, skipping")
 
     uploaded = 0
-    for name, path, size, skip_bytes in to_upload:
-        with open(path, 'r') as f:
-            if skip_bytes > 0:
-                f.seek(skip_bytes)
-                new_content = f.read()
-                new_lines = len(new_content.strip().split('\n')) if new_content.strip() else 0
-                print(f"  Appending {name} (+{fmt_size(size - skip_bytes)}, {new_lines} new lines)...", end=' ', flush=True)
-                resp = requests.post(f'{SERVER_URL}/logs', json={
-                    'filename': name, 'content': new_content, 'append': True
-                }, timeout=30)
-            else:
-                content = f.read()
-                print(f"  Uploading {name} ({fmt_size(size)})...", end=' ', flush=True)
-                resp = requests.post(f'{SERVER_URL}/logs', json={
-                    'filename': name, 'content': content
-                }, timeout=30)
+    for name, path, size, skip_bytes, content in to_upload:
+        if skip_bytes > 0:
+            new_content = content[skip_bytes:]
+            new_lines = len(new_content.strip().split('\n')) if new_content.strip() else 0
+            print(f"  Appending {name} (+{fmt_size(len(new_content.encode('utf-8')))}, {new_lines} new lines)...", end=' ', flush=True)
+            resp = requests.post(f'{SERVER_URL}/logs', json={
+                'filename': name, 'content': new_content, 'append': True
+            }, timeout=30)
+        else:
+            print(f"  Uploading {name} ({fmt_size(size)})...", end=' ', flush=True)
+            resp = requests.post(f'{SERVER_URL}/logs', json={
+                'filename': name, 'content': content
+            }, timeout=30)
         r = resp.json()
         print(f"OK ({r.get('lines', '?')} lines)")
         uploaded += 1
