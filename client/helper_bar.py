@@ -98,6 +98,7 @@ class HelperBar:
         self._mem_hand_id = None   # Current hand_id being tracked
         self._mem_polling = False  # Whether polling loop is active
         self._mem_last_entries = 0 # Last known entry count (detect updates)
+        self._last_result = None   # Last GPT result for re-evaluation during polling
         
         # Drag state
         self._drag_start_x = 0
@@ -191,6 +192,7 @@ class HelperBar:
         self.stats_text.tag_configure('ADVICE', foreground='#ffcc00', font=('Courier', 9))
         self.stats_text.tag_configure('MEM', foreground='#00ff88', font=('Courier', 9, 'bold'))
         self.stats_text.tag_configure('MEMDATA', foreground='#88ffcc', font=('Courier', 9))
+        self.stats_text.tag_configure('ACTION', foreground='#ffff00', font=('Courier', 12, 'bold'))
 
         # Time
         self.time_label = tk.Label(right, text="", font=('Arial', 9),
@@ -583,6 +585,7 @@ class HelperBar:
 
                 elapsed = time.time() - start
                 self.root.after(0, lambda t=api_time: self.log(f"API done: {t:.1f}s", "DEBUG"))
+                self._last_result = result  # Store for memory re-evaluation
                 self.root.after(0, lambda: self._display_result(result, elapsed, img, screenshot_name))
 
             finally:
@@ -625,40 +628,124 @@ class HelperBar:
             time.sleep(0.2)
 
     def _update_mem_display(self, hd):
-        """Update the right panel with live memory data."""
+        """Update the right panel with live advice from memory data."""
         self.stats_text.delete('1.0', 'end')
-        # Cards
+        # [MEM] status line — compact
         mc = hd.get('hero_cards', '')
         cards_str = f"{mc[0:2]} {mc[2:4]}" if mc and len(mc) == 4 else '??'
-        self.stats_text.insert('end', f"[MEM] {cards_str}\n", 'MEM')
-        # Community
         cc = hd.get('community_cards', [])
-        if cc:
-            self.stats_text.insert('end', f"Board: {' '.join(cc)}\n", 'MEM')
-        # Street
-        nc = len(cc)
-        street = 'preflop' if nc == 0 else ('flop' if nc == 3 else ('turn' if nc == 4 else 'river'))
-        self.stats_text.insert('end', f"Street: {street}\n", 'MEMDATA')
-        # Players
-        players = hd.get('players', {})
-        hero_seat = None
-        for s, n in players.items():
-            if n == 'idealistslp':
-                hero_seat = s
-        # Actions — show as compact list
-        self.stats_text.insert('end', '---\n', 'MEMDATA')
-        for name, act, amt in hd.get('actions', []):
-            if not name:
-                name = '?'
-            line = f"{name}: {act}"
-            if amt > 0:
-                line += f" {amt/100:.2f}"
-            tag = 'MEM' if name == 'idealistslp' else 'MEMDATA'
-            self.stats_text.insert('end', line + '\n', tag)
-        # Pot from actions
-        pot = sum(a[2] for a in hd.get('actions', []))
-        if pot > 0:
-            self.stats_text.insert('end', f"---\nPot: {pot/100:.2f}\n", 'MEM')
+        board_str = f" | {' '.join(cc)}" if cc else ''
+        self.stats_text.insert('end', f"[MEM] {cards_str}{board_str}\n", 'MEM')
+
+        # Re-evaluate strategy with memory data
+        advice = self._reeval_with_memory(hd)
+        if advice:
+            act = advice.get('action', '').upper()
+            amt = advice.get('bet_size')
+            if amt and act in ('BET', 'RAISE'):
+                self.stats_text.insert('end', f"=> {act} {amt:.2f}\n", 'ACTION')
+            else:
+                self.stats_text.insert('end', f"=> {act}\n", 'ACTION')
+            reason = advice.get('reasoning', '')
+            if reason:
+                self.stats_text.insert('end', f"{reason}\n", 'DRAW')
+            # Hand strength
+            ha = advice.get('hand_analysis', {})
+            if ha and ha.get('valid'):
+                self.stats_text.insert('end', self._hand_strength_str(ha) + '\n', 'HAND')
+
+        # Opponent info from last GPT result
+        lr = self._last_result
+        if lr and lr.get('opponent_stats'):
+            self.stats_text.insert('end', '---\n', 'MEMDATA')
+            for opp in lr['opponent_stats']:
+                if opp.get('hands', 0) > 0:
+                    self.stats_text.insert('end',
+                        f"{opp['name']} {opp['archetype'].upper()} - {opp['advice']}\n", 'OPPONENT')
+
+        # Compact memory actions at bottom
+        actions = hd.get('actions', [])
+        if actions:
+            self.stats_text.insert('end', '---\n', 'MEMDATA')
+            for name, act, amt in actions:
+                if act in ('POST_SB', 'POST_BB'):
+                    continue
+                line = f"{name or '?'}: {act}"
+                if amt > 0:
+                    line += f" {amt/100:.2f}"
+                tag = 'MEM' if name == 'idealistslp' else 'MEMDATA'
+                self.stats_text.insert('end', line + '\n', tag)
+
+    def _reeval_with_memory(self, hd):
+        """Re-run strategy engine using memory data. Returns decision dict or None."""
+        mc = hd.get('hero_cards', '')
+        if not mc or len(mc) != 4:
+            return None
+        cards = [mc[0:2], mc[2:4]]
+        cc = hd.get('community_cards', [])
+        board = cc if cc else []
+
+        # Calculate pot from memory actions
+        pot_cents = sum(a[2] for a in hd.get('actions', []))
+        pot = pot_cents / 100.0 if pot_cents > 0 else 0.07  # fallback to min pot
+
+        # Determine to_call: last action aimed at hero
+        to_call = 0.0
+        actions = hd.get('actions', [])
+        # Find the last bet/raise not by hero — that's what hero faces
+        last_bet = 0
+        hero_invested_street = 0
+        for name, act, amt in actions:
+            if act in ('BET', 'RAISE') and name != 'idealistslp':
+                last_bet = amt / 100.0
+            elif act in ('BET', 'RAISE', 'CALL') and name == 'idealistslp':
+                hero_invested_street = amt / 100.0
+        if last_bet > hero_invested_street:
+            to_call = last_bet - hero_invested_street
+
+        # Build table_data from last GPT result + memory overrides
+        lr = self._last_result or {}
+        table_data = {
+            'hero_cards': cards,
+            'community_cards': board,
+            'pot': pot,
+            'to_call': to_call,
+            'big_blind': lr.get('big_blind', 0.02),
+            'position': lr.get('position', 'BTN'),
+            'num_players': lr.get('num_players', 2),
+            'is_aggressor': lr.get('is_aggressor', True),
+            'is_facing_raise': to_call > 0,
+            'opponent_stats': lr.get('opponent_stats', []),
+            'opponents': lr.get('opponents', []),
+        }
+
+        try:
+            engine = StrategyEngine(STRATEGY)
+            return engine.get_action(table_data)
+        except Exception:
+            return None
+
+    def _hand_strength_str(self, hand):
+        """Return compact hand strength string from hand_analysis dict."""
+        s = hand.get('strength', 0)
+        if s >= 8: return "STRAIGHT FLUSH"
+        if s == 7: return "QUADS"
+        if s == 6: return "FULL HOUSE"
+        if hand.get('has_flush'):
+            return "FLUSH (NUT)" if hand.get('is_nut_flush') else "FLUSH"
+        if hand.get('has_straight'): return "STRAIGHT"
+        if hand.get('has_set'): return "SET"
+        if hand.get('has_trips'): return "TRIPS"
+        if hand.get('has_two_pair'):
+            return f"TWO PAIR ({hand.get('two_pair_type', '')})"
+        if hand.get('is_overpair'): return "OVERPAIR"
+        if hand.get('has_top_pair'):
+            k = "good K" if hand.get('has_good_kicker') else "weak K"
+            return f"TOP PAIR ({k})"
+        if hand.get('has_middle_pair'): return "MIDDLE PAIR"
+        if hand.get('has_bottom_pair'): return "BOTTOM PAIR"
+        if hand.get('is_pocket_pair'): return "UNDERPAIR"
+        return "HIGH CARD"
 
     def _display_result(self, result, elapsed, screenshot, screenshot_name=None):
         """Display analysis result"""
@@ -868,119 +955,100 @@ class HelperBar:
         self.time_label.config(text=f"{elapsed:.1f}s")
 
     def _update_stats_display(self, result):
-        """Update the decision stats panel - clean, minimal display"""
+        """Update the right panel — advice first, data second."""
         self.stats_text.delete('1.0', 'end')
-        
-        # Memory data header — show source clearly
+
+        # [MEM] status line
         mem_status = result.get('memory_status', '')
         if mem_status and mem_status != 'NO_BUFFER':
             mc = result.get('memory_cards', '')
             cards_str = f"{mc[0:2]} {mc[2:4]}" if mc and len(mc) == 4 else ''
-            self.stats_text.insert('end', f"[MEM] {cards_str}", 'MEM')
             cc = result.get('memory_community', [])
-            if cc:
-                self.stats_text.insert('end', f" | {' '.join(cc)}", 'MEM')
+            board_str = f" | {' '.join(cc)}" if cc else ''
+            label = 'OK' if 'CONFIRMED' in mem_status else 'OVERRIDE'
             st = result.get('memory_scan_time', '')
             tag = 'MEM' if 'CONFIRMED' in mem_status else 'DANGER'
-            label = 'OK' if 'CONFIRMED' in mem_status else 'OVERRIDE'
-            self.stats_text.insert('end', f" ({label} {st}s)\n", tag)
-            # Show actions from memory
-            mem_actions = result.get('memory_actions', [])
-            if mem_actions:
-                for name, act, amt in mem_actions:
-                    if act in ('POST_SB', 'POST_BB'):
-                        continue
-                    line = f"  {name or '?'}: {act}"
-                    if amt > 0:
-                        line += f" {amt/100:.2f}"
-                    atag = 'MEM' if name == 'idealistslp' else 'MEMDATA'
-                    self.stats_text.insert('end', line + '\n', atag)
-            self.stats_text.insert('end', '---\n', 'MEMDATA')
-        
+            self.stats_text.insert('end', f"[MEM] {cards_str}{board_str} ({label} {st}s)\n", tag)
+
+        # ADVICE — the main event
+        action = result.get('action', '')
+        bet_size = result.get('bet_size')
+        reasoning = result.get('reasoning', '')
+        board = result.get('community_cards', [])
+        all_positions = result.get('all_positions')
+
+        if all_positions and not board:
+            # Preflop: show position advice
+            pos = result.get('position', 'BTN')
+            pr = all_positions.get(pos, {})
+            act = pr.get('action', 'fold').upper()
+            if act in ('BET', 'RAISE'):
+                bs = pr.get('bet_size')
+                act_str = f"RAISE {bs:.2f}" if bs else "RAISE"
+            else:
+                act_str = act
+            self.stats_text.insert('end', f"=> {act_str}\n", 'ACTION')
+            ci = pr.get('call_info', '')
+            if ci:
+                self.stats_text.insert('end', f"vs raise: {ci}\n", 'DRAW')
+            reason = pr.get('reasoning', '')
+            if reason:
+                self.stats_text.insert('end', f"{reason}\n", 'MEMDATA')
+        elif action:
+            # Postflop: show decision
+            act = action.upper()
+            if bet_size and act in ('BET', 'RAISE'):
+                self.stats_text.insert('end', f"=> {act} {bet_size:.2f}\n", 'ACTION')
+            else:
+                self.stats_text.insert('end', f"=> {act}\n", 'ACTION')
+            if reasoning:
+                self.stats_text.insert('end', f"{reasoning}\n", 'DRAW')
+
+        # Hand strength
         hand = result.get('hand_analysis', {})
-        
-        # Show opponent info first (V2 mode) - works on preflop too
+        if hand and hand.get('valid'):
+            self.stats_text.insert('end', self._hand_strength_str(hand) + '\n', 'HAND')
+            # Draws
+            draws = []
+            if hand.get('has_flush_draw'):
+                draws.append("NFD" if hand.get('is_nut_flush_draw') else "Flush draw")
+            if hand.get('has_straight_draw'):
+                draws.append("Straight draw")
+            if draws:
+                self.stats_text.insert('end', ' + '.join(draws) + '\n', 'DRAW')
+            # Board dangers
+            dangers = []
+            if hand.get('board_flush_suit'): dangers.append("Flush possible")
+            if hand.get('board_straight_combos'): dangers.append("Straight possible")
+            if hand.get('has_board_pair'): dangers.append("Board paired")
+            if dangers:
+                self.stats_text.insert('end', ' | '.join(dangers) + '\n', 'DANGER')
+
+        # Opponents
         if VISION_V2_MODE and result.get('opponent_stats'):
-            unknown_names = []
+            self.stats_text.insert('end', '---\n', 'MEMDATA')
+            unknown_count = 0
             for opp in result['opponent_stats']:
                 if opp.get('hands', 0) > 0:
-                    arch = opp.get('archetype', '?').upper()
-                    line = f"{opp['name']} ({opp['hands']}h) {arch} - {opp['advice']}\n"
-                    self.stats_text.insert('end', line, 'HAND')
+                    self.stats_text.insert('end',
+                        f"{opp['name']} {opp['archetype'].upper()} - {opp['advice']}\n", 'OPPONENT')
                 else:
-                    unknown_names.append(opp['name'])
-            # Show unknown + unrec on same line
-            detected = len(result['opponent_stats'])
-            unrec = max(0, 5 - detected)
-            if unknown_names or unrec > 0:
-                if unknown_names:
-                    self.stats_text.insert('end', f"UNKNOWN: {', '.join(unknown_names)}", 'DRAW')
-                    if unrec > 0:
-                        self.stats_text.insert('end', " | ", 'DANGER')
-                if unrec > 0:
-                    self.stats_text.insert('end', f"UNREC: {unrec}", 'DANGER')
-                self.stats_text.insert('end', '\n', 'DANGER')
-            self.stats_text.insert('end', '---\n', 'DANGER')
-        
-        if not hand or not hand.get('valid'):
-            if not VISION_V2_MODE or not result.get('opponent_stats'):
-                self.stats_text.insert('end', "No hand\n", 'HAND')
-            return
-        
-        # 1. HAND STRENGTH (what you have)
-        strength = hand.get('strength', 0)
-        if strength >= 8:
-            self.stats_text.insert('end', "STRAIGHT FLUSH\n", 'HAND')
-        elif strength == 7:
-            self.stats_text.insert('end', "QUADS\n", 'HAND')
-        elif strength == 6:
-            self.stats_text.insert('end', "FULL HOUSE\n", 'HAND')
-        elif hand.get('has_flush'):
-            nut = " (NUT)" if hand.get('is_nut_flush') else ""
-            self.stats_text.insert('end', f"FLUSH{nut}\n", 'HAND')
-        elif hand.get('has_straight'):
-            self.stats_text.insert('end', "STRAIGHT\n", 'HAND')
-        elif hand.get('has_set'):
-            self.stats_text.insert('end', "SET\n", 'HAND')
-        elif hand.get('has_trips'):
-            self.stats_text.insert('end', "TRIPS\n", 'HAND')
-        elif hand.get('has_two_pair'):
-            tp = hand.get('two_pair_type', '')
-            self.stats_text.insert('end', f"TWO PAIR ({tp})\n", 'HAND')
-        elif hand.get('is_overpair'):
-            self.stats_text.insert('end', "OVERPAIR\n", 'HAND')
-        elif hand.get('has_top_pair'):
-            k = "good K" if hand.get('has_good_kicker') else "weak K"
-            self.stats_text.insert('end', f"TOP PAIR ({k})\n", 'HAND')
-        elif hand.get('has_middle_pair'):
-            self.stats_text.insert('end', "MIDDLE PAIR\n", 'HAND')
-        elif hand.get('has_bottom_pair'):
-            self.stats_text.insert('end', "BOTTOM PAIR\n", 'HAND')
-        elif hand.get('is_pocket_pair'):
-            self.stats_text.insert('end', "UNDERPAIR\n", 'HAND')
-        else:
-            self.stats_text.insert('end', "HIGH CARD\n", 'HAND')
-        
-        # 2. DRAWS (only if present)
-        draws = []
-        if hand.get('has_flush_draw'):
-            nut = " NUT" if hand.get('is_nut_flush_draw') else ""
-            draws.append(f"Flush draw{nut}")
-        if hand.get('has_straight_draw'):
-            draws.append("Straight draw")
-        if draws:
-            self.stats_text.insert('end', '\n'.join(draws) + '\n', 'DRAW')
-        
-        # 3. BOARD DANGERS (only if present)
-        dangers = []
-        if hand.get('board_flush_suit'):
-            dangers.append("Flush possible")
-        if hand.get('board_straight_combos'):
-            dangers.append("Straight possible")
-        if hand.get('has_board_pair'):
-            dangers.append("Board paired")
-        if dangers:
-            self.stats_text.insert('end', '---\n' + '\n'.join(dangers) + '\n', 'DANGER')
+                    unknown_count += 1
+            if unknown_count:
+                self.stats_text.insert('end', f"UNKNOWN: {unknown_count}\n", 'DANGER')
+
+        # Memory actions at bottom
+        mem_actions = result.get('memory_actions', [])
+        if mem_actions:
+            self.stats_text.insert('end', '---\n', 'MEMDATA')
+            for name, act, amt in mem_actions:
+                if act in ('POST_SB', 'POST_BB'):
+                    continue
+                line = f"{name or '?'}: {act}"
+                if amt > 0:
+                    line += f" {amt/100:.2f}"
+                tag = 'MEM' if name == 'idealistslp' else 'MEMDATA'
+                self.stats_text.insert('end', line + '\n', tag)
 
     def on_f10(self):
         """Toggle bot mode"""
