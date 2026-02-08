@@ -1,6 +1,6 @@
 # OnyxPoker - Status Tracking
 
-**Last Updated**: February 8, 2026 14:27 UTC
+**Last Updated**: February 8, 2026 17:18 UTC
 
 ---
 
@@ -30,8 +30,8 @@
 - Based on value_lord with villain-specific adjustments
 - Uses V2 vision opponent detection + player database
 - Multiway pot discipline (smaller bets, no bluffs vs 3+ players)
-- **+60.02 EUR** postflop-only (was +59.10 before c-bet fix)
-- **+1091 BB** total improvement vs hero (preflop + postflop)
+- **+62.89 EUR** postflop-only (updated with new HH data)
+- **+36.16 EUR** full (preflop + postflop) on 2830 hands
 
 ### Simulation Calibration (Session 70)
 - Fixed c-bet bug: the_lord was checking c-bets vs fish ("never bluff")
@@ -40,19 +40,64 @@
 - value_lord: +27 BB/100
 - Gap eliminated - strategies now equal in simulation
 
-### Player Database (613 players, deep research classification)
+### Player Database (663 players, deep research classification)
 | Archetype | Count | % | Advice |
 |-----------|-------|---|--------|
-| fish | 215 | 35.1% | Isolate wide \| Value bet \| Calls too much \| Never bluff |
-| nit | 158 | 25.8% | Steal blinds \| Fold to bets \| Too tight \| Raise IP, fold to 3bet |
-| rock | 82 | 13.4% | Steal more \| Bet = nuts \| Raises monsters \| Raise IP, fold vs bet |
-| maniac | 52 | 8.5% | Only premiums \| Call everything \| Can't fold \| vs raise: QQ+/AK |
-| lag | 53 | 8.6% | Tighten up \| Call down \| Over-aggro \| vs raise: 99+/AQ+ |
-| tag | 53 | 8.6% | Respect raises \| Play solid \| Avoid \| vs raise: TT+/AK |
+| fish | 234 | 35.3% | Isolate wide \| Value bet \| Calls too much \| Never bluff |
+| nit | 174 | 26.2% | Steal blinds \| Fold to bets \| Too tight \| Raise IP, fold to 3bet |
+| rock | 83 | 12.5% | Steal more \| Bet = nuts \| Raises monsters \| Raise IP, fold vs bet |
+| lag | 60 | 9.0% | Tighten up \| Call down \| Over-aggro \| vs raise: 99+/AQ+ |
+| maniac | 58 | 8.7% | Only premiums \| Call everything \| Can't fold \| vs raise: QQ+/AK |
+| tag | 54 | 8.1% | Respect raises \| Play solid \| Avoid \| vs raise: TT+/AK |
 
 ---
 
 ## Session History
+
+### Session 75: New HH Data + Memory Calibrator v3 (February 8, 2026)
+
+**Extracted new hand histories (53 files, 2830 hands). Rewrote memory calibrator with dump+offline approach.**
+
+**New HH Data:**
+- 6 new files from 3 sessions: Jan 31 (138 hands), Feb 2 (17 hands), Feb 8 (24 hands)
+- Player DB rebuilt: 663 players (was 613, +50 new)
+- the_lord postflop: +62.89 EUR (was +60.02), full: +36.16 EUR — still #1
+- Actual results: -60.52 EUR across 2830 hands (-44.7 BB/100)
+- 10NL: +35.5 BB/100 on 208 hands (winning at higher stakes)
+- Sim calibration still tight: all archetypes within 5% of real behavior
+
+**Packet Sniffing Research:**
+- PokerStars uses TLS + custom binary protocol (LZHL compression)
+- Protocol reversed in 2009 (daeken) but breaks every PS update
+- Passive sniffing impossible (TLS), MITM too fragile
+- Conclusion: memory reading is the best path to sub-second reads
+
+**Memory Calibrator v3 (complete rewrite):**
+- Key insight from poker-supernova repo: PS stores data behind 5-level pointer chain
+- Cards NOT near hand_id — hero cards at seat_base+0x9C, hand_id at table_base+0x40
+- Old v2 searched within 128 bytes of hand_id — fundamentally wrong
+- Card values spaced 0x08 apart (not packed), ranks 0-12, suits 0-3
+
+**New approach: auto-dump on F9 + offline analysis**
+1. `save_dump()` called on F9 at same instant as screenshot
+2. `tag_dump()` called after GPT returns with hand_id/cards/opponents
+3. `python memory_calibrator.py analyze` searches ALL tagged dumps
+4. No manual parameters — everything comes from GPT results
+5. Verifies full table struct + cross-checks opponent names at other seats
+
+**Commands:**
+```bash
+python helper_bar.py --calibrate     # Auto-dumps on each F9
+python memory_calibrator.py list     # Show tagged dumps
+python memory_calibrator.py analyze  # Search all dumps (offline)
+python memory_calibrator.py read     # Read cards after calibration
+```
+
+**Files Changed:**
+- memory_calibrator.py — Complete rewrite (315 → 290 lines, cleaner)
+- helper_bar.py — save_dump() on F9, tag_dump() after GPT, removed dead tracking code
+- player_stats.json — 663 players (rebuilt from new HH data)
+- .gitignore — Added memory_dumps/ and idealistslp.7z
 
 ### Session 74: Monolith Refactoring - Full Package Extraction (February 8, 2026)
 

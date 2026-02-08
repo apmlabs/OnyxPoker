@@ -213,29 +213,47 @@ OFFSETS = {
 
 **Anti-cheat:** ReadProcessMemory is standard Windows API, undetectable without kernel hooks. PokerTracker uses same approach ("Memory Grabber").
 
-### Memory Calibration v2 (Session 72)
+### Memory Calibration v3 (Session 75)
 
-**Problem:** Card values (0-12) are too common - millions of matches in memory.
+**Problem with v2:** Searched within 128 bytes of hand_id — but hero cards are at seat_base+0x9C, hundreds of bytes away.
 
-**Solution:** Use hand_id as unique anchor:
-1. GPT reads `hand_id` (12-digit number) from screenshot
-2. Scan memory for hand_id - essentially unique
-3. Explore nearby memory for card pattern
-4. Track across hands until stable
-
-```
-Flow:
-  F9 → Screenshot → GPT returns {hand_id, hero_cards}
-                  → Scan for hand_id bytes
-                  → Check nearby memory for [r1, r2, ?, ?, s1, s2]
-                  → Track candidates across hands
-                  → Save stable address to memory_offsets.json
+**Key insight from poker-supernova:** PokerStars stores table data behind a multi-level pointer chain. The struct layout is stable:
+```python
+TABLE = {'hand_id': 0x40, 'num_cards': 0x58, 'card_values': 0x64, 'card_suits': 0x68}
+SEAT  = {'base': 0x0218, 'interval': 0x0160, 'name': 0x00, 'card_values': 0x9C, 'card_suits': 0xA0}
+# Cards spaced 0x08 apart, ranks 0-12, suits 0-3
 ```
 
-**Files:**
-- `memory_calibrator.py` - Auto-calibration using hand_id anchor
-- `memory_offsets.json` - Saved calibration (card address)
-- `memory_tracking.json` - Candidate tracking across hands
+**New approach: dump on F9 + offline analysis**
+```
+F9 pressed
+  ├─ Screenshot saved
+  ├─ save_dump() → memory_dumps/dump_TIMESTAMP.bin + .json  (same instant)
+  ├─ GPT returns hand_id/cards/opponents (~5.5s)
+  └─ tag_dump() → writes GPT data into .json sidecar
+
+Offline:
+  python memory_calibrator.py analyze
+    → Loads all tagged dumps
+    → Searches for hand_id as int64
+    → Verifies table struct: hand_id at +0x40, hero cards at seat+0x9C
+    → Cross-checks opponent names at other seats
+    → Saves calibration to memory_offsets.json
+```
+
+**Commands:**
+```bash
+python helper_bar.py --calibrate     # Auto-dumps on each F9
+python memory_calibrator.py list     # Show tagged dumps
+python memory_calibrator.py analyze  # Search all dumps (offline)
+python memory_calibrator.py read     # Read cards after calibration
+```
+
+**Packet sniffing ruled out (Session 75 research):**
+- PokerStars uses TLS + LZHL compression + custom binary protocol
+- Protocol reversed in 2009 (daeken) but breaks every PS update
+- MITM requires patching PS binary (cert pinning) — too fragile
+- Memory reading is the only viable path to sub-second reads
 
 ---
 
@@ -246,7 +264,7 @@ onyxpoker/                    # Main repo (GitHub: apmlabs/OnyxPoker)
 ├── AGENTS.md                 # Permanent knowledge (NEVER DELETE)
 ├── AmazonQ.md                # Current state + history (NEVER DELETE)
 ├── README.md                 # Quick start (NEVER DELETE)
-├── idealistslp_extracted/    # Real PokerStars hand histories (~2300 hands, 47 files)
+├── idealistslp_extracted/    # Real PokerStars hand histories (2830 hands, 53 files)
 │   └── HH*.txt               # Raw hand history files from live play
 │
 ├── client/
@@ -268,7 +286,7 @@ onyxpoker/                    # Main repo (GitHub: apmlabs/OnyxPoker)
 │   ├── vision_detector_v2.py # V2 vision: + opponent detection + hand_id (default, ~5.5s)
 │   │
 │   │ # === MEMORY CALIBRATION (Windows only) ===
-│   ├── memory_calibrator.py  # Auto-find card address using hand_id anchor
+│   ├── memory_calibrator.py  # Auto-dump on F9 + offline analysis (v3)
 │   │
 │   │ # === SIMULATION ===
 │   ├── poker_sim.py          # Monte Carlo simulator (200k+ hands)
@@ -289,7 +307,7 @@ onyxpoker/                    # Main repo (GitHub: apmlabs/OnyxPoker)
 │   │ # === PLAYER DATABASE ===
 │   ├── build_player_stats.py # Creates player_stats.json (single source of truth)
 │   ├── opponent_lookup.py    # Lookup opponent stats
-│   ├── player_stats.json     # 613 players with archetypes + advice
+│   ├── player_stats.json     # 663 players with archetypes + advice
 │   │
 │   │ # === TESTS ===
 │   ├── run_tests.py          # Test runner (--quick, --all modes)
@@ -321,7 +339,7 @@ onyxpoker/                    # Main repo (GitHub: apmlabs/OnyxPoker)
 
 | Source | Location | Files | Scripts | Purpose |
 |--------|----------|-------|---------|---------|
-| Hand Histories | idealistslp_extracted/*.txt | 47 HH files (~2300 hands) | analyse_real_logs.py, analyze_*.py | Strategy optimization |
+| Hand Histories | idealistslp_extracted/*.txt | 53 HH files (2830 hands) | analyse_real_logs.py, analyze_*.py | Strategy optimization |
 | Session Logs | server/uploads/*.jsonl | 71 sessions + 3018 screenshots | eval_session_logs.py, eval_deep.py | Live play evaluation |
 
 ### Script Categories
