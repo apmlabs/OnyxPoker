@@ -1,5 +1,5 @@
 """
-Memory Calibrator v4.1 - Message buffer approach (container + signature scan)
+Memory Calibrator v5 - Container + message buffer approach
 
 Reads hero cards + actions from PokerStars message buffer in memory.
 
@@ -18,15 +18,18 @@ The message buffer is an array of 0x40-byte entries on the heap:
 
 Buffer discovery (two methods, container tried first):
 
-1. Container scan (primary, ~2.4x faster):
-   Search for 0x018E51F4 (unique table object signature at +0x38).
-   Validate: +0x44==0x3C, +0xE0==1, +0xE4=valid pointer.
+1. Container scan (primary, ~2.3x faster):
+   Search heap (0x08M-0x22M) for 24-byte build-independent anchor at +0x6C:
+     05000000 05000000 02000000 00000000 00000000 00030300
+   Validate: +0x38 has F4 51 XX 01, +0x44==0x3C, +0xE0==1, +0xE4=valid pointer.
    Read buf-8 from +0xE4, entry count from (+0xE8 - +0xE4) / 0x40.
-   Pick highest hand_id. Typically 1-5 raw hits per scan.
+   Typically 1 raw hit per scan. Container address cached for instant rescan.
 
 2. 0x88 signature scan (fallback):
    Search for `00 88 00 00 00 00 00 00 00 00` before first entry.
    Validate first entry (hand_id in range + seq=1), pick highest hand_id.
+
+Verified: 40/40 dumps across 2 PIDs (16496, 20236), 0 mismatches.
 """
 
 import sys
@@ -62,9 +65,21 @@ CALIBRATION_FILE = os.path.join(os.path.dirname(__file__), 'memory_offsets.json'
 
 HERO_NAME = 'idealistslp'
 ENTRY_SIZE = 0x40
-# 10-byte signature immediately before first buffer entry
+# 10-byte signature immediately before first buffer entry (fallback scan)
 BUFFER_SIGNATURE = bytes([0x00, 0x88, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00])
-CONTAINER_SIGNATURE = struct.pack('<I', 0x018E51F4)  # unique table object marker at +0x38
+# 24-byte build-independent anchor at container +0x6C (6-max: seats=5, blinds=2, flags)
+# Verified across PIDs 16496 (sig 0x01C351F4) and 20236 (sig 0x018E51F4) — 40/40 dumps
+CONTAINER_ANCHOR = (
+    struct.pack('<I', 5) +         # +0x6C: num_seats - 1
+    struct.pack('<I', 5) +         # +0x70: num_seats - 1
+    struct.pack('<I', 2) +         # +0x74: num_blinds
+    struct.pack('<I', 0) +         # +0x78: zero
+    struct.pack('<I', 0) +         # +0x7C: zero
+    struct.pack('<I', 0x00030300)  # +0x80: flags
+)
+CONTAINER_ANCHOR_OFFSET = 0x6C  # offset of anchor within container struct
+# Heap address range for container scan (covers all observed container addresses)
+HEAP_RANGE = (0x08000000, 0x22000000)
 ACTION_NAMES = {0x42: 'BET', 0x43: 'CALL', 0x45: 'RAISE', 0x46: 'FOLD', 0x50: 'POST_BB', 0x63: 'CHECK', 0x70: 'POST_SB'}
 MSG_TYPES = {0x0A: 'NEW_HAND', 0x01: 'ACTION', 0x02: 'SEATED', 0x05: 'DEAL', 0x06: 'WIN', 0x07: 'ACTION_START'}
 
@@ -383,36 +398,32 @@ def _make_read_fns(bin_path, regions):
 # ── Signature-Based Buffer Finder ────────────────────────────────────
 
 def _find_buffer_via_container(data_iter, read_bytes_fn):
-    """Find buffer by scanning for container signature 0x018E51F4.
+    """Find buffer by scanning for 24-byte container anchor at +0x6C.
 
     data_iter yields (base_addr, data_bytes) for each memory region.
-    Returns (buf_addr, entry_count, hand_id) or (None, 0, 0).
-    ~2.4x faster than 0x88 scan (1-5 hits vs ~7000).
+    Returns (buf_addr, entry_count, hand_id, container_addr) or (None, 0, 0, None).
+    Only ~1 raw hit per scan (24-byte pattern is essentially unique in ~500MB).
     """
-    best = None  # (buf_addr, entry_count, hand_id)
+    best = None  # (buf_addr, entry_count, hand_id, container_addr)
     for base, data in data_iter:
         idx = 0
         while True:
-            idx = data.find(CONTAINER_SIGNATURE, idx)
+            idx = data.find(CONTAINER_ANCHOR, idx)
             if idx < 0:
                 break
-            if idx % 4 != 0:
-                idx += 1
-                continue
-            sb = idx - 0x38  # struct_base offset within data
-            # Validate +0x44 == 0x3C
-            if sb + 0x48 > len(data) or sb < 0:
+            sb = idx - CONTAINER_ANCHOR_OFFSET  # struct_base offset within data
+            if sb < 0 or sb + 0xF0 > len(data):
                 idx += 1; continue
+            # Confirm F4 51 XX 01 at +0x38
+            if data[sb+0x38] != 0xF4 or data[sb+0x39] != 0x51 or data[sb+0x3B] != 0x01:
+                idx += 1; continue
+            # Validate +0x44 == 0x3C
             if struct.unpack('<I', data[sb+0x44:sb+0x48])[0] != 0x3C:
                 idx += 1; continue
             # Validate +0xE0 == 1
-            if sb + 0xE4 > len(data):
-                idx += 1; continue
             if struct.unpack('<I', data[sb+0xE0:sb+0xE4])[0] != 1:
                 idx += 1; continue
             # Read buf-8 pointer from +0xE4
-            if sb + 0xF0 > len(data):
-                idx += 1; continue
             bp = struct.unpack('<I', data[sb+0xE4:sb+0xE8])[0]
             if bp < 0x100000:
                 idx += 1; continue
@@ -428,28 +439,33 @@ def _find_buffer_via_container(data_iter, read_bytes_fn):
             hid = struct.unpack('<Q', hid_data)[0]
             if not (200_000_000_000 < hid < 300_000_000_000):
                 idx += 1; continue
+            container_addr = base + sb
             if not best or hid > best[2]:
-                best = (bp + 8, n_entries, hid)
+                best = (bp + 8, n_entries, hid, container_addr)
             idx += 1
-    return best or (None, 0, 0)
+    return best or (None, 0, 0, None)
 
 
 def find_buffer_in_dump(bin_path, regions, expected_cards_ascii=None):
-    """Find the message buffer. Tries container signature first (~2.4x faster),
+    """Find the message buffer. Tries container anchor first (~2.3x faster),
     falls back to 0x88 signature scan.
 
     Returns (buf_addr, entries) or (None, None).
     """
     read_bytes, read_str = _make_read_fns(bin_path, regions)
 
-    # Try container scan first (faster: 1-5 hits vs ~7000)
+    # Try container scan first — only scan heap range for speed
     def _region_iter():
         with open(bin_path, 'rb') as f:
             for r in regions:
+                if r['base'] < HEAP_RANGE[0] or r['base'] >= HEAP_RANGE[1]:
+                    continue
+                if r['size'] < 0x200:
+                    continue
                 f.seek(r['file_offset'])
                 yield r['base'], f.read(r['size'])
 
-    buf_addr, n_entries, hid = _find_buffer_via_container(_region_iter(), read_bytes)
+    buf_addr, n_entries, hid, _ = _find_buffer_via_container(_region_iter(), read_bytes)
     if buf_addr:
         entries = decode_buffer(buf_addr, read_bytes, read_str, n_entries)
         if len(entries) >= 3:
@@ -600,14 +616,42 @@ def cmd_analyze():
 
 # ── Fast Card Read (Windows runtime) ────────────────────────────────
 
+# Cached container address — stable within a table session, avoids full rescan
+_cached_container_addr = None
+
+
+def _read_buffer_from_container(container_addr, reader):
+    """Read buffer pointer from a known container. Returns (buf_addr, n_entries, hand_id) or None."""
+    data = reader.read(container_addr + 0xE0, 0x10)  # +0xE0 through +0xEC (16 bytes)
+    if not data or len(data) < 0x10:
+        return None
+    if struct.unpack('<I', data[0:4])[0] != 1:  # +0xE0 validation
+        return None
+    bp = struct.unpack('<I', data[4:8])[0]       # +0xE4: buf-8
+    ep = struct.unpack('<I', data[8:12])[0]      # +0xE8: end ptr
+    if bp < 0x100000:
+        return None
+    n = (ep - bp) // ENTRY_SIZE
+    if n < 3 or n > 200:
+        return None
+    hid_data = reader.read(bp + 8, 8)
+    if not hid_data or len(hid_data) < 8:
+        return None
+    hid = struct.unpack('<Q', hid_data)[0]
+    if not (200_000_000_000 < hid < 300_000_000_000):
+        return None
+    return (bp + 8, n, hid)
+
+
 def scan_live():
     """Scan live PS memory for current hand data.
 
-    Tries container signature first (~2.4x faster), falls back to 0x88.
+    Uses cached container address if available (instant pointer read).
+    Otherwise scans heap for 24-byte container anchor, falls back to 0x88.
     Returns dict with hand_id, hero_cards, players, actions, scan_time,
-    buf_addr, or None on failure.
+    buf_addr, container_addr, or None on failure.
     """
-    global _reader
+    global _reader, _cached_container_addr
     if _reader is None:
         _reader = ProcessReader()
     if not _reader.handle and not _reader.attach():
@@ -615,26 +659,47 @@ def scan_live():
 
     t0 = time.time()
 
-    # Try container scan first
+    # Fast path: try cached container address first (just a pointer read, <1ms)
+    if _cached_container_addr:
+        result = _read_buffer_from_container(_cached_container_addr, _reader)
+        if result:
+            buf_addr, n_entries, hid = result
+            entries = decode_buffer(buf_addr, _reader.read, _reader.read_str, n_entries)
+            hand_data = extract_hand_data(entries)
+            if hand_data and hand_data['hero_cards']:
+                hand_data['scan_time'] = round(time.time() - t0, 2)
+                hand_data['buf_addr'] = buf_addr
+                hand_data['container_addr'] = _cached_container_addr
+                hand_data['entry_count'] = len(entries)
+                return hand_data
+        # Cache miss — container moved or invalidated
+        _cached_container_addr = None
+
+    # Container scan — only heap range (skips ~47% of memory)
     def _live_iter():
         for base, size in _reader.iter_regions():
-            if size > 100 * 1024 * 1024:
+            if base < HEAP_RANGE[0] or base >= HEAP_RANGE[1]:
+                continue
+            if size < 0x200 or size > 100 * 1024 * 1024:
                 continue
             data = _reader.read(base, size)
             if data:
                 yield base, data
 
-    buf_addr, n_entries, hid = _find_buffer_via_container(_live_iter(), _reader.read)
+    buf_addr, n_entries, hid, container_addr = _find_buffer_via_container(
+        _live_iter(), _reader.read)
     if buf_addr:
+        _cached_container_addr = container_addr
         entries = decode_buffer(buf_addr, _reader.read, _reader.read_str, n_entries)
         hand_data = extract_hand_data(entries)
         if hand_data and hand_data['hero_cards']:
             hand_data['scan_time'] = round(time.time() - t0, 2)
             hand_data['buf_addr'] = buf_addr
+            hand_data['container_addr'] = container_addr
             hand_data['entry_count'] = len(entries)
             return hand_data
 
-    # Fallback: 0x88 signature scan
+    # Fallback: 0x88 signature scan (all memory)
     candidates = []
     for base, size in _reader.iter_regions():
         if size > 100 * 1024 * 1024:
@@ -673,8 +738,9 @@ def scan_live():
 
 
 def rescan_buffer(buf_addr, expected_hand_id=None):
-    """Re-read a known buffer address. <1ms. Returns hand_data or None."""
-    global _reader
+    """Re-read a known buffer address. <1ms. Returns hand_data or None.
+    If buffer moved (new hand), tries cached container for instant redirect."""
+    global _reader, _cached_container_addr
     if _reader is None or not _reader.handle:
         return None
     # Quick validate: read first 16 bytes to check hand_id still matches
@@ -683,7 +749,17 @@ def rescan_buffer(buf_addr, expected_hand_id=None):
         return None
     hid = struct.unpack('<Q', header[0:8])[0]
     if expected_hand_id and hid != expected_hand_id:
-        return None  # New hand started or buffer moved
+        # Buffer moved — try cached container for new buffer pointer
+        if _cached_container_addr:
+            result = _read_buffer_from_container(_cached_container_addr, _reader)
+            if result:
+                buf_addr = result[0]
+                # Verify new buffer has entries
+                header = _reader.read(buf_addr, 16)
+                if not header or len(header) < 16:
+                    return None
+        else:
+            return None
     entries = decode_buffer(buf_addr, _reader.read, _reader.read_str)
     hand_data = extract_hand_data(entries)
     if hand_data:

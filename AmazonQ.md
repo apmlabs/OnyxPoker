@@ -13,7 +13,7 @@
 | helper_bar.py --v1 | ✅ | V1 vision (no opponent detection) |
 | helper_bar.py --ai-only | ✅ | AI does both vision + decision |
 | helper_bar.py --calibrate | ✅ | Memory calibration mode (no longer needed — buffer verified) |
-| memory_calibrator.py | ✅ | v4.1: signature scan + rescan_buffer (<1ms) + 17 dumps verified |
+| memory_calibrator.py | ✅ | v5: 24B anchor + container cache + heap filtering, 40/40 verified |
 | test_screenshots.py | ✅ | V1 vs V2 comparison + --track mode |
 | vision_detector_lite.py | ✅ | GPT-5.2 for vision only (V1) ~3.9s |
 | vision_detector_v2.py | ✅ | GPT-5.2 + opponent detection (V2) ~5.5s |
