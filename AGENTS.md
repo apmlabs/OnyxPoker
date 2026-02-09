@@ -202,7 +202,7 @@ Key rule: gap > PFR = fish (for loose players VPIP 25+)
 **poker-supernova offsets are WRONG for our build (Session 76-77):**
 The poker-supernova repo assumed cards as int32 rank/suit at seat+0x9C with 0x08 spacing. Our analysis proved cards are stored as ASCII text in a completely different structure (message buffer). The old TABLE/SEAT offset dicts were removed from the code.
 
-### Memory Calibrator v4.1 (Sessions 78-82)
+### Memory Calibrator v5 (Sessions 78-85)
 
 **Complete rewrite of `memory_calibrator.py` based on actual message buffer findings.**
 
@@ -365,6 +365,9 @@ The buffer pointer is NOT stored directly — `buf-8` (allocation base) is store
 
 ```
 Table Object (~0x1E8 bytes, unique signature 0x018E51F4 at +0x38):
+Note: +0x38 signature is process-specific (PID 20236=0x018E51F4, PID 16496=0x01C351F4).
+Build-independent pattern: F4 51 XX 01 (bytes 0,1,3 fixed, byte 2 varies per process).
+The 24-byte anchor at +0x6C is fully build-independent and gets exactly 1 hit per ~500MB.
 +0x00-0x0F: Header (mostly zeros, sometimes pointers)
 +0x10-0x2F: 8 pointers (populated in some sessions, NULL in others)
 +0x30: table hash (stable per table, changes between tables)
@@ -394,18 +397,22 @@ Table Object (~0x1E8 bytes, unique signature 0x018E51F4 at +0x38):
 +0xEC: pointer → end of capacity
 ```
 
-**Container signature scan algorithm (25/25 verified):**
-1. Scan memory for `0x018E51F4` (4 bytes) — 1-5 raw hits
-2. Validate: `+0x44 == 0x3C` AND `+0xE0 == 1` AND `+0xE4` is valid pointer
+**Container signature scan algorithm (40/40 verified across PIDs 16496 + 20236):**
+1. Scan heap (0x08M-0x22M) for 24-byte build-independent anchor at +0x6C:
+   `05000000 05000000 02000000 00000000 00000000 00030300`
+   (seats=5, seats=5, blinds=2, zero, zero, flags=0x00030300)
+2. Validate: +0x38 has `F4 51 XX 01`, +0x44==0x3C, +0xE0==1, +0xE4=valid pointer
 3. Read hand_id from first buffer entry (buf-8 + 8)
 4. Pick container with highest hand_id (tiebreaker for stale containers)
 5. Entry count = `(+0xE8 - +0xE4) / 0x40` — free, no scanning needed
+6. Cache container address — subsequent calls just read +0xE4 (<1ms)
 
-**Performance vs 0x88 scan (in-memory, I/O excluded):**
-| Method | Raw Hits | Scan Time |
-|--------|----------|-----------|
-| 0x88 signature (current) | ~7,453 | 0.625s |
-| Container `0x018E51F4` | 1-5 | 0.225s |
+**Performance vs 0x88 scan (dump files):**
+| Method | Raw Hits | Scan Time | Notes |
+|--------|----------|-----------|-------|
+| 0x88 signature (fallback) | ~7,453 | 0.7-1.3s | Scans all ~500MB |
+| Container 24B anchor (primary) | 1 | 0.3-0.5s | Scans ~260MB heap only |
+| Cached container (after first find) | 0 | <1ms | Just reads +0xE4 pointer |
 
 End-to-end ~2.4x faster. Both I/O-bound (~2.8s for ~500MB).
 

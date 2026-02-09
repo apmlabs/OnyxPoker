@@ -1,6 +1,6 @@
 # OnyxPoker - Status Tracking
 
-**Last Updated**: February 9, 2026 12:02 UTC
+**Last Updated**: February 9, 2026 13:26 UTC
 
 ---
 
@@ -54,6 +54,45 @@
 ---
 
 ## Session History
+
+### Session 85: Build-Independent Container Scan (February 9, 2026)
+
+**Replaced process-specific container signature with 24-byte build-independent anchor. 40/40 dumps verified across 3 PIDs. ~2.3x faster than 0x88 scan with heap filtering.**
+
+**The problem:** Session 84's `CONTAINER_SIGNATURE` (`0x018E51F4`) only worked for PID 20236. PID 16496 used `0x01C351F4`. Same build, different process instance.
+
+**Deep analysis across 40 dumps (PID 8420: broken, PID 16496: 15, PID 20236: 25):**
+- Byte-level comparison: bytes 0,1,3 fixed (`F4 51 XX 01`), byte 2 varies per process
+- Mapped ALL stable fields from +0x38 to +0xF0 across both PIDs
+- Found massive fixed run: +0x5C to +0xE0 (mostly zeros + structured data)
+
+**Discovery: 24-byte anchor at +0x6C gets exactly 1 hit per ~500MB:**
+```
++0x6C: 05000000 05000000 02000000 00000000 00000000 00030300
+       seats=5  seats=5  blinds=2 zero     zero     flags
+```
+This is the table configuration (6-max, 2 blinds) — unique enough to be a fingerprint.
+
+**Three speedups stacked:**
+1. 24-byte anchor: 1 raw hit vs ~7,400 for 0x88 (no validation loop)
+2. Heap range filtering (0x08M-0x22M): skips 47% of memory
+3. Container address caching: after first find, just read 16 bytes (<1ms)
+
+**Performance (dump files):**
+| Method | Scan Time | Notes |
+|--------|-----------|-------|
+| 0x88 (old fallback) | 0.7-1.3s | Scans all ~500MB |
+| Container + heap filter (new) | 0.3-0.5s | Scans ~260MB |
+| Cached container (repeat) | <1ms | Just reads +0xE4 |
+
+**What changed in memory_calibrator.py (v4.1 → v5):**
+- `CONTAINER_SIGNATURE` → `CONTAINER_ANCHOR` (24-byte build-independent pattern)
+- `CONTAINER_ANCHOR_OFFSET = 0x6C` (was 0x38)
+- `HEAP_RANGE = (0x08000000, 0x22000000)` — region filter
+- `_cached_container_addr` — persists across calls
+- `_read_buffer_from_container()` — instant buffer pointer read from known container
+- `scan_live()` — tries cache first, then filtered container scan, then 0x88 fallback
+- `rescan_buffer()` — uses cached container when buffer moves (new hand)
 
 ### Session 84: Container Signature Discovery (February 9, 2026)
 
