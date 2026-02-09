@@ -364,25 +364,31 @@ No pointer chain needed. The buffer has a discoverable signature:
 The buffer pointer is NOT stored directly — `buf-8` (allocation base) is stored instead. A table object on the heap holds this pointer at offset +0xE4:
 
 ```
-Table Object (0x100 bytes, unique signature 0x018E51F4 at +0x38):
-+0x00: zeros (16 bytes)
-+0x10: 8 pointers (populated in some sessions, NULL in others)
-+0x30: hash/counter (varies per hand)
+Table Object (~0x1E8 bytes, unique signature 0x018E51F4 at +0x38):
++0x00-0x0F: Header (mostly zeros, sometimes pointers)
++0x10-0x2F: 8 pointers (populated in some sessions, NULL in others)
++0x30: table hash (stable per table, changes between tables)
++0x34: 0xB000XXXX — type tag + table-specific data
 +0x38: 0x018E51F4 ← UNIQUE SIGNATURE (1-5 hits per dump, stable ALL 25 dumps)
-+0x3C: small int 3-5 (varies)
-+0x40: type hash (varies)
++0x3C: variant field: small int (3-5) in 17/25 dumps, pointer in 8/25
++0x40: hand_id & 0xFFFFFFFF (low 32 bits of hand_id — verified all 25)
 +0x44: 0x0000003C ← STABLE (validation field)
 +0x48: zeros (8 bytes)
 +0x50: 0xXXFF0002 (high byte varies: 0x00/0x18/0x1D)
 +0x54: 0x080207EA ← STABLE
++0x58: timestamp (byte0=session_id, byte1=minute, byte2=sub_counter)
 +0x5C-0x68: zeros
-+0x6C: 0x00000005 (num seats - 1?)
-+0x70: 0x00000005
-+0x74: 0x00000002 (num blinds?)
-+0x80: 0x00030300 (flags)
-+0xAC: pointer → "EUR\0" (currency string)
-+0xB0: 0x00000004 (string length)
-+0xE0: 0x00000001 ← STABLE (validation field)
++0x6C: 0x00000005 ← STABLE (num seats - 1, 6-max table)
++0x70: 0x00000005 ← STABLE
++0x74: 0x00000002 ← STABLE (num blinds: SB + BB)
++0x78-0x7C: zeros
++0x80: 0x00030300 ← STABLE (flags)
++0x84-0xA8: internal state (pointer or zeros, lifecycle-dependent)
++0xAC: pointer → "EUR\0" string (currency)
++0xB0: 0x00000004 ← STABLE (string length)
++0xB4: 0x00000004 ← STABLE (string capacity)
++0xB8-0xDC: zeros
++0xE0: 0x00000001 ← STABLE
 +0xE4: pointer → buf-8 (THE BUFFER POINTER)
 +0xE8: pointer → end of used entries
 +0xEC: pointer → end of capacity

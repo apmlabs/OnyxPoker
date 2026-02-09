@@ -76,28 +76,28 @@
 | Early (003422-003800) | 0x1CB872E4 | 7 of 14 | 0x1CB87200 |
 | Late (010609-010842) | 0x19BDFE3C | 4 of 11 | 0x19BDFD58 |
 
-**Phase 3: Container structure decoded (verified across 6 containers, 2 sessions)**
+**Phase 3: Container structure decoded (verified across 25 containers, 2 sessions)**
 ```
-Table Object (0x100 bytes):
-+0x00: zeros (16 bytes)
-+0x10: 8 pointers (populated in some sessions, NULL in others)
-+0x30: hash/counter (varies per hand)
-+0x34: flags (varies)
+Table Object (~0x1E8 bytes):
++0x00-0x0F: Header (mostly zeros, sometimes pointers)
++0x10-0x2F: 8 pointers (NULL in some sessions, internal objects in others)
++0x30: table hash (stable per table, changes between tables)
++0x34: 0xB000XXXX — type tag + table-specific data
 +0x38: 0x018E51F4 ← UNIQUE SIGNATURE (stable across ALL 25 dumps)
-+0x3C: small int 3-5 (varies per hand)
-+0x40: type hash (varies per hand)
++0x3C: variant field: small int (3-5) in 17/25 dumps, pointer in 8/25
++0x40: hand_id & 0xFFFFFFFF (low 32 bits of hand_id — verified all 25)
 +0x44: 0x0000003C ← STABLE
 +0x48: zeros (8 bytes)
 +0x50: 0xXXFF0002 (high byte varies: 0x00/0x18/0x1D)
 +0x54: 0x080207EA ← STABLE
-+0x58: varies
++0x58: timestamp (byte0=session_id, byte1=minute, byte2=sub_counter)
 +0x5C-0x68: zeros
-+0x6C: 0x00000005 ← STABLE (num seats - 1?)
++0x6C: 0x00000005 ← STABLE (num seats - 1, 6-max table)
 +0x70: 0x00000005 ← STABLE
-+0x74: 0x00000002 ← STABLE (num blinds?)
++0x74: 0x00000002 ← STABLE (num blinds: SB + BB)
 +0x78-0x7C: zeros
 +0x80: 0x00030300 ← STABLE (flags)
-+0x84-0xA8: mostly zeros
++0x84-0xA8: internal state (pointer or zeros, lifecycle-dependent)
 +0xAC: pointer → "EUR\0" string (currency)
 +0xB0: 0x00000004 ← STABLE (string length)
 +0xB4: 0x00000004 ← STABLE (string capacity)
