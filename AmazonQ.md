@@ -1,6 +1,6 @@
 # OnyxPoker - Status Tracking
 
-**Last Updated**: February 9, 2026 11:37 UTC
+**Last Updated**: February 9, 2026 12:02 UTC
 
 ---
 
@@ -55,72 +55,88 @@
 
 ## Session History
 
-### Session 84: Pointer Chain Scan v2 — Container Discovery (February 9, 2026)
+### Session 84: Container Signature Discovery (February 9, 2026)
 
-**Built cross-validated pointer scanner. Found the table object that stores buf-8, but no static module pointer chain yet. Key structural findings documented.**
+**Found a unique 4-byte signature (`0x018E51F4`) that identifies the table container object in memory. 25/25 dumps verified. ~2.4x faster than the 0x88 buffer scan. Also gives entry count for free.**
 
 **What was built:**
-- `cmd_pointer_scan.py`: CE-style cross-validated reverse pointer scan. Loads 2 dumps (A, B) with different buffer addresses into RAM (~1GB total), scans all memory for pointers to buffer, cross-validates between dumps to eliminate false positives.
+- `cmd_pointer_scan.py`: CE-style cross-validated reverse pointer scan (loads 2 dumps, ~75s per level)
 
-**Level 1 scan result: 0 validated hits (99 candidates, 0 cross-validated)**
-- Nothing in memory directly stores the buffer address (`buf`) as a raw pointer
-- The buffer address changes every hand and is never stored directly
+**Phase 1: Pointer chain scan — dead end**
+- Level 1 scan: 99 candidates, 0 cross-validated — nothing stores `buf` as a raw pointer
+- `buf-8` (allocation base) IS stored on the heap (1-4 hits per dump)
+- The program stores the allocation base (includes 8-byte zero header before 0x88 marker), not the first entry address
 
-**Key discovery: buf-8 IS stored (not buf itself)**
-- Searched for `buf`, `buf-8`, `buf-10`, `buf-16` as stored values
-- `buf` = 0 hits in all dumps
-- `buf-8` = found on the heap in every dump (1-4 hits each)
-- The program's pointer targets the allocation base (which includes the 8-byte zero header before the 0x88 marker), not the first entry
+**Phase 2: Container discovery**
+- Traced buf-8 storage locations across 25 dumps
+- Found stable "container" addresses that persist within a table session:
 
-**Stable container addresses found:**
-| Session | Container Address | Dumps | Notes |
-|---------|------------------|-------|-------|
-| Early (003422-003800) | 0x1CB872E4 | 7 of 14 | Stable within table session |
-| Late (010609-010842) | 0x19BDFE3C | 4 of 11 | Different table, different address |
+| Session | Container Field Addr | Dumps | Struct Base |
+|---------|---------------------|-------|-------------|
+| Early (003422-003800) | 0x1CB872E4 | 7 of 14 | 0x1CB87200 |
+| Late (010609-010842) | 0x19BDFE3C | 4 of 11 | 0x19BDFD58 |
 
-Other dumps had different container addresses (0x1CB80E44, 0x1CB877EC, etc.) — likely stale or different table instances.
-
-**Container structure decoded (0x1CB87200 region, dump 003547):**
+**Phase 3: Container structure decoded (verified across 6 containers, 2 sessions)**
 ```
+Table Object (0x100 bytes):
 +0x00: zeros (16 bytes)
-+0x10: 8 pointers to heap objects (player/seat data?)
-+0x30: hash/counter
-+0x38: pointer to small struct
-+0x3C: 0x00000003 (count?)
-+0x40: type hash
-+0x44: 0x0000003C (size = 60?)
-+0x6C: 0x00000005, 0x00000005, 0x00000002 (counts)
-+0x80: 0x00030300 (flags)
-+0xAC: pointer → "EUR\0" string (currency!)
-+0xB0: 0x00000004 (string length)
-+0xE0: 0x00000001 (flag/count)
++0x10: 8 pointers (populated in some sessions, NULL in others)
++0x30: hash/counter (varies per hand)
++0x34: flags (varies)
++0x38: 0x018E51F4 ← UNIQUE SIGNATURE (stable across ALL 25 dumps)
++0x3C: small int 3-5 (varies per hand)
++0x40: type hash (varies per hand)
++0x44: 0x0000003C ← STABLE
++0x48: zeros (8 bytes)
++0x50: 0xXXFF0002 (high byte varies: 0x00/0x18/0x1D)
++0x54: 0x080207EA ← STABLE
++0x58: varies
++0x5C-0x68: zeros
++0x6C: 0x00000005 ← STABLE (num seats - 1?)
++0x70: 0x00000005 ← STABLE
++0x74: 0x00000002 ← STABLE (num blinds?)
++0x78-0x7C: zeros
++0x80: 0x00030300 ← STABLE (flags)
++0x84-0xA8: mostly zeros
++0xAC: pointer → "EUR\0" string (currency)
++0xB0: 0x00000004 ← STABLE (string length)
++0xB4: 0x00000004 ← STABLE (string capacity)
++0xB8-0xDC: zeros
++0xE0: 0x00000001 ← STABLE
 +0xE4: pointer → buf-8 (THE BUFFER POINTER)
-+0xE8: pointer → buf+0x558 (end of entries?)
-+0xEC: pointer → buf+0x698 (capacity?)
++0xE8: pointer → end of used entries
++0xEC: pointer → end of capacity
 ```
 
-This is clearly a **table object** — it has the currency string, entry counts, and the message buffer pointer.
+**Phase 4: Container signature scan — 25/25 verified**
 
-**module+0x01DDA74 = 0x1CB868FF — FALSE LEAD**
-- Value is rock-solid across ALL 25 dumps from PID 20236
-- BUT: address is in .text section (code), surrounded by x86 instructions (E8 FF, C6, 8D)
-- The value 0x1CB868FF is an immediate operand in a machine instruction, not a data pointer
-- Coincidence that it's near the container region
+Algorithm:
+1. Scan memory for `0x018E51F4` (4 bytes) — typically 1-5 raw hits per dump
+2. Validate: `+0x44 == 0x3C` AND `+0xE0 == 1` AND `+0xE4` is valid pointer
+3. Read hand_id from first buffer entry (buf-8 + 8)
+4. Pick container with highest hand_id (same tiebreaker as 0x88 scan)
+5. Entry count = `(end_ptr - buf_minus_8) / 0x40` — no need to scan entries
 
-**No module pointer to struct base either:**
-- Searched for any aligned pointer in module pointing to [container-0x200, container]
-- 0 hits — the table object is not directly referenced from the module
-- The chain goes through at least one more level of indirection
+**Performance (in-memory, I/O excluded):**
+| Method | Raw Hits | Scan Time | Validation |
+|--------|----------|-----------|------------|
+| 0x88 signature (current) | ~7,453 | 0.625s | Check entry structure per hit |
+| Container `0x018E51F4` | 1-5 | 0.225s | 3 field checks per hit |
 
-**What this means:**
-- The table object exists on the heap at a session-stable address
-- It stores buf-8 at offset +0xE4
-- But reaching it from the module requires a multi-level pointer chain that we haven't found yet
-- The 0x88 signature scan (2-4s) remains the production solution
-- Pointer chain would enable <1ms reads but requires more reverse engineering
+**End-to-end (including I/O): ~2.4x faster than 0x88 scan.** Both methods are I/O-bound (~2.8s to read ~500MB). The container scan wins because it has far fewer candidates to validate.
 
-**Files created:**
-- cmd_pointer_scan.py: Cross-validated pointer scanner (loads 2 dumps, ~75s per level)
+**Extra data from container (free, no additional scanning):**
+- Entry count: `(+0xE8 - +0xE4) / 0x40` = exact number of used entries
+- Capacity: `(+0xEC - +0xE4) / 0x40` = allocated entry slots
+- Currency: dereference +0xAC → "EUR" (confirms correct table)
+
+**False leads ruled out:**
+- `module+0x01DDA74 = 0x1CB868FF`: rock-solid across all 25 dumps BUT it's in .text section — an x86 instruction immediate operand, not a data pointer
+- No module pointer to struct base: searched [container-0x200, container] range, 0 module hits
+- The table object is heap-allocated and not directly referenced from the module
+
+**Files created/changed:**
+- cmd_pointer_scan.py: Cross-validated pointer scanner
 
 ### Session 83: Fix Live Polling Visibility + Incremental Upload Bug (February 9, 2026)
 

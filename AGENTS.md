@@ -364,20 +364,50 @@ No pointer chain needed. The buffer has a discoverable signature:
 The buffer pointer is NOT stored directly — `buf-8` (allocation base) is stored instead. A table object on the heap holds this pointer at offset +0xE4:
 
 ```
-Table object (heap, session-stable address):
-+0x10: 8 pointers (player/seat data?)
+Table Object (0x100 bytes, unique signature 0x018E51F4 at +0x38):
++0x00: zeros (16 bytes)
++0x10: 8 pointers (populated in some sessions, NULL in others)
++0x30: hash/counter (varies per hand)
++0x38: 0x018E51F4 ← UNIQUE SIGNATURE (1-5 hits per dump, stable ALL 25 dumps)
++0x3C: small int 3-5 (varies)
++0x40: type hash (varies)
++0x44: 0x0000003C ← STABLE (validation field)
++0x48: zeros (8 bytes)
++0x50: 0xXXFF0002 (high byte varies: 0x00/0x18/0x1D)
++0x54: 0x080207EA ← STABLE
++0x5C-0x68: zeros
++0x6C: 0x00000005 (num seats - 1?)
++0x70: 0x00000005
++0x74: 0x00000002 (num blinds?)
++0x80: 0x00030300 (flags)
 +0xAC: pointer → "EUR\0" (currency string)
-+0xE0: 0x00000001
++0xB0: 0x00000004 (string length)
++0xE0: 0x00000001 ← STABLE (validation field)
 +0xE4: pointer → buf-8 (THE BUFFER POINTER)
-+0xE8: pointer → buf+0x558 (end of entries?)
-+0xEC: pointer → buf+0x698 (capacity?)
++0xE8: pointer → end of used entries
++0xEC: pointer → end of capacity
 ```
+
+**Container signature scan algorithm (25/25 verified):**
+1. Scan memory for `0x018E51F4` (4 bytes) — 1-5 raw hits
+2. Validate: `+0x44 == 0x3C` AND `+0xE0 == 1` AND `+0xE4` is valid pointer
+3. Read hand_id from first buffer entry (buf-8 + 8)
+4. Pick container with highest hand_id (tiebreaker for stale containers)
+5. Entry count = `(+0xE8 - +0xE4) / 0x40` — free, no scanning needed
+
+**Performance vs 0x88 scan (in-memory, I/O excluded):**
+| Method | Raw Hits | Scan Time |
+|--------|----------|-----------|
+| 0x88 signature (current) | ~7,453 | 0.625s |
+| Container `0x018E51F4` | 1-5 | 0.225s |
+
+End-to-end ~2.4x faster. Both I/O-bound (~2.8s for ~500MB).
 
 Container addresses are stable within a table session but change between tables:
 - Early session: `0x1CB872E4` (7 of 14 dumps)
 - Late session: `0x19BDFE3C` (4 of 11 dumps)
 
-No static module pointer chain found yet — the table object is not directly referenced from the module. `module+0x01DDA74 = 0x1CB868FF` is a false lead (x86 instruction immediate, not data). The 0x88 signature scan (2-4s) remains the production solution.
+No static module pointer chain found — the table object is heap-allocated and not directly referenced from the module. `module+0x01DDA74 = 0x1CB868FF` is a false lead (x86 instruction immediate, not data).
 
 **HH-verified seat assignments:**
 | Dump | Seat 0 | Seat 1 | Seat 2 | Seat 3 | Seat 4 | Seat 5 |
