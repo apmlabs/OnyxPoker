@@ -1,6 +1,6 @@
 # OnyxPoker - Status Tracking
 
-**Last Updated**: February 9, 2026 13:53 UTC
+**Last Updated**: February 9, 2026 14:15 UTC
 
 ---
 
@@ -55,6 +55,32 @@
 ---
 
 ## Session History
+
+### Session 86b: Position from Memory + Bot Logging Audit (February 9, 2026)
+
+**Memory now provides exact hero position (UTG/MP/CO/BTN/SB/BB) for preflop decisions. Full bot logging audit — every click is now tracked in session JSONL.**
+
+**Position derivation (memory_calibrator.py):**
+- `extract_hand_data()` now returns `hero_seat`, `bb_seat`, `position`
+- Formula: `(hero_seat - bb_seat - 1) % n_players` → `[UTG, MP, CO, BTN, SB, BB]`
+- `hero_seat` from SEATED entry with `extra_ptr` (hero's cards), `bb_seat` from first POST_BB action
+
+**Bot logging audit — 4 issues found and fixed:**
+1. **Bot clicks not in session log**: JSONL was written during `_display_result()` (before click). Now a separate `bot_action` entry is written after each click.
+2. **Position missing from log**: Added `position` and `mode` (bot/manual) to every F9 log entry.
+3. **`pos` variable undefined for postflop**: Would have caused NameError in bot_entry. Fixed by initializing before conditional.
+4. **Preflop all-positions not logged**: Full dict now in JSONL for post-session review.
+
+**Session log structure (per hand in bot mode):**
+| Entry | `type` field | Contents |
+|-------|-------------|----------|
+| F9 analysis | (none) | `mode:"bot"`, cards, board, pot, action, position, opponents, reasoning, all memory fields, elapsed |
+| Bot click | `bot_action` | position, layout_before, layout_at_click, strategy_action, bet_size, executed, memory_status, reasoning |
+| Memory polls | `mem_poll` | entry_count, actions, community cards, re-evaluated advice |
+
+**Files changed:**
+- `memory_calibrator.py` — hero_seat, bb_seat, position derivation
+- `helper_bar.py` — position merge from memory, bot_action JSONL logging, mode/position in log entries, all_positions for preflop, pos variable fix
 
 ### Session 86: Bot Mode — Auto-Play with Button Clicking (February 9, 2026)
 
