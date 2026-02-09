@@ -331,7 +331,19 @@ def _load_tagged_dumps():
         meta_path = os.path.join(DUMP_DIR, fname)
         bin_path = meta_path.replace('.json', '.bin')
         if not os.path.exists(bin_path):
-            continue
+            # Try .bin.gz — decompress on first use
+            gz_path = bin_path + '.gz'
+            if os.path.exists(gz_path):
+                import gzip
+                log(f"Decompressing {os.path.basename(gz_path)}...")
+                with gzip.open(gz_path, 'rb') as gz, open(bin_path, 'wb') as out:
+                    while True:
+                        chunk = gz.read(1 << 20)
+                        if not chunk:
+                            break
+                        out.write(chunk)
+            else:
+                continue
         with open(meta_path) as f:
             meta = json.load(f)
         if not meta.get('hero_cards') or len(meta['hero_cards']) < 2:
