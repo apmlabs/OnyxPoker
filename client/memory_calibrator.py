@@ -1,5 +1,5 @@
 """
-Memory Calibrator v4 - Message buffer approach (signature-based search)
+Memory Calibrator v4.1 - Message buffer approach (container + signature scan)
 
 Reads hero cards + actions from PokerStars message buffer in memory.
 
@@ -16,17 +16,17 @@ The message buffer is an array of 0x40-byte entries on the heap:
   +0x28: extra_ptr (4B) -> hero's type 0x02: 4-byte ASCII cards (e.g. "8h5d")
   +0x2C: extra_len (4B)
 
-Buffer discovery: 10-byte signature `00 88 00 00 00 00 00 00 00 00` immediately
-precedes the first entry. Scan memory for signature, validate first entry
-(hand_id in range + seq=1), pick highest hand_id = current hand.
+Buffer discovery (two methods, container tried first):
 
-On Windows (live):
-  helper_bar.py calls save_dump() on F9, tag_dump() after GPT returns.
+1. Container scan (primary, ~2.4x faster):
+   Search for 0x018E51F4 (unique table object signature at +0x38).
+   Validate: +0x44==0x3C, +0xE0==1, +0xE4=valid pointer.
+   Read buf-8 from +0xE4, entry count from (+0xE8 - +0xE4) / 0x40.
+   Pick highest hand_id. Typically 1-5 raw hits per scan.
 
-Offline analysis:
-  python memory_calibrator.py list      # Show tagged dumps
-  python memory_calibrator.py analyze   # Verify message buffer in all dumps
-  python memory_calibrator.py read      # Read cards (Windows only)
+2. 0x88 signature scan (fallback):
+   Search for `00 88 00 00 00 00 00 00 00 00` before first entry.
+   Validate first entry (hand_id in range + seq=1), pick highest hand_id.
 """
 
 import sys
@@ -64,6 +64,7 @@ HERO_NAME = 'idealistslp'
 ENTRY_SIZE = 0x40
 # 10-byte signature immediately before first buffer entry
 BUFFER_SIGNATURE = bytes([0x00, 0x88, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00])
+CONTAINER_SIGNATURE = struct.pack('<I', 0x018E51F4)  # unique table object marker at +0x38
 ACTION_NAMES = {0x42: 'BET', 0x43: 'CALL', 0x45: 'RAISE', 0x46: 'FOLD', 0x50: 'POST_BB', 0x63: 'CHECK', 0x70: 'POST_SB'}
 MSG_TYPES = {0x0A: 'NEW_HAND', 0x01: 'ACTION', 0x02: 'SEATED', 0x05: 'DEAL', 0x06: 'WIN', 0x07: 'ACTION_START'}
 
@@ -381,16 +382,80 @@ def _make_read_fns(bin_path, regions):
 
 # ── Signature-Based Buffer Finder ────────────────────────────────────
 
-def find_buffer_in_dump(bin_path, regions, expected_cards_ascii=None):
-    """Find the message buffer using the 0x88 signature.
+def _find_buffer_via_container(data_iter, read_bytes_fn):
+    """Find buffer by scanning for container signature 0x018E51F4.
 
-    Scans for `00 88 00 00 00 00 00 00 00 00`, validates the first entry
-    (hand_id in 200B-300B, seq=1), picks highest hand_id. Tiebreak by
-    checking which candidate has readable hero name_ptr.
+    data_iter yields (base_addr, data_bytes) for each memory region.
+    Returns (buf_addr, entry_count, hand_id) or (None, 0, 0).
+    ~2.4x faster than 0x88 scan (1-5 hits vs ~7000).
+    """
+    best = None  # (buf_addr, entry_count, hand_id)
+    for base, data in data_iter:
+        idx = 0
+        while True:
+            idx = data.find(CONTAINER_SIGNATURE, idx)
+            if idx < 0:
+                break
+            if idx % 4 != 0:
+                idx += 1
+                continue
+            sb = idx - 0x38  # struct_base offset within data
+            # Validate +0x44 == 0x3C
+            if sb + 0x48 > len(data) or sb < 0:
+                idx += 1; continue
+            if struct.unpack('<I', data[sb+0x44:sb+0x48])[0] != 0x3C:
+                idx += 1; continue
+            # Validate +0xE0 == 1
+            if sb + 0xE4 > len(data):
+                idx += 1; continue
+            if struct.unpack('<I', data[sb+0xE0:sb+0xE4])[0] != 1:
+                idx += 1; continue
+            # Read buf-8 pointer from +0xE4
+            if sb + 0xF0 > len(data):
+                idx += 1; continue
+            bp = struct.unpack('<I', data[sb+0xE4:sb+0xE8])[0]
+            if bp < 0x100000:
+                idx += 1; continue
+            # Entry count from +0xE8
+            ep = struct.unpack('<I', data[sb+0xE8:sb+0xEC])[0]
+            n_entries = (ep - bp) // ENTRY_SIZE
+            if n_entries < 3 or n_entries > 200:
+                idx += 1; continue
+            # Read hand_id from first buffer entry (bp + 8)
+            hid_data = read_bytes_fn(bp + 8, 8)
+            if not hid_data or len(hid_data) < 8:
+                idx += 1; continue
+            hid = struct.unpack('<Q', hid_data)[0]
+            if not (200_000_000_000 < hid < 300_000_000_000):
+                idx += 1; continue
+            if not best or hid > best[2]:
+                best = (bp + 8, n_entries, hid)
+            idx += 1
+    return best or (None, 0, 0)
+
+
+def find_buffer_in_dump(bin_path, regions, expected_cards_ascii=None):
+    """Find the message buffer. Tries container signature first (~2.4x faster),
+    falls back to 0x88 signature scan.
 
     Returns (buf_addr, entries) or (None, None).
     """
     read_bytes, read_str = _make_read_fns(bin_path, regions)
+
+    # Try container scan first (faster: 1-5 hits vs ~7000)
+    def _region_iter():
+        with open(bin_path, 'rb') as f:
+            for r in regions:
+                f.seek(r['file_offset'])
+                yield r['base'], f.read(r['size'])
+
+    buf_addr, n_entries, hid = _find_buffer_via_container(_region_iter(), read_bytes)
+    if buf_addr:
+        entries = decode_buffer(buf_addr, read_bytes, read_str, n_entries)
+        if len(entries) >= 3:
+            return buf_addr, entries
+
+    # Fallback: 0x88 signature scan
     candidates = []  # (buf_addr, hand_id)
 
     with open(bin_path, 'rb') as f:
@@ -536,8 +601,9 @@ def cmd_analyze():
 # ── Fast Card Read (Windows runtime) ────────────────────────────────
 
 def scan_live():
-    """Scan live PS memory for current hand data using 0x88 signature.
+    """Scan live PS memory for current hand data.
 
+    Tries container signature first (~2.4x faster), falls back to 0x88.
     Returns dict with hand_id, hero_cards, players, actions, scan_time,
     buf_addr, or None on failure.
     """
@@ -548,8 +614,28 @@ def scan_live():
         return None
 
     t0 = time.time()
-    candidates = []
 
+    # Try container scan first
+    def _live_iter():
+        for base, size in _reader.iter_regions():
+            if size > 100 * 1024 * 1024:
+                continue
+            data = _reader.read(base, size)
+            if data:
+                yield base, data
+
+    buf_addr, n_entries, hid = _find_buffer_via_container(_live_iter(), _reader.read)
+    if buf_addr:
+        entries = decode_buffer(buf_addr, _reader.read, _reader.read_str, n_entries)
+        hand_data = extract_hand_data(entries)
+        if hand_data and hand_data['hero_cards']:
+            hand_data['scan_time'] = round(time.time() - t0, 2)
+            hand_data['buf_addr'] = buf_addr
+            hand_data['entry_count'] = len(entries)
+            return hand_data
+
+    # Fallback: 0x88 signature scan
+    candidates = []
     for base, size in _reader.iter_regions():
         if size > 100 * 1024 * 1024:
             continue
