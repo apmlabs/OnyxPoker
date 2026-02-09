@@ -71,7 +71,7 @@ class StrategyEngine:
         # Postflop
         return self._postflop(cards, board, pot, to_call, position, table_data)
     
-    def _preflop(self, hand: str, position: str, to_call: float, big_blind: float = 0.02, table_data: Dict[str, Any] = None) -> Dict[str, Any]:
+    def _preflop(self, hand: str, position: str, to_call: float, big_blind: float = 0.05, table_data: Dict[str, Any] = None) -> Dict[str, Any]:
         """Preflop decision with call thresholds."""
         
         # Determine what we're facing based on to_call relative to big_blind
