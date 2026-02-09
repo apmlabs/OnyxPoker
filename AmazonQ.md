@@ -1,6 +1,6 @@
 # OnyxPoker - Status Tracking
 
-**Last Updated**: February 8, 2026 23:48 UTC
+**Last Updated**: February 9, 2026 11:37 UTC
 
 ---
 
@@ -54,6 +54,73 @@
 ---
 
 ## Session History
+
+### Session 84: Pointer Chain Scan v2 — Container Discovery (February 9, 2026)
+
+**Built cross-validated pointer scanner. Found the table object that stores buf-8, but no static module pointer chain yet. Key structural findings documented.**
+
+**What was built:**
+- `cmd_pointer_scan.py`: CE-style cross-validated reverse pointer scan. Loads 2 dumps (A, B) with different buffer addresses into RAM (~1GB total), scans all memory for pointers to buffer, cross-validates between dumps to eliminate false positives.
+
+**Level 1 scan result: 0 validated hits (99 candidates, 0 cross-validated)**
+- Nothing in memory directly stores the buffer address (`buf`) as a raw pointer
+- The buffer address changes every hand and is never stored directly
+
+**Key discovery: buf-8 IS stored (not buf itself)**
+- Searched for `buf`, `buf-8`, `buf-10`, `buf-16` as stored values
+- `buf` = 0 hits in all dumps
+- `buf-8` = found on the heap in every dump (1-4 hits each)
+- The program's pointer targets the allocation base (which includes the 8-byte zero header before the 0x88 marker), not the first entry
+
+**Stable container addresses found:**
+| Session | Container Address | Dumps | Notes |
+|---------|------------------|-------|-------|
+| Early (003422-003800) | 0x1CB872E4 | 7 of 14 | Stable within table session |
+| Late (010609-010842) | 0x19BDFE3C | 4 of 11 | Different table, different address |
+
+Other dumps had different container addresses (0x1CB80E44, 0x1CB877EC, etc.) — likely stale or different table instances.
+
+**Container structure decoded (0x1CB87200 region, dump 003547):**
+```
++0x00: zeros (16 bytes)
++0x10: 8 pointers to heap objects (player/seat data?)
++0x30: hash/counter
++0x38: pointer to small struct
++0x3C: 0x00000003 (count?)
++0x40: type hash
++0x44: 0x0000003C (size = 60?)
++0x6C: 0x00000005, 0x00000005, 0x00000002 (counts)
++0x80: 0x00030300 (flags)
++0xAC: pointer → "EUR\0" string (currency!)
++0xB0: 0x00000004 (string length)
++0xE0: 0x00000001 (flag/count)
++0xE4: pointer → buf-8 (THE BUFFER POINTER)
++0xE8: pointer → buf+0x558 (end of entries?)
++0xEC: pointer → buf+0x698 (capacity?)
+```
+
+This is clearly a **table object** — it has the currency string, entry counts, and the message buffer pointer.
+
+**module+0x01DDA74 = 0x1CB868FF — FALSE LEAD**
+- Value is rock-solid across ALL 25 dumps from PID 20236
+- BUT: address is in .text section (code), surrounded by x86 instructions (E8 FF, C6, 8D)
+- The value 0x1CB868FF is an immediate operand in a machine instruction, not a data pointer
+- Coincidence that it's near the container region
+
+**No module pointer to struct base either:**
+- Searched for any aligned pointer in module pointing to [container-0x200, container]
+- 0 hits — the table object is not directly referenced from the module
+- The chain goes through at least one more level of indirection
+
+**What this means:**
+- The table object exists on the heap at a session-stable address
+- It stores buf-8 at offset +0xE4
+- But reaching it from the module requires a multi-level pointer chain that we haven't found yet
+- The 0x88 signature scan (2-4s) remains the production solution
+- Pointer chain would enable <1ms reads but requires more reverse engineering
+
+**Files created:**
+- cmd_pointer_scan.py: Cross-validated pointer scanner (loads 2 dumps, ~75s per level)
 
 ### Session 83: Fix Live Polling Visibility + Incremental Upload Bug (February 9, 2026)
 

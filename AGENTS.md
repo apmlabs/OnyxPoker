@@ -359,6 +359,26 @@ No pointer chain needed. The buffer has a discoverable signature:
 
 **Verified: 5/5 dumps, 0 errors, avg 2.6s per dump.**
 
+**Pointer Chain Investigation (Session 84):**
+
+The buffer pointer is NOT stored directly — `buf-8` (allocation base) is stored instead. A table object on the heap holds this pointer at offset +0xE4:
+
+```
+Table object (heap, session-stable address):
++0x10: 8 pointers (player/seat data?)
++0xAC: pointer → "EUR\0" (currency string)
++0xE0: 0x00000001
++0xE4: pointer → buf-8 (THE BUFFER POINTER)
++0xE8: pointer → buf+0x558 (end of entries?)
++0xEC: pointer → buf+0x698 (capacity?)
+```
+
+Container addresses are stable within a table session but change between tables:
+- Early session: `0x1CB872E4` (7 of 14 dumps)
+- Late session: `0x19BDFE3C` (4 of 11 dumps)
+
+No static module pointer chain found yet — the table object is not directly referenced from the module. `module+0x01DDA74 = 0x1CB868FF` is a false lead (x86 instruction immediate, not data). The 0x88 signature scan (2-4s) remains the production solution.
+
 **HH-verified seat assignments:**
 | Dump | Seat 0 | Seat 1 | Seat 2 | Seat 3 | Seat 4 | Seat 5 |
 |------|--------|--------|--------|--------|--------|--------|
