@@ -557,6 +557,9 @@ class HelperBar:
                         result['memory_actions'] = mr.get('actions')
                         result['memory_community'] = mr.get('community_cards')
                         result['memory_scan_time'] = mr.get('scan_time')
+                        result['memory_container_addr'] = mr.get('container_addr')
+                        result['memory_buf_addr'] = mr.get('buf_addr')
+                        result['memory_entry_count'] = mr.get('entry_count')
                         mc = mr.get('hero_cards')
                         if mc and len(mc) == 4:
                             gpt_cards = result.get('hero_cards', [])
@@ -712,6 +715,7 @@ class HelperBar:
         entry = {
             'timestamp': datetime.now().isoformat(),
             'type': 'mem_poll',
+            'hand_id': hd.get('hand_id'),
             'memory_cards': hd.get('hero_cards'),
             'memory_community': hd.get('community_cards', []),
             'memory_actions': hd.get('actions', []),
@@ -906,6 +910,12 @@ class HelperBar:
             log_entry['memory_community'] = result['memory_community']
         if result.get('memory_actions'):
             log_entry['memory_actions'] = result['memory_actions']
+        if result.get('memory_container_addr'):
+            log_entry['memory_container_addr'] = hex(result['memory_container_addr'])
+        if result.get('memory_buf_addr'):
+            log_entry['memory_buf_addr'] = hex(result['memory_buf_addr'])
+        if result.get('memory_entry_count'):
+            log_entry['memory_entry_count'] = result['memory_entry_count']
         
         # UI logs - what user sees
         if hasattr(self, 'ui_log_buffer') and self.ui_log_buffer:
