@@ -575,6 +575,11 @@ class HelperBar:
                             result['hero_cards'] = mem_cards
                         if not result.get('hand_id') and mr.get('hand_id'):
                             result['hand_id'] = mr['hand_id']
+                        # Position from memory (hero_seat + bb_seat → exact position)
+                        if mr.get('position'):
+                            result['position'] = mr['position']
+                            self.root.after(0, lambda p=mr['position']:
+                                self.log(f"[MEM] Position: {p}", "DEBUG"))
                         st = mr.get('scan_time', '?')
                         self.root.after(0, lambda s=st, c=mr.get('hero_cards'):
                             self.log(f"[MEM] {c} hand={mr.get('hand_id')} ({s}s)", "INFO"))
@@ -1219,26 +1224,15 @@ class HelperBar:
                 bet_size = result.get('bet_size') or 0
                 board = result.get('community_cards', [])
 
-                # Preflop: pick action for best available position
-                # (strategy returns all_positions for preflop)
+                # Preflop: pick action for correct position
                 all_pos = result.get('all_positions')
                 if all_pos and not board:
-                    # Use the position-specific action
-                    # We don't know our exact position, so use the to_call-based decision
-                    # Re-run with actual to_call from the screenshot
-                    to_call = result.get('to_call') or 0
-                    big_blind = result.get('big_blind') or 0.05
-                    if to_call and to_call > big_blind:
-                        # Facing a raise — check if any position says call/raise
-                        # Use BTN as default (most common open position)
-                        pos_result = all_pos.get('BTN', all_pos.get('CO', {}))
-                        action = pos_result.get('action', 'fold')
-                        bet_size = pos_result.get('bet_size') or 0
-                    else:
-                        # No raise — use BTN open range
-                        pos_result = all_pos.get('BTN', {})
-                        action = pos_result.get('action', 'fold')
-                        bet_size = pos_result.get('bet_size') or 0
+                    # Use memory position if available, else BTN as default
+                    pos = result.get('position', 'BTN')
+                    pos_result = all_pos.get(pos, all_pos.get('BTN', {}))
+                    action = pos_result.get('action', 'fold')
+                    bet_size = pos_result.get('bet_size') or 0
+                    self.log(f"[BOT] Preflop {pos}: {action}", "DEBUG")
 
                 # Fresh screenshot right before clicking (layout may have changed)
                 img2 = self._bot_take_screenshot(win)

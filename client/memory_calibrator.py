@@ -166,6 +166,8 @@ def extract_hand_data(entries):
     community_cards = []
     players = {}
     actions = []
+    hero_seat = None
+    bb_seat = None
 
     for e in entries:
         if e['msg_type'] == 0x05:
@@ -181,12 +183,27 @@ def extract_hand_data(entries):
                 players[e['seat']] = e['name']
                 if e['extra'] and e['name'] == HERO_NAME:
                     hero_cards = e['extra']
+                    hero_seat = e['seat']
         elif e['msg_type'] == 0x01:
             act = ACTION_NAMES.get(e['action_code'], f"0x{e['action_code']:02X}")
             actions.append((e['name'], act, e['amount']))
+            if e['action_code'] == 0x50 and bb_seat is None:  # POST_BB
+                bb_seat = e['seat']
+
+    # Derive position from hero_seat relative to BB in 6-max
+    position = None
+    if hero_seat is not None and bb_seat is not None and len(players) > 0:
+        n = len(players)  # number of seats (typically 6)
+        # Seats after BB in clockwise order: UTG, MP, CO, BTN, SB, BB
+        # Distance from BB+1 (UTG) determines position
+        positions_6max = ['UTG', 'MP', 'CO', 'BTN', 'SB', 'BB']
+        dist = (hero_seat - bb_seat - 1) % n
+        if dist < len(positions_6max):
+            position = positions_6max[dist]
 
     return {'hand_id': hand_id, 'hero_cards': hero_cards, 'players': players,
-            'actions': actions, 'community_cards': community_cards}
+            'actions': actions, 'community_cards': community_cards,
+            'hero_seat': hero_seat, 'bb_seat': bb_seat, 'position': position}
 
 
 # ── Process Reader (Windows only) ───────────────────────────────────
