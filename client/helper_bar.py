@@ -878,6 +878,7 @@ class HelperBar:
         log_entry = {
             'timestamp': datetime.now().isoformat(),
             'screenshot': screenshot_name,
+            'mode': 'bot' if BOT_MODE else 'manual',
             'hand_id': result.get('hand_id'),
             'hero_cards': cards,
             'board': board,
@@ -887,6 +888,7 @@ class HelperBar:
             'to_call': to_call,
             'big_blind': result.get('big_blind', 0.05),
             'num_players': result.get('num_players', 2),
+            'position': result.get('position'),
             'is_aggressor': result.get('is_aggressor'),
             'opponents': result.get('opponents', []),
             'reasoning': reasoning,
@@ -923,6 +925,14 @@ class HelperBar:
             log_entry['memory_buf_addr'] = hex(result['memory_buf_addr'])
         if result.get('memory_entry_count'):
             log_entry['memory_entry_count'] = result['memory_entry_count']
+        
+        # Preflop: log all position actions for review
+        all_positions = result.get('all_positions')
+        if all_positions and not board:
+            log_entry['all_positions'] = {
+                p: {'action': v.get('action'), 'bet_size': v.get('bet_size')}
+                for p, v in all_positions.items()
+            }
         
         # UI logs - what user sees
         if hasattr(self, 'ui_log_buffer') and self.ui_log_buffer:
@@ -1223,12 +1233,11 @@ class HelperBar:
                 action = result.get('action', 'fold')
                 bet_size = result.get('bet_size') or 0
                 board = result.get('community_cards', [])
+                pos = result.get('position', 'BTN')
 
                 # Preflop: pick action for correct position
                 all_pos = result.get('all_positions')
                 if all_pos and not board:
-                    # Use memory position if available, else BTN as default
-                    pos = result.get('position', 'BTN')
                     pos_result = all_pos.get(pos, all_pos.get('BTN', {}))
                     action = pos_result.get('action', 'fold')
                     bet_size = pos_result.get('bet_size') or 0
@@ -1246,12 +1255,30 @@ class HelperBar:
                 logger = lambda msg, lvl="DEBUG": self.root.after(0, lambda: self.log(msg, lvl))
                 executed = execute_action(action, bet_size, img2, win_rect, logger)
 
+                # Log bot execution to session JSONL
+                bot_entry = {
+                    'timestamp': datetime.now().isoformat(),
+                    'type': 'bot_action',
+                    'hand_id': result.get('hand_id'),
+                    'hero_cards': result.get('hero_cards'),
+                    'board': board,
+                    'position': pos,
+                    'layout_before': layout,
+                    'layout_at_click': layout2,
+                    'strategy_action': action,
+                    'bet_size': bet_size,
+                    'executed': executed,
+                    'memory_status': result.get('memory_status'),
+                    'memory_position': result.get('position'),
+                    'reasoning': result.get('reasoning', ''),
+                }
+                with open(SESSION_LOG, 'a') as f:
+                    f.write(json.dumps(bot_entry) + '\n')
+
                 if executed:
-                    self.log(f"[BOT] Executed: {action.upper()} {f'${bet_size:.2f}' if bet_size else ''}", "DECISION")
+                    self.log(f"[BOT] Executed: {action.upper()} {f'{bet_size:.2f}' if bet_size else ''}", "DECISION")
                 else:
                     self.log(f"[BOT] Could not execute {action}", "DEBUG")
-
-                # Wait for action to register before next cycle
                 time.sleep(1.0)
 
             except Exception as e:
