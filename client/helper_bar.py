@@ -631,39 +631,54 @@ class HelperBar:
             time.sleep(0.2)
 
     def _update_mem_display(self, hd, entry_count=0):
-        """Update the right panel with live advice from memory data + log it."""
-        self.stats_text.delete('1.0', 'end')
-
+        """Update the right panel: keep F9 advice at top, append live action feed below."""
         mc = hd.get('hero_cards', '')
         cc = hd.get('community_cards', [])
+        actions = hd.get('actions', [])
 
         # Re-evaluate strategy with memory data
         advice = self._reeval_with_memory(hd)
+
+        # Build the live action feed
+        action_lines = []
+        deal_count = 0
+        for name, act_code, amt in actions:
+            if act_code in ('POST_SB', 'POST_BB'):
+                continue
+            if act_code == 'DEAL' or name is None:
+                deal_count += 1
+                street = {1: 'FLOP', 2: 'TURN', 3: 'RIVER'}.get(deal_count, 'DEAL')
+                board_at = cc[:3] if deal_count == 1 else (cc[:4] if deal_count == 2 else cc)
+                action_lines.append(('street', f"--- {street} {' '.join(board_at)} ---"))
+                continue
+            line = f"{name or '?'}: {act_code}"
+            if amt > 0:
+                line += f" {amt/100:.2f}"
+            is_hero = (name == 'idealistslp')
+            action_lines.append(('hero' if is_hero else 'villain', line))
+
+        # Rebuild right panel: F9 advice stays, live feed updates below
+        self.stats_text.delete('1.0', 'end')
+
+        # Section 1: Current advice from re-evaluation (or F9 original)
         act_str = ''
         reason_str = ''
         if advice:
             act = advice.get('action', '').upper()
             amt = advice.get('bet_size')
-            if amt and act in ('BET', 'RAISE'):
-                act_str = f"{act} {amt:.2f}"
-            else:
-                act_str = act
-            # LINE 1: THE ACTION — what you do right now
+            act_str = f"{act} {amt:.2f}" if amt and act in ('BET', 'RAISE') else act
             self.stats_text.insert('end', f"=> {act_str}\n", 'ACTION')
-            # LINE 2: why
             reason_str = advice.get('reasoning', '')
             if reason_str:
                 self.stats_text.insert('end', f"{reason_str}\n", 'DRAW')
-            # LINE 3: hand strength
             ha = advice.get('hand_analysis', {})
             if ha and ha.get('valid'):
                 self.stats_text.insert('end', self._hand_strength_str(ha) + '\n', 'HAND')
         else:
-            # No advice yet (preflop, no board) — show cards
             cards_str = f"{mc[0:2]} {mc[2:4]}" if mc and len(mc) == 4 else '??'
             self.stats_text.insert('end', f"[MEM] {cards_str} (waiting...)\n", 'MEM')
 
-        # Opponent info from last GPT result
+        # Section 2: Opponent info from last GPT result
         lr = self._last_result
         if lr and lr.get('opponent_stats'):
             self.stats_text.insert('end', '---\n', 'MEMDATA')
@@ -672,36 +687,24 @@ class HelperBar:
                     self.stats_text.insert('end',
                         f"{opp['name']} {opp['archetype'].upper()} - {opp['advice']}\n", 'OPPONENT')
 
-        # Memory actions at bottom with street markers
-        actions = hd.get('actions', [])
-        if actions:
-            self.stats_text.insert('end', '---\n', 'MEMDATA')
-            deal_count = 0
-            for name, act_code, amt in actions:
-                if act_code in ('POST_SB', 'POST_BB'):
-                    continue
-                if act_code == 'DEAL' or name is None:
-                    deal_count += 1
-                    street = {1: 'FLOP', 2: 'TURN', 3: 'RIVER'}.get(deal_count, 'DEAL')
-                    board_at = cc[:3] if deal_count == 1 else (cc[:4] if deal_count == 2 else cc)
-                    self.stats_text.insert('end', f"--- {street} {' '.join(board_at)} ---\n", 'DRAW')
-                    continue
-                line = f"{name or '?'}: {act_code}"
-                if amt > 0:
-                    line += f" {amt/100:.2f}"
-                tag = 'MEM' if name == 'idealistslp' else 'MEMDATA'
-                self.stats_text.insert('end', line + '\n', tag)
+        # Section 3: Live action feed from memory
+        if action_lines:
+            self.stats_text.insert('end', '--- LIVE ---\n', 'MEM')
+            for kind, line in action_lines:
+                if kind == 'street':
+                    self.stats_text.insert('end', line + '\n', 'DRAW')
+                elif kind == 'hero':
+                    self.stats_text.insert('end', line + '\n', 'MEM')
+                else:
+                    self.stats_text.insert('end', line + '\n', 'MEMDATA')
 
-        # Log the live update to left panel
-        if act_str:
-            self.log(f"[MEM LIVE] => {act_str} | {reason_str}", "DECISION")
-        else:
-            self.log(f"[MEM LIVE] entries={entry_count}", "DEBUG")
-        
-        # Update time label to show polling is active
+        # Log to left panel (compact)
+        self.log(f"[MEM LIVE] ({entry_count}) {act_str}", "DEBUG")
+
+        # Update time label
         self.time_label.config(text=f"LIVE ({entry_count})")
 
-        # Log to session file so we capture live re-evaluations
+        # Log to session file
         self._log_mem_update(hd, advice)
 
     def _log_mem_update(self, hd, advice):

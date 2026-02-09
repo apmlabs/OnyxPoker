@@ -92,6 +92,8 @@ def sync_logs(server_files):
         content_size = len(content.encode('utf-8'))
         if server_size == content_size:
             continue  # synced (line ending difference only)
+        if server_size >= content_size and server_size > 0:
+            continue  # server has same or larger version (old append bug inflated it)
         if server_size > 0 and content_size > server_size:
             # Server has older version — send only new content (append)
             to_upload.append((name, path, content_size, server_size, content))
