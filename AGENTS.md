@@ -446,6 +446,7 @@ onyxpoker/                    # Main repo (GitHub: apmlabs/OnyxPoker)
 ├── client/
 │   │ # === CORE (live play) ===
 │   ├── helper_bar.py         # Main UI (F9=advice, F10=bot, F11=stop, F12=hide)
+│   ├── bot_clicker.py        # Bot mode: button detection + clicking (pyautogui)
 │   ├── poker_logic/          # Refactored package (Session 73-74)
 │   │   ├── __init__.py       # Re-exports everything (existing imports unchanged)
 │   │   ├── card_utils.py     # RANKS, SUITS, RANK_VAL, parse_card, equity, outs

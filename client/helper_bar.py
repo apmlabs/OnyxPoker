@@ -32,6 +32,7 @@ parser.add_argument('--v1', action='store_true', help='Use V1 vision (no player 
 parser.add_argument('--v2', action='store_true', default=True, help='Use V2 vision with player detection (default)')
 parser.add_argument('--strategy', type=str, default=DEFAULT_STRATEGY, help=f'Strategy to use (default: {DEFAULT_STRATEGY})')
 parser.add_argument('--calibrate', action='store_true', help='Memory calibration mode: scan memory alongside screenshots')
+parser.add_argument('--bot', action='store_true', help='Enable bot mode: auto-plays using strategy + clicks buttons')
 args = parser.parse_args()
 
 # Default: V2 vision with player names + opponent stats
@@ -43,6 +44,7 @@ V1_MODE = args.v1
 VISION_V2_MODE = args.v2
 STRATEGY = args.strategy
 CALIBRATE_MODE = args.calibrate
+BOT_MODE = args.bot
 
 if AI_ONLY_MODE:
     from vision_detector import VisionDetector, MODEL
@@ -1149,33 +1151,125 @@ class HelperBar:
                 self.stats_text.insert('end', line + '\n', tag)
 
     def on_f10(self):
-        """Toggle bot mode"""
+        """Toggle bot mode — auto-plays hands using strategy + clicks buttons"""
         if self.bot_running:
             self.bot_running = False
-            #self.status_label.config(text="Stopped", fg='#ff8800')
             self.log("Bot stopped", "INFO")
         else:
             self.bot_running = True
-            #self.status_label.config(text="Bot Running", fg='#00ffff')
-            self.log("Bot started (F11 to stop)", "INFO")
+            self._bot_hand_id = None  # Track current hand to detect new hands
+            self.log("BOT STARTED (F11 to stop)", "INFO")
             thread = threading.Thread(target=self._bot_loop, daemon=True)
             thread.start()
 
+    def _bot_get_window(self):
+        """Find the PokerStars window and return (window, rect) or (None, None)."""
+        try:
+            for w in gw.getAllWindows():
+                if w.title and 'PokerStars' in w.title and 'Logged In' in w.title:
+                    return w, (w.left, w.top, w.width, w.height)
+        except Exception:
+            pass
+        return None, None
+
+    def _bot_take_screenshot(self, win):
+        """Take screenshot of poker window, return PIL Image."""
+        region = (win.left, win.top, win.width, win.height)
+        return pyautogui.screenshot(region=region)
+
     def _bot_loop(self):
-        """Continuous bot loop"""
+        """Main bot loop: detect turn via screenshot, analyze, click."""
+        from bot_clicker import detect_layout, execute_action
+
         while self.bot_running:
-            self.on_f9()
-            # Wait for analysis to complete
-            while self._analyzing:
-                time.sleep(0.1)
-            time.sleep(2)  # Wait between hands
+            try:
+                # Find poker window
+                win, win_rect = self._bot_get_window()
+                if not win:
+                    time.sleep(1)
+                    continue
+
+                # Take screenshot to check if it's our turn
+                img = self._bot_take_screenshot(win)
+                layout = detect_layout(img)
+
+                if layout is None:
+                    # Not our turn — poll quickly
+                    time.sleep(0.3)
+                    continue
+
+                # It's our turn — run full analysis (same as F9)
+                self.log(f"[BOT] Our turn ({layout})", "INFO")
+                self.on_f9()
+
+                # Wait for analysis to complete
+                while self._analyzing and self.bot_running:
+                    time.sleep(0.1)
+
+                if not self.bot_running:
+                    break
+
+                # Get the decision from last result
+                result = self._last_result
+                if not result:
+                    time.sleep(0.5)
+                    continue
+
+                action = result.get('action', 'fold')
+                bet_size = result.get('bet_size') or 0
+                board = result.get('community_cards', [])
+
+                # Preflop: pick action for best available position
+                # (strategy returns all_positions for preflop)
+                all_pos = result.get('all_positions')
+                if all_pos and not board:
+                    # Use the position-specific action
+                    # We don't know our exact position, so use the to_call-based decision
+                    # Re-run with actual to_call from the screenshot
+                    to_call = result.get('to_call') or 0
+                    big_blind = result.get('big_blind') or 0.05
+                    if to_call and to_call > big_blind:
+                        # Facing a raise — check if any position says call/raise
+                        # Use BTN as default (most common open position)
+                        pos_result = all_pos.get('BTN', all_pos.get('CO', {}))
+                        action = pos_result.get('action', 'fold')
+                        bet_size = pos_result.get('bet_size') or 0
+                    else:
+                        # No raise — use BTN open range
+                        pos_result = all_pos.get('BTN', {})
+                        action = pos_result.get('action', 'fold')
+                        bet_size = pos_result.get('bet_size') or 0
+
+                # Fresh screenshot right before clicking (layout may have changed)
+                img2 = self._bot_take_screenshot(win)
+                layout2 = detect_layout(img2)
+                if layout2 is None:
+                    self.log("[BOT] Buttons disappeared before click", "DEBUG")
+                    time.sleep(0.3)
+                    continue
+
+                # Execute the click
+                logger = lambda msg, lvl="DEBUG": self.root.after(0, lambda: self.log(msg, lvl))
+                executed = execute_action(action, bet_size, img2, win_rect, logger)
+
+                if executed:
+                    self.log(f"[BOT] Executed: {action.upper()} {f'${bet_size:.2f}' if bet_size else ''}", "DECISION")
+                else:
+                    self.log(f"[BOT] Could not execute {action}", "DEBUG")
+
+                # Wait for action to register before next cycle
+                time.sleep(1.0)
+
+            except Exception as e:
+                self.log(f"[BOT] Error: {e}", "ERROR")
+                time.sleep(2)
 
     def on_f11(self):
-        """Emergency stop"""
+        """Emergency stop — immediately halts bot"""
         self.bot_running = False
         self._analyzing = False
-        #self.status_label.config(text="STOPPED", fg='#ff4444')
-        self.log("F11: Emergency stop!", "ERROR")
+        self._mem_polling = False
+        self.log("F11: EMERGENCY STOP!", "ERROR")
 
     def on_f12(self):
         """Toggle visibility"""
@@ -1275,7 +1369,15 @@ def main():
         print("Run 'python memory_calibrator.py analyze' offline to verify.")
         print("Dumps saved to memory_dumps/")
         print("")
+    if BOT_MODE:
+        print("=== BOT MODE ===")
+        print("Bot will auto-play using strategy + click buttons.")
+        print("F11 = Emergency stop. F10 = Toggle bot on/off.")
+        print("")
     app = HelperBar()
+    if BOT_MODE:
+        # Auto-start bot after UI is ready
+        app.root.after(1000, app.on_f10)
     app.run()
 
 

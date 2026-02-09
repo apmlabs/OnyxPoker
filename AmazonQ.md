@@ -1,6 +1,6 @@
 # OnyxPoker - Status Tracking
 
-**Last Updated**: February 9, 2026 13:26 UTC
+**Last Updated**: February 9, 2026 13:53 UTC
 
 ---
 
@@ -12,6 +12,7 @@
 | helper_bar.py | ✅ | V2 vision default (opponent tracking) + live memory polling |
 | helper_bar.py --v1 | ✅ | V1 vision (no opponent detection) |
 | helper_bar.py --ai-only | ✅ | AI does both vision + decision |
+| helper_bar.py --bot | ✅ | Bot mode: auto-plays hands, clicks buttons via pyautogui |
 | helper_bar.py --calibrate | ✅ | Memory calibration mode (no longer needed — buffer verified) |
 | memory_calibrator.py | ✅ | v5: 24B anchor + container cache + heap filtering, 40/40 verified |
 | test_screenshots.py | ✅ | V1 vs V2 comparison + --track mode |
@@ -54,6 +55,49 @@
 ---
 
 ## Session History
+
+### Session 86: Bot Mode — Auto-Play with Button Clicking (February 9, 2026)
+
+**Added `--bot` flag that auto-plays hands: detects buttons via pixel color, executes strategy decisions by clicking Fold/Call/Raise/Check/Bet, types exact bet amounts into the input box.**
+
+**Button layout detection (tested on 3010 screenshots, 100% accuracy):**
+| Layout | Count | When |
+|--------|-------|------|
+| fast_fold | 942 | Preflop Zoom (pre-action) |
+| check_bet | 730 | Checked to us (postflop) |
+| fold_call_raise | 713 | Facing a bet/raise |
+| None | 625 | Not our turn / between hands |
+
+**How it works:**
+1. Bot screenshots the PokerStars window every 300ms
+2. Detects button layout by checking if pixels at known positions are red (R>150, G<80, B<80)
+3. When buttons appear → runs full F9 analysis (GPT vision + memory + strategy)
+4. Takes fresh screenshot right before clicking (layout may have changed)
+5. Clicks the appropriate button; for raise/bet, types exact amount into input box first
+6. Waits 1s for action to register, then resumes polling
+
+**Button coordinates (relative % of window, measured from 3018 screenshots at 1938x1392):**
+- Fold/Fast Fold: (57.3%, 93.2%)
+- Call: (73.9%, 93.6%)
+- Raise: (90.5%, 92.6%)
+- Check: (73.9%, 92.4%)
+- Bet: (90.5%, 93.6%)
+- Bet input box: (69.5%, 85.5%)
+- Sizing presets: Min(69.9%), 50%(78.1%), Pot(86.3%), Max(94.5%) all at y=81.0%
+
+**Bet amount entry:** Triple-clicks input box to select all → types exact amount → clicks Raise/Bet button.
+
+**Edge cases handled:**
+- Fast Fold layout + want to call/raise → waits for full button layout to appear
+- Buttons disappear between analysis and click → skips cycle, retries
+- Not our turn → polls every 300ms until buttons appear
+- F11 emergency stop → immediately halts, no cleanup clicks
+
+**Files created:**
+- `bot_clicker.py` — standalone button detection + clicking module
+
+**Files changed:**
+- `helper_bar.py` — `--bot` flag, rewritten `_bot_loop`, `_bot_get_window`, `_bot_take_screenshot`
 
 ### Session 85: Build-Independent Container Scan (February 9, 2026)
 
