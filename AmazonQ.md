@@ -60,31 +60,32 @@
 
 **Fixed 3 critical issues preventing live memory updates.**
 
-**Problem 1: Player names showing as `None`**
+**Problem 1: Right panel showing stale data (MAIN BUG)**
+- Symptom: Cards/position/pot stuck on old hand, not updating with polls
+- Root cause: `_update_mem_display` used `self._last_result` (cached F9 data) instead of `hd` (live poll data)
+- Fix: Calculate cards/position/pot/board from poll data, not cached F9 data
+
+**Problem 2: Polling stops when rescan fails**
+- Symptom: `[MEM] Re-scan failed, polling stopped` → UI freezes
+- Root cause: When `scan_live()` failed between hands, polling stopped completely
+- Fix: Retry rescan 3 times, if fails keep retrying (never stop polling)
+
+**Problem 3: Player names showing as `None`**
 - Symptom: `[MEM] None: FOLD`, `[MEM] None: RAISE €0.10`
 - Root cause: When buffer moved to new address (hand changed), name pointers became invalid
-- Fix: `rescan_buffer` now returns full hand data with fresh player names from new buffer
+- Fix: `rescan_buffer` returns full hand data with fresh player names from new buffer
 
-**Problem 2: Buffer lost after ~30 seconds**
-- Symptom: `[MEM] Buffer lost, polling stopped` every 30-60 seconds
-- Root cause: When `rescan_buffer` returned None, polling just stopped
-- Fix: On buffer loss, do full `scan_live()` to find new buffer location, continue polling
-
-**Problem 3: Right panel frozen**
-- Symptom: Left panel showed `[MEM LIVE]` but right panel stayed frozen on preflop data
-- Root cause: UI only updated when entry count changed, not on every poll
-- Fix: Update UI on EVERY poll (200ms), not just when new actions appear
-
-**Session log analysis (33 F9 presses, 96 memory polls):**
-- Polling IS working (96 poll entries logged)
-- Buffer moves detected: 0x21a43c70 → 0x2054cb10 → 0x21a462b0 (multiple times)
-- Actions logged: RAISE, CALL, FOLD, BET, CHECK (WIN filtered out)
-- One hand worked perfectly: followed from preflop → flop → turn → river
+**Session log analysis (998 entries: 9 F9 presses, 989 memory polls):**
+- Polling WAS working (989 poll entries logged)
+- But display was frozen on old F9 data
+- Polls had correct data, display showed wrong data
+- Fixed by using poll data (hd) not cached data (lr)
 
 **Files changed:**
-- helper_bar.py - Fixed `_mem_poll_loop`: rescan on buffer loss, update UI every poll, filter WIN actions
+- helper_bar.py - Fixed `_update_mem_display`: use poll data not cached F9 data
+- helper_bar.py - Fixed `_mem_poll_loop`: never stop polling, retry on failure
 
-**Next**: Test on Windows to verify polling continues across hands
+**Next**: Test on Windows to verify right panel updates live
 
 ### Session 88: Container Signature Fix + Magic Number Optimization (February 11, 2026)
 
