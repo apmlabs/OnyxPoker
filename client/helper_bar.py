@@ -118,7 +118,18 @@ class HelperBar:
         self.register_hotkeys()
         self.update_log_display()
 
+        # Startup validation
         self.log("OnyxPoker ready | F9=Advice F10=Bot F11=Stop F12=Hide", "INFO")
+        if IS_WINDOWS:
+            self.log(f"Memory: Windows detected, live scanning enabled", "DEBUG")
+            if CALIBRATE_MODE:
+                self.log(f"Memory: Calibration mode - dumps will be saved", "DEBUG")
+        else:
+            self.log(f"Memory: Linux - memory scanning disabled", "DEBUG")
+        self.log(f"Strategy: {STRATEGY}", "DEBUG")
+        self.log(f"Vision: {'V1 (no opponents)' if V1_MODE else 'V2 (opponent detection)'}", "DEBUG")
+        if AI_ONLY_MODE:
+            self.log(f"Mode: AI-only (GPT does vision + decision)", "DEBUG")
 
     def create_ui(self):
         """Three-column layout: Status | Log | Result"""
@@ -588,11 +599,28 @@ class HelperBar:
                             self._pending_mem_poll = (mr['buf_addr'], mr['hand_id'])
                     elif mr and mr.get('error'):
                         result['memory_error'] = mr['error']
+                        result['memory_status'] = 'ERROR'
                         self.root.after(0, lambda e=mr['error']:
-                            self.log(f"[MEM] Error: {e}", "DEBUG"))
+                            self.log(f"[MEM] Error: {e}", "ERROR"))
+                        # Auto-save dump on error for debugging
+                        if CALIBRATE_MODE and dump_id_holder[0]:
+                            self.root.after(0, lambda d=dump_id_holder[0]:
+                                self.log(f"[MEM] Error dump saved: {d}", "DEBUG"))
                     else:
                         result['memory_status'] = 'NO_BUFFER'
                         self.root.after(0, lambda: self.log("[MEM] No buffer found", "DEBUG"))
+                        # Auto-save dump on NO_BUFFER for debugging
+                        if not CALIBRATE_MODE and IS_WINDOWS:
+                            def _save_failure_dump():
+                                try:
+                                    from memory_calibrator import save_dump
+                                    did = save_dump(timestamp)
+                                    if did:
+                                        self.root.after(0, lambda d=did:
+                                            self.log(f"[MEM] NO_BUFFER dump: {d}", "DEBUG"))
+                                except Exception:
+                                    pass
+                            threading.Thread(target=_save_failure_dump, daemon=True).start()
 
                 elapsed = time.time() - start
                 self.root.after(0, lambda t=api_time: self.log(f"API done: {t:.1f}s", "DEBUG"))
