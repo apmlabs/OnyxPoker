@@ -414,7 +414,7 @@ def _make_read_fns(bin_path, regions):
 
 # ── Signature-Based Buffer Finder ────────────────────────────────────
 
-def _find_buffer_via_container(data_iter, read_bytes_fn):
+def _find_buffer_via_container(data_iter, read_bytes_fn, debug=False):
     """Find buffer by scanning for 24-byte container anchor at +0x6C.
 
     data_iter yields (base_addr, data_bytes) for each memory region.
@@ -422,12 +422,18 @@ def _find_buffer_via_container(data_iter, read_bytes_fn):
     Only ~1 raw hit per scan (24-byte pattern is essentially unique in ~500MB).
     """
     best = None  # (buf_addr, entry_count, hand_id, container_addr)
+    regions_scanned = 0
+    anchor_hits = 0
+    validated = 0
+    
     for base, data in data_iter:
+        regions_scanned += 1
         idx = 0
         while True:
             idx = data.find(CONTAINER_ANCHOR, idx)
             if idx < 0:
                 break
+            anchor_hits += 1
             sb = idx - CONTAINER_ANCHOR_OFFSET  # struct_base offset within data
             if sb < 0 or sb + 0xF0 > len(data):
                 idx += 1; continue
@@ -456,10 +462,15 @@ def _find_buffer_via_container(data_iter, read_bytes_fn):
             hid = struct.unpack('<Q', hid_data)[0]
             if not (200_000_000_000 < hid < 300_000_000_000):
                 idx += 1; continue
+            validated += 1
             container_addr = base + sb
             if not best or hid > best[2]:
                 best = (bp + 8, n_entries, hid, container_addr)
             idx += 1
+    
+    if debug:
+        log(f"[CONTAINER] Scanned {regions_scanned} regions, {anchor_hits} anchor hits, {validated} validated, best={best is not None}")
+    
     return best or (None, 0, 0, None)
 
 
@@ -704,7 +715,7 @@ def scan_live():
                 yield base, data
 
     buf_addr, n_entries, hid, container_addr = _find_buffer_via_container(
-        _live_iter(), _reader.read)
+        _live_iter(), _reader.read, debug=True)
     if buf_addr:
         _cached_container_addr = container_addr
         entries = decode_buffer(buf_addr, _reader.read, _reader.read_str, n_entries)
