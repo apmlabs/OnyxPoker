@@ -1,6 +1,6 @@
 # OnyxPoker - Status Tracking
 
-**Last Updated**: February 9, 2026 14:15 UTC
+**Last Updated**: February 11, 2026 10:34 UTC
 
 ---
 
@@ -12,9 +12,8 @@
 | helper_bar.py | ✅ | V2 vision default (opponent tracking) + live memory polling |
 | helper_bar.py --v1 | ✅ | V1 vision (no opponent detection) |
 | helper_bar.py --ai-only | ✅ | AI does both vision + decision |
-| helper_bar.py --bot | ✅ | Bot mode: auto-plays hands, clicks buttons via pyautogui |
-| helper_bar.py --calibrate | ✅ | Memory calibration mode (no longer needed — buffer verified) |
-| memory_calibrator.py | ✅ | v5: 24B anchor + container cache + heap filtering, 40/40 verified |
+| helper_bar.py --bot | ⚠️ | Bot mode: needs testing (button detection untested) |
+| memory_calibrator.py | ✅ | v5: Container scan fixed for new PS build (Feb 2026) |
 | test_screenshots.py | ✅ | V1 vs V2 comparison + --track mode |
 | vision_detector_lite.py | ✅ | GPT-5.2 for vision only (V1) ~3.9s |
 | vision_detector_v2.py | ✅ | GPT-5.2 + opponent detection (V2) ~5.5s |
@@ -56,7 +55,38 @@
 
 ## Session History
 
-### Session 86b: Position from Memory + Bot Logging Audit (February 9, 2026)
+### Session 88: Container Signature Fix (February 11, 2026)
+
+**CRITICAL FIX: PokerStars client updated, container structure changed**
+
+**Problem**: Memory container scan failing 100% - returning null
+- Symptom: `memory_container_addr: null` in all session logs
+- Impact: Polling couldn't follow buffer to new hands, stopped after 9 seconds
+- Root cause: Container signature changed in new PokerStars build
+
+**Analysis of 7 dumps from Feb 11 2026**:
+- All buffers found via 0x88 fallback scan
+- But container scan failed validation
+- Signature at +0x38 changed: `0xF4 0x51 XX 0x01` → `0xB4 0x07 0x8C 0x01`
+- 24-byte anchor at +0x6C unchanged (still valid)
+
+**Fix**: Updated container signature validation
+- Changed from checking bytes [0xF4, 0x51, _, 0x01]
+- To checking bytes [0xB4, 0x07, 0x8C, 0x01]
+- Result: 6/7 dumps now find container successfully
+
+**Remaining Issues** (not yet fixed):
+1. **Polling stops on new hand** - rescan_buffer() returns None when hand_id changes, needs to follow container to new buffer
+2. **Dump cleanup broken** - saves all dumps even on success, should only keep NO_BUFFER failures
+3. **Unknown action 0x77** - WIN message not in ACTION_NAMES
+4. **Right panel hard to read** - too many headers, actions scroll off
+
+**Files changed**:
+- memory_calibrator.py - Updated signature check at +0x38
+
+**Next**: Fix polling continuation across hands (most critical for live play)
+
+### Session 87: Log Upload Debugging + Variable Scope Bug (February 11, 2026)
 
 **Memory now provides exact hero position (UTG/MP/CO/BTN/SB/BB) for preflop decisions. Full bot logging audit — every click is now tracked in session JSONL.**
 

@@ -397,15 +397,20 @@ The 24-byte anchor at +0x6C is fully build-independent and gets exactly 1 hit pe
 +0xEC: pointer → end of capacity
 ```
 
-**Container signature scan algorithm (40/40 verified across PIDs 16496 + 20236):**
+**Container signature scan algorithm (verified across 47 dumps, 3 PokerStars builds):**
 1. Scan heap (0x08M-0x22M) for 24-byte build-independent anchor at +0x6C:
    `05000000 05000000 02000000 00000000 00000000 00030300`
    (seats=5, seats=5, blinds=2, zero, zero, flags=0x00030300)
-2. Validate: +0x38 has `F4 51 XX 01`, +0x44==0x3C, +0xE0==1, +0xE4=valid pointer
+2. Validate: +0x38 signature, +0x44==0x3C, +0xE0==1, +0xE4=valid pointer
 3. Read hand_id from first buffer entry (buf-8 + 8)
 4. Pick container with highest hand_id (tiebreaker for stale containers)
 5. Entry count = `(+0xE8 - +0xE4) / 0x40` — free, no scanning needed
 6. Cache container address — subsequent calls just read +0xE4 (<1ms)
+
+**Container signature at +0x38 (build-specific):**
+- **Feb 2026 build**: `0xB4 0x07 0x8C 0x01` (current, 6/7 dumps verified)
+- **Feb 2026 old**: `0xF4 0x51 XX 0x01` (Session 84-85, 40/40 dumps)
+- **Note**: Signature changes with PokerStars updates, but 24-byte anchor at +0x6C remains stable
 
 **Performance vs 0x88 scan (dump files):**
 | Method | Raw Hits | Scan Time | Notes |
@@ -440,6 +445,7 @@ onyxpoker/                    # Main repo (GitHub: apmlabs/OnyxPoker)
 ├── AGENTS.md                 # Permanent knowledge (NEVER DELETE)
 ├── AmazonQ.md                # Current state + history (NEVER DELETE)
 ├── README.md                 # Quick start (NEVER DELETE)
+├── PREFLIGHT.md              # Pre-flight checklist for live play
 ├── idealistslp_extracted/    # Real PokerStars hand histories (2830 hands, 53 files)
 │   └── HH*.txt               # Raw hand history files from live play
 │
