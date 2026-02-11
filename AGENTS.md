@@ -243,17 +243,24 @@ F9 pressed (helper_bar.py)
 
 **memory_status values:** CONFIRMED (GPT matches), OVERRIDE (GPT wrong, memory corrected), NO_BUFFER (scan failed)
 
-**Calibration workflow (--calibrate mode, for offline verification):**
+**Calibration workflow (streamlined - no copying, no moving):**
 ```
-F9 pressed (helper_bar.py --calibrate)
-  ├─ save_dump() → memory_dumps/dump_TIMESTAMP.bin + .json
-  ├─ GPT returns cards/opponents (~5.5s)
-  └─ tag_dump() → writes GPT data into .json sidecar
+# Dumps are uploaded to server/uploads/memory_dumps/ by send_logs.py
+# Analysis runs directly on uploaded dumps (no copying!)
 
-Offline: python memory_calibrator.py analyze
-  → Finds buffer via 0x88 signature + first entry validation
-  → Decodes all entries, verifies cards + names against GPT data
+cd /home/ubuntu/mcpprojects/onyxpoker/client
+python3 memory_calibrator.py analyze
+
+# Output shows:
+# - Cards verification (OK/FAIL vs GPT)
+# - Player names (OK/MISMATCH vs GPT)  
+# - Community cards verification
+# - All actions decoded
+# - Container address + scan time
+# - Pointer scan results (always 0 - no pointer chain exists)
 ```
+
+**Key insight:** `DUMP_DIR` points to `server/uploads/memory_dumps/` - analysis works in place, no disk space wasted on copies.
 
 **Commands:**
 ```bash
