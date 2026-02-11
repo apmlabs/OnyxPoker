@@ -777,28 +777,56 @@ class HelperBar:
         # Rebuild right panel
         self.stats_text.delete('1.0', 'end')
 
-        # === SECTION 1: CONTEXT HEADER (no hand_id, no empty lines) ===
-        lr = self._last_result or {}
+        # === SECTION 1: CONTEXT HEADER ===
+        # Use POLL data (hd), not cached F9 data
         
-        # Cards
+        # Cards from poll
         if mc and len(mc) == 4:
             cards_str = f"{mc[0:2]} {mc[2:4]}"
         else:
             cards_str = "??"
         
-        # Board
+        # Board from poll
         board_str = ' '.join(cc) if cc else '--'
         
-        # Pot and to_call from debug
+        # Pot and to_call from advice debug (calculated from poll actions)
         debug = advice.get('_mem_debug', {}) if advice else {}
-        pot = debug.get('pot', lr.get('pot', 0))
-        to_call = debug.get('to_call', lr.get('to_call', 0))
+        pot = debug.get('pot', 0.07)
+        to_call = debug.get('to_call', 0)
         
-        # Position and players
-        position = lr.get('position', '?')
-        num_players = debug.get('num_players', lr.get('num_players', '?'))
+        # Position from poll players data
+        players = hd.get('players', {})
+        position = '?'
+        if players:
+            # Find hero seat
+            hero_seat = None
+            for seat, name in players.items():
+                if name == 'idealistslp':
+                    hero_seat = int(seat)
+                    break
+            # Find BB seat (first POST_BB action)
+            bb_seat = None
+            for name, act, amt in actions:
+                if act == 'POST_BB':
+                    for seat, pname in players.items():
+                        if pname == name:
+                            bb_seat = int(seat)
+                            break
+                    break
+            # Calculate position
+            if hero_seat is not None and bb_seat is not None:
+                n_players = len(players)
+                pos_idx = (hero_seat - bb_seat - 1) % n_players
+                positions = ['UTG', 'MP', 'CO', 'BTN', 'SB', 'BB']
+                if n_players == 6:
+                    position = positions[pos_idx]
+                elif n_players < 6:
+                    position = positions[pos_idx] if pos_idx < len(positions) else '?'
         
-        # Display header (no hand_id, compact)
+        # Num players from poll
+        num_players = len(players) if players else debug.get('num_players', '?')
+        
+        # Display header
         self.stats_text.insert('end', f"{cards_str} | {board_str} | €{pot:.2f} | Call €{to_call:.2f}\n", 'MEM')
         self.stats_text.insert('end', f"{position} | {num_players}p", 'MEMDATA')
         if is_stale:
@@ -824,7 +852,8 @@ class HelperBar:
         else:
             self.stats_text.insert('end', f"[Calculating...]\n", 'MEM')
 
-        # === SECTION 3: Opponent Info ===
+        # === SECTION 3: Opponent Info (from last F9 only) ===
+        lr = self._last_result or {}
         if lr.get('opponent_stats'):
             self.stats_text.insert('end', '---\n', 'MEMDATA')
             for opp in lr['opponent_stats']:
