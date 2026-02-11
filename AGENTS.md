@@ -736,6 +736,7 @@ User said "single monitor" multiple times while I kept designing for dual monito
 | C-bets = bluffs | 70 | C-bets win when villain folds | Allow c-bets even vs fish |
 | Start poll before display | 83 | Display overwrites poll output | Start poll AFTER _display_result |
 | Raw file size on Windows | 83 | \r\n vs \n size mismatch | Compare content.encode() size |
+| Breaking variable scope | 86b | Adding debug code between var definition and usage | Trace scope before inserting code |
 
 ### Common Gotchas
 
