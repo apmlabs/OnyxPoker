@@ -689,61 +689,63 @@ class HelperBar:
             try:
                 hd = rescan_buffer(self._mem_buf_addr, self._mem_hand_id)
                 if hd is None:
-                    self._mem_polling = False
-                    self.root.after(0, lambda: self.log("[MEM] Buffer lost, polling stopped", "DEBUG"))
-                    break
+                    # Buffer lost - try full rescan
+                    self.root.after(0, lambda: self.log("[MEM] Buffer lost, rescanning...", "DEBUG"))
+                    fresh_data = scan_live()
+                    if fresh_data and fresh_data.get('hero_cards'):
+                        # Re-scan success - update tracking
+                        self._mem_hand_id = fresh_data['hand_id']
+                        self._mem_buf_addr = fresh_data['buf_addr']
+                        self._mem_last_entries = 0
+                        hd = fresh_data
+                        self.root.after(0, lambda h=fresh_data['hand_id'], c=fresh_data.get('hero_cards'): 
+                            self.log(f"[MEM] Re-scan OK: hand {h}, cards {c[0:2]} {c[2:4]}", "INFO"))
+                    else:
+                        # Re-scan failed - stop polling
+                        self._mem_polling = False
+                        self.root.after(0, lambda: self.log("[MEM] Re-scan failed, polling stopped", "DEBUG"))
+                        break
                 
                 # Check if hand changed
                 if hd.get('hand_id_changed'):
                     new_hand_id = hd.get('hand_id')
                     new_buf_addr = hd.get('buf_addr')
                     
-                    # Check if we got cards for new hand
-                    if hd.get('hero_cards'):
-                        # Success - update tracking and continue
-                        self._mem_hand_id = new_hand_id
-                        self._mem_buf_addr = new_buf_addr
-                        self._mem_last_entries = 0
-                        self.root.after(0, lambda h=new_hand_id, c=hd.get('hero_cards'): 
+                    # Update tracking
+                    self._mem_hand_id = new_hand_id
+                    self._mem_buf_addr = new_buf_addr
+                    self._mem_last_entries = 0
+                    
+                    # Log new hand
+                    cards = hd.get('hero_cards', '')
+                    if cards and len(cards) == 4:
+                        self.root.after(0, lambda h=new_hand_id, c=cards: 
                             self.log(f"[MEM] New hand {h}, cards {c[0:2]} {c[2:4]}", "INFO"))
                     else:
-                        # No cards yet - try full re-scan
                         self.root.after(0, lambda h=new_hand_id: 
-                            self.log(f"[MEM] New hand {h}, re-scanning...", "INFO"))
-                        fresh_data = scan_live()
-                        if fresh_data and fresh_data.get('hero_cards'):
-                            # Re-scan success
-                            self._mem_hand_id = fresh_data['hand_id']
-                            self._mem_buf_addr = fresh_data['buf_addr']
-                            self._mem_last_entries = 0
-                            hd = fresh_data
-                            self.root.after(0, lambda c=fresh_data.get('hero_cards'): 
-                                self.log(f"[MEM] Re-scan OK, cards {c[0:2]} {c[2:4]}", "INFO"))
-                        else:
-                            # Re-scan failed - keep polling with cached cards
-                            self._mem_hand_id = new_hand_id
-                            self._mem_buf_addr = new_buf_addr
-                            self._mem_last_entries = 0
-                            self.root.after(0, lambda: 
-                                self.log("[MEM] Re-scan failed, using cached cards", "DEBUG"))
+                            self.log(f"[MEM] New hand {h}", "INFO"))
                 
                 n = hd.get('entry_count', 0)
-                if n != self._mem_last_entries or hd.get('hand_id_changed'):
-                    # Log new actions to left panel
-                    if n > self._mem_last_entries and not hd.get('hand_id_changed'):
-                        actions = hd.get('actions', [])
-                        # Get last few actions (new ones)
-                        for name, act, amt in actions[-(n - self._mem_last_entries):]:
-                            if act not in ('POST_SB', 'POST_BB', 'DEAL', '0x77'):
-                                if amt > 0:
-                                    self.root.after(0, lambda n=name, a=act, m=amt: 
-                                        self.log(f"[MEM] {n}: {a} €{m/100:.2f}", "INFO"))
-                                else:
-                                    self.root.after(0, lambda n=name, a=act: 
-                                        self.log(f"[MEM] {n}: {a}", "INFO"))
-                    
-                    self._mem_last_entries = n
-                    self.root.after(0, lambda d=hd, cnt=n: self._update_mem_display(d, cnt))
+                # Always update UI (not just when entry count changes)
+                # This ensures right panel shows live data even if no new actions
+                
+                # Log new actions to left panel
+                if n > self._mem_last_entries and not hd.get('hand_id_changed'):
+                    actions = hd.get('actions', [])
+                    # Get last few actions (new ones)
+                    new_actions = actions[-(n - self._mem_last_entries):]
+                    for name, act, amt in new_actions:
+                        if act not in ('POST_SB', 'POST_BB', 'DEAL', '0x77', 'WIN'):
+                            if amt > 0:
+                                self.root.after(0, lambda n=name, a=act, m=amt: 
+                                    self.log(f"[MEM] {n}: {a} €{m/100:.2f}", "INFO"))
+                            else:
+                                self.root.after(0, lambda n=name, a=act: 
+                                    self.log(f"[MEM] {n}: {a}", "INFO"))
+                
+                self._mem_last_entries = n
+                # Update UI on every poll (not just when count changes)
+                self.root.after(0, lambda d=hd, cnt=n: self._update_mem_display(d, cnt))
             except Exception as e:
                 self._mem_polling = False
                 self.root.after(0, lambda e=e: self.log(f"[MEM] Poll error: {e}", "ERROR"))

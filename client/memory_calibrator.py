@@ -598,8 +598,271 @@ def _fuzzy_match(a, b):
     return diffs <= 1
 
 
+# ── Deep Pointer Analysis ────────────────────────────────────────────
+
+def _find_pointers_to_address(data, target_addr, base_addr=0):
+    """Find all 4-byte aligned locations containing target_addr as pointer.
+    Returns list of absolute addresses where pointer was found.
+    """
+    target_bytes = struct.pack('<I', target_addr)
+    pointers = []
+    # Search every 4-byte aligned location
+    for i in range(0, len(data) - 4, 4):
+        if data[i:i+4] == target_bytes:
+            pointers.append(base_addr + i)
+    return pointers
+
+
+def _analyze_container_structure(bin_path, regions, container_addr):
+    """Deep analysis of memory before container to find structure boundaries.
+    
+    Compares bytes before container across multiple dumps to find:
+    1. Where the actual structure starts (might be before our known container base)
+    2. Stable patterns that indicate structure boundaries
+    3. Pointers to the structure from elsewhere in memory
+    """
+    read_bytes, _ = _make_read_fns(bin_path, regions)
+    
+    # Read 1KB before container to analyze structure boundaries
+    LOOKBACK = 1024
+    pre_data = read_bytes(container_addr - LOOKBACK, LOOKBACK)
+    if not pre_data:
+        return None
+    
+    # Read container itself (known to be ~0x1E8 bytes)
+    container_data = read_bytes(container_addr, 0x200)
+    if not container_data:
+        return None
+    
+    return {
+        'container_addr': container_addr,
+        'pre_data': pre_data,
+        'container_data': container_data,
+    }
+
+
+def _deep_pointer_scan(dumps_data):
+    """Cross-dump pointer analysis.
+    
+    For each dump:
+    1. Find container address
+    2. Search for pointers to container (and container-8, -16, -32, -64, -128, -256)
+    3. Compare pointer locations across dumps to find stable patterns
+    4. Categorize by memory region (module vs heap)
+    
+    Returns dict with analysis results.
+    """
+    from collections import defaultdict
+    
+    results = []
+    pointer_map = defaultdict(list)  # offset -> [(dump_name, container_addr, target_offset)]
+    
+    # Offsets to check before container (structure might start earlier)
+    SEARCH_OFFSETS = [0, -8, -16, -32, -64, -128, -256, -512]
+    
+    log(f"  Scanning {len(dumps_data)} dumps for pointers...")
+    for i, dump in enumerate(dumps_data, 1):
+        dump_name = os.path.basename(dump['_bin_path']).replace('.bin', '')
+        bin_path = dump['_bin_path']
+        regions = dump['regions']
+        
+        log(f"    [{i}/{len(dumps_data)}] {dump_name}...")
+        
+        # Find container
+        buf_addr, entries = find_buffer_in_dump(bin_path, regions)
+        if not buf_addr or not hasattr(find_buffer_in_dump, '_last_container_addr'):
+            log(f"      SKIP (no container)")
+            continue
+        
+        container_addr = find_buffer_in_dump._last_container_addr
+        log(f"      Container: 0x{container_addr:08X}")
+        
+        # Analyze structure boundaries
+        struct_info = _analyze_container_structure(bin_path, regions, container_addr)
+        if not struct_info:
+            log(f"      SKIP (can't read structure)")
+            continue
+        
+        # Load full dump for pointer scanning
+        log(f"      Loading dump ({os.path.getsize(bin_path)//1024//1024}MB)...")
+        with open(bin_path, 'rb') as f:
+            full_data = f.read()
+        
+        # Search for pointers to container and nearby addresses
+        log(f"      Scanning for pointers to {len(SEARCH_OFFSETS)} target addresses...")
+        for offset in SEARCH_OFFSETS:
+            target_addr = container_addr + offset
+            if target_addr < 0:
+                continue
+            
+            # Find all pointers to this address
+            pointers = []
+            for r in regions:
+                region_data = full_data[r['file_offset']:r['file_offset']+r['size']]
+                ptrs = _find_pointers_to_address(region_data, target_addr, r['base'])
+                pointers.extend(ptrs)
+            
+            if pointers:
+                log(f"        container{offset:+4d}: {len(pointers)} pointers")
+            
+            # Store results
+            for ptr_addr in pointers:
+                pointer_map[ptr_addr].append((dump_name, container_addr, offset))
+        
+        results.append({
+            'dump_name': dump_name,
+            'container_addr': container_addr,
+            'struct_info': struct_info,
+        })
+    
+    return {
+        'dumps': results,
+        'pointer_map': pointer_map,
+    }
+
+
+def _compare_pre_container_bytes(dumps_data):
+    """Compare bytes before container across all dumps to find structure start.
+    
+    Returns analysis of stable patterns before the known container base.
+    """
+    pre_data_list = []
+    
+    log(f"  Loading {len(dumps_data)} dumps to compare pre-container bytes...")
+    for i, dump in enumerate(dumps_data, 1):
+        bin_path = dump['_bin_path']
+        regions = dump['regions']
+        dump_name = os.path.basename(bin_path).replace('.bin', '')
+        
+        log(f"    [{i}/{len(dumps_data)}] {dump_name}...")
+        buf_addr, entries = find_buffer_in_dump(bin_path, regions)
+        if not buf_addr or not hasattr(find_buffer_in_dump, '_last_container_addr'):
+            log(f"      SKIP (no container)")
+            continue
+        
+        container_addr = find_buffer_in_dump._last_container_addr
+        struct_info = _analyze_container_structure(bin_path, regions, container_addr)
+        if struct_info:
+            pre_data_list.append({
+                'dump': dump_name,
+                'container_addr': container_addr,
+                'pre_data': struct_info['pre_data'],
+            })
+            log(f"      OK (container at 0x{container_addr:08X})")
+    
+    if len(pre_data_list) < 2:
+        return None
+    
+    log(f"  Comparing bytes across {len(pre_data_list)} dumps...")
+    # Find common patterns in pre-data
+    # Compare byte-by-byte across all dumps
+    LOOKBACK = 1024
+    stable_ranges = []  # (offset_from_container, length, pattern)
+    
+    for offset in range(-LOOKBACK, 0, 4):  # Check every 4 bytes
+        # Get byte at this offset from all dumps
+        bytes_at_offset = []
+        for pd in pre_data_list:
+            idx = LOOKBACK + offset
+            if 0 <= idx < len(pd['pre_data']):
+                bytes_at_offset.append(pd['pre_data'][idx:idx+4])
+        
+        # Check if all dumps have same bytes
+        if len(bytes_at_offset) == len(pre_data_list) and len(set(map(tuple, bytes_at_offset))) == 1:
+            # All dumps have same 4 bytes at this offset
+            stable_ranges.append((offset, 4, bytes_at_offset[0]))
+    
+    return {
+        'dumps_compared': len(pre_data_list),
+        'stable_ranges': stable_ranges,
+        'pre_data_samples': pre_data_list[:3],  # First 3 for inspection
+    }
+
+
 # ── Offline Analysis ─────────────────────────────────────────────────
 
+
+
+def cmd_scan_pointers():
+    """Deep pointer analysis across all dumps."""
+    dumps = _load_tagged_dumps()
+    if not dumps:
+        log("No tagged dumps. Run: python helper_bar.py --calibrate")
+        return
+    
+    log(f"=== DEEP POINTER ANALYSIS ===")
+    log(f"Analyzing {len(dumps)} dumps...\n")
+    
+    # Phase 1: Compare bytes before container to find structure start
+    log("Phase 1: Analyzing memory before container...")
+    pre_analysis = _compare_pre_container_bytes(dumps)
+    if pre_analysis:
+        log(f"  Compared {pre_analysis['dumps_compared']} dumps")
+        log(f"  Found {len(pre_analysis['stable_ranges'])} stable 4-byte patterns before container")
+        if pre_analysis['stable_ranges']:
+            log("  Top 10 stable patterns:")
+            for offset, length, pattern in pre_analysis['stable_ranges'][:10]:
+                hex_pattern = ' '.join(f'{b:02X}' for b in pattern)
+                log(f"    container{offset:+5d}: {hex_pattern}")
+    
+    # Phase 2: Deep pointer scan
+    log("\nPhase 2: Scanning for pointers to container...")
+    pointer_analysis = _deep_pointer_scan(dumps)
+    
+    log(f"  Analyzed {len(pointer_analysis['dumps'])} dumps")
+    
+    # Find stable pointer locations (appear in multiple dumps)
+    from collections import Counter
+    pointer_counts = Counter()
+    for ptr_addr, occurrences in pointer_analysis['pointer_map'].items():
+        pointer_counts[ptr_addr] = len(occurrences)
+    
+    stable_pointers = [(addr, count) for addr, count in pointer_counts.items() if count >= 2]
+    stable_pointers.sort(key=lambda x: x[1], reverse=True)
+    
+    log(f"  Total unique pointer locations: {len(pointer_analysis['pointer_map'])}")
+    log(f"  Stable locations (2+ dumps): {len(stable_pointers)}")
+    
+    # Categorize stable pointers
+    module_stable = [(a, c) for a, c in stable_pointers if a < 0x08000000]
+    heap_stable = [(a, c) for a, c in stable_pointers if 0x08000000 <= a < 0x30000000]
+    
+    log(f"\n  MODULE pointers (0x00-0x08M): {len(module_stable)}")
+    log(f"  HEAP pointers (0x08M-0x30M): {len(heap_stable)}")
+    
+    if module_stable:
+        log("\n  TOP 10 STABLE MODULE POINTERS:")
+        for addr, count in module_stable[:10]:
+            log(f"    0x{addr:08X} - appears in {count} dumps")
+            # Show what it points to
+            for dump_name, container_addr, offset in pointer_analysis['pointer_map'][addr][:3]:
+                target = container_addr + offset
+                log(f"      {dump_name}: -> 0x{target:08X} (container{offset:+d})")
+    else:
+        log("\n  NO STABLE MODULE POINTERS FOUND")
+        log("  Container is likely only referenced from heap (dynamic allocation)")
+    
+    if heap_stable:
+        log("\n  TOP 10 STABLE HEAP POINTERS:")
+        for addr, count in heap_stable[:10]:
+            log(f"    0x{addr:08X} - appears in {count} dumps")
+            for dump_name, container_addr, offset in pointer_analysis['pointer_map'][addr][:3]:
+                target = container_addr + offset
+                log(f"      {dump_name}: -> 0x{target:08X} (container{offset:+d})")
+    
+    # Summary
+    log("\n" + "="*60)
+    log("SUMMARY:")
+    if module_stable:
+        log(f"  Found {len(module_stable)} stable MODULE pointers")
+        log("  These are candidates for static pointer chain starting points")
+    else:
+        log("  NO stable module pointers found")
+        log("  Container appears to be heap-only (no static pointer chain)")
+    
+    if heap_stable:
+        log(f"  Found {len(heap_stable)} stable HEAP pointers")
+        log("  These indicate dynamic allocation chains on the heap")
 
 
 def cmd_analyze():
