@@ -554,48 +554,48 @@ def find_buffer_in_dump(bin_path, regions, expected_cards_ascii=None):
             if len(entries) >= 3:
                 return buf_addr, entries
 
-    # Fallback: 0x88 signature scan
-    candidates = []  # (buf_addr, hand_id)
+        # Fallback: 0x88 signature scan
+        candidates = []  # (buf_addr, hand_id)
 
-    with open(actual_path, 'rb') as f:
-        for r in regions:
-            f.seek(r['file_offset'])
-            data = f.read(r['size'])
-            idx = 0
-            while True:
-                idx = data.find(BUFFER_SIGNATURE, idx)
-                if idx < 0:
-                    break
-                entry_off = idx + 10  # signature is 10 bytes before first entry
-                if entry_off + 16 <= len(data):
-                    hid = struct.unpack('<Q', data[entry_off:entry_off+8])[0]
-                    seq = struct.unpack('<I', data[entry_off+8:entry_off+12])[0]
-                    if 200_000_000_000 < hid < 300_000_000_000 and seq == 1:
-                        candidates.append((r['base'] + entry_off, hid))
-                idx += 1
+        with open(actual_path, 'rb') as f:
+            for r in regions:
+                f.seek(r['file_offset'])
+                data = f.read(r['size'])
+                idx = 0
+                while True:
+                    idx = data.find(BUFFER_SIGNATURE, idx)
+                    if idx < 0:
+                        break
+                    entry_off = idx + 10  # signature is 10 bytes before first entry
+                    if entry_off + 16 <= len(data):
+                        hid = struct.unpack('<Q', data[entry_off:entry_off+8])[0]
+                        seq = struct.unpack('<I', data[entry_off+8:entry_off+12])[0]
+                        if 200_000_000_000 < hid < 300_000_000_000 and seq == 1:
+                            candidates.append((r['base'] + entry_off, hid))
+                    idx += 1
 
-    if not candidates:
-        return None, None
+        if not candidates:
+            return None, None
 
-    # Pick highest hand_id
-    max_hid = max(c[1] for c in candidates)
-    best = [c for c in candidates if c[1] == max_hid]
+        # Pick highest hand_id
+        max_hid = max(c[1] for c in candidates)
+        best = [c for c in candidates if c[1] == max_hid]
 
-    if len(best) == 1:
-        buf_addr = best[0][0]
-    else:
-        # Tiebreak: find the one with readable hero name in SEATED entries
-        buf_addr = best[0][0]
-        for ba, hid in best:
-            entries = decode_buffer(ba, read_bytes, read_str)
-            for e in entries:
-                if e['msg_type'] == 0x02 and e['name'] == HERO_NAME:
-                    buf_addr = ba
-                    break
+        if len(best) == 1:
+            buf_addr = best[0][0]
+        else:
+            # Tiebreak: find the one with readable hero name in SEATED entries
+            buf_addr = best[0][0]
+            for ba, hid in best:
+                entries = decode_buffer(ba, read_bytes, read_str)
+                for e in entries:
+                    if e['msg_type'] == 0x02 and e['name'] == HERO_NAME:
+                        buf_addr = ba
+                        break
 
-    entries = decode_buffer(buf_addr, read_bytes, read_str)
-    result = (buf_addr, entries) if len(entries) >= 3 else (None, None)
-    
+        entries = decode_buffer(buf_addr, read_bytes, read_str)
+        result = (buf_addr, entries) if len(entries) >= 3 else (None, None)
+        
     finally:
         # Clean up temp file if we decompressed
         if temp_file and os.path.exists(temp_file.name):
