@@ -517,31 +517,47 @@ def find_buffer_in_dump(bin_path, regions, expected_cards_ascii=None):
 
     Returns (buf_addr, entries) or (None, None).
     """
-    read_bytes, read_str = _make_read_fns(bin_path, regions)
+    # Handle .gz files - decompress to temp file
+    import gzip
+    import tempfile
+    actual_path = bin_path
+    temp_file = None
+    
+    if bin_path.endswith('.gz'):
+        print(f"[ANALYZE] Decompressing {os.path.basename(bin_path)}...", flush=True)
+        temp_file = tempfile.NamedTemporaryFile(delete=False, suffix='.bin')
+        with gzip.open(bin_path, 'rb') as f_in:
+            temp_file.write(f_in.read())
+        temp_file.close()
+        actual_path = temp_file.name
+        print(f"[ANALYZE] Decompressed to {actual_path}", flush=True)
+    
+    try:
+        read_bytes, read_str = _make_read_fns(actual_path, regions)
 
-    # Try container scan first — only scan heap range for speed
-    def _region_iter():
-        with open(bin_path, 'rb') as f:
-            for r in regions:
-                if r['base'] < HEAP_RANGE[0] or r['base'] >= HEAP_RANGE[1]:
-                    continue
-                if r['size'] < 0x200:
-                    continue
-                f.seek(r['file_offset'])
-                yield r['base'], f.read(r['size'])
+        # Try container scan first — only scan heap range for speed
+        def _region_iter():
+            with open(actual_path, 'rb') as f:
+                for r in regions:
+                    if r['base'] < HEAP_RANGE[0] or r['base'] >= HEAP_RANGE[1]:
+                        continue
+                    if r['size'] < 0x200:
+                        continue
+                    f.seek(r['file_offset'])
+                    yield r['base'], f.read(r['size'])
 
-    buf_addr, n_entries, hid, container_addr = _find_buffer_via_container(_region_iter(), read_bytes)
-    if buf_addr:
-        # Save container address for pointer scan
-        find_buffer_in_dump._last_container_addr = container_addr
-        entries = decode_buffer(buf_addr, read_bytes, read_str, n_entries)
-        if len(entries) >= 3:
-            return buf_addr, entries
+        buf_addr, n_entries, hid, container_addr = _find_buffer_via_container(_region_iter(), read_bytes)
+        if buf_addr:
+            # Save container address for pointer scan
+            find_buffer_in_dump._last_container_addr = container_addr
+            entries = decode_buffer(buf_addr, read_bytes, read_str, n_entries)
+            if len(entries) >= 3:
+                return buf_addr, entries
 
     # Fallback: 0x88 signature scan
     candidates = []  # (buf_addr, hand_id)
 
-    with open(bin_path, 'rb') as f:
+    with open(actual_path, 'rb') as f:
         for r in regions:
             f.seek(r['file_offset'])
             data = f.read(r['size'])
@@ -578,7 +594,15 @@ def find_buffer_in_dump(bin_path, regions, expected_cards_ascii=None):
                     break
 
     entries = decode_buffer(buf_addr, read_bytes, read_str)
-    return (buf_addr, entries) if len(entries) >= 3 else (None, None)
+    result = (buf_addr, entries) if len(entries) >= 3 else (None, None)
+    
+    finally:
+        # Clean up temp file if we decompressed
+        if temp_file and os.path.exists(temp_file.name):
+            os.unlink(temp_file.name)
+            print(f"[ANALYZE] Cleaned up temp file", flush=True)
+    
+    return result
 
 
 def _fuzzy_match(a, b):
@@ -874,14 +898,14 @@ def cmd_analyze():
     """Verify message buffer structure across all tagged dumps."""
     dumps = _load_tagged_dumps()
     if not dumps:
-        log("No tagged dumps. Run: python helper_bar.py --calibrate")
+        print("[ANALYZE] No tagged dumps. Run: python helper_bar.py --calibrate", flush=True)
         return
 
-    log(f"=== Memory Calibrator v4 (Signature-Based) ===")
-    log(f"Dumps: {len(dumps)}\n")
+    print(f"[ANALYZE] === Memory Calibrator v5 ===", flush=True)
+    print(f"[ANALYZE] Dumps: {len(dumps)}\n", flush=True)
 
     errors = 0
-    for meta in dumps:
+    for i, meta in enumerate(dumps, 1):
         dump_id = meta['dump_id']
         hero_cards = meta['hero_cards']
         bin_path = meta['_bin_path']
@@ -894,15 +918,15 @@ def cmd_analyze():
             opps = [o for o in opps_raw if o]
         expected = ''.join(hero_cards) if hero_cards else None
 
-        log(f"{'='*60}")
-        log(f"{dump_id}: cards={hero_cards} opps={opps}")
+        print(f"[ANALYZE] {'='*60}", flush=True)
+        print(f"[ANALYZE] [{i}/{len(dumps)}] {dump_id}: cards={hero_cards} opps={opps}", flush=True)
 
         t0 = time.time()
         buf_addr, entries = find_buffer_in_dump(bin_path, regions, expected)
         elapsed = time.time() - t0
 
         if not buf_addr:
-            log(f"  FAIL: buffer not found ({elapsed:.1f}s)")
+            print(f"[ANALYZE]   FAIL: buffer not found ({elapsed:.1f}s)", flush=True)
             errors += 1
             continue
 
@@ -935,13 +959,13 @@ def cmd_analyze():
         if not cards_ok:
             errors += 1
 
-        log(f"  Buffer: 0x{buf_addr:08X} ({len(entries)} entries, {elapsed:.1f}s)")
-        log(f"  Hand ID: {hand_data['hand_id']}")
-        log(f"  Cards: '{found_cards}' {'OK' if cards_ok else 'FAIL (expected '+str(expected)+')'}")
-        log(f"  Players: {dict(real_players)} {'OK' if opps_ok else 'MISMATCH (GPT: '+str(opps)+')'}")
+        print(f"[ANALYZE]   Buffer: 0x{buf_addr:08X} ({len(entries)} entries, {elapsed:.1f}s)", flush=True)
+        print(f"[ANALYZE]   Hand ID: {hand_data['hand_id']}", flush=True)
+        print(f"[ANALYZE]   Cards: '{found_cards}' {'OK' if cards_ok else 'FAIL (expected '+str(expected)+')'}", flush=True)
+        print(f"[ANALYZE]   Players: {dict(real_players)} {'OK' if opps_ok else 'MISMATCH (GPT: '+str(opps)+')'}", flush=True)
         if found_community:
-            log(f"  Community: {found_community} {'OK' if comm_ok else 'MISMATCH (GPT: '+str(comm_expected)+')'}")
-        log(f"  Actions: {len(hand_data['actions'])}")
+            print(f"[ANALYZE]   Community: {found_community} {'OK' if comm_ok else 'MISMATCH (GPT: '+str(comm_expected)+')'}", flush=True)
+        print(f"[ANALYZE]   Actions: {len(hand_data['actions'])}", flush=True)
         for e in entries:
             log(f"    {format_entry(e)}")
         
