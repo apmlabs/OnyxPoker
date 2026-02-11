@@ -403,7 +403,7 @@ class HelperBar:
                     return
 
                 region = (active.left, active.top, active.width, active.height)
-                self.root.after(0, lambda: self.log(f"Window: {active.title[:40]}...", "DEBUG"))
+                # Removed verbose log
 
                 img = pyautogui.screenshot(region=region)
                 self.last_screenshot = img
@@ -415,7 +415,7 @@ class HelperBar:
                 screenshot_name = f'{timestamp}.png'
                 saved_path = os.path.join(screenshots_dir, screenshot_name)
                 img.save(saved_path)
-                self.root.after(0, lambda p=saved_path: self.log(f"Saved: {os.path.basename(p)}", "DEBUG"))
+                # Removed verbose log
 
                 # Memory scan (parallel with GPT) + ALWAYS dump (decide later to keep/delete)
                 dump_id_holder = [None]
@@ -452,7 +452,7 @@ class HelperBar:
                 # AI analysis
                 if AI_ONLY_MODE:
                     # AI-only mode: gpt-5.2 does both vision + decision
-                    self.root.after(0, lambda: self.log(f"API call ({MODEL})...", "DEBUG"))
+                    # Removed verbose API log
                     api_start = time.time()
                     vision = VisionDetector(logger=lambda m, l="DEBUG": self.root.after(0, lambda: self.log(m, l)))
                     result = vision.detect_poker_elements(temp_path, include_decision=True)
@@ -462,7 +462,7 @@ class HelperBar:
                     all_position_results = None
                 elif V1_MODE:
                     # V1 mode: gpt-5.2 for vision, strategy_engine for decision (no player detection)
-                    self.root.after(0, lambda: self.log(f"API call ({DEFAULT_MODEL})...", "DEBUG"))
+                    # Removed verbose API log
                     api_start = time.time()
                     vision = VisionDetectorLite(logger=lambda m, l="DEBUG": self.root.after(0, lambda: self.log(m, l)))
                     table_data = vision.detect_table(temp_path)
@@ -507,7 +507,7 @@ class HelperBar:
                         result['all_positions'] = all_position_results
                 else:
                     # Default: V2 mode - vision with player detection + strategy engine
-                    self.root.after(0, lambda: self.log(f"V2 API call ({DEFAULT_MODEL})...", "DEBUG"))
+                    # Removed verbose API log
                     api_start = time.time()
                     vision = VisionDetectorV2(logger=lambda m, l="DEBUG": self.root.after(0, lambda: self.log(m, l)))
                     table_data = vision.detect_table(temp_path)
@@ -632,8 +632,27 @@ class HelperBar:
                     threading.Thread(target=_tag_and_cleanup, daemon=True).start()
 
                 elapsed = time.time() - start
-                self.root.after(0, lambda t=api_time: self.log(f"API done: {t:.1f}s", "DEBUG"))
+                # Removed verbose API timing log
                 self._last_result = result  # Store for memory re-evaluation
+                
+                # Add user-friendly summary log
+                cards = result.get('hero_cards', [])
+                cards_str = ' '.join(cards) if cards else '??'
+                board = result.get('community_cards', [])
+                board_str = ' '.join(board) if board else '--'
+                pot = result.get('pot', 0)
+                action = result.get('action', '').upper()
+                amt = result.get('bet_size')
+                if amt and action in ('BET', 'RAISE'):
+                    action_str = f"{action} €{amt:.2f}"
+                else:
+                    action_str = action
+                
+                self.root.after(0, lambda c=cards_str, b=board_str, p=pot: 
+                    self.log(f"F9: {c} | {b} | Pot €{p:.2f}", "INFO"))
+                self.root.after(0, lambda a=action_str, r=result.get('reasoning', ''): 
+                    self.log(f"=> {a} ({r})", "INFO"))
+                
                 self.root.after(0, lambda: self._display_result(result, elapsed, img, screenshot_name))
 
             finally:
@@ -704,6 +723,19 @@ class HelperBar:
                 
                 n = hd.get('entry_count', 0)
                 if n != self._mem_last_entries or hd.get('hand_id_changed'):
+                    # Log new actions to left panel
+                    if n > self._mem_last_entries and not hd.get('hand_id_changed'):
+                        actions = hd.get('actions', [])
+                        # Get last few actions (new ones)
+                        for name, act, amt in actions[-(n - self._mem_last_entries):]:
+                            if act not in ('POST_SB', 'POST_BB', 'DEAL', '0x77'):
+                                if amt > 0:
+                                    self.root.after(0, lambda n=name, a=act, m=amt: 
+                                        self.log(f"[MEM] {n}: {a} €{m/100:.2f}", "INFO"))
+                                else:
+                                    self.root.after(0, lambda n=name, a=act: 
+                                        self.log(f"[MEM] {n}: {a}", "INFO"))
+                    
                     self._mem_last_entries = n
                     self.root.after(0, lambda d=hd, cnt=n: self._update_mem_display(d, cnt))
             except Exception as e:
@@ -713,7 +745,7 @@ class HelperBar:
             time.sleep(0.2)
 
     def _update_mem_display(self, hd, entry_count=0):
-        """Update right panel: show memory status + hero advice + live actions."""
+        """Update right panel: show context + advice + live actions."""
         cc = hd.get('community_cards', [])
         actions = hd.get('actions', [])
         mc = hd.get('hero_cards', '')
@@ -731,25 +763,36 @@ class HelperBar:
         # Rebuild right panel
         self.stats_text.delete('1.0', 'end')
 
-        # === SECTION 1: Memory Status ===
+        # === SECTION 1: CONTEXT HEADER ===
         lr = self._last_result or {}
-        mem_status = lr.get('memory_status', 'NO_MEMORY')
-        container = lr.get('memory_container_addr')
+        hand_id = hd.get('hand_id', '?')
         
-        if is_stale:
-            status_line = f"[MEMORY: STALE - using cached cards]"
-            self.stats_text.insert('end', status_line + '\n', 'DANGER')
-        elif container:
-            status_line = f"[MEMORY: Container {hex(container)[-6:]} | {entry_count} entries]"
-            self.stats_text.insert('end', status_line + '\n', 'MEMDATA')
-        elif mem_status == 'NO_BUFFER':
-            status_line = f"[SCREENSHOT ONLY - No memory]"
-            self.stats_text.insert('end', status_line + '\n', 'MEMDATA')
+        # Cards
+        if mc and len(mc) == 4:
+            cards_str = f"{mc[0:2]} {mc[2:4]}"
         else:
-            status_line = f"[MEMORY: Buffer only | {entry_count} entries]"
-            self.stats_text.insert('end', status_line + '\n', 'MEMDATA')
+            cards_str = "??"
         
-        self.stats_text.insert('end', '\n', 'MEMDATA')
+        # Board
+        board_str = ' '.join(cc) if cc else '--'
+        
+        # Pot and to_call from debug
+        debug = advice.get('_mem_debug', {}) if advice else {}
+        pot = debug.get('pot', lr.get('pot', 0))
+        to_call = debug.get('to_call', lr.get('to_call', 0))
+        
+        # Position and players
+        position = lr.get('position', '?')
+        num_players = debug.get('num_players', lr.get('num_players', '?'))
+        
+        # Display header
+        self.stats_text.insert('end', f"[HAND {hand_id}]\n", 'MEMDATA')
+        self.stats_text.insert('end', f"{cards_str} | Board: {board_str} | Pot: €{pot:.2f} | To call: €{to_call:.2f}\n", 'MEM')
+        self.stats_text.insert('end', f"Position: {position} | Players: {num_players}\n\n", 'MEMDATA')
+        
+        # STALE warning if applicable
+        if is_stale:
+            self.stats_text.insert('end', "[STALE - using cached cards]\n\n", 'DANGER')
 
         # === SECTION 2: Hero Advice (LARGE) ===
         if advice:
@@ -757,10 +800,7 @@ class HelperBar:
             amt = advice.get('bet_size')
             act_str = f"{act} €{amt:.2f}" if amt and act in ('BET', 'RAISE') else act
             
-            if is_stale:
-                self.stats_text.insert('end', f"=> {act_str} [STALE]\n", 'DANGER')
-            else:
-                self.stats_text.insert('end', f"=> {act_str}\n", 'ACTION')
+            self.stats_text.insert('end', f"=> {act_str}\n", 'ACTION')
             
             reason = advice.get('reasoning', '')
             if reason:
@@ -771,12 +811,11 @@ class HelperBar:
             if ha and ha.get('valid'):
                 self.stats_text.insert('end', self._hand_strength_str(ha) + '\n', 'HAND')
         else:
-            cards_str = f"{mc[0:2]} {mc[2:4]}" if mc and len(mc) == 4 else '??'
-            self.stats_text.insert('end', f"[Calculating... {cards_str}]\n", 'MEM')
+            self.stats_text.insert('end', f"[Calculating...]\n", 'MEM')
 
         # === SECTION 3: Opponent Info ===
         if lr.get('opponent_stats'):
-            self.stats_text.insert('end', '\n', 'MEMDATA')
+            self.stats_text.insert('end', '\n---\n', 'MEMDATA')
             for opp in lr['opponent_stats']:
                 if opp.get('hands', 0) > 0:
                     self.stats_text.insert('end',
@@ -784,7 +823,7 @@ class HelperBar:
 
         # === SECTION 4: Live Actions (last 8 only) ===
         if actions:
-            self.stats_text.insert('end', '\n', 'MEMDATA')
+            self.stats_text.insert('end', '\n---\n', 'MEMDATA')
             
             # Build action list with street markers
             action_lines = []
