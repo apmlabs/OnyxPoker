@@ -1,0 +1,406 @@
+﻿PokerStars Zoom Hand #259323855694:  Hold'em No Limit (€0.02/€0.05) - 2026/01/15 19:04:33 CET [2026/01/15 13:04:33 ET]
+Table 'Asterope' 6-max Seat #1 is the button
+Seat 1: 2tortosa (€6.11 in chips) 
+Seat 2: carlosbrugal (€2.07 in chips) 
+Seat 3: idealistslp (€4 in chips) 
+Seat 4: BARROS.jm (€2.08 in chips) 
+Seat 5: GRIFFIN168 (€2.31 in chips) 
+Seat 6: VirginLola (€4.84 in chips) 
+carlosbrugal: posts small blind €0.02
+idealistslp: posts big blind €0.05
+*** HOLE CARDS ***
+Dealt to idealistslp [As 5s]
+BARROS.jm: folds 
+GRIFFIN168: raises €0.10 to €0.15
+VirginLola: folds 
+2tortosa: folds 
+carlosbrugal: folds 
+idealistslp: calls €0.10
+*** FLOP *** [5h 5d Th]
+idealistslp: checks 
+GRIFFIN168: bets €0.20
+idealistslp: calls €0.20
+*** TURN *** [5h 5d Th] [Kh]
+idealistslp: bets €0.68
+GRIFFIN168: folds 
+Uncalled bet (€0.68) returned to idealistslp
+idealistslp collected €0.68 from pot
+idealistslp: doesn't show hand 
+*** SUMMARY ***
+Total pot €0.72 | Rake €0.04 
+Board [5h 5d Th Kh]
+Seat 1: 2tortosa (button) folded before Flop (didn't bet)
+Seat 2: carlosbrugal (small blind) folded before Flop
+Seat 3: idealistslp (big blind) collected (€0.68)
+Seat 4: BARROS.jm folded before Flop (didn't bet)
+Seat 5: GRIFFIN168 folded on the Turn
+Seat 6: VirginLola folded before Flop (didn't bet)
+
+
+
+PokerStars Zoom Hand #259323864818:  Hold'em No Limit (€0.02/€0.05) - 2026/01/15 19:05:14 CET [2026/01/15 13:05:14 ET]
+Table 'Asterope' 6-max Seat #1 is the button
+Seat 1: idealistslp (€4.33 in chips) 
+Seat 2: Xoseanro510 (€5 in chips) 
+Seat 3: darksousa (€5.87 in chips) 
+Seat 4: MakesMeRich (€10.80 in chips) 
+Seat 5: Macicled (€5.07 in chips) 
+Seat 6: al3xitto25 (€5 in chips) 
+Xoseanro510: posts small blind €0.02
+darksousa: posts big blind €0.05
+*** HOLE CARDS ***
+Dealt to idealistslp [Ad 9c]
+MakesMeRich: folds 
+Macicled: folds 
+al3xitto25: folds 
+idealistslp: raises €0.05 to €0.10
+Xoseanro510: folds 
+darksousa: calls €0.05
+*** FLOP *** [Kh 3c Ah]
+darksousa: checks 
+idealistslp: bets €0.21
+darksousa: calls €0.21
+*** TURN *** [Kh 3c Ah] [5s]
+darksousa: checks 
+idealistslp: bets €0.61
+darksousa: folds 
+Uncalled bet (€0.61) returned to idealistslp
+idealistslp collected €0.61 from pot
+idealistslp: doesn't show hand 
+*** SUMMARY ***
+Total pot €0.64 | Rake €0.03 
+Board [Kh 3c Ah 5s]
+Seat 1: idealistslp (button) collected (€0.61)
+Seat 2: Xoseanro510 (small blind) folded before Flop
+Seat 3: darksousa (big blind) folded on the Turn
+Seat 4: MakesMeRich folded before Flop (didn't bet)
+Seat 5: Macicled folded before Flop (didn't bet)
+Seat 6: al3xitto25 folded before Flop (didn't bet)
+
+
+
+PokerStars Zoom Hand #259323875781:  Hold'em No Limit (€0.02/€0.05) - 2026/01/15 19:06:02 CET [2026/01/15 13:06:02 ET]
+Table 'Asterope' 6-max Seat #1 is the button
+Seat 1: calopoker_10 (€5.07 in chips) 
+Seat 2: idealistslp (€4.63 in chips) 
+Seat 3: MakesMeRich (€10.73 in chips) 
+Seat 4: JEY566 (€4.80 in chips) 
+Seat 5: al3xitto25 (€5.49 in chips) 
+Seat 6: BARROS.jm (€1.76 in chips) 
+idealistslp: posts small blind €0.02
+MakesMeRich: posts big blind €0.05
+*** HOLE CARDS ***
+Dealt to idealistslp [6h 8h]
+JEY566: calls €0.05
+al3xitto25: folds 
+BARROS.jm: calls €0.05
+calopoker_10: raises €0.25 to €0.30
+idealistslp: folds 
+MakesMeRich: folds 
+JEY566: calls €0.25
+BARROS.jm: calls €0.25
+*** FLOP *** [2s Ts 7c]
+JEY566: checks 
+BARROS.jm: bets €1.46 and is all-in
+calopoker_10: folds 
+JEY566: folds 
+Uncalled bet (€1.46) returned to BARROS.jm
+BARROS.jm collected €0.92 from pot
+BARROS.jm: doesn't show hand 
+*** SUMMARY ***
+Total pot €0.97 | Rake €0.05 
+Board [2s Ts 7c]
+Seat 1: calopoker_10 (button) folded on the Flop
+Seat 2: idealistslp (small blind) folded before Flop
+Seat 3: MakesMeRich (big blind) folded before Flop
+Seat 4: JEY566 folded on the Flop
+Seat 5: al3xitto25 folded before Flop (didn't bet)
+Seat 6: BARROS.jm collected (€0.92)
+
+
+
+PokerStars Zoom Hand #259323879029:  Hold'em No Limit (€0.02/€0.05) - 2026/01/15 19:06:16 CET [2026/01/15 13:06:16 ET]
+Table 'Asterope' 6-max Seat #1 is the button
+Seat 1: EktorKing (€5 in chips) 
+Seat 2: educastellon (€8.43 in chips) 
+Seat 3: MakesMeRich (€6.64 in chips) 
+Seat 4: FllanosB (€7.54 in chips) 
+Seat 5: nicotrollier (€5.05 in chips) 
+Seat 6: idealistslp (€4.61 in chips) 
+educastellon: posts small blind €0.02
+MakesMeRich: posts big blind €0.05
+*** HOLE CARDS ***
+Dealt to idealistslp [Js 3s]
+FllanosB: folds 
+nicotrollier: folds 
+idealistslp: folds 
+EktorKing: folds 
+educastellon: folds 
+Uncalled bet (€0.03) returned to MakesMeRich
+MakesMeRich collected €0.04 from pot
+MakesMeRich: doesn't show hand 
+*** SUMMARY ***
+Total pot €0.04 | Rake €0 
+Seat 1: EktorKing (button) folded before Flop (didn't bet)
+Seat 2: educastellon (small blind) folded before Flop
+Seat 3: MakesMeRich (big blind) collected (€0.04)
+Seat 4: FllanosB folded before Flop (didn't bet)
+Seat 5: nicotrollier folded before Flop (didn't bet)
+Seat 6: idealistslp folded before Flop (didn't bet)
+
+
+
+PokerStars Zoom Hand #259323882327:  Hold'em No Limit (€0.02/€0.05) - 2026/01/15 19:06:31 CET [2026/01/15 13:06:31 ET]
+Table 'Asterope' 6-max Seat #1 is the button
+Seat 1: GGSCR29 (€5.05 in chips) 
+Seat 2: NJGR1 (€5.37 in chips) 
+Seat 3: idealistslp (€4.61 in chips) 
+Seat 4: AA00717 (€2 in chips) 
+Seat 5: BARROS.jm (€2.38 in chips) 
+Seat 6: Agonista (€2.91 in chips) 
+NJGR1: posts small blind €0.02
+idealistslp: posts big blind €0.05
+*** HOLE CARDS ***
+Dealt to idealistslp [6d 4h]
+AA00717: raises €0.15 to €0.20
+BARROS.jm: folds 
+Agonista: folds 
+GGSCR29: folds 
+NJGR1: folds 
+idealistslp: folds 
+Uncalled bet (€0.15) returned to AA00717
+AA00717 collected €0.12 from pot
+AA00717: doesn't show hand 
+*** SUMMARY ***
+Total pot €0.12 | Rake €0 
+Seat 1: GGSCR29 (button) folded before Flop (didn't bet)
+Seat 2: NJGR1 (small blind) folded before Flop
+Seat 3: idealistslp (big blind) folded before Flop
+Seat 4: AA00717 collected (€0.12)
+Seat 5: BARROS.jm folded before Flop (didn't bet)
+Seat 6: Agonista folded before Flop (didn't bet)
+
+
+
+PokerStars Zoom Hand #259323883471:  Hold'em No Limit (€0.02/€0.05) - 2026/01/15 19:06:35 CET [2026/01/15 13:06:35 ET]
+Table 'Asterope' 6-max Seat #1 is the button
+Seat 1: biogaia (€5.96 in chips) 
+Seat 2: Macicled (€5 in chips) 
+Seat 3: BARROS.jm (€2.38 in chips) 
+Seat 4: JENOFONTE73 (€7.94 in chips) 
+Seat 5: idealistslp (€4.56 in chips) 
+Seat 6: KerenR (€9.26 in chips) 
+Macicled: posts small blind €0.02
+BARROS.jm: posts big blind €0.05
+*** HOLE CARDS ***
+Dealt to idealistslp [4h Ah]
+JENOFONTE73: folds 
+idealistslp: raises €0.05 to €0.10
+KerenR: folds 
+biogaia: folds 
+Macicled: folds 
+BARROS.jm: folds 
+Uncalled bet (€0.05) returned to idealistslp
+idealistslp collected €0.12 from pot
+idealistslp: doesn't show hand 
+*** SUMMARY ***
+Total pot €0.12 | Rake €0 
+Seat 1: biogaia (button) folded before Flop (didn't bet)
+Seat 2: Macicled (small blind) folded before Flop
+Seat 3: BARROS.jm (big blind) folded before Flop
+Seat 4: JENOFONTE73 folded before Flop (didn't bet)
+Seat 5: idealistslp collected (€0.12)
+Seat 6: KerenR folded before Flop (didn't bet)
+
+
+
+PokerStars Zoom Hand #259323881296:  Hold'em No Limit (€0.02/€0.05) - 2026/01/15 19:06:26 CET [2026/01/15 13:06:26 ET]
+Table 'Asterope' 6-max Seat #1 is the button
+Seat 1: neirdanaej (€7.68 in chips) 
+Seat 2: Markpartebragas (€23.83 in chips) 
+Seat 3: tcubss (€2.50 in chips) 
+Seat 4: JEY566 (€4.50 in chips) 
+Seat 5: idealistslp (€4.61 in chips) 
+Seat 6: Agonista (€1.82 in chips) 
+Markpartebragas: posts small blind €0.02
+tcubss: posts big blind €0.05
+*** HOLE CARDS ***
+Dealt to idealistslp [6d 8c]
+JEY566: calls €0.05
+idealistslp: folds 
+Agonista: folds 
+neirdanaej: folds 
+Markpartebragas: folds 
+tcubss: checks 
+*** FLOP *** [Tc 3d Jd]
+tcubss: bets €0.05
+JEY566: calls €0.05
+*** TURN *** [Tc 3d Jd] [4c]
+tcubss: bets €0.05
+JEY566: calls €0.05
+*** RIVER *** [Tc 3d Jd 4c] [Td]
+tcubss: checks 
+JEY566: bets €0.25
+tcubss: calls €0.25
+*** SHOW DOWN ***
+JEY566: shows [Kd 7d] (a flush, King high)
+tcubss: mucks hand 
+JEY566 collected €0.78 from pot
+*** SUMMARY ***
+Total pot €0.82 | Rake €0.04 
+Board [Tc 3d Jd 4c Td]
+Seat 1: neirdanaej (button) folded before Flop (didn't bet)
+Seat 2: Markpartebragas (small blind) folded before Flop
+Seat 3: tcubss (big blind) mucked [7c Ts]
+Seat 4: JEY566 showed [Kd 7d] and won (€0.78) with a flush, King high
+Seat 5: idealistslp folded before Flop (didn't bet)
+Seat 6: Agonista folded before Flop (didn't bet)
+
+
+
+PokerStars Zoom Hand #259323887883:  Hold'em No Limit (€0.02/€0.05) - 2026/01/15 19:06:54 CET [2026/01/15 13:06:54 ET]
+Table 'Asterope' 6-max Seat #1 is the button
+Seat 1: idealistslp (€4.63 in chips) 
+Seat 2: lulula24 (€5.09 in chips) 
+Seat 3: trumoan (€6.13 in chips) 
+Seat 4: Agonista (€3.95 in chips) 
+Seat 5: Fuckhazar (€2.81 in chips) 
+Seat 6: BEN7379 (€2.04 in chips) 
+lulula24: posts small blind €0.02
+trumoan: posts big blind €0.05
+*** HOLE CARDS ***
+Dealt to idealistslp [Jc 3c]
+Agonista: folds 
+Fuckhazar: folds 
+BEN7379: folds 
+idealistslp: raises €0.05 to €0.10
+lulula24: raises €0.30 to €0.40
+trumoan: folds 
+idealistslp: folds 
+Uncalled bet (€0.30) returned to lulula24
+lulula24 collected €0.25 from pot
+lulula24: doesn't show hand 
+*** SUMMARY ***
+Total pot €0.25 | Rake €0 
+Seat 1: idealistslp (button) folded before Flop
+Seat 2: lulula24 (small blind) collected (€0.25)
+Seat 3: trumoan (big blind) folded before Flop
+Seat 4: Agonista folded before Flop (didn't bet)
+Seat 5: Fuckhazar folded before Flop (didn't bet)
+Seat 6: BEN7379 folded before Flop (didn't bet)
+
+
+
+PokerStars Zoom Hand #259323891406:  Hold'em No Limit (€0.02/€0.05) - 2026/01/15 19:07:10 CET [2026/01/15 13:07:10 ET]
+Table 'Asterope' 6-max Seat #1 is the button
+Seat 1: xelblm34 (€1.89 in chips) 
+Seat 2: idealistslp (€4.53 in chips) 
+Seat 3: pauma1123 (€3.13 in chips) 
+Seat 4: jc_barriuso (€12.50 in chips) 
+Seat 5: panddore (€3.23 in chips) 
+Seat 6: gojusor (€0.85 in chips) 
+idealistslp: posts small blind €0.02
+pauma1123: posts big blind €0.05
+*** HOLE CARDS ***
+Dealt to idealistslp [5h 7s]
+jc_barriuso: folds 
+panddore: folds 
+gojusor: folds 
+xelblm34: calls €0.05
+idealistslp: folds 
+pauma1123: checks 
+*** FLOP *** [5s 2h Ah]
+pauma1123: checks 
+xelblm34: bets €0.05
+pauma1123: folds 
+Uncalled bet (€0.05) returned to xelblm34
+xelblm34 collected €0.11 from pot
+xelblm34: doesn't show hand 
+*** SUMMARY ***
+Total pot €0.12 | Rake €0.01 
+Board [5s 2h Ah]
+Seat 1: xelblm34 (button) collected (€0.11)
+Seat 2: idealistslp (small blind) folded before Flop
+Seat 3: pauma1123 (big blind) folded on the Flop
+Seat 4: jc_barriuso folded before Flop (didn't bet)
+Seat 5: panddore folded before Flop (didn't bet)
+Seat 6: gojusor folded before Flop (didn't bet)
+
+
+
+PokerStars Zoom Hand #259323892763:  Hold'em No Limit (€0.02/€0.05) - 2026/01/15 19:07:16 CET [2026/01/15 13:07:16 ET]
+Table 'Asterope' 6-max Seat #1 is the button
+Seat 1: jpsousa97 (€6.78 in chips) 
+Seat 2: smichet (€8.93 in chips) 
+Seat 3: Agonista (€2.91 in chips) 
+Seat 4: NEMOXYX (€5.67 in chips) 
+Seat 5: Ruy Chapéu2 (€8.18 in chips) 
+Seat 6: idealistslp (€4.51 in chips) 
+smichet: posts small blind €0.02
+Agonista: posts big blind €0.05
+*** HOLE CARDS ***
+Dealt to idealistslp [Qc Qh]
+NEMOXYX: folds 
+Ruy Chapéu2: folds 
+idealistslp: raises €0.05 to €0.10
+jpsousa97: calls €0.10
+smichet: folds 
+Agonista: calls €0.05
+*** FLOP *** [Jc Jh Js]
+Agonista: checks 
+idealistslp: bets €0.30
+jpsousa97: calls €0.30
+Agonista: folds 
+*** TURN *** [Jc Jh Js] [7h]
+idealistslp: bets €1.12
+jpsousa97: calls €1.12
+*** RIVER *** [Jc Jh Js 7h] [2c]
+idealistslp: bets €2.99 and is all-in
+jpsousa97: folds 
+Uncalled bet (€2.99) returned to idealistslp
+idealistslp collected €3 from pot
+idealistslp: doesn't show hand 
+*** SUMMARY ***
+Total pot €3.16 | Rake €0.16 
+Board [Jc Jh Js 7h 2c]
+Seat 1: jpsousa97 (button) folded on the River
+Seat 2: smichet (small blind) folded before Flop
+Seat 3: Agonista (big blind) folded on the Flop
+Seat 4: NEMOXYX folded before Flop (didn't bet)
+Seat 5: Ruy Chapéu2 folded before Flop (didn't bet)
+Seat 6: idealistslp collected (€3)
+
+
+
+PokerStars Zoom Hand #259323911834:  Hold'em No Limit (€0.02/€0.05) - 2026/01/15 19:08:39 CET [2026/01/15 13:08:39 ET]
+Table 'Asterope' 6-max Seat #1 is the button
+Seat 1: ManiRami (€5 in chips) 
+Seat 2: Agonista (€3.83 in chips) 
+Seat 3: KerenR (€5.10 in chips) 
+Seat 4: EktorKing (€5 in chips) 
+Seat 5: idealistslp (€5.99 in chips) 
+Seat 6: educastellon (€8.72 in chips) 
+Agonista: posts small blind €0.02
+KerenR: posts big blind €0.05
+*** HOLE CARDS ***
+Dealt to idealistslp [Ah Ks]
+EktorKing: folds 
+idealistslp: raises €0.12 to €0.17
+educastellon: folds 
+ManiRami: folds 
+Agonista: folds 
+KerenR: folds 
+Uncalled bet (€0.12) returned to idealistslp
+idealistslp collected €0.12 from pot
+idealistslp: doesn't show hand 
+*** SUMMARY ***
+Total pot €0.12 | Rake €0 
+Seat 1: ManiRami (button) folded before Flop (didn't bet)
+Seat 2: Agonista (small blind) folded before Flop
+Seat 3: KerenR (big blind) folded before Flop
+Seat 4: EktorKing folded before Flop (didn't bet)
+Seat 5: idealistslp collected (€0.12)
+Seat 6: educastellon folded before Flop (didn't bet)
+
+
+

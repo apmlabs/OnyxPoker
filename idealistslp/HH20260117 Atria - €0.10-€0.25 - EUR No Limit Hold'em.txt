@@ -1,0 +1,37 @@
+﻿PokerStars Zoom Hand #259354754382:  Hold'em No Limit (€0.10/€0.25) - 2026/01/17 23:25:16 CET [2026/01/17 17:25:16 ET]
+Table 'Atria' 6-max Seat #1 is the button
+Seat 1: Viu1 (€18.34 in chips) 
+Seat 2: ymb0148 (€28.70 in chips) 
+Seat 3: idealistslp (€11.44 in chips) 
+Seat 4: JUSANAL (€5.33 in chips) 
+Seat 5: palanquilla0 (€25.64 in chips) 
+Seat 6: Maamaa09 (€7.81 in chips) 
+ymb0148: posts small blind €0.10
+idealistslp: posts big blind €0.25
+*** HOLE CARDS ***
+Dealt to idealistslp [9s Qc]
+JUSANAL: folds 
+palanquilla0: folds 
+Maamaa09: raises €0.25 to €0.50
+Viu1: folds 
+ymb0148: folds 
+idealistslp: raises €0.25 to €0.75
+Maamaa09: calls €0.25
+*** FLOP *** [5h Kh 6d]
+idealistslp: bets €0.25
+Maamaa09: folds 
+Uncalled bet (€0.25) returned to idealistslp
+idealistslp collected €1.52 from pot
+idealistslp: doesn't show hand 
+*** SUMMARY ***
+Total pot €1.60 | Rake €0.08 
+Board [5h Kh 6d]
+Seat 1: Viu1 (button) folded before Flop (didn't bet)
+Seat 2: ymb0148 (small blind) folded before Flop
+Seat 3: idealistslp (big blind) collected (€1.52)
+Seat 4: JUSANAL folded before Flop (didn't bet)
+Seat 5: palanquilla0 folded before Flop (didn't bet)
+Seat 6: Maamaa09 folded on the Flop
+
+
+
