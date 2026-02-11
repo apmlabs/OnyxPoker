@@ -663,48 +663,57 @@ class HelperBar:
                 hd = rescan_buffer(self._mem_buf_addr, self._mem_hand_id)
                 if hd is None:
                     self._mem_polling = False
-                    self.root.after(0, lambda: self.log("[MEM] Buffer gone, polling stopped", "DEBUG"))
+                    self.root.after(0, lambda: self.log("[MEM] Buffer lost, polling stopped", "DEBUG"))
                     break
+                
+                # Check if hand changed
+                if hd.get('hand_id_changed'):
+                    new_hand_id = hd.get('hand_id')
+                    new_buf_addr = hd.get('buf_addr')
+                    self._mem_hand_id = new_hand_id
+                    self._mem_buf_addr = new_buf_addr
+                    self._mem_last_entries = 0
+                    self.root.after(0, lambda h=new_hand_id: 
+                        self.log(f"[MEM] New hand {h}, polling continues", "INFO"))
+                
                 n = hd.get('entry_count', 0)
                 if n != self._mem_last_entries:
                     self._mem_last_entries = n
                     self.root.after(0, lambda d=hd, cnt=n: self._update_mem_display(d, cnt))
             except Exception as e:
                 self._mem_polling = False
-                self.root.after(0, lambda e=e: self.log(f"[MEM] Poll error: {e}", "DEBUG"))
+                self.root.after(0, lambda e=e: self.log(f"[MEM] Poll error: {e}", "ERROR"))
                 break
             time.sleep(0.2)
 
     def _update_mem_display(self, hd, entry_count=0):
-        """Update right panel: show live strategy advice from memory + action feed."""
+        """Update right panel: show memory status + hero advice + live actions."""
         cc = hd.get('community_cards', [])
         actions = hd.get('actions', [])
+        mc = hd.get('hero_cards', '')
         
         # Re-evaluate strategy with memory data
         advice = self._reeval_with_memory(hd)
         
-        # Build live action feed
-        action_lines = []
-        deal_count = 0
-        for name, act_code, amt in actions:
-            if act_code in ('POST_SB', 'POST_BB'):
-                continue
-            if act_code == 'DEAL' or name is None:
-                deal_count += 1
-                street = {1: 'FLOP', 2: 'TURN', 3: 'RIVER'}.get(deal_count, 'DEAL')
-                board_at = cc[:3] if deal_count == 1 else (cc[:4] if deal_count == 2 else cc)
-                action_lines.append(('street', f"--- {street} {' '.join(board_at)} ---"))
-                continue
-            line = f"{name or '?'}: {act_code}"
-            if amt > 0:
-                line += f" €{amt/100:.2f}"
-            is_hero = (name == 'idealistslp')
-            action_lines.append(('hero' if is_hero else 'villain', line))
-
         # Rebuild right panel
         self.stats_text.delete('1.0', 'end')
 
-        # Section 1: Current advice from memory
+        # === SECTION 1: Memory Status ===
+        lr = self._last_result or {}
+        mem_status = lr.get('memory_status', 'NO_MEMORY')
+        container = lr.get('memory_container_addr')
+        
+        if container:
+            status_line = f"[MEMORY: Container {hex(container)[-6:]} | {entry_count} entries]"
+        elif mem_status == 'NO_BUFFER':
+            status_line = f"[SCREENSHOT ONLY - No memory]"
+        else:
+            status_line = f"[MEMORY: Buffer only | {entry_count} entries]"
+        
+        self.stats_text.insert('end', status_line + '\n', 'MEMDATA')
+        self.stats_text.insert('end', '\n', 'MEMDATA')
+
+        # === SECTION 2: Hero Advice (LARGE) ===
         if advice:
             act = advice.get('action', '').upper()
             amt = advice.get('bet_size')
@@ -713,38 +722,53 @@ class HelperBar:
             
             reason = advice.get('reasoning', '')
             if reason:
-                self.stats_text.insert('end', f"{reason}\n", 'DRAW')
+                self.stats_text.insert('end', f"{reason}\n\n", 'DRAW')
             
             # Hand strength
             ha = advice.get('hand_analysis', {})
             if ha and ha.get('valid'):
                 self.stats_text.insert('end', self._hand_strength_str(ha) + '\n', 'HAND')
-            
-            # Debug info
-            debug = advice.get('_mem_debug', {})
-            if debug:
-                self.stats_text.insert('end', 
-                    f"Pot:{debug.get('pot',0):.2f} Call:{debug.get('to_call',0):.2f} "
-                    f"Agg:{debug.get('is_aggressor',False)} Raise:{debug.get('is_facing_raise',False)} "
-                    f"Players:{debug.get('num_players',0)}\n", 'MEMDATA')
         else:
-            mc = hd.get('hero_cards', '')
             cards_str = f"{mc[0:2]} {mc[2:4]}" if mc and len(mc) == 4 else '??'
-            self.stats_text.insert('end', f"[MEM] {cards_str} (calculating...)\n", 'MEM')
+            self.stats_text.insert('end', f"[Calculating... {cards_str}]\n", 'MEM')
 
-        # Section 2: Opponent info from F9
-        lr = self._last_result or {}
+        # === SECTION 3: Opponent Info ===
         if lr.get('opponent_stats'):
-            self.stats_text.insert('end', '---\n', 'MEMDATA')
+            self.stats_text.insert('end', '\n', 'MEMDATA')
             for opp in lr['opponent_stats']:
                 if opp.get('hands', 0) > 0:
                     self.stats_text.insert('end',
-                        f"{opp['name']} {opp['archetype'].upper()} - {opp['advice']}\n", 'OPPONENT')
+                        f"{opp['name']} ({opp['archetype'].upper()})\n", 'OPPONENT')
 
-        # Section 3: Live action feed
-        if action_lines:
-            self.stats_text.insert('end', '--- LIVE ---\n', 'MEM')
-            for kind, line in action_lines:
+        # === SECTION 4: Live Actions (last 8 only) ===
+        if actions:
+            self.stats_text.insert('end', '\n', 'MEMDATA')
+            
+            # Build action list with street markers
+            action_lines = []
+            deal_count = 0
+            for name, act_code, amt in actions:
+                if act_code in ('POST_SB', 'POST_BB'):
+                    continue
+                if act_code == 'DEAL' or name is None:
+                    deal_count += 1
+                    street = {1: 'FLOP', 2: 'TURN', 3: 'RIVER'}.get(deal_count, '')
+                    if street:
+                        board_at = cc[:3] if deal_count == 1 else (cc[:4] if deal_count == 2 else cc)
+                        action_lines.append(('street', f"{street} {' '.join(board_at)}"))
+                    continue
+                
+                if act_code == '0x77':  # WIN message
+                    continue
+                    
+                line = f"{name or '?'}: {act_code}"
+                if amt > 0:
+                    line += f" €{amt/100:.2f}"
+                is_hero = (name == 'idealistslp')
+                action_lines.append(('hero' if is_hero else 'villain', line))
+            
+            # Show last 8 actions only
+            for kind, line in action_lines[-8:]:
                 if kind == 'street':
                     self.stats_text.insert('end', line + '\n', 'DRAW')
                 elif kind == 'hero':
@@ -752,25 +776,14 @@ class HelperBar:
                 else:
                     self.stats_text.insert('end', line + '\n', 'MEMDATA')
 
-        # Log to left panel (show last action + advice)
-        if actions:
-            last_name, last_act, last_amt = actions[-1]
-            if last_act != 'DEAL':
-                log_str = f"{last_name}: {last_act}"
-                if last_amt > 0:
-                    log_str += f" €{last_amt/100:.2f}"
-                if advice:
-                    log_str += f" → {advice.get('action','?').upper()}"
-                self.log(f"[MEM LIVE] ({entry_count}) {log_str}", "DEBUG")
-
         # Update time label
         self.time_label.config(text=f"LIVE ({entry_count})")
 
-        # Log to session file
+        # Log to session file with full debug info
         self._log_mem_update(hd, advice)
 
     def _log_mem_update(self, hd, advice):
-        """Append a memory poll update to the session log."""
+        """Append a memory poll update to the session log with full debug info."""
         entry = {
             'timestamp': datetime.now().isoformat(),
             'type': 'mem_poll',
@@ -779,11 +792,17 @@ class HelperBar:
             'memory_community': hd.get('community_cards', []),
             'memory_actions': hd.get('actions', []),
             'entry_count': hd.get('entry_count', 0),
+            'buf_addr': hex(hd['buf_addr']) if hd.get('buf_addr') else None,
+            'hand_id_changed': hd.get('hand_id_changed', False),
         }
         if advice:
             entry['action'] = advice.get('action')
             entry['bet_size'] = advice.get('bet_size')
             entry['reasoning'] = advice.get('reasoning')
+            # Include debug info for analysis
+            debug = advice.get('_mem_debug', {})
+            if debug:
+                entry['debug'] = debug
         try:
             with open(SESSION_LOG, 'a') as f:
                 f.write(json.dumps(entry) + '\n')
