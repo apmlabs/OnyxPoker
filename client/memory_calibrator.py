@@ -886,7 +886,12 @@ def cmd_analyze():
         hero_cards = meta['hero_cards']
         bin_path = meta['_bin_path']
         regions = meta['regions']
-        opps = [o['name'] for o in meta.get('opponents', []) if o.get('name')]
+        # Handle both formats: list of dicts or list of strings
+        opps_raw = meta.get('opponents', [])
+        if opps_raw and isinstance(opps_raw[0], dict):
+            opps = [o['name'] for o in opps_raw if o.get('name')]
+        else:
+            opps = [o for o in opps_raw if o]
         expected = ''.join(hero_cards) if hero_cards else None
 
         log(f"{'='*60}")
