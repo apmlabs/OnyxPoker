@@ -1,6 +1,6 @@
 # OnyxPoker - Status Tracking
 
-**Last Updated**: February 11, 2026 10:34 UTC
+**Last Updated**: February 11, 2026 21:10 UTC
 
 ---
 
@@ -14,6 +14,7 @@
 | helper_bar.py --ai-only | ✅ | AI does both vision + decision |
 | helper_bar.py --bot | ⚠️ | Bot mode: needs testing (button detection untested) |
 | memory_calibrator.py | ✅ | v5: Container scan fixed for new PS build (Feb 2026) |
+| Memory polling | ✅ | Rescans on buffer loss, updates UI every 200ms |
 | test_screenshots.py | ✅ | V1 vs V2 comparison + --track mode |
 | vision_detector_lite.py | ✅ | GPT-5.2 for vision only (V1) ~3.9s |
 | vision_detector_v2.py | ✅ | GPT-5.2 + opponent detection (V2) ~5.5s |
@@ -54,6 +55,36 @@
 ---
 
 ## Session History
+
+### Session 89: Memory Polling Fixes (February 11, 2026)
+
+**Fixed 3 critical issues preventing live memory updates.**
+
+**Problem 1: Player names showing as `None`**
+- Symptom: `[MEM] None: FOLD`, `[MEM] None: RAISE €0.10`
+- Root cause: When buffer moved to new address (hand changed), name pointers became invalid
+- Fix: `rescan_buffer` now returns full hand data with fresh player names from new buffer
+
+**Problem 2: Buffer lost after ~30 seconds**
+- Symptom: `[MEM] Buffer lost, polling stopped` every 30-60 seconds
+- Root cause: When `rescan_buffer` returned None, polling just stopped
+- Fix: On buffer loss, do full `scan_live()` to find new buffer location, continue polling
+
+**Problem 3: Right panel frozen**
+- Symptom: Left panel showed `[MEM LIVE]` but right panel stayed frozen on preflop data
+- Root cause: UI only updated when entry count changed, not on every poll
+- Fix: Update UI on EVERY poll (200ms), not just when new actions appear
+
+**Session log analysis (33 F9 presses, 96 memory polls):**
+- Polling IS working (96 poll entries logged)
+- Buffer moves detected: 0x21a43c70 → 0x2054cb10 → 0x21a462b0 (multiple times)
+- Actions logged: RAISE, CALL, FOLD, BET, CHECK (WIN filtered out)
+- One hand worked perfectly: followed from preflop → flop → turn → river
+
+**Files changed:**
+- helper_bar.py - Fixed `_mem_poll_loop`: rescan on buffer loss, update UI every poll, filter WIN actions
+
+**Next**: Test on Windows to verify polling continues across hands
 
 ### Session 88: Container Signature Fix + Magic Number Optimization (February 11, 2026)
 
