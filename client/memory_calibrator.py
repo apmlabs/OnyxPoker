@@ -201,11 +201,11 @@ def extract_hand_data(entries):
             if e['action_code'] == 0x50 and bb_seat is None:  # POST_BB
                 bb_seat = e['seat']
 
-    # Card caching: save when found, restore when missing
+    # Card caching: save when found, DON'T restore on new hand
     if hero_cards:
         _card_cache[hand_id] = hero_cards
-    elif hand_id in _card_cache:
-        hero_cards = _card_cache[hand_id]
+    # Don't use cache - if cards not found, return None
+    # The polling will keep trying until SEATED entries appear
 
     # Derive position from hero_seat relative to BB in 6-max
     position = None
