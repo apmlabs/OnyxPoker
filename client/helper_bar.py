@@ -99,6 +99,7 @@ class HelperBar:
         self._mem_buf_addr = None  # Known buffer address for fast rescan
         self._mem_hand_id = None   # Current hand_id being tracked
         self._mem_polling = False  # Whether polling loop is active
+        self._mem_poll_generation = 0  # Increment on F9 to invalidate old polls
         self._mem_last_entries = 0 # Last known entry count (detect updates)
         self._last_result = None   # Last GPT result for re-evaluation during polling
         self._pending_mem_poll = None  # (buf_addr, hand_id) to start after display
@@ -372,6 +373,7 @@ class HelperBar:
 
         # Stop any active memory polling from previous hand
         self._mem_polling = False
+        self._mem_poll_generation += 1  # Invalidate any queued updates from old poll
 
         self._analyzing = True
         #self.status_label.config(text="Analyzing...", fg='#ffff00')
@@ -681,18 +683,17 @@ class HelperBar:
         self._mem_last_entries = 0
         
         # Start thread if not already running
-        # Set flag AFTER starting thread to avoid race condition
         if not self._mem_polling:
-            threading.Thread(target=self._mem_poll_loop, daemon=True).start()
             self._mem_polling = True
-            self._mem_polling = True
-            threading.Thread(target=self._mem_poll_loop, daemon=True).start()
+            gen = self._mem_poll_generation  # Capture current generation
+            threading.Thread(target=lambda: self._mem_poll_loop(gen), daemon=True).start()
+            self.log(f"[MEM] Poll started (gen {gen})", "DEBUG")
 
-    def _mem_poll_loop(self):
+    def _mem_poll_loop(self, generation):
         """Background thread: rescan buffer every 200ms, push UI updates."""
         from memory_calibrator import rescan_buffer, scan_live
-        self.root.after(0, lambda: self.log("[MEM] Polling started", "DEBUG"))
-        while self._mem_polling:
+        self.root.after(0, lambda: self.log(f"[MEM] Poll loop gen {generation} started", "DEBUG"))
+        while self._mem_polling and self._mem_poll_generation == generation:
             try:
                 hd = rescan_buffer(self._mem_buf_addr, self._mem_hand_id)
                 if hd is None:
@@ -740,9 +741,10 @@ class HelperBar:
                     
                     # CRITICAL: Update display immediately when hand changes
                     # This shows the new cards without waiting for F9
-                    # But only if still polling (not stopped by F9)
-                    if self._mem_polling:
-                        self.root.after(0, lambda d=hd: self._update_mem_display(d, hd.get('entry_count', 0)))
+                    # Check generation to prevent old poll from updating after F9
+                    if self._mem_poll_generation == generation:
+                        self.root.after(0, lambda d=hd, g=generation: 
+                            self._update_mem_display(d, hd.get('entry_count', 0), g))
                 
                 n = hd.get('entry_count', 0)
                 # Always update UI (not just when entry count changes)
@@ -756,25 +758,33 @@ class HelperBar:
                     for name, act, amt in new_actions:
                         if act not in ('POST_SB', 'POST_BB', 'DEAL', '0x77', 'WIN'):
                             if amt > 0:
-                                self.root.after(0, lambda n=name, a=act, m=amt: 
-                                    self.log(f"[MEM] {n}: {a} €{m/100:.2f}", "INFO"))
+                                self.root.after(0, lambda n=name, a=act, m=amt, g=generation: 
+                                    self.log(f"[MEM] {n}: {a} €{m/100:.2f}", "INFO") if self._mem_poll_generation == g else None)
                             else:
-                                self.root.after(0, lambda n=name, a=act: 
-                                    self.log(f"[MEM] {n}: {a}", "INFO"))
+                                self.root.after(0, lambda n=name, a=act, g=generation: 
+                                    self.log(f"[MEM] {n}: {a}", "INFO") if self._mem_poll_generation == g else None)
                 
                 self._mem_last_entries = n
                 # Update UI on every poll (not just when count changes)
-                # But only if still polling (not stopped by F9)
-                if self._mem_polling:
-                    self.root.after(0, lambda d=hd, cnt=n: self._update_mem_display(d, cnt))
+                # Check generation to prevent old poll from updating after F9
+                if self._mem_poll_generation == generation:
+                    self.root.after(0, lambda d=hd, cnt=n, g=generation: 
+                        self._update_mem_display(d, cnt, g))
             except Exception as e:
                 self._mem_polling = False
                 self.root.after(0, lambda e=e: self.log(f"[MEM] Poll error: {e}", "ERROR"))
                 break
             time.sleep(0.2)
 
-    def _update_mem_display(self, hd, entry_count=0):
+    def _update_mem_display(self, hd, entry_count=0, generation=None):
         """Update right panel: show context + advice + live actions."""
+        # Check generation - if mismatch, this is from an old poll, ignore it
+        if generation is not None and generation != self._mem_poll_generation:
+            self.log(f"[MEM] Ignoring stale update (gen {generation} vs {self._mem_poll_generation})", "DEBUG")
+            return  # Stale update from old poll, ignore
+        
+        self.log(f"[MEM] Updating display (gen {generation}, entries {entry_count})", "DEBUG")
+        
         cc = hd.get('community_cards', [])
         actions = hd.get('actions', [])
         mc = hd.get('hero_cards', '')
