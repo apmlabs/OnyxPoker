@@ -769,9 +769,8 @@ class HelperBar:
         # Rebuild right panel
         self.stats_text.delete('1.0', 'end')
 
-        # === SECTION 1: CONTEXT HEADER ===
+        # === SECTION 1: CONTEXT HEADER (no hand_id, no empty lines) ===
         lr = self._last_result or {}
-        hand_id = hd.get('hand_id', '?')
         
         # Cards
         if mc and len(mc) == 4:
@@ -791,14 +790,12 @@ class HelperBar:
         position = lr.get('position', '?')
         num_players = debug.get('num_players', lr.get('num_players', '?'))
         
-        # Display header
-        self.stats_text.insert('end', f"[HAND {hand_id}]\n", 'MEMDATA')
-        self.stats_text.insert('end', f"{cards_str} | Board: {board_str} | Pot: €{pot:.2f} | To call: €{to_call:.2f}\n", 'MEM')
-        self.stats_text.insert('end', f"Position: {position} | Players: {num_players}\n\n", 'MEMDATA')
-        
-        # STALE warning if applicable
+        # Display header (no hand_id, compact)
+        self.stats_text.insert('end', f"{cards_str} | {board_str} | €{pot:.2f} | Call €{to_call:.2f}\n", 'MEM')
+        self.stats_text.insert('end', f"{position} | {num_players}p", 'MEMDATA')
         if is_stale:
-            self.stats_text.insert('end', "[STALE - using cached cards]\n\n", 'DANGER')
+            self.stats_text.insert('end', " | STALE", 'DANGER')
+        self.stats_text.insert('end', "\n", 'MEMDATA')
 
         # === SECTION 2: Hero Advice (LARGE) ===
         if advice:
@@ -810,7 +807,7 @@ class HelperBar:
             
             reason = advice.get('reasoning', '')
             if reason:
-                self.stats_text.insert('end', f"{reason}\n\n", 'DRAW')
+                self.stats_text.insert('end', f"{reason}\n", 'DRAW')
             
             # Hand strength
             ha = advice.get('hand_analysis', {})
@@ -821,7 +818,7 @@ class HelperBar:
 
         # === SECTION 3: Opponent Info ===
         if lr.get('opponent_stats'):
-            self.stats_text.insert('end', '\n---\n', 'MEMDATA')
+            self.stats_text.insert('end', '---\n', 'MEMDATA')
             for opp in lr['opponent_stats']:
                 if opp.get('hands', 0) > 0:
                     self.stats_text.insert('end',
@@ -829,7 +826,7 @@ class HelperBar:
 
         # === SECTION 4: Live Actions (last 8 only) ===
         if actions:
-            self.stats_text.insert('end', '\n---\n', 'MEMDATA')
+            self.stats_text.insert('end', '---\n', 'MEMDATA')
             
             # Build action list with street markers
             action_lines = []
@@ -862,6 +859,22 @@ class HelperBar:
                     self.stats_text.insert('end', line + '\n', 'MEM')
                 else:
                     self.stats_text.insert('end', line + '\n', 'MEMDATA')
+        
+        # === SECTION 5: Memory Status (container/buffer info) ===
+        buf_addr = hd.get('buf_addr')
+        container_addr = hd.get('container_addr')
+        scan_time = hd.get('scan_time', 0)
+        
+        if buf_addr or container_addr:
+            self.stats_text.insert('end', '---\n', 'MEMDATA')
+            if container_addr:
+                self.stats_text.insert('end', f"Container: {hex(container_addr)}\n", 'MEMDATA')
+            if buf_addr:
+                self.stats_text.insert('end', f"Buffer: {hex(buf_addr)}", 'MEMDATA')
+                if scan_time > 0:
+                    self.stats_text.insert('end', f" ({scan_time:.1f}s)\n", 'MEMDATA')
+                else:
+                    self.stats_text.insert('end', "\n", 'MEMDATA')
 
         # Update time label
         if is_stale:
@@ -1109,6 +1122,7 @@ class HelperBar:
             'position': result.get('position'),
             'is_aggressor': result.get('is_aggressor'),
             'opponents': result.get('opponents', []),
+            'opponent_stats': result.get('opponent_stats', []),  # ADD THIS!
             'reasoning': reasoning,
             'confidence': confidence,
             'elapsed': round(elapsed, 2)
