@@ -415,7 +415,7 @@ class HelperBar:
                 img.save(saved_path)
                 self.root.after(0, lambda p=saved_path: self.log(f"Saved: {os.path.basename(p)}", "DEBUG"))
 
-                # Memory scan (parallel with GPT) + calibration dump
+                # Memory scan (parallel with GPT) + ALWAYS dump (decide later to keep/delete)
                 dump_id_holder = [None]
                 mem_result = [None]  # mutable for thread
                 mem_thread = None
@@ -429,15 +429,14 @@ class HelperBar:
                             mem_result[0] = {'error': str(e)}
                     mem_thread = threading.Thread(target=_mem_scan, daemon=True)
                     mem_thread.start()
-                if CALIBRATE_MODE:
+                    
+                    # ALWAYS dump at same instant as screenshot (not just --calibrate)
                     def _dump():
                         try:
                             from memory_calibrator import save_dump
                             dump_id_holder[0] = save_dump(timestamp)
-                            if dump_id_holder[0]:
-                                self.root.after(0, lambda d=dump_id_holder[0]: self.log(f"Memory dump: {d}", "DEBUG"))
                         except Exception as e:
-                            print(f"[CALIBRATE] Dump error: {e}")
+                            print(f"[DUMP] Error: {e}")
                     dump_thread = threading.Thread(target=_dump, daemon=True)
                     dump_thread.start()
 
@@ -602,25 +601,33 @@ class HelperBar:
                         result['memory_status'] = 'ERROR'
                         self.root.after(0, lambda e=mr['error']:
                             self.log(f"[MEM] Error: {e}", "ERROR"))
-                        # Auto-save dump on error for debugging
-                        if CALIBRATE_MODE and dump_id_holder[0]:
-                            self.root.after(0, lambda d=dump_id_holder[0]:
-                                self.log(f"[MEM] Error dump saved: {d}", "DEBUG"))
                     else:
                         result['memory_status'] = 'NO_BUFFER'
                         self.root.after(0, lambda: self.log("[MEM] No buffer found", "DEBUG"))
-                        # Auto-save dump on NO_BUFFER for debugging
-                        if not CALIBRATE_MODE and IS_WINDOWS:
-                            def _save_failure_dump():
-                                try:
-                                    from memory_calibrator import save_dump
-                                    did = save_dump(timestamp)
-                                    if did:
-                                        self.root.after(0, lambda d=did:
-                                            self.log(f"[MEM] NO_BUFFER dump: {d}", "DEBUG"))
-                                except Exception:
-                                    pass
-                            threading.Thread(target=_save_failure_dump, daemon=True).start()
+                
+                # Tag dump with GPT results (for offline analysis)
+                if IS_WINDOWS and dump_id_holder[0]:
+                    def _tag_and_cleanup():
+                        try:
+                            from memory_calibrator import tag_dump
+                            import os
+                            tag_dump(dump_id_holder[0], result)
+                            # Delete dump if memory scan succeeded (keep only failures)
+                            if result.get('memory_status') in ('CONFIRMED', 'OVERRIDE'):
+                                dump_dir = os.path.join(os.path.dirname(__file__), 'memory_dumps')
+                                bin_path = os.path.join(dump_dir, f"{dump_id_holder[0]}.bin")
+                                json_path = os.path.join(dump_dir, f"{dump_id_holder[0]}.json")
+                                if os.path.exists(bin_path):
+                                    os.remove(bin_path)
+                                if os.path.exists(json_path):
+                                    os.remove(json_path)
+                            else:
+                                # Keep failure dumps for debugging
+                                self.root.after(0, lambda d=dump_id_holder[0]:
+                                    self.log(f"[MEM] Failure dump saved: {d}", "DEBUG"))
+                        except Exception as e:
+                            print(f"[DUMP] Tag error: {e}")
+                    threading.Thread(target=_tag_and_cleanup, daemon=True).start()
 
                 elapsed = time.time() - start
                 self.root.after(0, lambda t=api_time: self.log(f"API done: {t:.1f}s", "DEBUG"))
