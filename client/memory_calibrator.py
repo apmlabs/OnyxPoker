@@ -437,8 +437,8 @@ def _find_buffer_via_container(data_iter, read_bytes_fn, debug=False):
             sb = idx - CONTAINER_ANCHOR_OFFSET  # struct_base offset within data
             if sb < 0 or sb + 0xF0 > len(data):
                 idx += 1; continue
-            # Confirm F4 51 XX 01 at +0x38
-            if data[sb+0x38] != 0xF4 or data[sb+0x39] != 0x51 or data[sb+0x3B] != 0x01:
+            # Confirm B4 07 8C 01 at +0x38 (NEW signature as of Feb 2026)
+            if data[sb+0x38] != 0xB4 or data[sb+0x39] != 0x07 or data[sb+0x3A] != 0x8C or data[sb+0x3B] != 0x01:
                 idx += 1; continue
             # Validate +0x44 == 0x3C
             if struct.unpack('<I', data[sb+0x44:sb+0x48])[0] != 0x3C:
