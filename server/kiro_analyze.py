@@ -73,21 +73,28 @@ def list_pending():
 @app.route('/logs', methods=['POST'])
 def receive_logs():
     """Receive session logs for analysis"""
-    data = request.json
-    filename = data.get('filename', 'unknown.jsonl')
-    content = data.get('content', '')
-    append_mode = data.get('append', False)
-    
-    log_path = os.path.join(UPLOAD_DIR, filename)
-    mode = 'a' if append_mode else 'w'
-    with open(log_path, mode) as f:
-        f.write(content)
-    
-    total_lines = 0
-    with open(log_path, 'r') as f:
-        total_lines = sum(1 for line in f if line.strip())
-    
-    return jsonify({'status': 'ok', 'path': log_path, 'lines': total_lines})
+    try:
+        data = request.json
+        if not data:
+            return jsonify({'error': 'No JSON data received'}), 400
+        
+        filename = data.get('filename', 'unknown.jsonl')
+        content = data.get('content', '')
+        append_mode = data.get('append', False)
+        
+        log_path = os.path.join(UPLOAD_DIR, filename)
+        mode = 'a' if append_mode else 'w'
+        with open(log_path, mode) as f:
+            f.write(content)
+        
+        total_lines = 0
+        with open(log_path, 'r') as f:
+            total_lines = sum(1 for line in f if line.strip())
+        
+        return jsonify({'status': 'ok', 'path': log_path, 'lines': total_lines})
+    except Exception as e:
+        logger.error(f"Error in /logs endpoint: {str(e)}")
+        return jsonify({'error': str(e)}), 500
 
 
 @app.route('/upload-dump', methods=['POST'])
