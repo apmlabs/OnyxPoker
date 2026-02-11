@@ -1,6 +1,6 @@
 # OnyxPoker - Status Tracking
 
-**Last Updated**: February 11, 2026 21:10 UTC
+**Last Updated**: February 11, 2026 23:26 UTC
 
 ---
 
@@ -9,15 +9,15 @@
 ### What Works
 | Component | Status | Notes |
 |-----------|--------|-------|
-| helper_bar.py | ✅ | V2 vision default (opponent tracking) + live memory polling |
+| helper_bar.py | ⚠️ | V2 vision default + live memory polling (Session 89k fixes) |
 | helper_bar.py --v1 | ✅ | V1 vision (no opponent detection) |
 | helper_bar.py --ai-only | ✅ | AI does both vision + decision |
 | helper_bar.py --bot | ⚠️ | Bot mode: needs testing (button detection untested) |
 | memory_calibrator.py | ✅ | v5: Container scan fixed for new PS build (Feb 2026) |
-| Memory polling | ✅ | Rescans on buffer loss, updates UI every 200ms |
+| Memory polling | ⚠️ | Session 89k: Fixed race condition, needs live testing |
 | test_screenshots.py | ✅ | V1 vs V2 comparison + --track mode |
 | vision_detector_lite.py | ✅ | GPT-5.2 for vision only (V1) ~3.9s |
-| vision_detector_v2.py | ✅ | GPT-5.2 + opponent detection (V2) ~5.5s |
+| vision_detector_v2.py | ⚠️ | GPT-5.2 + opponent detection (V2) ~5.5s - returns pot=None |
 | build_player_stats.py | ✅ | Single source of truth for player archetypes |
 | strategy_engine.py | ✅ | 3-bet/4-bet ranges + BB defense + villain archetype |
 | poker_logic/ | ✅ | Refactored into package: card_utils, hand_analysis, preflop, postflop_base, _monolith |
@@ -27,6 +27,11 @@
 | eval_session_logs.py | ✅ | Session log analysis (consolidated) |
 | All test suites | ✅ | audit(30), strategy_engine(47/55), postflop(67), rules(24) |
 | Server | ✅ | 54.80.204.92:5001 |
+
+### Known Issues (Session 89k)
+- **GPT Vision**: Returns `pot=None` instead of number - fixed with `pot or 0`
+- **Display Race**: Old poll thread overwrites display after F9 - fixed with `_mem_polling` check
+- **Not Ready for Live Play**: Display updates inconsistently, needs more testing
 
 ### Default Strategy: `the_lord` (Opponent-Aware + Multiway)
 - Based on value_lord with villain-specific adjustments
@@ -55,6 +60,37 @@
 ---
 
 ## Session History
+
+### Session 89k: Fix pot=None Crash + Display Race Condition (February 11, 2026)
+
+**Fixed 2 bugs preventing consistent display updates.**
+
+**Bug 1: TypeError on pot formatting**
+- Symptom: `TypeError: unsupported format string passed to NoneType.__format__`
+- Root cause: GPT vision returning `pot=None` instead of number
+- Fix: Changed `pot = result.get('pot', 0)` to `pot = result.get('pot') or 0`
+
+**Bug 2: Display race condition**
+- Symptom: Right panel sometimes updates, sometimes doesn't
+- Root cause: Old poll thread queues `_update_mem_display` BEFORE checking `_mem_polling`
+- Timeline:
+  1. Old poll iteration starts
+  2. F9 sets `_mem_polling = False`
+  3. Old poll queues `_update_mem_display` on Tk event loop
+  4. Old poll checks `_mem_polling` and exits
+  5. GPT finishes, `_display_result` clears panel
+  6. Queued update from step 3 runs → **overwrites cleared panel**
+- Fix: Check `_mem_polling` BEFORE queuing UI updates (2 places)
+
+**Session log analysis (1998 entries: 7 F9, 1991 polls):**
+- Polling working (1991 entries)
+- But display inconsistent due to race
+- GPT returning `cards=None`, `pot=None` (field name issues)
+
+**Files changed:**
+- helper_bar.py - Fixed pot=None handling + display race condition
+
+**Next**: Test on Windows to verify consistent display updates
 
 ### Session 89: Memory Polling Fixes (February 11, 2026)
 

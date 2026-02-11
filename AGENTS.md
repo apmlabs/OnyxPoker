@@ -775,6 +775,8 @@ User said "single monitor" multiple times while I kept designing for dual monito
 | Raw file size on Windows | 83 | \r\n vs \n size mismatch | Compare content.encode() size |
 | Breaking variable scope | 86b | Adding debug code between var definition and usage | Trace scope before inserting code |
 | Tell user to test before git push | 87 | Client can't get the code | ALWAYS push before telling user to test |
+| Queue UI update before flag check | 89k | Old thread overwrites display | Check flag BEFORE queuing |
+| Using .get() with default for None | 89k | GPT returns explicit None | Use `or` operator: `pot or 0` |
 
 ### Common Gotchas
 
