@@ -195,7 +195,9 @@ def extract_hand_data(entries):
                     hero_seat = e['seat']
         elif e['msg_type'] == 0x01:
             act = ACTION_NAMES.get(e['action_code'], f"0x{e['action_code']:02X}")
-            actions.append((e['name'], act, e['amount']))
+            # Use players dict to get name (e['name'] might be None if string freed)
+            name = players.get(e['seat'], e['name'])
+            actions.append((name, act, e['amount']))
             if e['action_code'] == 0x50 and bb_seat is None:  # POST_BB
                 bb_seat = e['seat']
 
