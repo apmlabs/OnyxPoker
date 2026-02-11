@@ -611,6 +611,7 @@ cd client && python3 run_tests.py --all    # Core + extended (includes postflop)
 - ⚠️ I suggest something already tried → Didn't read context
 - ⚠️ I repeat a mistake → AGENTS.md wasn't updated
 - ⚠️ User has to remind me twice → I failed first time
+- ⚠️ **I tell user to test without pushing to GitHub first → CRITICAL WORKFLOW ERROR**
 
 **Context files are my only memory. Without them, I start from scratch every time.**
 
@@ -737,6 +738,7 @@ User said "single monitor" multiple times while I kept designing for dual monito
 | Start poll before display | 83 | Display overwrites poll output | Start poll AFTER _display_result |
 | Raw file size on Windows | 83 | \r\n vs \n size mismatch | Compare content.encode() size |
 | Breaking variable scope | 86b | Adding debug code between var definition and usage | Trace scope before inserting code |
+| Tell user to test before git push | 87 | Client can't get the code | ALWAYS push before telling user to test |
 
 ### Common Gotchas
 
