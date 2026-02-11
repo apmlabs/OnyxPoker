@@ -730,6 +730,10 @@ class HelperBar:
                     else:
                         self.root.after(0, lambda h=new_hand_id: 
                             self.log(f"[MEM] New hand {h}", "INFO"))
+                    
+                    # CRITICAL: Update display immediately when hand changes
+                    # This shows the new cards without waiting for F9
+                    self.root.after(0, lambda d=hd: self._update_mem_display(d, hd.get('entry_count', 0)))
                 
                 n = hd.get('entry_count', 0)
                 # Always update UI (not just when entry count changes)
