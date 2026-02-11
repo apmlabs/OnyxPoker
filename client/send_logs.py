@@ -114,11 +114,22 @@ def sync_logs(server_files):
             resp = requests.post(f'{SERVER_URL}/logs', json={
                 'filename': name, 'content': new_content, 'append': True
             }, timeout=30)
+        
+        if resp.status_code != 200:
+            print(f"ERROR {resp.status_code}")
+            print(f"Response: {resp.text[:500]}")
+            continue
         else:
             print(f"  Uploading {name} ({fmt_size(size)})...", end=' ', flush=True)
             resp = requests.post(f'{SERVER_URL}/logs', json={
                 'filename': name, 'content': content
             }, timeout=30)
+        
+        if resp.status_code != 200:
+            print(f"ERROR {resp.status_code}")
+            print(f"Response: {resp.text[:500]}")
+            continue
+        
         r = resp.json()
         print(f"OK ({r.get('lines', '?')} lines)")
         uploaded += 1
