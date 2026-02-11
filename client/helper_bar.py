@@ -646,7 +646,7 @@ class HelperBar:
                 cards_str = ' '.join(cards) if cards else '??'
                 board = result.get('community_cards', [])
                 board_str = ' '.join(board) if board else '--'
-                pot = result.get('pot', 0)
+                pot = result.get('pot') or 0  # Handle None from GPT
                 action = result.get('action', '').upper()
                 amt = result.get('bet_size')
                 if amt and action in ('BET', 'RAISE'):
@@ -740,7 +740,9 @@ class HelperBar:
                     
                     # CRITICAL: Update display immediately when hand changes
                     # This shows the new cards without waiting for F9
-                    self.root.after(0, lambda d=hd: self._update_mem_display(d, hd.get('entry_count', 0)))
+                    # But only if still polling (not stopped by F9)
+                    if self._mem_polling:
+                        self.root.after(0, lambda d=hd: self._update_mem_display(d, hd.get('entry_count', 0)))
                 
                 n = hd.get('entry_count', 0)
                 # Always update UI (not just when entry count changes)
@@ -762,7 +764,9 @@ class HelperBar:
                 
                 self._mem_last_entries = n
                 # Update UI on every poll (not just when count changes)
-                self.root.after(0, lambda d=hd, cnt=n: self._update_mem_display(d, cnt))
+                # But only if still polling (not stopped by F9)
+                if self._mem_polling:
+                    self.root.after(0, lambda d=hd, cnt=n: self._update_mem_display(d, cnt))
             except Exception as e:
                 self._mem_polling = False
                 self.root.after(0, lambda e=e: self.log(f"[MEM] Poll error: {e}", "ERROR"))
