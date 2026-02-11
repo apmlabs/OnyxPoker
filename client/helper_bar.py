@@ -525,6 +525,10 @@ class HelperBar:
                     table_data['opponent_line'] = self._format_opponent_line(opponent_stats)
                     table_data['advice_line'] = self._format_advice_line(opponent_stats)
                     
+                    # Debug: log opponent stats
+                    self.root.after(0, lambda n=len(opponent_stats): 
+                        self.log(f"[DEBUG] Opponent stats: {n} players", "DEBUG"))
+                    
                     # Calculate num_players from opponents array (V2 doesn't return num_players)
                     opponents = table_data.get('opponents', [])
                     active_opponents = sum(1 for o in opponents if o.get('has_cards', False))
@@ -545,6 +549,8 @@ class HelperBar:
                             all_position_results[pos] = decision
                         result = {**table_data, **all_position_results['BTN']}
                         result['all_positions'] = all_position_results
+                        # Ensure opponent_stats is preserved
+                        result['opponent_stats'] = table_data.get('opponent_stats', [])
                     result['api_time'] = api_time
 
                 # CALIBRATION: Wait for dump, then tag with GPT results
