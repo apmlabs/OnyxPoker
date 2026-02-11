@@ -680,9 +680,11 @@ class HelperBar:
         self._mem_hand_id = hand_id
         self._mem_last_entries = 0
         
+        # Start thread if not already running
+        # Set flag AFTER starting thread to avoid race condition
         if not self._mem_polling:
-            self._mem_polling = True
             threading.Thread(target=self._mem_poll_loop, daemon=True).start()
+            self._mem_polling = True
             self._mem_polling = True
             threading.Thread(target=self._mem_poll_loop, daemon=True).start()
 
