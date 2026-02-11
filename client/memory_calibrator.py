@@ -1123,6 +1123,14 @@ def rescan_buffer(buf_addr, expected_hand_id=None):
             result = _read_buffer_from_container(_cached_container_addr, _reader)
             if result:
                 buf_addr, n_entries, new_hid = result[0], result[1], result[2]
+                
+                # CRITICAL: Verify hand_id actually changed!
+                # Container might still point to old buffer briefly
+                if new_hid == expected_hand_id:
+                    # Container still points to old buffer - hand hasn't changed yet!
+                    # Return None so polling will retry
+                    return None
+                
                 # Verify new buffer
                 header = _reader.read(buf_addr, 16)
                 if not header or len(header) < 16:
