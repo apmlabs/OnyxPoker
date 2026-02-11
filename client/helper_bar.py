@@ -674,10 +674,15 @@ class HelperBar:
 
     def _start_mem_poll(self, buf_addr, hand_id):
         """Start polling the known buffer address for live updates."""
+        # ALWAYS update tracking (even if already polling)
+        # This handles F9 detecting new hand while old hand still polling
         self._mem_buf_addr = buf_addr
         self._mem_hand_id = hand_id
         self._mem_last_entries = 0
+        
         if not self._mem_polling:
+            self._mem_polling = True
+            threading.Thread(target=self._mem_poll_loop, daemon=True).start()
             self._mem_polling = True
             threading.Thread(target=self._mem_poll_loop, daemon=True).start()
 
