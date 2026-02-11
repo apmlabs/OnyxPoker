@@ -102,6 +102,8 @@ class HelperBar:
         self._mem_last_entries = 0 # Last known entry count (detect updates)
         self._last_result = None   # Last GPT result for re-evaluation during polling
         self._pending_mem_poll = None  # (buf_addr, hand_id) to start after display
+        self._last_mem_display = None  # Last memory display data (for STALE warning)
+        self._last_mem_time = None     # Timestamp of last memory update
         
         # Drag state
         self._drag_start_x = 0
@@ -656,7 +658,7 @@ class HelperBar:
 
     def _mem_poll_loop(self):
         """Background thread: rescan buffer every 200ms, push UI updates."""
-        from memory_calibrator import rescan_buffer
+        from memory_calibrator import rescan_buffer, scan_live
         self.root.after(0, lambda: self.log("[MEM] Polling started", "DEBUG"))
         while self._mem_polling:
             try:
@@ -670,14 +672,38 @@ class HelperBar:
                 if hd.get('hand_id_changed'):
                     new_hand_id = hd.get('hand_id')
                     new_buf_addr = hd.get('buf_addr')
-                    self._mem_hand_id = new_hand_id
-                    self._mem_buf_addr = new_buf_addr
-                    self._mem_last_entries = 0
-                    self.root.after(0, lambda h=new_hand_id: 
-                        self.log(f"[MEM] New hand {h}, polling continues", "INFO"))
+                    
+                    # Check if we got cards for new hand
+                    if hd.get('hero_cards'):
+                        # Success - update tracking and continue
+                        self._mem_hand_id = new_hand_id
+                        self._mem_buf_addr = new_buf_addr
+                        self._mem_last_entries = 0
+                        self.root.after(0, lambda h=new_hand_id, c=hd.get('hero_cards'): 
+                            self.log(f"[MEM] New hand {h}, cards {c[0:2]} {c[2:4]}", "INFO"))
+                    else:
+                        # No cards yet - try full re-scan
+                        self.root.after(0, lambda h=new_hand_id: 
+                            self.log(f"[MEM] New hand {h}, re-scanning...", "INFO"))
+                        fresh_data = scan_live()
+                        if fresh_data and fresh_data.get('hero_cards'):
+                            # Re-scan success
+                            self._mem_hand_id = fresh_data['hand_id']
+                            self._mem_buf_addr = fresh_data['buf_addr']
+                            self._mem_last_entries = 0
+                            hd = fresh_data
+                            self.root.after(0, lambda c=fresh_data.get('hero_cards'): 
+                                self.log(f"[MEM] Re-scan OK, cards {c[0:2]} {c[2:4]}", "INFO"))
+                        else:
+                            # Re-scan failed - keep polling with cached cards
+                            self._mem_hand_id = new_hand_id
+                            self._mem_buf_addr = new_buf_addr
+                            self._mem_last_entries = 0
+                            self.root.after(0, lambda: 
+                                self.log("[MEM] Re-scan failed, using cached cards", "DEBUG"))
                 
                 n = hd.get('entry_count', 0)
-                if n != self._mem_last_entries:
+                if n != self._mem_last_entries or hd.get('hand_id_changed'):
                     self._mem_last_entries = n
                     self.root.after(0, lambda d=hd, cnt=n: self._update_mem_display(d, cnt))
             except Exception as e:
@@ -692,8 +718,15 @@ class HelperBar:
         actions = hd.get('actions', [])
         mc = hd.get('hero_cards', '')
         
+        # Save display data and timestamp
+        self._last_mem_display = hd
+        self._last_mem_time = time.time()
+        
         # Re-evaluate strategy with memory data
         advice = self._reeval_with_memory(hd)
+        
+        # Check if data is stale (no cards but we have cached data)
+        is_stale = not mc and hd.get('hand_id') and advice
         
         # Rebuild right panel
         self.stats_text.delete('1.0', 'end')
@@ -703,14 +736,19 @@ class HelperBar:
         mem_status = lr.get('memory_status', 'NO_MEMORY')
         container = lr.get('memory_container_addr')
         
-        if container:
+        if is_stale:
+            status_line = f"[MEMORY: STALE - using cached cards]"
+            self.stats_text.insert('end', status_line + '\n', 'DANGER')
+        elif container:
             status_line = f"[MEMORY: Container {hex(container)[-6:]} | {entry_count} entries]"
+            self.stats_text.insert('end', status_line + '\n', 'MEMDATA')
         elif mem_status == 'NO_BUFFER':
             status_line = f"[SCREENSHOT ONLY - No memory]"
+            self.stats_text.insert('end', status_line + '\n', 'MEMDATA')
         else:
             status_line = f"[MEMORY: Buffer only | {entry_count} entries]"
+            self.stats_text.insert('end', status_line + '\n', 'MEMDATA')
         
-        self.stats_text.insert('end', status_line + '\n', 'MEMDATA')
         self.stats_text.insert('end', '\n', 'MEMDATA')
 
         # === SECTION 2: Hero Advice (LARGE) ===
@@ -718,7 +756,11 @@ class HelperBar:
             act = advice.get('action', '').upper()
             amt = advice.get('bet_size')
             act_str = f"{act} €{amt:.2f}" if amt and act in ('BET', 'RAISE') else act
-            self.stats_text.insert('end', f"=> {act_str}\n", 'ACTION')
+            
+            if is_stale:
+                self.stats_text.insert('end', f"=> {act_str} [STALE]\n", 'DANGER')
+            else:
+                self.stats_text.insert('end', f"=> {act_str}\n", 'ACTION')
             
             reason = advice.get('reasoning', '')
             if reason:
@@ -777,7 +819,10 @@ class HelperBar:
                     self.stats_text.insert('end', line + '\n', 'MEMDATA')
 
         # Update time label
-        self.time_label.config(text=f"LIVE ({entry_count})")
+        if is_stale:
+            self.time_label.config(text=f"STALE ({entry_count})")
+        else:
+            self.time_label.config(text=f"LIVE ({entry_count})")
 
         # Log to session file with full debug info
         self._log_mem_update(hd, advice)

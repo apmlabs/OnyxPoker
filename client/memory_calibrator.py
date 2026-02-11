@@ -161,7 +161,13 @@ def format_entry(e):
 
 
 def extract_hand_data(entries):
-    """Extract poker-relevant data from decoded entries."""
+    """Extract poker-relevant data from decoded entries.
+    
+    Uses card cache: if hero_cards not found in entries (string pointers freed),
+    falls back to last known cards for this hand_id.
+    """
+    global _card_cache
+    
     if not entries:
         return None
     hand_id = entries[0]['hand_id']
@@ -192,6 +198,12 @@ def extract_hand_data(entries):
             actions.append((e['name'], act, e['amount']))
             if e['action_code'] == 0x50 and bb_seat is None:  # POST_BB
                 bb_seat = e['seat']
+
+    # Card caching: save when found, restore when missing
+    if hero_cards:
+        _card_cache[hand_id] = hero_cards
+    elif hand_id in _card_cache:
+        hero_cards = _card_cache[hand_id]
 
     # Derive position from hero_seat relative to BB in 6-max
     position = None
@@ -701,6 +713,9 @@ def cmd_analyze():
 
 # Cached container address — stable within a table session, avoids full rescan
 _cached_container_addr = None
+
+# Card cache per hand_id — when string pointers become invalid, use last known cards
+_card_cache = {}  # hand_id → hero_cards (4-byte ASCII string)
 
 
 def _read_buffer_from_container(container_addr, reader):
