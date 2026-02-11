@@ -865,24 +865,15 @@ class HelperBar:
         if actions:
             self.stats_text.insert('end', '---\n', 'MEMDATA')
             
-            # Build action list with street markers
+            # Build action list (skip blinds, DEAL markers, WIN messages)
             action_lines = []
-            deal_count = 0
             for name, act_code, amt in actions:
-                if act_code in ('POST_SB', 'POST_BB'):
+                if act_code in ('POST_SB', 'POST_BB', 'DEAL', '0x77'):
                     continue
-                if act_code == 'DEAL' or name is None:
-                    deal_count += 1
-                    street = {1: 'FLOP', 2: 'TURN', 3: 'RIVER'}.get(deal_count, '')
-                    if street:
-                        board_at = cc[:3] if deal_count == 1 else (cc[:4] if deal_count == 2 else cc)
-                        action_lines.append(('street', f"{street} {' '.join(board_at)}"))
-                    continue
-                
-                if act_code == '0x77':  # WIN message
+                if name is None:
                     continue
                     
-                line = f"{name or '?'}: {act_code}"
+                line = f"{name}: {act_code}"
                 if amt > 0:
                     line += f" €{amt/100:.2f}"
                 is_hero = (name == 'idealistslp')
@@ -890,9 +881,7 @@ class HelperBar:
             
             # Show last 8 actions only
             for kind, line in action_lines[-8:]:
-                if kind == 'street':
-                    self.stats_text.insert('end', line + '\n', 'DRAW')
-                elif kind == 'hero':
+                if kind == 'hero':
                     self.stats_text.insert('end', line + '\n', 'MEM')
                 else:
                     self.stats_text.insert('end', line + '\n', 'MEMDATA')
