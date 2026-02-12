@@ -589,7 +589,7 @@ class HelperBar:
                             if gpt_cards != mem_cards:
                                 result['memory_status'] = f"OVERRIDE {gpt_cards}->{mem_cards}"
                                 self.root.after(0, lambda g=gpt_cards, m=mem_cards:
-                                    self.log(f"[MEM] Cards override: GPT {g} -> MEM {m}", "INFO"))
+                                    self.log(f"Cards corrected: {g} -> {m}", "INFO"))
                             else:
                                 result['memory_status'] = 'CONFIRMED'
                             result['hero_cards'] = mem_cards
@@ -598,11 +598,6 @@ class HelperBar:
                         # Position from memory (hero_seat + bb_seat → exact position)
                         if mr.get('position'):
                             result['position'] = mr['position']
-                            self.root.after(0, lambda p=mr['position']:
-                                self.log(f"[MEM] Position: {p}", "DEBUG"))
-                        st = mr.get('scan_time', '?')
-                        self.root.after(0, lambda s=st, c=mr.get('hero_cards'):
-                            self.log(f"[MEM] {c} hand={mr.get('hand_id')} ({s}s)", "INFO"))
                         # Save poll params — polling starts AFTER _display_result
                         if mr.get('buf_addr') and mr.get('hand_id'):
                             self._pending_mem_poll = (mr['buf_addr'], mr['hand_id'])
@@ -610,10 +605,9 @@ class HelperBar:
                         result['memory_error'] = mr['error']
                         result['memory_status'] = 'ERROR'
                         self.root.after(0, lambda e=mr['error']:
-                            self.log(f"[MEM] Error: {e}", "ERROR"))
+                            self.log(f"Memory error: {e}", "ERROR"))
                     else:
                         result['memory_status'] = 'NO_BUFFER'
-                        self.root.after(0, lambda: self.log("[MEM] No buffer found", "DEBUG"))
                 
                 # Tag dump with GPT results (for offline analysis)
                 if IS_WINDOWS and dump_id_holder[0]:
@@ -634,7 +628,7 @@ class HelperBar:
                             else:
                                 # Keep failure dumps for debugging
                                 self.root.after(0, lambda d=dump_id_holder[0]:
-                                    self.log(f"[MEM] Failure dump saved: {d}", "DEBUG"))
+                                    pass  # Dump saved silently
                         except Exception as e:
                             print(f"[DUMP] Tag error: {e}")
                     threading.Thread(target=_tag_and_cleanup, daemon=True).start()
@@ -687,12 +681,11 @@ class HelperBar:
             self._mem_polling = True
             gen = self._mem_poll_generation  # Capture current generation
             threading.Thread(target=lambda: self._mem_poll_loop(gen), daemon=True).start()
-            self.log(f"[MEM] Poll started (gen {gen})", "DEBUG")
+            pass  # Poll started silently
 
     def _mem_poll_loop(self, generation):
         """Background thread: rescan buffer every 200ms, push UI updates."""
         from memory_calibrator import rescan_buffer, scan_live
-        self.root.after(0, lambda: self.log(f"[MEM] Poll loop gen {generation} started", "DEBUG"))
         retry_count = 0
         start_time = time.time()
         max_duration = 300  # 5 minutes timeout
@@ -700,7 +693,6 @@ class HelperBar:
         while self._mem_polling and self._mem_poll_generation == generation:
             # Timeout check
             if time.time() - start_time > max_duration:
-                self.root.after(0, lambda: self.log("[MEM] Poll timeout (5min), stopping", "DEBUG"))
                 self._mem_polling = False
                 break
             
@@ -713,8 +705,7 @@ class HelperBar:
                         time.sleep(0.05)  # Wait 50ms and retry
                         continue
                     else:
-                        # After 500ms, do full rescan (process might have died)
-                        self.root.after(0, lambda: self.log("[MEM] Buffer lost after retries, full rescan", "DEBUG"))
+                        # After 500ms, do full rescan
                         fresh_data = scan_live()
                         if fresh_data and fresh_data.get('hero_cards'):
                             self._mem_hand_id = fresh_data['hand_id']
@@ -722,10 +713,7 @@ class HelperBar:
                             self._mem_last_entries = 0
                             hd = fresh_data
                             retry_count = 0  # Reset counter
-                            self.root.after(0, lambda h=fresh_data['hand_id']: 
-                                self.log(f"[MEM] Re-scan OK: hand {h}", "INFO"))
                         else:
-                            self.root.after(0, lambda: self.log("[MEM] Re-scan failed, retrying...", "DEBUG"))
                             time.sleep(0.5)
                             continue
                 else:
@@ -745,45 +733,25 @@ class HelperBar:
                     cards = hd.get('hero_cards', '')
                     if cards and len(cards) == 4:
                         self.root.after(0, lambda h=new_hand_id, c=cards: 
-                            self.log(f"[MEM] New hand {h}, cards {c[0:2]} {c[2:4]}", "INFO"))
-                    else:
-                        self.root.after(0, lambda h=new_hand_id: 
-                            self.log(f"[MEM] New hand {h}", "INFO"))
+                            self.log(f"New hand: {c[0:2]} {c[2:4]}", "INFO"))
                     
-                    # CRITICAL: Update display immediately when hand changes
-                    # This shows the new cards without waiting for F9
-                    # Check generation to prevent old poll from updating after F9
+                    # Update display immediately when hand changes
                     if self._mem_poll_generation == generation:
                         self.root.after(0, lambda d=hd, g=generation: 
                             self._update_mem_display(d, hd.get('entry_count', 0), g))
                 
                 n = hd.get('entry_count', 0)
                 
-                # Only update when something changes (not every 200ms)
+                # Only update when something changes
                 something_changed = (
                     n != self._mem_last_entries or  # New action
                     hd.get('hand_id_changed')       # New hand
                 )
                 
                 if something_changed:
-                    # Log new actions to left panel
-                    if n > self._mem_last_entries and not hd.get('hand_id_changed'):
-                        actions = hd.get('actions', [])
-                        # Get last few actions (new ones)
-                        new_actions = actions[-(n - self._mem_last_entries):]
-                        for name, act, amt in new_actions:
-                            if act not in ('POST_SB', 'POST_BB', 'DEAL', '0x77', 'WIN'):
-                                if amt > 0:
-                                    self.root.after(0, lambda n=name, a=act, m=amt, g=generation: 
-                                        self.log(f"[MEM] {n}: {a} €{m/100:.2f}", "INFO") if self._mem_poll_generation == g else None)
-                                else:
-                                    self.root.after(0, lambda n=name, a=act, g=generation: 
-                                        self.log(f"[MEM] {n}: {a}", "INFO") if self._mem_poll_generation == g else None)
-                    
                     self._mem_last_entries = n
                     
                     # Update UI only when something changed
-                    # Check generation to prevent old poll from updating after F9
                     if self._mem_poll_generation == generation:
                         self.root.after(0, lambda d=hd, cnt=n, g=generation: 
                             self._update_mem_display(d, cnt, g))
@@ -794,13 +762,10 @@ class HelperBar:
             time.sleep(0.2)
 
     def _update_mem_display(self, hd, entry_count=0, generation=None):
-        """Update right panel: show context + advice + live actions."""
+        """Update right panel: cards + advice + players with actions."""
         # Check generation - if mismatch, this is from an old poll, ignore it
         if generation is not None and generation != self._mem_poll_generation:
-            self.log(f"[MEM] Ignoring stale update (gen {generation} vs {self._mem_poll_generation})", "DEBUG")
             return  # Stale update from old poll, ignore
-        
-        self.log(f"[MEM] Updating display (gen {generation}, entries {entry_count})", "DEBUG")
         
         cc = hd.get('community_cards', [])
         actions = hd.get('actions', [])
@@ -813,69 +778,26 @@ class HelperBar:
         # Re-evaluate strategy with memory data
         advice = self._reeval_with_memory(hd)
         
-        # Check if data is stale (no cards but we have cached data)
-        is_stale = not mc and hd.get('hand_id') and advice
-        
         # Rebuild right panel
         self.stats_text.delete('1.0', 'end')
 
-        # === SECTION 1: CONTEXT HEADER ===
-        # Use POLL data (hd), not cached F9 data
-        
-        # Cards from poll
+        # === CARDS + BOARD ===
         if mc and len(mc) == 4:
             cards_str = f"{mc[0:2]} {mc[2:4]}"
         else:
             cards_str = "??"
         
-        # Board from poll
         board_str = ' '.join(cc) if cc else '--'
         
-        # Pot and to_call from advice debug (calculated from poll actions)
+        # Pot and to_call from advice debug
         debug = advice.get('_mem_debug', {}) if advice else {}
         pot = debug.get('pot', 0.07)
         to_call = debug.get('to_call', 0)
         
-        # Position from poll players data
-        players = hd.get('players', {})
-        position = '?'
-        if players:
-            # Find hero seat
-            hero_seat = None
-            for seat, name in players.items():
-                if name == 'idealistslp':
-                    hero_seat = int(seat)
-                    break
-            # Find BB seat (first POST_BB action)
-            bb_seat = None
-            for name, act, amt in actions:
-                if act == 'POST_BB':
-                    for seat, pname in players.items():
-                        if pname == name:
-                            bb_seat = int(seat)
-                            break
-                    break
-            # Calculate position
-            if hero_seat is not None and bb_seat is not None:
-                n_players = len(players)
-                pos_idx = (hero_seat - bb_seat - 1) % n_players
-                positions = ['UTG', 'MP', 'CO', 'BTN', 'SB', 'BB']
-                if n_players == 6:
-                    position = positions[pos_idx]
-                elif n_players < 6:
-                    position = positions[pos_idx] if pos_idx < len(positions) else '?'
-        
-        # Num players from poll
-        num_players = len(players) if players else debug.get('num_players', '?')
-        
-        # Display header
-        self.stats_text.insert('end', f"{cards_str} | {board_str} | €{pot:.2f} | Call €{to_call:.2f}\n", 'MEM')
-        self.stats_text.insert('end', f"{position} | {num_players}p", 'MEMDATA')
-        if is_stale:
-            self.stats_text.insert('end', " | STALE", 'DANGER')
-        self.stats_text.insert('end', "\n", 'MEMDATA')
+        self.stats_text.insert('end', f"{cards_str} | {board_str}\n", 'MEM')
+        self.stats_text.insert('end', f"Pot €{pot:.2f} | Call €{to_call:.2f}\n\n", 'MEMDATA')
 
-        # === SECTION 2: Hero Advice (LARGE) ===
+        # === ADVICE ===
         if advice:
             act = advice.get('action', '').upper()
             amt = advice.get('bet_size')
@@ -885,70 +807,52 @@ class HelperBar:
             
             reason = advice.get('reasoning', '')
             if reason:
-                self.stats_text.insert('end', f"{reason}\n", 'DRAW')
-            
-            # Hand strength
-            ha = advice.get('hand_analysis', {})
-            if ha and ha.get('valid'):
-                self.stats_text.insert('end', self._hand_strength_str(ha) + '\n', 'HAND')
+                self.stats_text.insert('end', f"{reason}\n\n", 'DRAW')
         else:
-            self.stats_text.insert('end', f"[Calculating...]\n", 'MEM')
+            self.stats_text.insert('end', f"[Calculating...]\n\n", 'MEM')
 
-        # === SECTION 3: Opponent Info (from last F9 only) ===
+        # === PLAYERS + ACTIONS (combined) ===
+        # Get opponent stats from last F9
         lr = self._last_result or {}
-        if lr.get('opponent_stats'):
-            self.stats_text.insert('end', '---\n', 'MEMDATA')
-            for opp in lr['opponent_stats']:
-                if opp.get('hands', 0) > 0:
-                    self.stats_text.insert('end',
-                        f"{opp['name']} ({opp['archetype'].upper()})\n", 'OPPONENT')
-
-        # === SECTION 4: Live Actions (last 8 only) ===
-        if actions:
-            self.stats_text.insert('end', '---\n', 'MEMDATA')
+        opp_stats = {o['name']: o for o in lr.get('opponent_stats', []) if o.get('hands', 0) > 0}
+        
+        # Build player action list (skip blinds/DEAL/WIN)
+        player_actions = {}
+        for name, act_code, amt in actions:
+            if act_code in ('POST_SB', 'POST_BB', 'DEAL', '0x77') or name is None:
+                continue
             
-            # Build action list (skip blinds, DEAL markers, WIN messages)
-            action_lines = []
-            for name, act_code, amt in actions:
-                if act_code in ('POST_SB', 'POST_BB', 'DEAL', '0x77'):
-                    continue
-                if name is None:
-                    continue
-                    
-                line = f"{name}: {act_code}"
-                if amt > 0:
-                    line += f" €{amt/100:.2f}"
+            act_str = act_code
+            if amt > 0:
+                act_str += f" €{amt/100:.2f}"
+            
+            if name not in player_actions:
+                player_actions[name] = []
+            player_actions[name].append(act_str)
+        
+        # Display each player with their archetype + actions
+        if player_actions:
+            for name, acts in player_actions.items():
                 is_hero = (name == 'idealistslp')
-                action_lines.append(('hero' if is_hero else 'villain', line))
-            
-            # Show last 8 actions only
-            for kind, line in action_lines[-8:]:
-                if kind == 'hero':
-                    self.stats_text.insert('end', line + '\n', 'MEM')
+                
+                # Player name + archetype
+                if is_hero:
+                    self.stats_text.insert('end', f"{name} (HERO)\n", 'MEM')
+                elif name in opp_stats:
+                    arch = opp_stats[name]['archetype'].upper()
+                    self.stats_text.insert('end', f"{name} ({arch})\n", 'OPPONENT')
                 else:
-                    self.stats_text.insert('end', line + '\n', 'MEMDATA')
-        
-        # === SECTION 5: Memory Status (container/buffer info) ===
-        buf_addr = hd.get('buf_addr')
-        container_addr = hd.get('container_addr')
-        scan_time = hd.get('scan_time', 0)
-        
-        if buf_addr or container_addr:
-            self.stats_text.insert('end', '---\n', 'MEMDATA')
-            if container_addr:
-                self.stats_text.insert('end', f"Container: {hex(container_addr)}\n", 'MEMDATA')
-            if buf_addr:
-                self.stats_text.insert('end', f"Buffer: {hex(buf_addr)}", 'MEMDATA')
-                if scan_time > 0:
-                    self.stats_text.insert('end', f" ({scan_time:.1f}s)\n", 'MEMDATA')
-                else:
-                    self.stats_text.insert('end', "\n", 'MEMDATA')
+                    self.stats_text.insert('end', f"{name}\n", 'MEMDATA')
+                
+                # Actions (last 3 per player)
+                for act in acts[-3:]:
+                    if is_hero:
+                        self.stats_text.insert('end', f"  {act}\n", 'MEM')
+                    else:
+                        self.stats_text.insert('end', f"  {act}\n", 'MEMDATA')
 
         # Update time label
-        if is_stale:
-            self.time_label.config(text=f"STALE ({entry_count})")
-        else:
-            self.time_label.config(text=f"LIVE ({entry_count})")
+        self.time_label.config(text=f"LIVE ({entry_count})")
 
         # Log to session file with full debug info
         self._log_mem_update(hd, advice)
