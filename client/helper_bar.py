@@ -749,29 +749,35 @@ class HelperBar:
                             self._update_mem_display(d, hd.get('entry_count', 0), g))
                 
                 n = hd.get('entry_count', 0)
-                # Always update UI (not just when entry count changes)
-                # This ensures right panel shows live data even if no new actions
                 
-                # Log new actions to left panel
-                if n > self._mem_last_entries and not hd.get('hand_id_changed'):
-                    actions = hd.get('actions', [])
-                    # Get last few actions (new ones)
-                    new_actions = actions[-(n - self._mem_last_entries):]
-                    for name, act, amt in new_actions:
-                        if act not in ('POST_SB', 'POST_BB', 'DEAL', '0x77', 'WIN'):
-                            if amt > 0:
-                                self.root.after(0, lambda n=name, a=act, m=amt, g=generation: 
-                                    self.log(f"[MEM] {n}: {a} €{m/100:.2f}", "INFO") if self._mem_poll_generation == g else None)
-                            else:
-                                self.root.after(0, lambda n=name, a=act, g=generation: 
-                                    self.log(f"[MEM] {n}: {a}", "INFO") if self._mem_poll_generation == g else None)
+                # Only update when something changes (not every 200ms)
+                something_changed = (
+                    n != self._mem_last_entries or  # New action
+                    hd.get('hand_id_changed')       # New hand
+                )
                 
-                self._mem_last_entries = n
-                # Update UI on every poll (not just when count changes)
-                # Check generation to prevent old poll from updating after F9
-                if self._mem_poll_generation == generation:
-                    self.root.after(0, lambda d=hd, cnt=n, g=generation: 
-                        self._update_mem_display(d, cnt, g))
+                if something_changed:
+                    # Log new actions to left panel
+                    if n > self._mem_last_entries and not hd.get('hand_id_changed'):
+                        actions = hd.get('actions', [])
+                        # Get last few actions (new ones)
+                        new_actions = actions[-(n - self._mem_last_entries):]
+                        for name, act, amt in new_actions:
+                            if act not in ('POST_SB', 'POST_BB', 'DEAL', '0x77', 'WIN'):
+                                if amt > 0:
+                                    self.root.after(0, lambda n=name, a=act, m=amt, g=generation: 
+                                        self.log(f"[MEM] {n}: {a} €{m/100:.2f}", "INFO") if self._mem_poll_generation == g else None)
+                                else:
+                                    self.root.after(0, lambda n=name, a=act, g=generation: 
+                                        self.log(f"[MEM] {n}: {a}", "INFO") if self._mem_poll_generation == g else None)
+                    
+                    self._mem_last_entries = n
+                    
+                    # Update UI only when something changed
+                    # Check generation to prevent old poll from updating after F9
+                    if self._mem_poll_generation == generation:
+                        self.root.after(0, lambda d=hd, cnt=n, g=generation: 
+                            self._update_mem_display(d, cnt, g))
             except Exception as e:
                 self._mem_polling = False
                 self.root.after(0, lambda e=e: self.log(f"[MEM] Poll error: {e}", "ERROR"))
