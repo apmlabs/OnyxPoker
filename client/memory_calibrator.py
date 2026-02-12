@@ -1156,6 +1156,16 @@ def rescan_buffer(buf_addr, expected_hand_id=None):
     entries = decode_buffer(buf_addr, _reader.read, _reader.read_str)
     hand_data = extract_hand_data(entries)
     if hand_data:
+        # Validate: if we have actions but no player names, buffer is corrupted
+        actions = hand_data.get('actions', [])
+        if actions and len(actions) > 2:  # More than just blinds
+            # Check if any non-blind action has a real name
+            has_real_names = any(name and name != 'None' for name, act, amt in actions 
+                                if act not in ('POST_SB', 'POST_BB', 'DEAL'))
+            if not has_real_names:
+                # Buffer corrupted - return None to trigger full rescan
+                return None
+        
         hand_data['buf_addr'] = buf_addr
         hand_data['entry_count'] = len(entries)
     return hand_data
