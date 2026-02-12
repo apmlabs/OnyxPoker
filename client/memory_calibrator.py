@@ -1156,6 +1156,11 @@ def rescan_buffer(buf_addr, expected_hand_id=None):
     entries = decode_buffer(buf_addr, _reader.read, _reader.read_str)
     hand_data = extract_hand_data(entries)
     if hand_data:
+        # Validate: hand_id must match what we expect
+        if hand_data.get('hand_id') != hand_id:
+            # Buffer moved to different hand - return None to trigger full rescan
+            return None
+        
         # Validate: if we have actions but no player names, buffer is corrupted
         actions = hand_data.get('actions', [])
         if actions and len(actions) > 2:  # More than just blinds

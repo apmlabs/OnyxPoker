@@ -9,7 +9,7 @@ import requests
 
 SERVER_URL = os.getenv('KIRO_SERVER', 'http://54.80.204.92:5001')
 LOG_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'logs')
-DUMP_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'memory_dumps')
+DUMP_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', 'server', 'uploads', 'memory_dumps')
 
 
 def fmt_size(b):
