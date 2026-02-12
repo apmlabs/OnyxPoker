@@ -516,48 +516,34 @@ def find_buffer_in_dump(bin_path, regions, expected_cards_ascii=None):
     falls back to 0x88 signature scan.
 
     Returns (buf_addr, entries) or (None, None).
+    
+    Note: Expects uncompressed .bin files. If .bin.gz uploaded, decompress first.
     """
-    # Handle .gz files - decompress to temp file
-    import gzip
-    import tempfile
-    actual_path = bin_path
-    temp_file = None
-    
-    if bin_path.endswith('.gz'):
-        print(f"[ANALYZE] Decompressing {os.path.basename(bin_path)}...", flush=True)
-        temp_file = tempfile.NamedTemporaryFile(delete=False, suffix='.bin')
-        with gzip.open(bin_path, 'rb') as f_in:
-            temp_file.write(f_in.read())
-        temp_file.close()
-        actual_path = temp_file.name
-        print(f"[ANALYZE] Decompressed to {actual_path}", flush=True)
-    
-    try:
-        read_bytes, read_str = _make_read_fns(actual_path, regions)
+    read_bytes, read_str = _make_read_fns(bin_path, regions)
 
-        # Try container scan first — only scan heap range for speed
-        def _region_iter():
-            with open(actual_path, 'rb') as f:
-                for r in regions:
-                    if r['base'] < HEAP_RANGE[0] or r['base'] >= HEAP_RANGE[1]:
-                        continue
-                    if r['size'] < 0x200:
-                        continue
-                    f.seek(r['file_offset'])
-                    yield r['base'], f.read(r['size'])
+    # Try container scan first — only scan heap range for speed
+    def _region_iter():
+        with open(bin_path, 'rb') as f:
+            for r in regions:
+                if r['base'] < HEAP_RANGE[0] or r['base'] >= HEAP_RANGE[1]:
+                    continue
+                if r['size'] < 0x200:
+                    continue
+                f.seek(r['file_offset'])
+                yield r['base'], f.read(r['size'])
 
-        buf_addr, n_entries, hid, container_addr = _find_buffer_via_container(_region_iter(), read_bytes)
-        if buf_addr:
-            # Save container address for pointer scan
-            find_buffer_in_dump._last_container_addr = container_addr
-            entries = decode_buffer(buf_addr, read_bytes, read_str, n_entries)
-            if len(entries) >= 3:
-                return buf_addr, entries
+    buf_addr, n_entries, hid, container_addr = _find_buffer_via_container(_region_iter(), read_bytes)
+    if buf_addr:
+        # Save container address for pointer scan
+        find_buffer_in_dump._last_container_addr = container_addr
+        entries = decode_buffer(buf_addr, read_bytes, read_str, n_entries)
+        if len(entries) >= 3:
+            return buf_addr, entries
 
-        # Fallback: 0x88 signature scan
-        candidates = []  # (buf_addr, hand_id)
+    # Fallback: 0x88 signature scan
+    candidates = []  # (buf_addr, hand_id)
 
-        with open(actual_path, 'rb') as f:
+    with open(bin_path, 'rb') as f:
             for r in regions:
                 f.seek(r['file_offset'])
                 data = f.read(r['size'])
@@ -593,16 +579,8 @@ def find_buffer_in_dump(bin_path, regions, expected_cards_ascii=None):
                         buf_addr = ba
                         break
 
-        entries = decode_buffer(buf_addr, read_bytes, read_str)
-        result = (buf_addr, entries) if len(entries) >= 3 else (None, None)
-        
-    finally:
-        # Clean up temp file if we decompressed
-        if temp_file and os.path.exists(temp_file.name):
-            os.unlink(temp_file.name)
-            print(f"[ANALYZE] Cleaned up temp file", flush=True)
-    
-    return result
+    entries = decode_buffer(buf_addr, read_bytes, read_str)
+    return (buf_addr, entries) if len(entries) >= 3 else (None, None)
 
 
 def _fuzzy_match(a, b):
