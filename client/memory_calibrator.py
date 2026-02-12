@@ -63,7 +63,7 @@ if IS_WINDOWS:
             ("Type", wintypes.DWORD),
         ]
 
-DUMP_DIR = os.path.join(os.path.dirname(__file__), 'memory_dumps')
+DUMP_DIR = os.path.join(os.path.dirname(__file__), '..', 'server', 'uploads', 'memory_dumps')
 CALIBRATION_FILE = os.path.join(os.path.dirname(__file__), 'memory_offsets.json')
 
 HERO_NAME = 'idealistslp'
