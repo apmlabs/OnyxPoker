@@ -693,14 +693,34 @@ class HelperBar:
         """Background thread: rescan buffer every 200ms, push UI updates."""
         from memory_calibrator import rescan_buffer, scan_live
         self.root.after(0, lambda: self.log(f"[MEM] Poll loop gen {generation} started", "DEBUG"))
+        retry_count = 0
         while self._mem_polling and self._mem_poll_generation == generation:
             try:
                 hd = rescan_buffer(self._mem_buf_addr, self._mem_hand_id)
                 if hd is None:
-                    # Buffer moved - container not updated yet, just retry quickly
-                    # Don't do full scan (takes 2-4s), container updates in milliseconds
-                    time.sleep(0.05)  # Wait 50ms and retry
-                    continue
+                    # Buffer moved or lost - retry a few times before full rescan
+                    retry_count += 1
+                    if retry_count < 10:  # Try 10 times (10 * 50ms = 500ms max wait)
+                        time.sleep(0.05)  # Wait 50ms and retry
+                        continue
+                    else:
+                        # After 500ms, do full rescan (process might have died)
+                        self.root.after(0, lambda: self.log("[MEM] Buffer lost after retries, full rescan", "DEBUG"))
+                        fresh_data = scan_live()
+                        if fresh_data and fresh_data.get('hero_cards'):
+                            self._mem_hand_id = fresh_data['hand_id']
+                            self._mem_buf_addr = fresh_data['buf_addr']
+                            self._mem_last_entries = 0
+                            hd = fresh_data
+                            retry_count = 0  # Reset counter
+                            self.root.after(0, lambda h=fresh_data['hand_id']: 
+                                self.log(f"[MEM] Re-scan OK: hand {h}", "INFO"))
+                        else:
+                            self.root.after(0, lambda: self.log("[MEM] Re-scan failed, retrying...", "DEBUG"))
+                            time.sleep(0.5)
+                            continue
+                else:
+                    retry_count = 0  # Reset counter on success
                 
                 # Check if hand changed
                 if hd.get('hand_id_changed'):
