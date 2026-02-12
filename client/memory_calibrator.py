@@ -1123,6 +1123,10 @@ def rescan_buffer(buf_addr, expected_hand_id=None):
         if result:
             new_buf_addr, n_entries, new_hid = result[0], result[1], result[2]
             
+            # Validate hand_id is reasonable (200B-300B range)
+            if not (200_000_000_000 <= new_hid <= 300_000_000_000):
+                return None  # Corrupted container
+            
             # If container points to a DIFFERENT hand than expected, follow it
             if new_hid != expected_hand_id:
                 entries = decode_buffer(new_buf_addr, _reader.read, _reader.read_str, n_entries)

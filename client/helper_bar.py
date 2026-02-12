@@ -694,7 +694,16 @@ class HelperBar:
         from memory_calibrator import rescan_buffer, scan_live
         self.root.after(0, lambda: self.log(f"[MEM] Poll loop gen {generation} started", "DEBUG"))
         retry_count = 0
+        start_time = time.time()
+        max_duration = 300  # 5 minutes timeout
+        
         while self._mem_polling and self._mem_poll_generation == generation:
+            # Timeout check
+            if time.time() - start_time > max_duration:
+                self.root.after(0, lambda: self.log("[MEM] Poll timeout (5min), stopping", "DEBUG"))
+                self._mem_polling = False
+                break
+            
             try:
                 hd = rescan_buffer(self._mem_buf_addr, self._mem_hand_id)
                 if hd is None:
@@ -999,11 +1008,17 @@ class HelperBar:
             hero_last_action = None
             
             # Find current street start (last DEAL marker)
+            deal_found = False
             for i, (name, act, amt) in enumerate(actions):
                 if act == 'DEAL':
                     current_street_start = i + 1
                     hero_acted_this_street = False
                     hero_last_action = None
+                    deal_found = True
+            
+            # If no DEAL marker found, use last 10 actions as current street
+            if not deal_found and len(actions) > 10:
+                current_street_start = len(actions) - 10
             
             # Calculate pot (all actions) and track current street
             for i, (name, act, amt) in enumerate(actions):
