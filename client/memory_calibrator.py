@@ -1117,35 +1117,23 @@ def rescan_buffer(buf_addr, expected_hand_id=None):
     if _reader is None or not _reader.handle:
         return None
     
-    # Quick validate: read first 16 bytes to check hand_id
-    header = _reader.read(buf_addr, 16)
-    if not header or len(header) < 16:
-        return None
+    # FIRST: Check if container moved to a new hand (even if buffer hasn't updated yet)
+    if expected_hand_id and _cached_container_addr:
+        result = _read_buffer_from_container(_cached_container_addr, _reader)
+        if result:
+            new_buf_addr, n_entries, new_hid = result[0], result[1], result[2]
+            
+            # If container points to a DIFFERENT hand than expected, follow it
+            if new_hid != expected_hand_id:
+                entries = decode_buffer(new_buf_addr, _reader.read, _reader.read_str, n_entries)
+                hand_data = extract_hand_data(entries)
+                if hand_data:
+                    hand_data['buf_addr'] = new_buf_addr
+                    hand_data['entry_count'] = len(entries)
+                    hand_data['hand_id_changed'] = True
+                return hand_data
     
-    hid = struct.unpack('<Q', header[0:8])[0]
-    
-    # If hand_id changed, follow container to new buffer
-    if expected_hand_id and hid != expected_hand_id:
-        # Buffer moved to different hand
-        if _cached_container_addr:
-            result = _read_buffer_from_container(_cached_container_addr, _reader)
-            if result:
-                new_buf_addr, n_entries, new_hid = result[0], result[1], result[2]
-                
-                # Verify container moved to a NEW hand (not stuck on old hand)
-                if new_hid != expected_hand_id:
-                    # Container updated to different hand - follow it!
-                    entries = decode_buffer(new_buf_addr, _reader.read, _reader.read_str, n_entries)
-                    hand_data = extract_hand_data(entries)
-                    if hand_data:
-                        hand_data['buf_addr'] = new_buf_addr
-                        hand_data['entry_count'] = len(entries)
-                        hand_data['hand_id_changed'] = True  # Signal to update tracking
-                    return hand_data
-        # Container not available or didn't help - return None to trigger full rescan
-        return None
-    
-    # Same hand - just rescan
+    # Container says same hand - rescan buffer at known address
     entries = decode_buffer(buf_addr, _reader.read, _reader.read_str)
     hand_data = extract_hand_data(entries)
     if hand_data:
