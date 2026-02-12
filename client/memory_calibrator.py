@@ -544,24 +544,24 @@ def find_buffer_in_dump(bin_path, regions, expected_cards_ascii=None):
     candidates = []  # (buf_addr, hand_id)
 
     with open(bin_path, 'rb') as f:
-            for r in regions:
-                f.seek(r['file_offset'])
-                data = f.read(r['size'])
-                idx = 0
-                while True:
-                    idx = data.find(BUFFER_SIGNATURE, idx)
-                    if idx < 0:
-                        break
-                    entry_off = idx + 10  # signature is 10 bytes before first entry
-                    if entry_off + 16 <= len(data):
-                        hid = struct.unpack('<Q', data[entry_off:entry_off+8])[0]
-                        seq = struct.unpack('<I', data[entry_off+8:entry_off+12])[0]
-                        if 200_000_000_000 < hid < 300_000_000_000 and seq == 1:
-                            candidates.append((r['base'] + entry_off, hid))
-                    idx += 1
+        for r in regions:
+            f.seek(r['file_offset'])
+            data = f.read(r['size'])
+            idx = 0
+            while True:
+                idx = data.find(BUFFER_SIGNATURE, idx)
+                if idx < 0:
+                    break
+                entry_off = idx + 10  # signature is 10 bytes before first entry
+                if entry_off + 16 <= len(data):
+                    hid = struct.unpack('<Q', data[entry_off:entry_off+8])[0]
+                    seq = struct.unpack('<I', data[entry_off+8:entry_off+12])[0]
+                    if 200_000_000_000 < hid < 300_000_000_000 and seq == 1:
+                        candidates.append((r['base'] + entry_off, hid))
+                idx += 1
 
-        if not candidates:
-            return None, None
+    if not candidates:
+        return None, None
 
         # Pick highest hand_id
         max_hid = max(c[1] for c in candidates)
