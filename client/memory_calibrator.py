@@ -1157,7 +1157,7 @@ def rescan_buffer(buf_addr, expected_hand_id=None):
     hand_data = extract_hand_data(entries)
     if hand_data:
         # Validate: hand_id must match what we expect
-        if hand_data.get('hand_id') != hand_id:
+        if expected_hand_id and hand_data.get('hand_id') != expected_hand_id:
             # Buffer moved to different hand - return None to trigger full rescan
             return None
         
