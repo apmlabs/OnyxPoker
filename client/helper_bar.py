@@ -697,28 +697,10 @@ class HelperBar:
             try:
                 hd = rescan_buffer(self._mem_buf_addr, self._mem_hand_id)
                 if hd is None:
-                    # Buffer lost - try full rescan (with retry)
-                    self.root.after(0, lambda: self.log("[MEM] Buffer lost, rescanning...", "DEBUG"))
-                    fresh_data = None
-                    for attempt in range(3):  # Try 3 times
-                        fresh_data = scan_live()
-                        if fresh_data and fresh_data.get('hero_cards'):
-                            break
-                        time.sleep(0.1)  # Wait 100ms between attempts
-                    
-                    if fresh_data and fresh_data.get('hero_cards'):
-                        # Re-scan success - update tracking
-                        self._mem_hand_id = fresh_data['hand_id']
-                        self._mem_buf_addr = fresh_data['buf_addr']
-                        self._mem_last_entries = 0
-                        hd = fresh_data
-                        self.root.after(0, lambda h=fresh_data['hand_id'], c=fresh_data.get('hero_cards'): 
-                            self.log(f"[MEM] Re-scan OK: hand {h}, cards {c[0:2]} {c[2:4]}", "INFO"))
-                    else:
-                        # Re-scan failed after 3 attempts - keep trying (don't stop)
-                        self.root.after(0, lambda: self.log("[MEM] Re-scan failed, retrying...", "DEBUG"))
-                        time.sleep(0.5)  # Wait longer before next poll cycle
-                        continue  # Skip this cycle, try again
+                    # Buffer moved - container not updated yet, just retry quickly
+                    # Don't do full scan (takes 2-4s), container updates in milliseconds
+                    time.sleep(0.05)  # Wait 50ms and retry
+                    continue
                 
                 # Check if hand changed
                 if hd.get('hand_id_changed'):
