@@ -1,6 +1,6 @@
 # OnyxPoker - Status Tracking
 
-**Last Updated**: February 12, 2026 01:04 UTC
+**Last Updated**: February 12, 2026 11:05 UTC
 
 ---
 
@@ -9,7 +9,7 @@
 ### What Works
 | Component | Status | Notes |
 |-----------|--------|-------|
-| helper_bar.py | ✅ | V2 vision default + live memory polling (Session 89r fixes) |
+| helper_bar.py | ✅ | V2 vision default + live memory polling (Session 89s UI cleanup) |
 | helper_bar.py --v1 | ✅ | V1 vision (no opponent detection) |
 | helper_bar.py --ai-only | ✅ | AI does both vision + decision |
 | helper_bar.py --bot | ⚠️ | Bot mode: needs testing (button detection untested) |
@@ -58,6 +58,63 @@
 ---
 
 ## Session History
+
+### Session 89s: Clean Up UI Display (February 12, 2026)
+
+**Fixed 5 UI issues based on live play feedback.**
+
+**Problem 1: Right panel showing old cards**
+- Symptom: Cards on screen don't match right panel
+- Root cause: Display logic was too complex with stale detection
+- Fix: Simplified `_update_mem_display()` - always show current poll data
+
+**Problem 2: Left panel spam**
+- Symptom: Left panel flooded with action logs (not useful)
+- Root cause: Every action logged to left panel
+- Fix: Removed all action logs, keep only new hand notifications
+
+**Problem 3: Too many delimiters**
+- Symptom: `---` lines everywhere in right panel
+- Fix: Removed all `---` delimiters
+
+**Problem 4: Players listed twice**
+- Symptom: Player list first, then actions separately
+- Fix: Combined into single section - player name + archetype + last 3 actions
+
+**Problem 5: Hard to read**
+- Symptom: Too much info, cluttered layout
+- Fix: Cleaner structure:
+  1. Cards + board + pot/call
+  2. Advice (action + reasoning)
+  3. Players with archetypes + their actions
+
+**New right panel format:**
+```
+Kd 2d | --
+Pot €0.22 | Call €0.15
+
+=> FOLD
+K2s fold vs open vs rock
+
+NicSticker (ROCK)
+  RAISE €0.15
+idealistslp (HERO)
+  FOLD
+```
+
+**New left panel (minimal):**
+```
+[11:58:07] New hand: 3c Th
+[11:58:22] Cards corrected: ['Kd', 'Qh'] -> ['Qh', 'Kd']
+[11:59:09] F9: Ad 3c | -- | Pot €0.17
+[11:59:09] => RAISE €0.30 (A3o in BTN open range)
+```
+
+**Files changed:**
+- helper_bar.py - Simplified `_update_mem_display()`, cleaned up `_mem_poll_loop()`
+- LIVE_PLAY_LOGIC.md - Created audit document
+
+**Status:** Ready for live play with clean, readable UI
 
 ### Session 89r: Complete Memory Polling Fix (February 12, 2026)
 
