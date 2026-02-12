@@ -1132,9 +1132,9 @@ def rescan_buffer(buf_addr, expected_hand_id=None):
             if result:
                 new_buf_addr, n_entries, new_hid = result[0], result[1], result[2]
                 
-                # Verify container actually points to NEW hand (not still on old hand)
-                if new_hid == hid:
-                    # Container updated to same hand as buffer - good!
+                # Verify container moved to a NEW hand (not stuck on old hand)
+                if new_hid != expected_hand_id:
+                    # Container updated to different hand - follow it!
                     entries = decode_buffer(new_buf_addr, _reader.read, _reader.read_str, n_entries)
                     hand_data = extract_hand_data(entries)
                     if hand_data:
