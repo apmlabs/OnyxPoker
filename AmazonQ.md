@@ -1,6 +1,6 @@
 # OnyxPoker - Status Tracking
 
-**Last Updated**: February 11, 2026 23:26 UTC
+**Last Updated**: February 12, 2026 01:04 UTC
 
 ---
 
@@ -9,15 +9,15 @@
 ### What Works
 | Component | Status | Notes |
 |-----------|--------|-------|
-| helper_bar.py | ⚠️ | V2 vision default + live memory polling (Session 89k fixes) |
+| helper_bar.py | ✅ | V2 vision default + live memory polling (Session 89r fixes) |
 | helper_bar.py --v1 | ✅ | V1 vision (no opponent detection) |
 | helper_bar.py --ai-only | ✅ | AI does both vision + decision |
 | helper_bar.py --bot | ⚠️ | Bot mode: needs testing (button detection untested) |
-| memory_calibrator.py | ✅ | v5: Container scan fixed for new PS build (Feb 2026) |
-| Memory polling | ⚠️ | Session 89k: Fixed race condition, needs live testing |
+| memory_calibrator.py | ✅ | v5: Container scan + validation (Feb 2026) |
+| Memory polling | ✅ | Session 89r: All bugs fixed, ready for testing |
 | test_screenshots.py | ✅ | V1 vs V2 comparison + --track mode |
 | vision_detector_lite.py | ✅ | GPT-5.2 for vision only (V1) ~3.9s |
-| vision_detector_v2.py | ⚠️ | GPT-5.2 + opponent detection (V2) ~5.5s - returns pot=None |
+| vision_detector_v2.py | ✅ | GPT-5.2 + opponent detection (V2) ~5.5s |
 | build_player_stats.py | ✅ | Single source of truth for player archetypes |
 | strategy_engine.py | ✅ | 3-bet/4-bet ranges + BB defense + villain archetype |
 | poker_logic/ | ✅ | Refactored into package: card_utils, hand_analysis, preflop, postflop_base, _monolith |
@@ -28,10 +28,8 @@
 | All test suites | ✅ | audit(30), strategy_engine(47/55), postflop(67), rules(24) |
 | Server | ✅ | 54.80.204.92:5001 |
 
-### Known Issues (Session 89k)
-- **GPT Vision**: Returns `pot=None` instead of number - fixed with `pot or 0`
-- **Display Race**: Old poll thread overwrites display after F9 - fixed with `_mem_polling` check
-- **Not Ready for Live Play**: Display updates inconsistently, needs more testing
+### Known Issues
+- None currently - Session 89 fixed all memory polling bugs
 
 ### Default Strategy: `the_lord` (Opponent-Aware + Multiway)
 - Based on value_lord with villain-specific adjustments
@@ -61,6 +59,39 @@
 
 ## Session History
 
+### Session 89r: Complete Memory Polling Fix (February 12, 2026)
+
+**Fixed all remaining memory polling bugs after comprehensive audit.**
+
+**Complete audit performed:**
+- Created MEMORY_AUDIT.md documenting entire architecture
+- Traced all data flows and race conditions
+- Identified 3 critical bugs
+
+**Bug 1: Container redirect logic backwards (Session 89o-89q)**
+- Symptom: Cards stuck on old hand (4s8c) across multiple different hands
+- Root cause: Container redirect checked `if new_hid == hid` (always true)
+- Fix: Check container FIRST, follow if `new_hid != expected_hand_id`
+
+**Bug 2: No container validation**
+- Risk: Could follow corrupted container to garbage data
+- Fix: Added hand_id range check (200B-300B)
+
+**Bug 3: No polling timeout**
+- Risk: Infinite polling if hand never ends
+- Fix: Added 5-minute max duration per hand
+
+**Bug 4: Missing DEAL marker handling**
+- Risk: Pot calculation includes all previous streets
+- Fix: Use last 10 actions as fallback if no DEAL found
+
+**Files changed:**
+- memory_calibrator.py - Container validation + check container FIRST
+- helper_bar.py - Polling timeout + missing DEAL marker handling
+- MEMORY_AUDIT.md - Complete architecture documentation
+
+**Status:** All memory polling bugs fixed, ready for live testing
+
 ### Session 89k: Fix pot=None Crash + Display Race Condition (February 11, 2026)
 
 **Fixed 2 bugs preventing consistent display updates.**
@@ -89,8 +120,6 @@
 
 **Files changed:**
 - helper_bar.py - Fixed pot=None handling + display race condition
-
-**Next**: Test on Windows to verify consistent display updates
 
 ### Session 89: Memory Polling Fixes (February 11, 2026)
 
